@@ -271,7 +271,7 @@ namespace KIT.ResourceScheduler
 
         public void OnKITProcessingFinished(IResourceManager resourceManager)
         {
-            // PerformResourceDecay(resourceManager);
+            PerformResourceDecay(resourceManager);
         }
 
         #region Vessel Wide Decay
