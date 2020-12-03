@@ -195,7 +195,9 @@ namespace KIT.ResourceScheduler
 
                 if(modsCurrentlyRunning.Last() != mod)
                 {
-                    throw new 
+                    // there is an ordering problem in the above mod.KITFixedUpdate(), and we did not correctly track which module is
+                    // currently running.
+                    throw new InvalidOperationException("[KITResourceManager.ExecuteKITModules] the currently running mod is not the last running mod");
                 }
                 modsCurrentlyRunning.Remove(mod);
             }
