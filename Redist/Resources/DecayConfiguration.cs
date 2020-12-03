@@ -75,7 +75,7 @@ namespace KIT.Resources
         {
             configuration = new Dictionary<string, DecayConfiguration>(16);
             var decayConfigs = GameDatabase.Instance.GetConfigNodes("KIT_DECAY_CONFIG");
-            if (decayConfigs == null)
+            if (decayConfigs == null || decayConfigs.Length == 0)
             {
                 disabled = true;
                 return;
