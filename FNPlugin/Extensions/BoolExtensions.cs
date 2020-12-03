@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
     public static class BooleanExtensions
     {

@@ -1,9 +1,9 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Power;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.Power;
+using KIT.Powermanagement;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     [KSPModule("#LOC_KSPIE_ElectricEngine_partModuleName")]
     class ElectrostaticEngineControllerFX : ElectricEngineControllerFX { }
@@ -272,7 +272,6 @@ namespace FNPlugin.Propulsion
         double _effectiveIsp;
         double _ispPersistent;
 
-        ResourceBuffers _resourceBuffers;
         FloatCurve _ispFloatCurve;
         ModuleEngines _attachedEngine;
 
@@ -521,12 +520,6 @@ namespace FNPlugin.Propulsion
                 upgradePartModule();
 
             UpdateEngineTypeString();
-
-            _resourceBuffers = new ResourceBuffers();
-            _resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 2.0e+4, true));
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-            _resourceBuffers.Init(part);
-
             InitializePropellantMode();
 
             SetupPropellants(true);
@@ -774,9 +767,6 @@ namespace FNPlugin.Propulsion
             CalculateTimeDialation();
 
             if (CurrentPropellant == null) return;
-
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, (double)(decimal)part.mass);
-            _resourceBuffers.UpdateBuffers();
 
             if (!vessel.packed && !_warpToReal)
                 storedThrotle = vessel.ctrlState.mainThrottle;

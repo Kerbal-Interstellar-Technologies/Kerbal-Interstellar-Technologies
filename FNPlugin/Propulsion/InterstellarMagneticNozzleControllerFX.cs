@@ -1,15 +1,15 @@
-using FNPlugin.Constants;
-using FNPlugin.Power;
-using FNPlugin.Redist;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+using KIT.Constants;
+using KIT.Power;
+using KIT.Redist;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     class InterstellarMagneticNozzleControllerFX : ResourceSuppliableModule, IFNEngineNoozle
     {
@@ -95,7 +95,6 @@ namespace FNPlugin.Propulsion
         UI_FloatRange simulatedThrottleFloatRange;
         ModuleEnginesFX _attached_engine;
         ModuleEnginesWarp _attached_warpable_engine;
-        ResourceBuffers resourceBuffers;
         PartResourceDefinition propellantBufferResourceDefinition;
         Guid id = Guid.NewGuid();
 
@@ -138,11 +137,6 @@ namespace FNPlugin.Propulsion
         {
             if (maintainsPropellantBuffer)
                 propellantBufferResourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellantBufferResourceName);
-
-            resourceBuffers = new ResourceBuffers();
-            resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 1.0e+6, true));
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            resourceBuffers.Init(this.part);
 
             _attached_warpable_engine = this.part.FindModuleImplementing<ModuleEnginesWarp>();
             _attached_engine = _attached_warpable_engine;
@@ -369,12 +363,6 @@ namespace FNPlugin.Propulsion
 
             if (_chargedParticleMaximumPercentageUsage > 0)
             {
-                if (_attached_reactor.Part != this.part)
-                {
-                    resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-                    resourceBuffers.UpdateBuffers();
-                }
-
                 maximumChargedPower =  _attached_reactor.MaximumChargedPower;
                 var currentMaximumChargedPower = maximum_isp == minimum_isp ? maximumChargedPower * _attached_engine.currentThrottle : maximumChargedPower;
 

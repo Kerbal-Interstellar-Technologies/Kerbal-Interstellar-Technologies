@@ -1,9 +1,9 @@
-﻿using FNPlugin.Extensions;
-using FNPlugin.Resources;
+﻿using KIT.Extensions;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("Particle Accelerator")]
     class FNParticleAccelerator : InterstellarInertialConfinementReactor { }

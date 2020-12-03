@@ -1,11 +1,11 @@
 ﻿using System;
-using FNPlugin.Constants;
-using FNPlugin.Power;
-using FNPlugin.Resources;
+using KIT.Constants;
+using KIT.Power;
+using KIT.Resources;
 using KSP.Localization;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Generator Adapter")]
     class FNGeneratorAdapterVariable : ResourceSuppliableModule
@@ -17,8 +17,6 @@ namespace FNPlugin.Powermanagement
 
         [KSPField(isPersistant = true)]
         public double last_active_time;
-        [KSPField(isPersistant = true)]
-        public double initialMaxBufferSize;
         [KSPField(isPersistant = true)]
         private double initialInputAmount;
         [KSPField(isPersistant = true)]
@@ -36,8 +34,6 @@ namespace FNPlugin.Powermanagement
         public bool offlineProcessing = false;
         [KSPField]
         public int index = 0;
-        [KSPField]
-        public bool maintainsBuffer = true;
         [KSPField]
         public double maximumPowerGeneration = 0;
         [KSPField]
@@ -59,7 +55,6 @@ namespace FNPlugin.Powermanagement
         private double generatorOutputRateInElectricCharge;
 
         private ModuleGenerator moduleGenerator;
-        private ResourceBuffers resourceBuffers;
 
         private ModuleResource mockInputResource;
         private ModuleResource moduleInputResource;
@@ -95,9 +90,6 @@ namespace FNPlugin.Powermanagement
                 string[] resourcesToSupply = { ResourceSettings.Config.ElectricPowerInMegawatt };
                 this.resources_to_supply = resourcesToSupply;
                 base.OnStart(state);
-
-                if (maintainsBuffer)
-                    resourceBuffers = new ResourceBuffers();
 
                 outputType = ResourceType.other;
                 inputType = ResourceType.other;
@@ -145,20 +137,6 @@ namespace FNPlugin.Powermanagement
 
                     if (outputType != ResourceType.other)
                     {
-                        if (maintainsBuffer)
-                        {
-                            var bufferResource = part.Resources[moduleResource.name];
-                            if (bufferResource != null)
-                            {
-                                if (initialMaxBufferSize == 0)
-                                    initialMaxBufferSize = bufferResource.maxAmount;
-                                else
-                                    bufferResource.maxAmount = initialMaxBufferSize;
-                            }
-
-                            resourceBuffers.AddConfiguration(new ResourceBuffers.MaxAmountConfig(moduleResource.name, 50));
-                        }
-
                         mockInputResource = new ModuleResource();
                         mockInputResource.name = moduleResource.name;
                         mockInputResource.id = moduleResource.name.GetHashCode();
@@ -181,10 +159,6 @@ namespace FNPlugin.Powermanagement
                         break;
                     }
                 }
-
-                if (maintainsBuffer)
-                    resourceBuffers.Init(part);
-
                 efficiencyField = moduleGenerator.Fields["efficiency"];
                 displayStatusField = moduleGenerator.Fields["displayStatus"];
 
@@ -271,9 +245,6 @@ namespace FNPlugin.Powermanagement
                 supplyFNResourcePerSecondWithMax(0, 0, ResourceSettings.Config.ElectricPowerInMegawatt);
                 return;
             }
-
-            if (maintainsBuffer)
-                resourceBuffers.UpdateBuffers();
 
             if (maximumPowerGeneration != 0)
             {

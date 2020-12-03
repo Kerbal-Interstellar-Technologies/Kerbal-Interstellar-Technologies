@@ -1,4 +1,4 @@
-﻿//namespace FNPlugin
+﻿//namespace KIT
 //{
 //	class ModableExperimentResultDialogPage : ExperimentResultDialogPage
 //	{

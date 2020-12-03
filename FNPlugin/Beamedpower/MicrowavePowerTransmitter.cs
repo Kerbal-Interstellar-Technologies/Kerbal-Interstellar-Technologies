@@ -1,15 +1,15 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Microwave;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.Microwave;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
+using KIT.Powermanagement;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     class PhasedArrayTransmitter : BeamedPowerTransmitter { }
 

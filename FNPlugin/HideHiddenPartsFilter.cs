@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using KSP.UI.Screens;
 
-namespace FNPlugin
+namespace KIT
 {
     [KSPAddon(KSPAddon.Startup.EditorVAB, false)]
     class HideHiddenPartsFilter : MonoBehaviour

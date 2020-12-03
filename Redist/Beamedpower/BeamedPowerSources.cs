@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     public delegate IVesselMicrowavePersistence GetVesselMicrowavePersistanceForProtoVessel(Vessel vessel);
     public delegate IVesselRelayPersistence GetVesselRelayPersistanceForProtoVessel(Vessel vessel);

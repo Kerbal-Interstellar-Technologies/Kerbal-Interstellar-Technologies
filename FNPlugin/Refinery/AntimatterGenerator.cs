@@ -1,6 +1,6 @@
-﻿using FNPlugin.Constants;
+﻿using KIT.Constants;
 
-namespace FNPlugin.Refinery
+namespace KIT.Refinery
 {
     class AntimatterGenerator : RefineryActivity
     {

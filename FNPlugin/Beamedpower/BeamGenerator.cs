@@ -1,4 +1,4 @@
-﻿using FNPlugin.Beamedpower;
+﻿using KIT.Beamedpower;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin.Microwave
+namespace KIT.Microwave
 {
     [KSPModule("Integrated Beam Generator")]//#LOC_KSPIE_BeamGenerator_ModuleName1
     class IntegratedBeamGenerator : BeamGenerator { }

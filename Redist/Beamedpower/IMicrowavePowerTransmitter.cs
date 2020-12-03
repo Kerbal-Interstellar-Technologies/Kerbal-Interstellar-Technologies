@@ -1,5 +1,5 @@
 ﻿
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     public interface IMicrowavePowerTransmitter { };
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     internal class DefaultResourceManager : ResourceManager
     {

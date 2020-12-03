@@ -1,15 +1,15 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.External;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.External;
+using KIT.Powermanagement;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     [KSPModule("Fission Engine")]
     class FissionEngineController : DaedalusEngineController { }

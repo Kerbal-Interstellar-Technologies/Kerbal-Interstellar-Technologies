@@ -1,9 +1,9 @@
-﻿using FNPlugin.Constants;
+﻿using KIT.Constants;
 using System;
-using FNPlugin.Resources;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     internal class WasteHeatResourceManager : ResourceManager
     {

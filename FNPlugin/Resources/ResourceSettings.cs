@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     public class ResourceSettings
     {

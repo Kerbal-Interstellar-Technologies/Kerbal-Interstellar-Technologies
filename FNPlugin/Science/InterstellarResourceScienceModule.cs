@@ -2,7 +2,7 @@
 using System.Linq;
 using KSP.Localization;
 
-namespace FNPlugin
+namespace KIT
 {
     public class InterstellarResourceScienceModule : ModuleScienceExperiment
     {

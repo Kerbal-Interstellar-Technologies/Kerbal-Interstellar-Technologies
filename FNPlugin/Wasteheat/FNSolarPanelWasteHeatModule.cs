@@ -1,13 +1,13 @@
-using FNPlugin.Constants;
-using FNPlugin.Power;
-using FNPlugin.Resources;
+using KIT.Constants;
+using KIT.Power;
+using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     enum ResourceType
     {
@@ -62,7 +62,6 @@ namespace FNPlugin
 
         BeamedPowerReceiver _microwavePowerReceiver;
         ModuleDeployableSolarPanel _solarPanel;
-        ResourceBuffers _resourceBuffers;
         ResourceType _outputType = 0;
         List<StarLight> _stars;
 
@@ -122,17 +121,6 @@ namespace FNPlugin
                 _outputType = ResourceType.electricCharge;
             else
                 _outputType = ResourceType.other;
-
-            // only manage power buffer when microwave receiver is not available
-            if (_outputType !=  ResourceType.other && _microwavePowerReceiver == null)
-            {
-                _resourceBuffers = new ResourceBuffers();
-                _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInMegawatt));
-                _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInKilowatt));
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, _outputType == ResourceType.electricCharge ? _solarPanel.chargeRate / GameConstants.ecPerMJ : _solarPanel.chargeRate);
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, _outputType == ResourceType.electricCharge ? _solarPanel.chargeRate : _solarPanel.chargeRate * GameConstants.ecPerMJ);
-                _resourceBuffers.Init(part);
-            }
 
             _stars = KopernicusHelper.Stars;
         }
@@ -213,8 +201,6 @@ namespace FNPlugin
             double maxSupply = 0.0, solarRate = 0.0;
             sunAOA = 0;
             CalculateSolarFlowRate(calculatedEfficency / scale, ref maxSupply, ref solarRate);
-
-            _resourceBuffers?.UpdateBuffers();
 
             if (_outputResource != null)
             {

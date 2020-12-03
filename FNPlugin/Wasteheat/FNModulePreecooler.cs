@@ -1,10 +1,10 @@
 ﻿using KSP.Localization;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Resources;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     class FNModulePreecooler : PartModule
     {

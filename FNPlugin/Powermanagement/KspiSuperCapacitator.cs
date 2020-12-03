@@ -1,10 +1,10 @@
-﻿using FNPlugin.Extensions;
-using FNPlugin.Resources;
+﻿using KIT.Extensions;
+using KIT.Resources;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Air Lithium Battery")]
     class AirLithiumBattery : KspiSuperCapacitator { }

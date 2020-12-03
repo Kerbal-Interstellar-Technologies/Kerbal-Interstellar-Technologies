@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FNPlugin.Propulsion;
+using KIT.Propulsion;
 
-namespace FNPlugin.Redist
+namespace KIT.Redist
 {
     public interface IPowerSource : IThermalReciever
     {

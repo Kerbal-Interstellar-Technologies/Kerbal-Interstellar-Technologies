@@ -2,7 +2,7 @@
 using UnityEngine;
 using KSP.Localization;
 
-namespace FNPlugin 
+namespace KIT 
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     class FNImpactorModule : MonoBehaviour 

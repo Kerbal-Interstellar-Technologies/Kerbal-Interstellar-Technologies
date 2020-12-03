@@ -1,10 +1,10 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Power;
-using FNPlugin.Resources;
+﻿using KIT.Constants;
+using KIT.Power;
+using KIT.Resources;
 using System;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Generator Adapter")]
     class FNGeneratorAdapter : ResourceSuppliableModule
@@ -14,8 +14,6 @@ namespace FNPlugin.Powermanagement
         [KSPField]
         public int index = 0;
         [KSPField]
-        public bool maintainsBuffer = true;
-        [KSPField]
         public bool showDisplayStatus = true;
         [KSPField]
         public bool showEfficiency = true;
@@ -24,7 +22,6 @@ namespace FNPlugin.Powermanagement
 
         private ModuleGenerator _moduleGenerator;
         private ResourceType _outputType = 0;
-        private ResourceBuffers _resourceBuffers;
         private ModuleResource _mockInputResource;
         private ModuleResource _moduleOutputResource;
         private BaseField _efficiencyField;
@@ -64,9 +61,6 @@ namespace FNPlugin.Powermanagement
                 this.resources_to_supply = resourcesToSupply;
                 base.OnStart(state);
 
-                if (maintainsBuffer)
-                    _resourceBuffers = new ResourceBuffers();
-
                 _outputType = ResourceType.other;
                 foreach (ModuleResource moduleResource in _moduleGenerator.resHandler.outputResources)
                 {
@@ -75,9 +69,6 @@ namespace FNPlugin.Powermanagement
 
                     // assuming only one of those two is present
                     _outputType = moduleResource.name == ResourceSettings.Config.ElectricPowerInMegawatt ? ResourceType.megajoule : ResourceType.electricCharge;
-
-                    if (maintainsBuffer)
-                        _resourceBuffers.AddConfiguration(new ResourceBuffers.MaxAmountConfig(moduleResource.name, 50));
 
                     _mockInputResource = new ModuleResource
                     {
@@ -89,9 +80,6 @@ namespace FNPlugin.Powermanagement
                     _moduleOutputResource = moduleResource;
                     break;
                 }
-
-                if (maintainsBuffer)
-                    _resourceBuffers.Init(part);
 
                 _efficiencyField = _moduleGenerator.Fields[nameof(ModuleGenerator.efficiency)];
                 _displayStatusField = _moduleGenerator.Fields[nameof(ModuleGenerator.displayStatus)];
@@ -149,9 +137,6 @@ namespace FNPlugin.Powermanagement
 
             double generatorSupply = _outputType == ResourceType.megajoule ? generatorRate :
                 generatorRate / GameConstants.ecPerMJ;
-
-            if (maintainsBuffer)
-                _resourceBuffers.UpdateBuffers();
 
             megaJouleGeneratorPowerSupply = supplyFNResourcePerSecondWithMax(generatorSupply, generatorSupply, ResourceSettings.Config.ElectricPowerInMegawatt);
         }

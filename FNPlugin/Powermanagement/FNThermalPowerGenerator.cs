@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Extensions;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+using KIT.Extensions;
+using KIT.Resources;
+using KIT.Wasteheat;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Flat Thermal Power Generator")]
     class FNFlatThermalPowerGenerator : FNThermalPowerGenerator

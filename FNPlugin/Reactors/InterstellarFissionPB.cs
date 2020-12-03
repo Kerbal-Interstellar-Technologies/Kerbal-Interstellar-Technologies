@@ -1,7 +1,7 @@
-﻿using FNPlugin.Resources;
+﻿using KIT.Resources;
 using System;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("Pebble Bed Fission Reactor")]
     class InterstellarPebbleBedFissionReactor : InterstellarFissionPB {}

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FNPlugin.Constants;
+using KIT.Constants;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
     public static class Vector3dExtension
     {

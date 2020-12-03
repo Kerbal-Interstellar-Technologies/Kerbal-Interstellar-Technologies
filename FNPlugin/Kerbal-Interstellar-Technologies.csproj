@@ -7,8 +7,8 @@
     <ProjectGuid>{AD686AF3-DDDC-4991-909F-EAD9C16C469B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FNPlugin</RootNamespace>
-    <AssemblyName>Interstellar</AssemblyName>
+    <RootNamespace>KIT</RootNamespace>
+    <AssemblyName>KerbalInterstellarTechnologies</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProductVersion>12.0.0</ProductVersion>
@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ENABLE_PROFILER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -142,8 +142,6 @@
     <Compile Include="Propulsion\ExtendedPropellant.cs" />
     <Compile Include="Propulsion\FusionECU2.cs" />
     <Compile Include="Propulsion\ModuleEnginesWarp.cs" />
-    <Compile Include="Depricated\FNModuleRCSFX.cs" />
-    <Compile Include="Depricated\FNRCSSounds.cs" />
     <Compile Include="Reactors\ThermalPowerTransport.cs" />
     <Compile Include="Propulsion\VistaECU2.cs" />
     <Compile Include="Propulsion\DeadalusEngineController.cs" />
@@ -229,11 +227,9 @@
     <Compile Include="Propulsion\ModuleSolarSail.cs" />
     <Compile Include="Refinery\Activity\WaterElectrolyzer.cs" />
     <Compile Include="Wasteheat\FNPassiveThermalDissipation.cs" />
-    <Compile Include="Wasteheat\FNWasteheatBuffer.cs" />
     <Compile Include="Wasteheat\FNWasteheatExplode.cs" />
     <Compile Include="Wasteheat\RadiatorManager.cs" />
     <Compile Include="Wasteheat\RadiatorProperties.cs" />
-    <Compile Include="Wasteheat\WasteHeatBufferConfig.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -247,9 +243,9 @@
     <None Include="License.md" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Redist\Interstellar_Redist.csproj">
+    <ProjectReference Include="..\Redist\Kerbal-Interstellar-Technologies_Redist.csproj">
       <Project>{ebf9a4ec-4f9a-4e80-9bd1-13316309ea69}</Project>
-      <Name>Interstellar_Redist</Name>
+      <Name>Kerbal-Interstellar-Technologies_Redist</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

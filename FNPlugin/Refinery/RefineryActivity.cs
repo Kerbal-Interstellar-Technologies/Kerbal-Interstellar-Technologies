@@ -1,7 +1,7 @@
-﻿using FNPlugin.Constants;
+﻿using KIT.Constants;
 using UnityEngine;
 
-namespace FNPlugin.Refinery
+namespace KIT.Refinery
 {
     internal enum RefineryType { Heating = 1, Cryogenics = 2, Electrolysis = 4, Synthesize = 8,  }
 

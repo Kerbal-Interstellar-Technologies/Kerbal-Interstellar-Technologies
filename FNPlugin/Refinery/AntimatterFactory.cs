@@ -1,9 +1,9 @@
 ﻿using KSP.Localization;
 using System;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
+using KIT.Powermanagement;
+using KIT.Resources;
 
-namespace FNPlugin.Refinery
+namespace KIT.Refinery
 {
     class AntimatterFactory : ResourceSuppliableModule
     {

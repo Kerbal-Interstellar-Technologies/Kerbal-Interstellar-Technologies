@@ -1,10 +1,10 @@
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Resources;
+using KIT.Constants;
+using KIT.Extensions;
+using KIT.Resources;
 using System;
 using System.Collections.Generic;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Reactor Power Generator")]
     class FNPowerGenerator : FNBatteryGenerator

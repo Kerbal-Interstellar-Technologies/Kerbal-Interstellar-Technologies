@@ -1,7 +1,7 @@
 ﻿using System;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("Antimatter Reactor")]
     class FNAntimatterReactor : InterstellarReactor, IFNChargedParticleSource

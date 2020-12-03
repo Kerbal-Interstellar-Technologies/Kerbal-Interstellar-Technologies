@@ -1,12 +1,12 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.External;
-using FNPlugin.Power;
-using FNPlugin.Powermanagement;
-using FNPlugin.Propulsion;
-using FNPlugin.Redist;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.External;
+using KIT.Power;
+using KIT.Powermanagement;
+using KIT.Propulsion;
+using KIT.Redist;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using System.Text;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("#LOC_KSPIE_Reactor_moduleName")]
     class InterstellarReactor : ResourceSuppliableModule, IFNPowerSource, IRescalable<InterstellarReactor>, IPartCostModifier
@@ -402,7 +402,6 @@ namespace FNPlugin.Reactors
         private PartResourceDefinition _tritiumDef;
         private PartResourceDefinition _heliumDef;
         private PartResourceDefinition hydrogenDefinition;
-        private ResourceBuffers _resourceBuffers;
         private FNEmitterController emitterController;
 
         private readonly List<ReactorProduction> reactorProduction = new List<ReactorProduction>();
@@ -1241,13 +1240,6 @@ namespace FNPlugin.Reactors
             string[] resourcesToSupply = { ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt };
             this.resources_to_supply = resourcesToSupply;
 
-            _resourceBuffers = new ResourceBuffers();
-            _resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, wasteHeatBufferMassMult * wasteHeatBufferMult, true));
-            _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ThermalPowerInMegawatt, thermalPowerBufferMult));
-            _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ChargedParticleInMegawatt, chargedPowerBufferMult));
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            _resourceBuffers.Init(part);
-
             _windowId = new System.Random(part.GetInstanceID()).Next(int.MaxValue);
             base.OnStart(state);
 
@@ -1612,7 +1604,6 @@ namespace FNPlugin.Reactors
             if (isFixedUpdatedCalled) return;
 
             isFixedUpdatedCalled = true;
-            UpdateCapacities();
         }
 
         public override void OnFixedUpdate() // OnFixedUpdate is only called when (force) activated
@@ -1659,8 +1650,6 @@ namespace FNPlugin.Reactors
                 stored_fuel_ratio = CheatOptions.InfinitePropellant ? 1 : currentFuelVariant != null ? Math.Min(currentFuelVariant.FuelRatio, 1) : 0;
 
                 LookForAlternativeFuelTypes();
-
-                UpdateCapacities();
 
                 var trueVariant = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult, false).FirstOrDefault();
                 fuel_ratio = CheatOptions.InfinitePropellant ? 1 : trueVariant != null ? Math.Min(trueVariant.FuelRatio, 1) : 0;
@@ -1812,13 +1801,6 @@ namespace FNPlugin.Reactors
             UpdatePlayedSound();
 
             _previousReactorPowerRatio = reactor_power_ratio;
-
-            if (IsEnabled) return;
-
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ThermalPowerInMegawatt, 0);
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ChargedParticleInMegawatt, 0);
-            _resourceBuffers.UpdateBuffers();
         }
 
         private void UpdatePlayedSound()
@@ -2047,14 +2029,6 @@ namespace FNPlugin.Reactors
             _currentGeneratorThermalEnergyRequestRatio = 0;
             _currentGeneratorPlasmaEnergyRequestRatio = 0;
             _currentGeneratorChargedEnergyRequestRatio = 0;
-        }
-
-        private void UpdateCapacities()
-        {
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ThermalPowerInMegawatt, MaximumThermalPower);
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ChargedParticleInMegawatt, MaximumChargedPower);
-            _resourceBuffers.UpdateBuffers();
         }
 
         protected double GetFuelRatio(ReactorFuel reactorFuel, double efficiency, double megajoules)

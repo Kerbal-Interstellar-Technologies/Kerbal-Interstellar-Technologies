@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     public class PowerDistribution
     {

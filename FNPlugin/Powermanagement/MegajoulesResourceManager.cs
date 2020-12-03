@@ -1,11 +1,11 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
+﻿using KIT.Constants;
+using KIT.Extensions;
 using KSP.Localization;
 using System;
-using FNPlugin.Resources;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     internal class MegajoulesResourceManager : ResourceManager
     {

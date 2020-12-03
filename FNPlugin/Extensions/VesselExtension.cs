@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
     public static class VesselExtension
     {

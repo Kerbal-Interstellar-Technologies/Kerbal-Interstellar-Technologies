@@ -1,7 +1,7 @@
 ﻿using System;
-using FNPlugin.Extensions;
+using KIT.Extensions;
 
-namespace FNPlugin.Wasteheat
+namespace KIT.Wasteheat
 {
     class FNPassiveThermalDissipation: PartModule
     {

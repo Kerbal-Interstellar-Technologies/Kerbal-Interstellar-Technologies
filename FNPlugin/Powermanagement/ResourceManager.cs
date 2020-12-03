@@ -1,12 +1,12 @@
-﻿using FNPlugin.Extensions;
-using FNPlugin.Resources;
+﻿using KIT.Extensions;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     public static class ResourceManagerFactory
     {

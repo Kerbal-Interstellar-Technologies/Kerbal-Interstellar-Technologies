@@ -1,6 +1,6 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Resources;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Refinery.Activity
+namespace KIT.Refinery.Activity
 {
     class AtmosphereProcessor : RefineryActivity, IRefineryActivity
     {

@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Refinery
+﻿namespace KIT.Refinery
 {
     interface IRefineryActivity
     {

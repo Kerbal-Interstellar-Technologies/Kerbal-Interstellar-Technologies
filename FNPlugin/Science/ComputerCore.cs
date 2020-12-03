@@ -1,13 +1,13 @@
 using CommNet;
-using FNPlugin.Constants;
-using FNPlugin.Resources;
+using KIT.Constants;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Linq;
 using UnityEngine;
 
 
-namespace FNPlugin
+namespace KIT
 {
     public class AIHome : PartModule
     {

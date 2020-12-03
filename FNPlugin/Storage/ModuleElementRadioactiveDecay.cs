@@ -1,7 +1,7 @@
 ﻿using System;
 using KSP.Localization;
 
-namespace FNPlugin 
+namespace KIT 
 {
     [KSPModule("Radioactive Decay")]
     class ModuleElementRadioactiveDecay : PartModule 

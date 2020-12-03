@@ -1,6 +1,6 @@
 using System;
 
-namespace FNPlugin.Redist
+namespace KIT.Redist
 {
     public enum ElectricGeneratorType { unknown = 0, thermal = 1, charged_particle = 2 };
 

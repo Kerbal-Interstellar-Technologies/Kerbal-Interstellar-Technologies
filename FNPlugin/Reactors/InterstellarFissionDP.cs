@@ -1,6 +1,6 @@
-﻿using FNPlugin.Powermanagement;
+﻿using KIT.Powermanagement;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("Fission Fragment Reactor")]
     class InterstellarFissionDP : InterstellarFissionPB, IFNChargedParticleSource

@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Resources;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     public class FNHabitat : PartModule, IMultipleDragCube
     {

@@ -1,9 +1,9 @@
-﻿using FNPlugin.Power;
+﻿using KIT.Power;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     class AtmosphericIntake : PartModule
     {
@@ -76,7 +76,6 @@ namespace FNPlugin.Resources
 
         PartResourceDefinition _resourceAtmosphereDefinition;
         ModuleResourceIntake _moduleResourceIntake;
-        ResourceBuffers resourceBuffers;
 
         // this property will be accessed by the atmospheric extractor
         public double FinalAir
@@ -124,11 +123,7 @@ namespace FNPlugin.Resources
 
             UpdateResourceIntakeConfiguration();
 
-            if (state == StartState.Editor) return; // don't do any of this stuff in editor
-
-            resourceBuffers = new ResourceBuffers();
-            resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.IntakeAtmosphere, 300, area * unitScalar * 100));
-            resourceBuffers.Init(this.part);
+            // if (state == StartState.Editor) return; // don't do any of this stuff in editor
         }
 
         private void IntakeOpenChanged(BaseField field, object oldFieldValueObj)
@@ -164,18 +159,8 @@ namespace FNPlugin.Resources
             IntakeThatAir(); // collect intake atmosphere for the timeframe
         }
 
-        private void UpdateAtmosphereBuffer()
-        {
-            if (intakeOpen && resourceBuffers != null)
-            {
-                resourceBuffers.UpdateBuffers();
-            }
-        }
-
         public void IntakeThatAir()
         {
-            UpdateAtmosphereBuffer();
-
             // do not return anything when intakes are closed
             if (_moduleResourceIntake != null)
             {

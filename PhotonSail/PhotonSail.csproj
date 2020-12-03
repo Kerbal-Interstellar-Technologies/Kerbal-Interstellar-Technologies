@@ -78,9 +78,9 @@
     <Compile Include="TechnologyHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Redist\Interstellar_Redist.csproj">
+    <ProjectReference Include="..\Redist\Kerbal-Interstellar-Technologies_Redist.csproj">
       <Project>{ebf9a4ec-4f9a-4e80-9bd1-13316309ea69}</Project>
-      <Name>Interstellar_Redist</Name>
+      <Name>Kerbal-Interstellar-Technologies_Redist</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

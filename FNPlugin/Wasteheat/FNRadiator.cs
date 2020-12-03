@@ -1,16 +1,16 @@
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Power;
-using FNPlugin.Powermanagement;
-using FNPlugin.Propulsion;
-using FNPlugin.Resources;
+using KIT.Constants;
+using KIT.Extensions;
+using KIT.Power;
+using KIT.Powermanagement;
+using KIT.Propulsion;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Wasteheat
+namespace KIT.Wasteheat
 {
     [KSPModule("Radiator")]
     class IntegratedRadiator : FNRadiator { }
@@ -741,7 +741,6 @@ namespace FNPlugin.Wasteheat
         [KSPField] public string thermalAnim = "";
         [KSPField] public string originalName = "";
         [KSPField] public float upgradeCost = 100;
-        [KSPField] public bool maintainResourceBuffers = true;
         [KSPField] public float emissiveColorPower = 3;
         [KSPField] public float colorRatioExponent = 1;
         [KSPField] public double wasteHeatMultiplier = 1;
@@ -831,7 +830,6 @@ namespace FNPlugin.Wasteheat
         private ModuleDeployableRadiator _moduleDeployableRadiator;
         private ModuleActiveRadiator _moduleActiveRadiator;
         internal ModuleDeployablePart.DeployState _radiatorState;
-        private ResourceBuffers _resourceBuffers;
 
         private readonly Queue<double> _radTempQueue = new Queue<double>(20);
         private readonly Queue<double> _externalTempQueue = new Queue<double>(20);
@@ -1405,14 +1403,6 @@ namespace FNPlugin.Wasteheat
                 }
             }
 
-            if (maintainResourceBuffers)
-            {
-                _resourceBuffers = new ResourceBuffers();
-                _resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 2.0e+6));
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-                _resourceBuffers.Init(this.part);
-            }
-
             Fields[nameof(dynamicPressureStress)].guiActive = isDeployable;
         }
 
@@ -1576,12 +1566,6 @@ namespace FNPlugin.Wasteheat
 
                 if (!_active)
                     base.OnFixedUpdate();
-
-                if (_resourceBuffers != null)
-                {
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, radiatorIsEnabled ? this.part.mass : this.part.mass * 1e-3);
-                    _resourceBuffers.UpdateBuffers();
-                }
 
                 // get resource bar ratio at start of frame
                 var wasteheatManager = getManagerForVessel(ResourceSettings.Config.WasteHeatInMegawatt) as WasteHeatResourceManager;

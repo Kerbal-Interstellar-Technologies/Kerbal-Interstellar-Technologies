@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace FNPlugin.Wasteheat
+namespace KIT.Wasteheat
 {
 	static public class RadiatorProperties
 	{

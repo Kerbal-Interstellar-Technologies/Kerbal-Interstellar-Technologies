@@ -1,12 +1,12 @@
-﻿using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
+﻿using KIT.Powermanagement;
+using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     enum GenerationType { Mk1 = 0, Mk2 = 1, Mk3 = 2, Mk4 = 3, Mk5 = 4, Mk6 = 5, Mk7 = 6, Mk8 = 7, Mk9 = 8 }
 

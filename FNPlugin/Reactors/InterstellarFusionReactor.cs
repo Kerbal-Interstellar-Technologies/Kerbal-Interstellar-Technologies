@@ -1,10 +1,10 @@
-﻿using FNPlugin.Powermanagement;
+﻿using KIT.Powermanagement;
 using KSP.Localization;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     abstract class InterstellarFusionReactor : InterstellarReactor, IFNChargedParticleSource
     {

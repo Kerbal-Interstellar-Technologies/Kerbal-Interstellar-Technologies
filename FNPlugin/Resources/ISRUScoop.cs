@@ -1,12 +1,12 @@
-﻿using FNPlugin.Extensions;
-using FNPlugin.Powermanagement;
-using FNPlugin.Propulsion;
+﻿using KIT.Extensions;
+using KIT.Powermanagement;
+using KIT.Propulsion;
 using KSP.Localization;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     class ISRUScoop : ResourceSuppliableModule
     {

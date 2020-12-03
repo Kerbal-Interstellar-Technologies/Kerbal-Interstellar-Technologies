@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Propulsion
+﻿namespace KIT.Propulsion
 {
     public class ExtendedPropellant : Propellant
     {

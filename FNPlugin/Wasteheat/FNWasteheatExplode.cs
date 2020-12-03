@@ -1,6 +1,6 @@
-﻿using FNPlugin.Resources;
+﻿using KIT.Resources;
 
-namespace FNPlugin.Wasteheat 
+namespace KIT.Wasteheat 
 {
     class FNWasteheatExplode : PartModule
     {

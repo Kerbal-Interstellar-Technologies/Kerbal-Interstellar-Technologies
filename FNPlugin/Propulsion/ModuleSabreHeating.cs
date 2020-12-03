@@ -1,12 +1,12 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
+﻿using KIT.Constants;
+using KIT.Extensions;
 using KSP.Localization;
 using System;
 using System.Linq;
-using FNPlugin.Resources;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     class ModuleSabreHeating : PartModule
     {
