@@ -250,5 +250,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Collectors\" />
+    <Folder Include="ResourceScheduler\" />
   </ItemGroup>
 </Project>

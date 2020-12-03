@@ -81,6 +81,7 @@
     <Compile Include="Power\Power.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Beamedpower\WaveLengthData.cs" />
+    <Compile Include="ResourceScheduler\Interfaces.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
