@@ -559,14 +559,11 @@ namespace KIT
 
         private void InitializeKerbalismHabitat()
         {
-            bool found = false;
-
             foreach (PartModule module in part.Modules)
             {
                 if (module.moduleName == "Habitat")
                 {
                     habitatModule = module;
-                    found = true;
 
                     habitatVolumeField = module.Fields["volume"];
                     if (habitatVolumeField != null)
@@ -579,11 +576,6 @@ namespace KIT
                     break;
                 }
             }
-
-            //if (found)
-            //    UnityEngine.Debug.Log("[KSPI]: Found Habitat PartModule on " + part.partInfo.title);
-            //else
-            //    UnityEngine.Debug.LogWarning("[KSPI]: No Habitat PartModule found on " + part.partInfo.title);
 
             var foodPartResource = part.Resources["Food"];
             if (foodPartResource != null && food >= 0)
