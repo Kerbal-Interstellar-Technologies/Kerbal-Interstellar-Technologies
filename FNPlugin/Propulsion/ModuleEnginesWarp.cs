@@ -1,10 +1,10 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
+﻿using KIT.Constants;
+using KIT.Extensions;
 using KSP.Localization;
 using System;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     public class ModuleEnginesWarp : ModuleEnginesFX
     {

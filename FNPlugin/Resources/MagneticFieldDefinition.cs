@@ -1,5 +1,5 @@
 ﻿
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     class MagneticFieldDefinition
     {

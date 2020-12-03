@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FNPlugin.Storage
+namespace KIT.Storage
 {
     [KSPModule("Kerbalism Habitat Controller")]
 	class KerbalismHabitatController : PartModule

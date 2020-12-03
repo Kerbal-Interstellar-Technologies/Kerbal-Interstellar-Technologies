@@ -1,12 +1,12 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Resources;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     abstract class ResourceSuppliableModule : PartModule, IResourceSuppliable, IResourceSupplier
     {

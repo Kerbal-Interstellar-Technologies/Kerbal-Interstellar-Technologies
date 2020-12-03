@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Power;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+using KIT.Constants;
+using KIT.Extensions;
+using KIT.Power;
+using KIT.Powermanagement;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using UnityEngine;
 using static System.String;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     [KSPModule("#LOC_KSPIE_AlcubierreDrive_partModuleName")]
     class AlcubierreDrive : ResourceSuppliableModule
@@ -263,7 +263,6 @@ namespace FNPlugin.Propulsion
         private CelestialBody closestCelestrialBody;
         private Vector3d departureVelocity;
         private ModuleReactionWheel moduleReactionWheel;
-        private ResourceBuffers resourceBuffers;
 
         private Texture2D warpWhiteFlash;
         private Texture2D warpRedFlash;
@@ -807,11 +806,6 @@ namespace FNPlugin.Propulsion
             if (!IsNullOrEmpty(AnimationName))
                 animationState = PluginHelper.SetUpAnimation(AnimationName, part);
 
-            resourceBuffers = new ResourceBuffers();
-            resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 2.0e+5, true));
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-            resourceBuffers.Init(part);
-
             try
             {
                 Events[nameof(StartCharging)].active = !IsSlave;
@@ -1166,9 +1160,6 @@ namespace FNPlugin.Propulsion
             powerRequirementForSlowedSubLightSpeed = GetPowerRequirementForWarp(_engineThrottle.First());
             powerRequirementForMaximumAllowedLightSpeed = GetPowerRequirementForWarp(maximumAllowedWarpThrotle);
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(_engineThrottle[selected_factor]);
-
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            resourceBuffers.UpdateBuffers();
         }
 
 

@@ -1,12 +1,12 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Powermanagement;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.Powermanagement;
 using KSP.Localization;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     class RegolithCollector : ResourceSuppliableModule
     {

@@ -1,5 +1,5 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Resources;
+﻿using KIT.Constants;
+using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;

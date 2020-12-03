@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
     public static class ParseTools
     {

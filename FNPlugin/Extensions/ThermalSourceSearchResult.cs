@@ -1,10 +1,10 @@
-﻿using FNPlugin.Redist;
+﻿using KIT.Redist;
 using System;
 using System.Linq;
-using FNPlugin.Powermanagement;
-using FNPlugin.Reactors;
+using KIT.Powermanagement;
+using KIT.Reactors;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
     public class PowerSourceSearchResult
     {

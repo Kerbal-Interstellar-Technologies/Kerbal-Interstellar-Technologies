@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     class ReactorProduction
     {

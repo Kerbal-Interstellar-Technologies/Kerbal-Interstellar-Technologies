@@ -1,6 +1,6 @@
-﻿using FNPlugin.Redist;
+﻿using KIT.Redist;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     public interface IFNPowerSource : IPowerSource
     {

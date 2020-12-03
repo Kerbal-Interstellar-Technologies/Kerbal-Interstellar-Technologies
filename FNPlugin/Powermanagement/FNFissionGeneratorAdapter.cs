@@ -1,11 +1,11 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Power;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Constants;
+using KIT.Power;
+using KIT.Resources;
+using KIT.Wasteheat;
 using System;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Near Future Fission Generator Adapter")]
     class FNFissionGeneratorAdapter : ResourceSuppliableModule
@@ -23,7 +23,6 @@ namespace FNPlugin.Powermanagement
         private BaseField _fieldGenerated;
         private BaseField _fieldEfficiency;
         private BaseField _fieldMax;
-        private ResourceBuffers _resourceBuffers;
 
         private bool active;
 
@@ -46,12 +45,6 @@ namespace FNPlugin.Powermanagement
 
                 resources_to_supply = new string[] { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
                 base.OnStart(state);
-
-                _resourceBuffers = new ResourceBuffers();
-                _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInMegawatt));
-                _resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 2.0e+5, true));
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-                _resourceBuffers.Init(part);
             }
             catch (Exception e)
             {
@@ -104,10 +97,6 @@ namespace FNPlugin.Powermanagement
 
             double megajoulesRate = generatorRate / GameConstants.ecPerMJ;
             double maxMegajoulesRate = generatorMax / GameConstants.ecPerMJ;
-
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, megajoulesRate);
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-            _resourceBuffers.UpdateBuffers();
 
             megaJouleGeneratorPowerSupply = supplyFNResourcePerSecondWithMax(megajoulesRate, maxMegajoulesRate, ResourceSettings.Config.ElectricPowerInMegawatt);
 

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
-    public static class Calculatios
+    public static class Calculations
     {
         public static bool Within (this double number, double max, double min)
         {

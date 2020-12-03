@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Beamedpower
+﻿namespace KIT.Beamedpower
 {
     public interface IBeamedPowerReceiver
     {

@@ -1,11 +1,11 @@
-﻿using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("Nuclear Salt Water Reactor")]
     class InterstellarNSWR : InterstellarFissionMSRGC { }

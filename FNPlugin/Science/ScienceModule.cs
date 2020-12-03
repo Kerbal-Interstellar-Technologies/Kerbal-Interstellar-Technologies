@@ -1,14 +1,14 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Refinery;
+﻿using KIT.Constants;
+using KIT.Refinery;
 using System;
 using System.Linq;
-using FNPlugin.Powermanagement;
-using FNPlugin.Refinery.Activity;
-using FNPlugin.Resources;
+using KIT.Powermanagement;
+using KIT.Refinery.Activity;
+using KIT.Resources;
 using UnityEngine;
 using KSP.Localization;
 
-namespace FNPlugin
+namespace KIT
 {
     class ScienceModule : ResourceSuppliableModule, ITelescopeController, IUpgradeableModule
     {

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 using KSP.UI.Screens.Flight.Dialogs;
 
-namespace FNPlugin
+namespace KIT
 {
 
     class ModuleModableScienceGenerator : ResourceSuppliableModule, IScienceDataContainer

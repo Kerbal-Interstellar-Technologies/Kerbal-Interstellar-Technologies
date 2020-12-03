@@ -1,8 +1,8 @@
-﻿using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
+﻿using KIT.Powermanagement;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     // startup once durring flight
     [KSPAddon(KSPAddon.Startup.Flight, false)]

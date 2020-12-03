@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using FNPlugin.Extensions;
-using FNPlugin.Propulsion;
-using FNPlugin.Resources;
+using KIT.Extensions;
+using KIT.Propulsion;
+using KIT.Resources;
 
-namespace FNPlugin.Wasteheat
+namespace KIT.Wasteheat
 {
 	class RadiatorManager
 	{

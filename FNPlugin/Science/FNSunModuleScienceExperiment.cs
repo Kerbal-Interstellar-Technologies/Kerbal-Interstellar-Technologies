@@ -1,7 +1,7 @@
-﻿using FNPlugin.Resources;
+﻿using KIT.Resources;
 using System.Text;
 
-namespace FNPlugin.Science
+namespace KIT.Science
 {
     [KSPModule("Sun Experiment")]
     class FNSunModuleScienceExperiment : ModuleScienceExperiment

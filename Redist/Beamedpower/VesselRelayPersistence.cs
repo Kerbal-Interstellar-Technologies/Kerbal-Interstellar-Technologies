@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using FNPlugin.Redist;
+using KIT.Redist;
 
-namespace FNPlugin.Beamedpower 
+namespace KIT.Beamedpower 
 {
     public class VesselRelayPersistence : IVesselRelayPersistence 
     {

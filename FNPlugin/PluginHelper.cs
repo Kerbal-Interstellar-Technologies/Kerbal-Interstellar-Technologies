@@ -1,16 +1,16 @@
-﻿using FNPlugin.Beamedpower;
-using FNPlugin.Constants;
-using FNPlugin.Propulsion;
-using FNPlugin.Wasteheat;
+﻿using KIT.Beamedpower;
+using KIT.Constants;
+using KIT.Propulsion;
+using KIT.Wasteheat;
 using KSP.Localization;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class GameEventSubscriber : MonoBehaviour

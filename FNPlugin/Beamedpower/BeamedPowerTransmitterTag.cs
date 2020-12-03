@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     public class MirrorRelaysTransmitterTag : BeamedPowerTransmitterTag { };
 

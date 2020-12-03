@@ -4,7 +4,7 @@ using System.Text;
 using KSP.Localization;
 using PhotonSail;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
 
     [KSPModule("#LOC_PhotonSail_PhotonReflectionModuleName")]//Photon Reflection

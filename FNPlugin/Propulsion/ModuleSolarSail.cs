@@ -1,9 +1,9 @@
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
+using KIT.Constants;
+using KIT.Extensions;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     class ModuleSolarSail : PartModule
     {

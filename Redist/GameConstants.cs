@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Constants 
+﻿namespace KIT.Constants 
 {
     public class GameConstants
     {

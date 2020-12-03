@@ -1,9 +1,9 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Power;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Constants;
+using KIT.Extensions;
+using KIT.Power;
+using KIT.Powermanagement;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     [KSPModule("Thermal Aerospike")]
     class ThermalAerospikeController : ThermalEngineController { }
@@ -216,10 +216,6 @@ namespace FNPlugin.Propulsion
         public bool showPartTemperature = true;
         [KSPField]
         public double baseMaxIsp;
-        [KSPField]
-        public double wasteHeatBufferMassMult = 2.0e+5;
-        [KSPField]
-        public double wasteHeatBufferMult = 1;
         [KSPField]
         public bool allowUseOfThermalPower = true;
         [KSPField]
@@ -531,7 +527,6 @@ namespace FNPlugin.Propulsion
         protected Animation throtleAnimation;
         protected AnimationState[] pulseAnimationState;
         protected AnimationState[] emiAnimationState;
-        protected ResourceBuffers resourceBuffers;
         protected ModuleEnginesWarp timewarpEngine;
         protected ModuleEngines myAttachedEngine;
         protected Guid id = Guid.NewGuid();
@@ -784,11 +779,6 @@ namespace FNPlugin.Propulsion
             if (!string.IsNullOrEmpty(emiAnimationName))
                 emiAnimationState = PluginHelper.SetUpAnimation(emiAnimationName, this.part);
 
-            resourceBuffers = new ResourceBuffers();
-            resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, wasteHeatBufferMassMult * wasteHeatBufferMult, true));
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            resourceBuffers.Init(this.part);
-
             myAttachedEngine = this.part.FindModuleImplementing<ModuleEngines>();
             timewarpEngine = this.part.FindModuleImplementing<ModuleEnginesWarp>();
 
@@ -1011,8 +1001,6 @@ namespace FNPlugin.Propulsion
         // Note: does not seem to be called while in vab mode
         public override void OnUpdate()
         {
-            resourceBuffers.Init(this.part);
-
             // setup propellant after startup to allow InterstellarFuelSwitch to configure the propellant
             if (!_hasSetupPropellant)
             {
@@ -1703,12 +1691,6 @@ namespace FNPlugin.Propulsion
                 maxFuelFlowOnEngine = 1e-10f;
                 myAttachedEngine.maxFuelFlow = maxFuelFlowOnEngine;
                 return;
-            }
-
-            if (_myAttachedReactor.Part != this.part)
-            {
-                resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-                resourceBuffers.UpdateBuffers();
             }
 
             // attach/detach with radius

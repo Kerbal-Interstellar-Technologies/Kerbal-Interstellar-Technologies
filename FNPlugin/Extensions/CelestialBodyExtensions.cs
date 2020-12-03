@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using FNPlugin.Constants;
-using FNPlugin.Resources;
+using KIT.Constants;
+using KIT.Resources;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
     public static class CelestialBodyExtensions
     {

@@ -1,13 +1,13 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Refinery.Activity;
-using FNPlugin.Resources;
+﻿using KIT.Constants;
+using KIT.Refinery.Activity;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Refinery
+namespace KIT.Refinery
 {
     [KSPModule("ISRU Refinery")]
     class InterstellarRefineryController : PartModule

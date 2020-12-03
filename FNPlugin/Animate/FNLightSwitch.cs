@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FNPlugin.Animate
+namespace KIT.Animate
 {
     public class FNLightSwitch : PartModule
     {

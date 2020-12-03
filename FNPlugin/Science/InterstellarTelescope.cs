@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Extensions;
-using FNPlugin.Constants;
-using FNPlugin.Resources;
+using KIT.Extensions;
+using KIT.Constants;
+using KIT.Resources;
 using KSP.Localization;
 
-namespace FNPlugin
+namespace KIT
 {
     class InterstellarTelescope : ModuleModableScienceGenerator
     {

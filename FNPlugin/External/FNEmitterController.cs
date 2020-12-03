@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using FNPlugin.Storage;
+using KIT.Storage;
 using UnityEngine;
 
-namespace FNPlugin.External
+namespace KIT.External
 {
     public class FNEmitterController:  PartModule
     {

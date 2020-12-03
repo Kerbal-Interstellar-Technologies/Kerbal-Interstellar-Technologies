@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     public class ThermalEngineFuel
     {

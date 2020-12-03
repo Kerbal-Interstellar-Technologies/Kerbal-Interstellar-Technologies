@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using UnityEngine;
-using FNPlugin.Extensions;
+using KIT.Extensions;
 
-namespace FNPlugin 
+namespace KIT 
 {
     class DTMagnetometer : PartModule 
     {

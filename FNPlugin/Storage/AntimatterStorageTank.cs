@@ -1,15 +1,15 @@
-using FNPlugin.Constants;
+using KIT.Constants;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FNPlugin.Powermanagement;
-using FNPlugin.Resources;
+using KIT.Powermanagement;
+using KIT.Resources;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     [KSPModule("Antimatter Storage")]
     class AntimatterStorageTank : ResourceSuppliableModule, IPartMassModifier, IRescalable<FNGenerator>, IPartCostModifier

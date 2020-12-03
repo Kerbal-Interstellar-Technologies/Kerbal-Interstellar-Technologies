@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Microwave
+﻿namespace KIT.Microwave
 {
     [KSPModule("#LOC_KSPIE_BeamConfiguration_MouduleName")]//Beamed Power Transmit Configuration
     public class BeamConfiguration : PartModule

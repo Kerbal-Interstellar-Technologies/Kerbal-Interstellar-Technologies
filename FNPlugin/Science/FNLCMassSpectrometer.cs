@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using FNPlugin.Resources;
+using KIT.Resources;
 using KSP.Localization;
 
-namespace FNPlugin 
+namespace KIT 
 {
     class FNLCMassSpectrometer : PartModule 
     {

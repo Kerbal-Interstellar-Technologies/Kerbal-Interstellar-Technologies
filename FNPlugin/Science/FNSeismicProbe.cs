@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using KSP.Localization;
 
-namespace FNPlugin
+namespace KIT
 {
     class FNSeismicProbe : ModuleModableScienceGenerator
     {

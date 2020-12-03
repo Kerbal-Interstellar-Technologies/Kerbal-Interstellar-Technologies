@@ -1,9 +1,9 @@
 ﻿using System;
-using FNPlugin.Power;
-using FNPlugin.Resources;
+using KIT.Power;
+using KIT.Resources;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     [KSPModule("Power Supply")]
     class InterstellarPowerSupply : ResourceSuppliableModule, IPowerSupply
@@ -15,7 +15,6 @@ namespace FNPlugin.Powermanagement
         [KSPField(guiActive = false, guiName = "#LOC_KSPIE_InterstellarPowerSupply_PowerPriority")]//Power Priority
         public int powerPriority = 4;
 
-        protected ResourceBuffers resourceBuffers;
         protected double currentPowerSupply;
 
         public int PowerPriority
@@ -37,11 +36,6 @@ namespace FNPlugin.Powermanagement
             this.resources_to_supply = resources_to_supply;
 
             if (state == StartState.Editor) return;
-
-            resourceBuffers = new ResourceBuffers();
-            resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInMegawatt));
-            resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInKilowatt, 1000));
-            resourceBuffers.Init(this.part);
 
             Debug.Log("[KSPI]: PowerSupply on " + part.name + " was Force Activated");
             this.part.force_activate();
@@ -90,11 +84,6 @@ namespace FNPlugin.Powermanagement
         public override void OnFixedUpdate()
         {
             base.OnFixedUpdate();
-
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, currentPowerSupply);
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, currentPowerSupply);
-            resourceBuffers.UpdateBuffers();
-
             currentPowerSupply = 0;
         }
     }

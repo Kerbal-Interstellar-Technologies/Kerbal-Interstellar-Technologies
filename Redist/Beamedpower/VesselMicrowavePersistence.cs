@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using FNPlugin.Redist;
-using FNPlugin.Extensions;
+using KIT.Redist;
+using KIT.Extensions;
 using UnityEngine;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     public class VesselMicrowavePersistence : IVesselMicrowavePersistence
     {

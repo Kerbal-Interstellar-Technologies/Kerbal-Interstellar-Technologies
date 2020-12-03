@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using FNPlugin.Extensions;
-using FNPlugin.Constants;
+using KIT.Extensions;
+using KIT.Constants;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     public static class InterstellarBeamedPowerHelper
     {

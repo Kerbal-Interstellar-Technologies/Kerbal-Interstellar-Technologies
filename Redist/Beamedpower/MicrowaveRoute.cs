@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Beamedpower
+﻿namespace KIT.Beamedpower
 {
     /// <summary>
     /// Storage class required for relay route calculation

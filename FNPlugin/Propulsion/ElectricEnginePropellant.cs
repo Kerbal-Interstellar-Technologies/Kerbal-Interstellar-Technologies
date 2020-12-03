@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     public enum ElectricEngineType
     {

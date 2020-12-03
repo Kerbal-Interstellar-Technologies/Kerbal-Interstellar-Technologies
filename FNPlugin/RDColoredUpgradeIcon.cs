@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class RDColoredUpgradeIcon : MonoBehaviour

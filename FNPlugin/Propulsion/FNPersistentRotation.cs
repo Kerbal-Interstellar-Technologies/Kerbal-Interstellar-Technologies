@@ -1,6 +1,6 @@
-﻿using FNPlugin.Extensions;
+﻿using KIT.Extensions;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     [KSPModule("Persistent Rotation")]
     class FNPersistentRotation : PartModule

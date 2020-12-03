@@ -1,11 +1,11 @@
-﻿using FNPlugin.Powermanagement;
+﻿using KIT.Powermanagement;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     class CrustalResourceAbundance
     {

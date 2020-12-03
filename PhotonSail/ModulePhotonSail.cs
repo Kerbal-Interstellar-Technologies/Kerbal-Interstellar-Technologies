@@ -1,8 +1,8 @@
-﻿using FNPlugin;
-using FNPlugin.Beamedpower;
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Resources;
+﻿using KIT;
+using KIT.Beamedpower;
+using KIT.Constants;
+using KIT.Extensions;
+using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;

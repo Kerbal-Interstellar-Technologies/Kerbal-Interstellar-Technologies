@@ -1,8 +1,8 @@
-﻿using FNPlugin.Resources;
+﻿using KIT.Resources;
 using KSP.Localization;
 using System;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     [KSPModule("Magnetic Confinement Fusion Engine")]
     class  InterstellarTokamakFusionEngine : InterstellarTokamakFusionReactor {}

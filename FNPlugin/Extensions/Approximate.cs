@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace FNPlugin.Extensions
+namespace KIT.Extensions
 {
 	public static class Approximate
 	{

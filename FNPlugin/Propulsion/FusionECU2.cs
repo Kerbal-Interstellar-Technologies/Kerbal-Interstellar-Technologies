@@ -1,15 +1,15 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.External;
-using FNPlugin.Power;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Constants;
+using KIT.External;
+using KIT.Power;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     abstract class FusionECU2 : EngineECU2
     {
@@ -148,7 +148,6 @@ namespace FNPlugin.Propulsion
         protected double Altitude;
         protected double lastAltitude;
 
-        protected ResourceBuffers resourceBuffers;
         protected FNEmitterController emitterController;
 
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_DisableRadiationSafety", active = true)]//Disable Radiation Safety
@@ -412,11 +411,6 @@ namespace FNPlugin.Propulsion
             powerRequirementMax = PowerRequirementMaximum;
             fusionWasteHeatMax = FusionWasteHeat;
 
-            resourceBuffers = new ResourceBuffers();
-            resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 1.0e+4, true));
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            resourceBuffers.Init(this.part);
-
             if (state != StartState.Editor)
                 part.emissiveConstant = maxTempatureRadiators > 0 ? 1 - coldBathTemp / maxTempatureRadiators : 0.01;
 
@@ -576,9 +570,6 @@ namespace FNPlugin.Propulsion
         {
             temperatureStr = part.temperature.ToString("F0") + "K / " + part.maxTemp.ToString("F0") + "K";
             MinIsp = BaseFloatCurve.Evaluate((float)Altitude);
-
-            resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            resourceBuffers.UpdateBuffers();
 
             if (curEngineT == null || !curEngineT.isEnabled) return;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FNPlugin.Beamedpower
+namespace KIT.Beamedpower
 {
     public class WaveLengthData
     {

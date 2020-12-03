@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Redist
+﻿namespace KIT.Redist
 {
     public interface IElectricPowerGeneratorSource
     {

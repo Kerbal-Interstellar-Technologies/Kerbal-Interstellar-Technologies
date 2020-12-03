@@ -1,20 +1,20 @@
-﻿using FNPlugin.Beamedpower;
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Microwave;
-using FNPlugin.Power;
-using FNPlugin.Propulsion;
-using FNPlugin.Redist;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+﻿using KIT.Beamedpower;
+using KIT.Constants;
+using KIT.Extensions;
+using KIT.Microwave;
+using KIT.Power;
+using KIT.Propulsion;
+using KIT.Redist;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 using UnityEngine;
 
-namespace FNPlugin
+namespace KIT
 {
     [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName1")]//Solar Power Receiver Dish
     class SolarBeamedPowerReceiverDish : SolarBeamedPowerReceiver { } // receives less of a power capacity nerve in NF mode
@@ -409,9 +409,6 @@ namespace FNPlugin
         protected int initializationCountdown;
         protected double powerDownFraction;
         protected PowerStates _powerState;
-
-        protected ResourceBuffers _resourceBuffers;
-
         protected List<IFNEngineNoozle> connectedEngines = new List<IFNEngineNoozle>();
 
         protected Dictionary<Vessel, ReceivedPowerData> received_power = new Dictionary<Vessel, ReceivedPowerData>();
@@ -1151,20 +1148,6 @@ namespace FNPlugin
                         ((BeamedPowerReceiver)result.Source).RegisterAsSlave(this);
                 }
 
-                if (maintainResourceBuffers)
-                {
-                    _resourceBuffers = new ResourceBuffers();
-                    _resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier * wasteHeatModifier, 2.0e+5));
-                    _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ThermalPowerInMegawatt, thermalPowerBufferMult));
-                    _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInMegawatt));
-                    _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInKilowatt, 100.0));
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ThermalPowerInMegawatt, StableMaximumReactorPower);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, StableMaximumReactorPower);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, StableMaximumReactorPower);
-                    _resourceBuffers.Init(part);
-                }
-
                 // look for any transmitter partModule
                 part_transmitter = part.FindModuleImplementing<BeamedPowerTransmitter>();
                 if (part_transmitter != null)
@@ -1209,15 +1192,6 @@ namespace FNPlugin
             {
                 powerDownFraction = 1;
                 _powerState = PowerStates.PowerOnline;
-
-                if (maintainResourceBuffers)
-                {
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ThermalPowerInMegawatt, StableMaximumReactorPower);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, StableMaximumReactorPower);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, StableMaximumReactorPower);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-                    _resourceBuffers.UpdateBuffers();
-                }
             }
             catch (Exception e)
             {
@@ -1234,15 +1208,6 @@ namespace FNPlugin
 
                 if (powerDownFraction <= 0)
                     _powerState = PowerStates.PowerOffline;
-
-                if (maintainResourceBuffers)
-                {
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ThermalPowerInMegawatt, StableMaximumReactorPower * powerDownFraction);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, StableMaximumReactorPower * powerDownFraction);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, StableMaximumReactorPower * powerDownFraction);
-                    _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, part.mass);
-                    _resourceBuffers.UpdateBuffers();
-                }
             }
         }
 

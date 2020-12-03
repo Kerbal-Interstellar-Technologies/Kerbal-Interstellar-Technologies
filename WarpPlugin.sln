@@ -1,17 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarpPlugin", "FNPlugin\WarpPlugin.csproj", "{AD686AF3-DDDC-4991-909F-EAD9C16C469B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kerbal-Interstellar-Technologies", "FNPlugin\Kerbal-Interstellar-Technologies.csproj", "{AD686AF3-DDDC-4991-909F-EAD9C16C469B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6D6D5782-3585-4E07-A0C6-6E9915C9E30F}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		License.md = License.md
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuelSwitch", "FuelSwitch\FuelSwitch.csproj", "{17B33055-25E4-4D97-B5F4-8E67FB657601}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{82CD03B3-8069-4269-9743-6AF888A25A9A}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{82CD03
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interstellar_Redist", "Redist\Interstellar_Redist.csproj", "{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kerbal-Interstellar-Technologies_Redist", "Redist\Kerbal-Interstellar-Technologies_Redist.csproj", "{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotonSail", "PhotonSail\PhotonSail.csproj", "{34403539-F4E1-4D16-A771-DE807067761C}"
 EndProject
@@ -33,10 +31,6 @@ Global
 		{AD686AF3-DDDC-4991-909F-EAD9C16C469B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AD686AF3-DDDC-4991-909F-EAD9C16C469B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD686AF3-DDDC-4991-909F-EAD9C16C469B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17B33055-25E4-4D97-B5F4-8E67FB657601}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17B33055-25E4-4D97-B5F4-8E67FB657601}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17B33055-25E4-4D97-B5F4-8E67FB657601}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17B33055-25E4-4D97-B5F4-8E67FB657601}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -48,6 +42,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCD49810-A7C4-4F9D-B28B-CD13AC6C3B1B}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = FNPlugin\WarpPlugin.csproj

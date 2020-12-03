@@ -1,10 +1,10 @@
-using FNPlugin.Constants;
-using FNPlugin.Extensions;
-using FNPlugin.Power;
-using FNPlugin.Reactors;
-using FNPlugin.Redist;
-using FNPlugin.Resources;
-using FNPlugin.Wasteheat;
+using KIT.Constants;
+using KIT.Extensions;
+using KIT.Power;
+using KIT.Reactors;
+using KIT.Redist;
+using KIT.Resources;
+using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace FNPlugin.Powermanagement
+namespace KIT.Powermanagement
 {
     enum PowerStates { PowerOnline, PowerOffline };
 
@@ -342,7 +342,6 @@ namespace FNPlugin.Powermanagement
         private Animation anim;
         private Queue<double> averageRadiatorTemperatureQueue = new Queue<double>();
 
-        private ResourceBuffers _resourceBuffers;
         private ModuleGenerator stockModuleGenerator;
         private ModuleResource mockInputResource;
         private ModuleResource outputModuleResource;
@@ -492,19 +491,6 @@ namespace FNPlugin.Powermanagement
 
             String[] resources_to_supply = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt };
             this.resources_to_supply = resources_to_supply;
-
-            _resourceBuffers = new ResourceBuffers();
-
-            _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInMegawatt));
-            _resourceBuffers.AddConfiguration(new ResourceBuffers.TimeBasedConfig(ResourceSettings.Config.ElectricPowerInKilowatt, 1000 / powerOutputMultiplier));
-
-            if (controlWasteHeatBuffer)
-            {
-                _resourceBuffers.AddConfiguration(new WasteHeatBufferConfig(wasteHeatMultiplier, 2.0e+5, true));
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-            }
-
-            _resourceBuffers.Init(this.part);
 
             base.OnStart(state);
 
@@ -1319,9 +1305,6 @@ namespace FNPlugin.Powermanagement
             if (!maintainsMegaWattPowerBuffer)
                 return;
 
-            if (controlWasteHeatBuffer)
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-
             if (maxStableMegaWattPower > 0)
             {
                 _powerState = PowerStates.PowerOnline;
@@ -1333,11 +1316,7 @@ namespace FNPlugin.Powermanagement
                 powerBufferBonus = attachedPowerSource.PowerBufferBonus;
 
                 megawattBufferAmount = (minimumBufferSize * 50) + (powerBufferBonus + 1) * stablePowerForBuffer;
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, megawattBufferAmount);
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, megawattBufferAmount);
             }
-
-            _resourceBuffers.UpdateBuffers();
         }
 
         private double CalculateElectricalPowerCurrentlyNeeded()
@@ -1374,13 +1353,6 @@ namespace FNPlugin.Powermanagement
             {
                 megawattBufferAmount = (minimumBufferSize * 50);
             }
-
-            if (controlWasteHeatBuffer)
-                _resourceBuffers.UpdateVariable(ResourceSettings.Config.WasteHeatInMegawatt, this.part.mass);
-
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInMegawatt, megawattBufferAmount);
-            _resourceBuffers.UpdateVariable(ResourceSettings.Config.ElectricPowerInKilowatt, megawattBufferAmount);
-            _resourceBuffers.UpdateBuffers();
         }
 
         public override string GetInfo()

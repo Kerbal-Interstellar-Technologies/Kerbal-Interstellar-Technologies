@@ -1,13 +1,13 @@
-﻿using FNPlugin.Constants;
-using FNPlugin.Redist;
-using FNPlugin.Wasteheat;
+﻿using KIT.Constants;
+using KIT.Redist;
+using KIT.Wasteheat;
 using System;
 using System.Collections.Generic;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement;
 using UnityEngine;
 using KSP.Localization;
 
-namespace FNPlugin 
+namespace KIT 
 {
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
     public class VABThermalUI : MonoBehaviour 

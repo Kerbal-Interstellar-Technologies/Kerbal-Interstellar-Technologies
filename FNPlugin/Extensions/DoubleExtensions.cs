@@ -1,4 +1,4 @@
-﻿namespace FNPlugin.Extensions
+﻿namespace KIT.Extensions
 {
     static class DoubleExtensions
     {

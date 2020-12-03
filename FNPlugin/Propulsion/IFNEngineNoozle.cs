@@ -1,5 +1,5 @@
 ﻿
-namespace FNPlugin.Propulsion
+namespace KIT.Propulsion
 {
     public interface IFNEngineNoozle : IEngineNoozle
     {

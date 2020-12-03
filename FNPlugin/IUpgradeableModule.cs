@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FNPlugin 
+namespace KIT 
 {
     public interface IUpgradeableModule 
     {

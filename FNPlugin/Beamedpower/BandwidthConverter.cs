@@ -1,6 +1,6 @@
 ﻿using KSP.Localization;
 
-namespace FNPlugin.Microwave
+namespace KIT.Microwave
 {
     [KSPModule("Rectenna Bandwidth Converter")]//#LOC_KSPIE_RectennaBandwidthConverter
     class RectennaConverter : BandwidthConverter {}

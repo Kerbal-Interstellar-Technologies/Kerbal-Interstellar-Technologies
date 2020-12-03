@@ -1,8 +1,8 @@
 ﻿using System;
-using FNPlugin.Constants;
+using KIT.Constants;
 using UnityEngine;
 
-namespace FNPlugin.Resources
+namespace KIT.Resources
 {
     public class AtmosphericFloatCurves
     {

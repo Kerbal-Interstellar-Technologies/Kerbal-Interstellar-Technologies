@@ -1,8 +1,8 @@
-﻿using FNPlugin.Extensions;
+﻿using KIT.Extensions;
 using System;
 using UnityEngine;
 
-namespace FNPlugin.Reactors
+namespace KIT.Reactors
 {
     class ReactorFuel
     {
