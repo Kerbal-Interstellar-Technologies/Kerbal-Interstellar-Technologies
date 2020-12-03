@@ -83,6 +83,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Beamedpower\WaveLengthData.cs" />
     <Compile Include="ResourceScheduler\Interface.cs" />
+    <Compile Include="ResourceScheduler\VesselEvents.cs" />
+    <Compile Include="ResourceScheduler\VesselModule.cs" />
+    <Compile Include="Resources\DecayConfiguration.cs" />
+    <Compile Include="Resources\KITCryostat.cs" />
     <Compile Include="ResourceScheduler\ResourceManager.cs" />
     <Compile Include="Resources\Identifiers.cs" />
   </ItemGroup>
