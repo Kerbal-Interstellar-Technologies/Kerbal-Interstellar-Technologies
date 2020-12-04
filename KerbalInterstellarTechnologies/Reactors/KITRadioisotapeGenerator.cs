@@ -10,14 +10,20 @@ namespace KIT.Reactors
 {
     public class KITRadioisotopeGenerator : PartModule, IKITMod
     {
-        [KSPField(isPersistant = true)] public double upgradeMultiplier = 1;
-        [KSPField(isPersistant = true)] public double powerMultiplier = 0.006; // (8 / 0.75); // 8kg of Pu238 gives 0.75W output
-        [KSPField(isPersistant = true)]
-        public double halfLife = (
-            GameSettings.KERBIN_TIME ?
-                87.7 * 426 * 6 * 60 * 60 :
-                87.7 * 365 * 24 * 60 * 60
-        );
+        public const string GROUP_DISPLAY_NAME = "Radioisotope Generator";
+        public const string GROUP_NAME = "KITRadioisotopeGenerator";
+
+        [KSPField(isPersistant = true)] public double peltierEfficency;
+        [KSPField(isPersistant = true)] public double energyGenerated;
+
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " EC/s")] public double currentPowerOutput;
+
+        private int rtg_resource_index = -1;
+        public override void OnAwake()
+        {
+            base.OnAwake();
+
+        }
 
         /*
          * Per AntaresMC, The typical RTG has a mass ratio of about 1.1 and a peltier of about 10% efficiency.
@@ -40,17 +46,53 @@ namespace KIT.Reactors
          * and halves in about 5 months
          */
 
-        public void KITFixedUpdate(IResourceManager resMan)
+        /*
+         * To summarize the above,
+         *   - Actinides - 1W / kg / forever
+         *   - FissionProducts - 250W / kg / 30 years
+         *   - Plutonium-238 - 500W / kg / 90 years
+         *   - Tritium - 36kW / kg / 12 years
+         *   
+         * FissionProducts seems worse than Plutonium-238 
+         */
+
+        private void FindResourceIndex()
         {
-            var power = part.Resources[0].amount * powerMultiplier * upgradeMultiplier;
-            resMan.ProduceResource(ResourceName.ElectricCharge, power);
+            for (rtg_resource_index = 0; rtg_resource_index < part.Resources.Count; rtg_resource_index++)
+            {
+                if (part.Resources[rtg_resource_index].resourceName == "WasteHeat") continue;
+                break;
+            }
+            if (rtg_resource_index == part.Resources.Count)
+            {
+                rtg_resource_index = -1;
+                return;
+            }
         }
 
-        public string KITPartName() => "Radioisotope Generator";
+        public void Update()
+        {
+            if (rtg_resource_index == -1 || part.Resources[rtg_resource_index].resourceName == "WasteHeat") FindResourceIndex();
+            if (rtg_resource_index == -1) return;
+
+            currentPowerOutput = part.Resources[rtg_resource_index].amount * energyGenerated * peltierEfficency;
+        }
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (rtg_resource_index == -1) return;
+            var totalHeat = part.Resources[rtg_resource_index].amount * energyGenerated;
+            var energyExtracted = totalHeat * peltierEfficency;
+
+            resMan.ProduceResource(ResourceName.ElectricCharge, energyExtracted);
+            resMan.ProduceResource(ResourceName.WasteHeat, totalHeat - energyExtracted);
+        }
+
+        public string KITPartName() => "#LOC_KIT_RTG_PartName";
 
         public override string GetInfo()
         {
-            return "";
+            return "#LOC_KIT_RTG_GetInfo";
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
