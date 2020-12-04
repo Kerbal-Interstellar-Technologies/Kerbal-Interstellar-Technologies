@@ -24,15 +24,24 @@ namespace KIT.ResourceScheduler
 
         public bool UseThisToHelpWithTesting;
 
+
         public ResourceManager(IVesselResources vesselResources, ICheatOptions cheatOptions)
         {
             this.vesselResources = vesselResources;
             this.myCheatOptions = cheatOptions;
+
+            resourceFlow = new List<KeyValuePair<IKITMod, double>>[(int)ResourceName.EndResource];
+            for (int i = 0; i < (int) ResourceName.EndResource; i++)
+            {
+                resourceFlow[i] = new List<KeyValuePair<IKITMod, double>>(64);
+            }
         }
 
         #region IResourceManager implementation
         ICheatOptions IResourceManager.CheatOptions() => myCheatOptions;
         private bool inExecuteKITModules;
+
+        public List<KeyValuePair<IKITMod, double>>[] resourceFlow;
 
         /// <summary>
         /// Called by the IKITMod to consume resources present on a vessel. It automatically converts the wanted amount by the appropriate value to
@@ -50,7 +59,11 @@ namespace KIT.ResourceScheduler
                 Debug.Log("[KITResourceManager.ConsumeResource] don't do this.");
                 return 0;
             }
-            if (myCheatOptions.InfiniteElectricity && resource == ResourceName.ElectricCharge) return wanted;
+            if (myCheatOptions.InfiniteElectricity && resource == ResourceName.ElectricCharge)
+            {
+                resourceFlow[(int)ResourceName.ElectricCharge].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
+                return wanted;
+            }
 
             if (currentResources.ContainsKey(resource) == false)
             {
@@ -63,7 +76,11 @@ namespace KIT.ResourceScheduler
             var tmp = Math.Min(currentResources[resource], modifiedAmount);
             obtainedAmount += tmp;
             currentResources[resource] -= tmp;
-            if (obtainedAmount >= modifiedAmount) return wanted;
+            if (obtainedAmount >= modifiedAmount)
+            {
+                resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
+                return wanted;
+            }
 
             // XXX - todo. At this stage, we might want to try requesting more than we need to refill the resources on hand.
             // Some % of total capacity or something like that? Might reduce some future calls
@@ -75,9 +92,9 @@ namespace KIT.ResourceScheduler
             //return obtainedAmount;
 
             // is it close enough to being fully requested? (accounting for precision issues)
-            if (modifiedAmount * fudgeFactor <= obtainedAmount) return wanted;
-
-            return wanted * (obtainedAmount / modifiedAmount);
+            var result = (modifiedAmount * fudgeFactor <= obtainedAmount) ? wanted : wanted * (obtainedAmount / modifiedAmount);
+            resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -result));
+            return result;
         }
 
         double IResourceManager.FixedDeltaTime() => fixedDeltaTime;
@@ -104,6 +121,8 @@ namespace KIT.ResourceScheduler
                 Debug.Log("[KITResourceManager.ProduceResource] don't do this.");
                 return;
             }
+
+            resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), amount));
 
             if (resource == ResourceName.WasteHeat && myCheatOptions.IgnoreMaxTemperature) return;
 
