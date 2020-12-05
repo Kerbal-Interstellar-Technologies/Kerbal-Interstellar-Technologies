@@ -1,6 +1,5 @@
 using KIT.Constants;
 using KIT.Extensions;
-using KIT.Power;
 using KIT.Reactors;
 using KIT.Redist;
 using KIT.Resources;
@@ -38,291 +37,150 @@ namespace KIT.Powermanagement
         public const string GROUP_TITLE = "#LOC_KSPIE_Generator_groupName";
 
         // Persistent
-        [KSPField(isPersistant = true)]
-        public bool IsEnabled = true;
-        [KSPField(isPersistant = true)]
-        public bool generatorInit = false;
-        [KSPField(isPersistant = true)]
-        public bool isupgraded = false;
-        [KSPField(isPersistant = true)]
-        public bool chargedParticleMode = false;
-        [KSPField(isPersistant = true)]
-        public double storedMassMultiplier;
+        [KSPField(isPersistant = true)] public bool IsEnabled = true;
+        [KSPField(isPersistant = true)] public bool generatorInit;
+        [KSPField(isPersistant = true)] public bool isupgraded;
+        [KSPField(isPersistant = true)] public bool chargedParticleMode = false;
+        [KSPField(isPersistant = true)] public double storedMassMultiplier;
+        [KSPField(isPersistant = true)] public double maximumElectricPower;
+
+        // Settings
+        [KSPField] public float powerCapacityMaxValue = 100;
+        [KSPField] public float powerCapacityMinValue = 0.5f;
+        [KSPField] public float powerCapacityStepIncrement = 0.5f;
+        [KSPField] public bool isHighPower = false;
+        [KSPField] public bool isMHD = false;
+        [KSPField] public bool isLimitedByMinThrotle = false;
+        [KSPField] public double powerOutputMultiplier = 1;
+        [KSPField] public double hotColdBathRatio;
+        [KSPField] public bool calculatedMass = false;
+
+        [KSPField] public double efficiencyMk1;
+        [KSPField] public double efficiencyMk2;
+        [KSPField] public double efficiencyMk3;
+        [KSPField] public double efficiencyMk4;
+        [KSPField] public double efficiencyMk5;
+        [KSPField] public double efficiencyMk6;
+        [KSPField] public double efficiencyMk7;
+        [KSPField] public double efficiencyMk8;
+        [KSPField] public double efficiencyMk9;
+
+        [KSPField] public string Mk2TechReq = "";
+        [KSPField] public string Mk3TechReq = "";
+        [KSPField] public string Mk4TechReq = "";
+        [KSPField] public string Mk5TechReq = "";
+        [KSPField] public string Mk6TechReq = "";
+        [KSPField] public string Mk7TechReq = "";
+        [KSPField] public string Mk8TechReq = "";
+        [KSPField] public string Mk9TechReq = "";
+
+        [KSPField] public string animName = "";
+        [KSPField] public string upgradeTechReq = "";
+        [KSPField] public float upgradeCost = 1;
+        [KSPField] public double wasteHeatMultiplier = 1;
+        [KSPField] public bool maintainsMegaWattPowerBuffer = true;
+        [KSPField] public bool fullPowerBuffer = false;
+        [KSPField] public bool showSpecialisedUI = true;
+        [KSPField] public bool showDetailedInfo = true;
+        [KSPField] public bool controlWasteHeatBuffer = true;
+        [KSPField] public double rawPowerToMassDivider = 1000;
+        [KSPField] public double massModifier = 1;
+        [KSPField] public double rawMaximumPower;
+        [KSPField] public double coreTemperateHotBathExponent = 0.7;
+        [KSPField] public double capacityToMassExponent = 0.7;
+        [KSPField] public double targetMass;
+        [KSPField] public double initialMass;
+        [KSPField] public double megajouleBarRatio;
+        [KSPField] public double megajoulePecentage;
+        [KSPField] public double rawThermalPower;
+        [KSPField] public double rawChargedPower;
+        [KSPField] public double rawReactorPower;
+        [KSPField] public double maxThermalPower;
+        [KSPField] public double powerRatio;
+        [KSPField] public double effectiveMaximumThermalPower;
+        [KSPField] public double maxChargedPowerForThermalGenerator;
+        [KSPField] public double maxChargedPowerForChargedGenerator;
+        [KSPField] public double maxAllowedChargedPower;
+        [KSPField] public double maxReactorPower;
+        [KSPField] public double potentialThermalPower;
+        [KSPField] public double attachedPowerSourceRatio;
+        [KSPField] public string upgradeCostStr = "";
+        [KSPField] public double coldBathTemp = 500;
+
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_powerCapacity"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
         public float powerCapacity = 100;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Generator_powerControl"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
         public float powerPercentage = 100;
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxGeneratorEfficiency", guiFormat = "P1")]
         public double maxEfficiency;
-
-        [KSPField]
-        public float powerCapacityMaxValue = 100;
-        [KSPField]
-        public float powerCapacityMinValue = 0.5f;
-        [KSPField]
-        public float powerCapacityStepIncrement = 0.5f;
-
-        // Settings
-        [KSPField]
-        public bool isHighPower = false;
-        [KSPField]
-        public bool isMHD = false;
-        [KSPField]
-        public bool isLimitedByMinThrotle = false;
-        [KSPField]
-        public double powerOutputMultiplier = 1;
-        [KSPField]
-        public double hotColdBathRatio;
-        [KSPField]
-        public bool calculatedMass = false;
-        [KSPField]
-        public string upgradedName = "";
-        [KSPField]
-        public string originalName = "";
-        [KSPField]
-        public double pCarnotEff = 0.32;
-        [KSPField]
-        public double upgradedpCarnotEff = 0.64;
-        [KSPField]
-        public double directConversionEff = 0.6;
-        [KSPField]
-        public double upgradedDirectConversionEff = 0.865;
-
-        [KSPField]
-        public double efficiencyMk1 = 0;
-        [KSPField]
-        public double efficiencyMk2 = 0;
-        [KSPField]
-        public double efficiencyMk3 = 0;
-        [KSPField]
-        public double efficiencyMk4 = 0;
-        [KSPField]
-        public double efficiencyMk5 = 0;
-        [KSPField]
-        public double efficiencyMk6 = 0;
-        [KSPField]
-        public double efficiencyMk7 = 0;
-        [KSPField]
-        public double efficiencyMk8 = 0;
-        [KSPField]
-        public double efficiencyMk9 = 0;
-
-        [KSPField]
-        public string Mk2TechReq = "";
-        [KSPField]
-        public string Mk3TechReq = "";
-        [KSPField]
-        public string Mk4TechReq = "";
-        [KSPField]
-        public string Mk5TechReq = "";
-        [KSPField]
-        public string Mk6TechReq = "";
-        [KSPField]
-        public string Mk7TechReq = "";
-        [KSPField]
-        public string Mk8TechReq = "";
-        [KSPField]
-        public string Mk9TechReq = "";
-
-
-
-        [KSPField]
-        public string animName = "";
-        [KSPField]
-        public string upgradeTechReq = "";
-        [KSPField]
-        public float upgradeCost = 1;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_Generator_radius", guiUnits = " m")]
         public double radius = 2.5;
-        [KSPField]
-        public string altUpgradedName = "";
-        [KSPField]
-        public double wasteHeatMultiplier = 1;
-        [KSPField]
-        public bool maintainsMegaWattPowerBuffer = true;
-        [KSPField]
-        public bool fullPowerBuffer = false;
-        [KSPField]
-        public bool showSpecialisedUI = true;
-        [KSPField]
-        public bool showDetailedInfo = true;
-
-        [KSPField]
-        public bool controlWasteHeatBuffer = true;
-
-        /// <summary>
-        /// MW Power to part mass divider, need to be lower for SETI/NFE mode
-        /// </summary>
-        [KSPField]
-        public double rawPowerToMassDivider = 1000;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_Generator_maxUsageRatio")]
         public double powerUsageEfficiency;
-        [KSPField]
-        public double massModifier = 1;
-        [KSPField]
-        public double rawMaximumPower;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxTheoreticalPower", guiFormat = "F2")]
         public string maximumTheoreticalPower;
-        [KSPField]
-        public double coreTemperateHotBathExponent = 0.7;
-        [KSPField]
-        public double capacityToMassExponent = 0.7;
-
-        // Debugging
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_partMass", guiUnits = " t", guiFormat = "F3")]
         public float partMass;
-        [KSPField]
-        public double targetMass;
-        [KSPField]
-        public double initialMass;
-        [KSPField]
-        public double megajouleBarRatio;
-        [KSPField]
-        public double megajoulePecentage;
-
-        // GUI
-        [KSPField]
-        public double rawThermalPower;
-        [KSPField]
-        public double rawChargedPower;
-        [KSPField]
-        public double rawReactorPower;
-        [KSPField]
-        public double maxThermalPower;
-        [KSPField]
-        public double powerRatio;
-        [KSPField]
-        public double effectiveMaximumThermalPower;
-        [KSPField]
-        public double maxChargedPowerForThermalGenerator;
-        [KSPField]
-        public double maxChargedPowerForChargedGenerator;
-        [KSPField]
-        public double maxAllowedChargedPower;
-        [KSPField]
-        public double maxReactorPower;
-        [KSPField]
-        public double potentialThermalPower;
-        [KSPField]
-        public double attachedPowerSourceRatio;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_currentElectricPower", guiUnits = " MW_e", guiFormat = "F2")]
         public string OutputPower;
-
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_MaximumElectricPower")]//Maximum Electric Power
         public string MaxPowerStr;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Generator_ElectricEfficiency")]//Electric Efficiency
         public string overallEfficiencyStr;
-        [KSPField]
-        public string upgradeCostStr = "";
-        [KSPField]
-        public double coldBathTemp = 500;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_coldBathTemp", guiUnits = " K", guiFormat = "F0")]
         public double coldBathTempDisplay = 500;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_hotBathTemp", guiUnits = " K", guiFormat = "F0")]
         public double hotBathTemp = 300;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_electricPowerNeeded", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
         public double electrical_power_currently_needed;
-
-        // Debug
-        [KSPField(isPersistant = true)]
-        public double maximumElectricPower;
-        [KSPField]
-        public double stableMaximumReactorPower;
-        [KSPField]
-        public double megawattBufferAmount;
-        [KSPField]
-        public double heat_exchanger_thrust_divisor;
-        [KSPField]
-        public double requested_power_per_second;
-        [KSPField]
-        public double received_power_per_second;
-        [KSPField]
-        public double post_received_power_per_second;
-
-        [KSPField]
-        public double spareResourceCapacity;
-        [KSPField]
-        public double possibleSpareResourceCapacityFilling;
-        [KSPField]
-        public double currentUnfilledResourceDemand;
-        [KSPField]
-        public double effectiveInputPowerPerSecond;
-        [KSPField]
-        public double postEffectiveInputPowerPerSecond;
-        [KSPField]
-        public double powerBufferBonus;
-        [KSPField]
-        public double minimumBufferSize = 0;
-        [KSPField]
-        public double stablePowerForBuffer;
-        [KSPField]
-        public double maxStableMegaWattPower;
-        [KSPField]
-        public bool applies_balance;
-        [KSPField]
-        public double effectiveThermalPowerNeededForElectricity;
-        [KSPField]
-        public double thermalPowerRequested;
-        [KSPField]
-        public double reactorPowerRequested;
-        [KSPField]
-        public double attachedPowerSourceMaximumThermalPowerUsageRatio;
-
-        [KSPField]
-        public double initialThermalPowerReceived;
-        [KSPField]
-        public double initialChargedPowerReceived;
-
-        [KSPField]
-        public double thermalPowerReceived;
-        [KSPField]
-        public double chargedPowerReceived;
-        [KSPField]
-        public double totalPowerReceived;
-        [KSPField]
-        public double overheatingModifier;
-        [KSPField]
-        public double requestedChargedPower;
-        [KSPField]
-        public double requestedThermalPower;
-
-        [KSPField]
-        public double finalRequest;
-
-        [KSPField]
-        public double requestedPostChargedPower;
-        [KSPField]
-        public double requestedPostThermalPower;
-        [KSPField]
-        public double requestedPostReactorPower;
-
-        [KSPField]
-        public double postThermalPowerReceived;
-        [KSPField]
-        public double postChargedPowerReceived;
-        [KSPField]
-        public double thermalPowerRequestRatio;
-
-        [KSPField]
-        public double effectiveMaxThermalPowerRatio;
-        [KSPField]
-        public double electricdtps;
-        [KSPField]
-        public double maxElectricdtps;
-        [KSPField]
-        public bool shouldUseChargedPower;
-        [KSPField]
-        public double _totalEff;
-        [KSPField]
-        public double capacityRatio;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_Generator_InitialGeneratorPowerEC", guiUnits = " kW")]//Offscreen Power Generation
         public double initialGeneratorPowerEC;
-        [KSPField]
-        public double maximumGeneratorPowerMJ;
-        [KSPField]
-        public double currentPowerForGeneratorMJ;
-        [KSPField]
-        public double maximumGeneratorPowerEC;
+
+        // Debug
+        [KSPField] public double stableMaximumReactorPower;
+        [KSPField] public double megawattBufferAmount;
+        [KSPField] public double heat_exchanger_thrust_divisor;
+        [KSPField] public double requested_power_per_second;
+        [KSPField] public double received_power_per_second;
+        [KSPField] public double post_received_power_per_second;
+        [KSPField] public double spareResourceCapacity;
+        [KSPField] public double possibleSpareResourceCapacityFilling;
+        [KSPField] public double currentUnfilledResourceDemand;
+        [KSPField] public double effectiveInputPowerPerSecond;
+        [KSPField] public double postEffectiveInputPowerPerSecond;
+        [KSPField] public double powerBufferBonus;
+        [KSPField] public double minimumBufferSize = 0;
+        [KSPField] public double stablePowerForBuffer;
+        [KSPField] public double maxStableMegaWattPower;
+        [KSPField] public bool applies_balance;
+        [KSPField] public double effectiveThermalPowerNeededForElectricity;
+        [KSPField] public double thermalPowerRequested;
+        [KSPField] public double reactorPowerRequested;
+        [KSPField] public double attachedPowerSourceMaximumThermalPowerUsageRatio;
+        [KSPField] public double initialThermalPowerReceived;
+        [KSPField] public double initialChargedPowerReceived;
+        [KSPField] public double thermalPowerReceived;
+        [KSPField] public double chargedPowerReceived;
+        [KSPField] public double totalPowerReceived;
+        [KSPField] public double overheatingModifier;
+        [KSPField] public double requestedChargedPower;
+        [KSPField] public double requestedThermalPower;
+        [KSPField] public double finalRequest;
+        [KSPField] public double requestedPostChargedPower;
+        [KSPField] public double requestedPostThermalPower;
+        [KSPField] public double requestedPostReactorPower;
+        [KSPField] public double postThermalPowerReceived;
+        [KSPField] public double postChargedPowerReceived;
+        [KSPField] public double thermalPowerRequestRatio;
+        [KSPField] public double effectiveMaxThermalPowerRatio;
+        [KSPField] public double electricdtps;
+        [KSPField] public double maxElectricdtps;
+        [KSPField] public bool shouldUseChargedPower;
+        [KSPField] public double _totalEff;
+        [KSPField] public double capacityRatio;
+        [KSPField] public double maximumGeneratorPowerMJ;
+        [KSPField] public double currentPowerForGeneratorMJ;
+        [KSPField] public double maximumGeneratorPowerEC;
 
         // Internal
         protected double outputPower;
@@ -330,7 +188,7 @@ namespace KIT.Powermanagement
 
         protected bool play_down = true;
         protected bool play_up = true;
-        protected bool hasrequiredupgrade = false;
+        protected bool hasrequiredupgrade;
 
         protected int partDistance;
         protected int shutdown_counter = 0;
@@ -624,9 +482,10 @@ namespace KIT.Powermanagement
                     maximumGeneratorPowerEC = outputModuleResource.rate;
                     maximumGeneratorPowerMJ = maximumGeneratorPowerEC / GameConstants.ecPerMJ;
 
-                    mockInputResource = new ModuleResource();
-                    mockInputResource.name = outputModuleResource.name;
-                    mockInputResource.id = outputModuleResource.name.GetHashCode();
+                    mockInputResource = new ModuleResource
+                    {
+                        name = outputModuleResource.name, id = outputModuleResource.name.GetHashCode()
+                    };
 
                     stockModuleGenerator.resHandler.inputResources.Add(mockInputResource);
                 }
@@ -635,16 +494,10 @@ namespace KIT.Powermanagement
 
         private void InitializeEfficiency()
         {
-            if (chargedParticleMode && efficiencyMk1 == 0)
-                efficiencyMk1 = directConversionEff;
-            else if (!chargedParticleMode && efficiencyMk1 == 0)
-                efficiencyMk1 = pCarnotEff;
-
-            if (chargedParticleMode && efficiencyMk2 == 0)
-                efficiencyMk2 = upgradedDirectConversionEff;
-            else if (!chargedParticleMode && efficiencyMk2 == 0)
-                efficiencyMk2 = upgradedpCarnotEff;
-
+            if (efficiencyMk1 == 0)
+                efficiencyMk1 = 0.1;
+            if (efficiencyMk2 == 0)
+                efficiencyMk2 = efficiencyMk1;
             if (efficiencyMk3 == 0)
                 efficiencyMk3 = efficiencyMk2;
             if (efficiencyMk4 == 0)
@@ -660,7 +513,7 @@ namespace KIT.Powermanagement
             if (efficiencyMk9 == 0)
                 efficiencyMk9 = efficiencyMk8;
 
-            if (String.IsNullOrEmpty(Mk2TechReq))
+            if (string.IsNullOrEmpty(Mk2TechReq))
                 Mk2TechReq = upgradeTechReq;
 
             int techLevel = 1;
@@ -702,7 +555,7 @@ namespace KIT.Powermanagement
         }
 
         /// <summary>
-        /// Finds the nearest avialable thermalsource and update effective part mass
+        /// Finds the nearest available thermal source and update effective part mass
         /// </summary>
         public void FindAndAttachToPowerSource()
         {
@@ -734,7 +587,7 @@ namespace KIT.Powermanagement
             }
 
             Debug.Log("[KSPI]: generator is currently connected to " + part.attachNodes.Count + " parts");
-            // otherwise look for other non selfcontained thermal sources that is not already connected
+            // otherwise look for other non self contained thermal sources that is not already connected
 
             var searchResult = chargedParticleMode
                 ? FindChargedParticleSource()
@@ -757,7 +610,7 @@ namespace KIT.Powermanagement
                 return;
             }
 
-            // update attached thermalsource
+            // update attached thermal source
             attachedPowerSource = searchResult.Source;
 
             Debug.Log("[KSPI]: succesfully connected to " + attachedPowerSource.Part.partInfo.title);
@@ -960,7 +813,11 @@ namespace KIT.Powermanagement
                             ? attachedPowerSource.PlasmaEnergyEfficiency
                             : attachedPowerSource.ThermalEnergyEfficiency;
 
-                stableMaximumReactorPower = isLimitedByMinThrotle ? attachedPowerSource.MinimumPower : attachedPowerSource.StableMaximumReactorPower;
+                stableMaximumReactorPower = isLimitedByMinThrotle
+                    ? attachedPowerSource.MinimumPower
+                    : HighLogic.LoadedSceneIsEditor
+                        ? attachedPowerSource.MaximumPower
+                        : attachedPowerSource.StableMaximumReactorPower;
 
                 return stableMaximumReactorPower * attachedPowerSource.PowerRatio * maxPowerUsageRatio * maxEfficiency * CapacityRatio;
             }

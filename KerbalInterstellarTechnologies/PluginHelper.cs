@@ -17,12 +17,6 @@ namespace KIT
     {
         void Start()
         {
-            //GameEvents.onVesselGoOffRails.Add(OnVesselGoOffRails);
-            //GameEvents.onVesselGoOnRails.Add(OnVesselGoOnRails);
-            //GameEvents.onSetSpeedMode.Add(OnSetSpeedModeChange);
-            //GameEvents.onVesselLoaded.Add(OnVesselLoaded);
-            //GameEvents.OnTechnologyResearched.Add(OnTechnologyResearched);
-
             BeamedPowerSources.getVesselMicrowavePersistanceForProtoVesselCallback = BeamedPowerTransmitter.getVesselMicrowavePersistanceForProtoVessel;
             BeamedPowerSources.getVesselRelayPersistanceForProtoVesselCallback = BeamedPowerTransmitter.getVesselRelayPersistanceForProtoVessel;
             BeamedPowerSources.getVesselMicrowavePersistanceForVesselCallback = BeamedPowerTransmitter.getVesselMicrowavePersistanceForVessel;
@@ -167,8 +161,8 @@ namespace KIT
     {
         public const string WARP_PLUGIN_SETTINGS_FILEPATH = "WarpPlugin/WarpPluginSettings/WarpPluginSettings";
 
-        public static bool using_toolbar = false;
-        protected static bool resources_configured = false;
+        public static bool usingToolbar;
+        protected static bool resourcesConfigured;
 
         private static Dictionary<string, RDTech> rdTechByName;
 
@@ -696,9 +690,6 @@ namespace KIT
 
         public ApplicationLauncherButton InitializeApplicationButton()
         {
-            VABThermalUI.render_window = false;
-            using_toolbar = true;
-
             appIcon = GameDatabase.Instance.GetTexture("WarpPlugin/Category/WarpPlugin", false);
 
             if (appIcon == null) return null;
@@ -725,13 +716,13 @@ namespace KIT
             {
                 FlightUIStarter.hide_button = false;
                 FlightUIStarter.show_window = true;
-                VABThermalUI.render_window = false;
+                VABThermalUI.renderWindow = false;
             }
             else
             {
                 FlightUIStarter.hide_button = false;
                 FlightUIStarter.show_window = false;
-                VABThermalUI.render_window = true;
+                VABThermalUI.renderWindow = true;
             }
         }
 
@@ -739,7 +730,7 @@ namespace KIT
         {
             FlightUIStarter.hide_button = true;
             FlightUIStarter.show_window = false;
-            VABThermalUI.render_window = false;
+            VABThermalUI.renderWindow = false;
         }
 
         static int _ignoredGForces;
@@ -770,7 +761,7 @@ namespace KIT
 
             this.enabled = true;
 
-            if (resources_configured) return;
+            if (resourcesConfigured) return;
 
             // read WarpPluginSettings.cfg
             var pluginSettings = GameDatabase.Instance.GetConfigNode(WARP_PLUGIN_SETTINGS_FILEPATH);
@@ -1014,7 +1005,7 @@ namespace KIT
                 Debug.Log("[KSPI]: RadiatorAreaMultiplier " + RadiatorAreaMultiplier);
             }
 
-            resources_configured = true;
+            resourcesConfigured = true;
         }
 
         private static bool _warningDisplayed;
