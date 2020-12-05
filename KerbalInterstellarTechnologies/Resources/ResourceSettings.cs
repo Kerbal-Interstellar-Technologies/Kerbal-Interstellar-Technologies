@@ -167,7 +167,7 @@ namespace KIT.Resources
             }
             else
             {
-                PluginHelper.showInstallationErrorMessage();
+                PluginHelper.ShowInstallationErrorMessage();
             }
         }
 
