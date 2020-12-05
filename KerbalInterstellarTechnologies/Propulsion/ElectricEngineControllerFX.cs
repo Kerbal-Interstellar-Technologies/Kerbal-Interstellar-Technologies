@@ -1118,7 +1118,7 @@ namespace KIT.Propulsion
             List<ElectricEnginePropellant> propellantList;
             if (configNodes.Length == 0)
             {
-                PluginHelper.showInstallationErrorMessage();
+                PluginHelper.ShowInstallationErrorMessage();
                 propellantList = new List<ElectricEnginePropellant>();
             }
             else
