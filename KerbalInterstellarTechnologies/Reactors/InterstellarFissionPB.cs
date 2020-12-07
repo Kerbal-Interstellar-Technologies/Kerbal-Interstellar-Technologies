@@ -74,7 +74,9 @@ namespace KIT.Reactors
             {
                 if (HighLogic.LoadedSceneIsFlight && heatThrottling)
                 {
-                    resourceBarRatio = CheatOptions.IgnoreMaxTemperature ? 0 : getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
+                    // TODO fix this
+                    part.GetConnectedResourceTotals("WasteHeat".GetHashCode(), out var amount, out var maxAmount);
+                    resourceBarRatio = CheatOptions.IgnoreMaxTemperature ? 0 : amount / maxAmount;
 
                     var temperatureIncrease = Math.Max(Math.Pow(resourceBarRatio, coreTemperatureWasteheatPower) + coreTemperatureWasteheatModifier, 0) * coreTemperatureWasteheatMultiplier * OptimalTempDifference;
 

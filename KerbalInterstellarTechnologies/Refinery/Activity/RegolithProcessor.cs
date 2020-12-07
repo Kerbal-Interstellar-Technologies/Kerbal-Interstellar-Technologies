@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -147,9 +148,8 @@ namespace KIT.Refinery.Activity
             return collectorsList.Where(m => m.bIsEnabled).Sum(m => m.resourceProduction);
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
-            _dFixedDeltaTime = fixedDeltaTime;
             _effectiveMaxPower = PowerRequirements * productionModifier;
             _current_power = _effectiveMaxPower * powerFraction;
             _current_rate = CurrentPower / EnergyPerTon;
@@ -193,16 +193,16 @@ namespace KIT.Refinery.Activity
             dSpareRoomWaterMass = partsThatContainWater.Sum(r => r.maxAmount - r.amount) * _dWaterDensity;
 
             // this should determine how much resource this process can consume
-            var dFixedMaxRegolithConsumptionRate = _current_rate * fixedDeltaTime * _dRegolithDensity;
+            var dFixedMaxRegolithConsumptionRate = _current_rate * _dRegolithDensity;
 
             // determine the amount of regolith collected
-            var availableRegolithExtractionMassFixed = GetTotalExtractedPerSecond() * _dRegolithDensity * fixedDeltaTime;
+            var availableRegolithExtractionMassFixed = GetTotalExtractedPerSecond() * _dRegolithDensity;
 
             var dRegolithConsumptionRatio = dFixedMaxRegolithConsumptionRate > 0
                 ? Math.Min(dFixedMaxRegolithConsumptionRate, Math.Max(availableRegolithExtractionMassFixed, dAvailableRegolithMass)) / dFixedMaxRegolithConsumptionRate
                 : 0;
 
-            _dFixedConsumptionRate = _current_rate * fixedDeltaTime * dRegolithConsumptionRatio;
+            _dFixedConsumptionRate = _current_rate * dRegolithConsumptionRatio;
 
             // begin the regolith processing
             if (_dFixedConsumptionRate > 0 && (
@@ -255,7 +255,7 @@ namespace KIT.Refinery.Activity
 
                 _fixedRegolithConsumptionRate = Math.Max(fixedCollectedRegolith, availableRegolithExtractionMassFixed);
 
-                _regolithConsumptionRate = _fixedRegolithConsumptionRate / fixedDeltaTime;
+                _regolithConsumptionRate = _fixedRegolithConsumptionRate;
 
                 // this produces the products
                 double dHydrogenRateTemp = _fixedRegolithConsumptionRate * dHydrogenMassByFraction;
@@ -268,15 +268,15 @@ namespace KIT.Refinery.Activity
                 double dNitrogenRateTemp = _fixedRegolithConsumptionRate * dNitrogenMassByFraction;
                 double dWaterRateTemp = _fixedRegolithConsumptionRate * dWaterMassByFraction;
 
-                _dHydrogenProductionRate = -_part.RequestResource(_strHydrogenResourceName, -dHydrogenRateTemp  / _dHydrogenDensity) / fixedDeltaTime * _dHydrogenDensity;
-                _dDeuteriumProductionRate = -_part.RequestResource(_stDeuteriumResourceName, -dDeuteriumRateTemp / _dDeuteriumDensity) / fixedDeltaTime * _dDeuteriumDensity;
-                _dLiquidHelium3ProductionRate = -_part.RequestResource(_strLiquidHelium3ResourceName, -dHelium3RateTemp  / _dLiquidHelium3Density) / fixedDeltaTime * _dLiquidHelium3Density;
-                _dLiquidHelium4ProductionRate = -_part.RequestResource(_strLiquidHelium4ResourceName, -dHelium4RateTemp  / _dLiquidHelium4Density) / fixedDeltaTime * _dLiquidHelium4Density;
-                _dMonoxideProductionRate = -_part.RequestResource(_strMonoxideResourceName, -dMonoxideRateTemp  / _dMonoxideDensity) / fixedDeltaTime * _dMonoxideDensity;
-                _dDioxideProductionRate = -_part.RequestResource(_strDioxideResourceName, -dDioxideRateTemp  / _dDioxideDensity) / fixedDeltaTime * _dDioxideDensity;
-                _dMethaneProductionRate = -_part.RequestResource(_strMethaneResourceName, -dMethaneRateTemp  / _dMethaneDensity) / fixedDeltaTime * _dMethaneDensity;
-                _dNitrogenProductionRate = -_part.RequestResource(_strNitrogenResourceName, -dNitrogenRateTemp  / _dNitrogenDensity) / fixedDeltaTime * _dNitrogenDensity;
-                _dWaterProductionRate = -_part.RequestResource(_strWaterResourceName, -dWaterRateTemp  / _dWaterDensity) / fixedDeltaTime * _dWaterDensity;
+                _dHydrogenProductionRate = -_part.RequestResource(_strHydrogenResourceName, -dHydrogenRateTemp  / _dHydrogenDensity) / _dHydrogenDensity;
+                _dDeuteriumProductionRate = -_part.RequestResource(_stDeuteriumResourceName, -dDeuteriumRateTemp / _dDeuteriumDensity) /  _dDeuteriumDensity;
+                _dLiquidHelium3ProductionRate = -_part.RequestResource(_strLiquidHelium3ResourceName, -dHelium3RateTemp  / _dLiquidHelium3Density) /  _dLiquidHelium3Density;
+                _dLiquidHelium4ProductionRate = -_part.RequestResource(_strLiquidHelium4ResourceName, -dHelium4RateTemp  / _dLiquidHelium4Density) /  _dLiquidHelium4Density;
+                _dMonoxideProductionRate = -_part.RequestResource(_strMonoxideResourceName, -dMonoxideRateTemp  / _dMonoxideDensity) /  _dMonoxideDensity;
+                _dDioxideProductionRate = -_part.RequestResource(_strDioxideResourceName, -dDioxideRateTemp  / _dDioxideDensity) /  _dDioxideDensity;
+                _dMethaneProductionRate = -_part.RequestResource(_strMethaneResourceName, -dMethaneRateTemp  / _dMethaneDensity) / _dMethaneDensity;
+                _dNitrogenProductionRate = -_part.RequestResource(_strNitrogenResourceName, -dNitrogenRateTemp  / _dNitrogenDensity) / _dNitrogenDensity;
+                _dWaterProductionRate = -_part.RequestResource(_strWaterResourceName, -dWaterRateTemp  / _dWaterDensity) /  _dWaterDensity;
             }
             else
             {

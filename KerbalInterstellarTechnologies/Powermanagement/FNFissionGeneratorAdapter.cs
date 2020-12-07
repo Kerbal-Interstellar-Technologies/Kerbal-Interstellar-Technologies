@@ -1,14 +1,12 @@
-﻿using KIT.Constants;
-using KIT.Power;
-using KIT.Resources;
-using KIT.Wasteheat;
+﻿using KIT.Resources;
+using KIT.ResourceScheduler;
 using System;
 using UnityEngine;
 
 namespace KIT.Powermanagement
 {
     [KSPModule("Near Future Fission Generator Adapter")]
-    class FNFissionGeneratorAdapter : ResourceSuppliableModule
+    class FNFissionGeneratorAdapter : PartModule, IKITMod
     {
         [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Currentpower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F5")]//Generator current power
         public double megaJouleGeneratorPowerSupply;
@@ -43,7 +41,7 @@ namespace KIT.Powermanagement
 
                 if (_moduleGenerator == null) return;
 
-                resources_to_supply = new string[] { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
+                // resources_to_supply = new string[] { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
                 base.OnStart(state);
             }
             catch (Exception e)
@@ -53,35 +51,15 @@ namespace KIT.Powermanagement
             }
         }
 
-        public override void OnFixedUpdate()
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (!HighLogic.LoadedSceneIsFlight || _moduleGenerator == null) return;
+            // TODO: do we just want to generate the wasteheat for this part?
+            // TODO: does NFE generate it's own heat.
 
-            active = true;
-            base.OnFixedUpdate();
-        }
-
-        public void FixedUpdate()
-        {
-            if (!HighLogic.LoadedSceneIsFlight || _moduleGenerator == null) return;
-
-            if (!active)
-                base.OnFixedUpdate();
-        }
-
-        public override string getResourceManagerDisplayName()
-        {
-            // use identical names so it will be grouped together
-            return part.partInfo.title;
-        }
-
-        public override int getPowerPriority()
-        {
-            return 1;
-        }
-
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
+            /*
+            if (!HighLogic.LoadedSceneIsFlight) return;
             if (_moduleGenerator == null || _fieldStatus == null || _fieldGenerated == null) return;
 
             bool status = _fieldStatus.GetValue<bool>(_moduleGenerator);
@@ -93,7 +71,7 @@ namespace KIT.Powermanagement
             efficiency = generatorEfficiency.ToString("P2");
 
             //extract power otherwise we end up with double power
-            part.RequestResource(ResourceSettings.Config.ElectricPowerInKilowatt, generatorRate * fixedDeltaTime);
+            resMan.ConsumeResource(ResourceName.ElectricCharge, generatorRate);
 
             double megajoulesRate = generatorRate / GameConstants.ecPerMJ;
             double maxMegajoulesRate = generatorMax / GameConstants.ecPerMJ;
@@ -105,6 +83,9 @@ namespace KIT.Powermanagement
             double maxWasteheat = generatorEfficiency > 0.0 ? maxMegajoulesRate * (1.0 / generatorEfficiency - 1.0) : maxMegajoulesRate;
             double throttledWasteheat = generatorEfficiency > 0.0 ? megajoulesRate * (1.0 / generatorEfficiency - 1.0) : megajoulesRate;
             supplyFNResourcePerSecondWithMax(throttledWasteheat, maxWasteheat, ResourceSettings.Config.WasteHeatInMegawatt);
+            */
         }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }

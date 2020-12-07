@@ -1,6 +1,7 @@
 ﻿using KIT.Extensions;
 using KIT.Powermanagement;
 using KIT.Propulsion;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace KIT.Resources
 {
-    class ISRUScoop : ResourceSuppliableModule
+    class ISRUScoop : PartModule, IKITMod
     {
         public const string GROUP = "ISRUScoop";
         public const string GROUP_TITLE = "#LOC_KSPIE_ISRUScoop_groupName";
@@ -18,8 +19,6 @@ namespace KIT.Resources
         public bool scoopIsEnabled;
         [KSPField(isPersistant = true)]
         public int currentresource;
-        [KSPField(isPersistant = true)]
-        public double last_active_time;
         [KSPField(isPersistant = true)]
         public double last_power_percentage ;
 
@@ -126,9 +125,6 @@ namespace KIT.Resources
             // verify scoop was enabled
             if (!scoopIsEnabled) return;
 
-            // verify a timestamp is available
-            if (last_active_time == 0) return;
-
             // verify any power was available in previous save
             if (last_power_percentage < 0.01) return;
 
@@ -163,12 +159,6 @@ namespace KIT.Resources
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ISRUScoop_NohighenoughISP"), 10, ScreenMessageStyle.LOWER_CENTER);//"No engine available, with high enough Isp and propelant switch ability to compensate for atmospheric drag"
                 return;
             }
-
-            // calculate time past since last frame
-            double time_diff = (Planetarium.GetUniversalTime() - last_active_time) * 55;
-
-            // scoop atmosphere for entire duration
-            ScoopAtmosphere(time_diff, true);
         }
 
         public override void OnUpdate()
@@ -186,26 +176,13 @@ namespace KIT.Resources
             if (resourceDisplayName != null)
                 currentresourceStr = resourceDisplayName + "(" + resourcePercentage + "%)";
 
-            UpdateResourceFlow();
         }
 
-        public override void OnFixedUpdate()
-        {
-            if (!scoopIsEnabled) return;
-
-            if (!vessel.mainBody.atmosphere) return;
-
-            // scoop atmosphere for a single frame
-            ScoopAtmosphere(TimeWarp.fixedDeltaTime, false);
-
-            // store current time in case vessel is unloaded
-            last_active_time = Planetarium.GetUniversalTime();
-        }
-
-        private void ScoopAtmosphere(double deltaTimeInSeconds, bool offlineCollecting)
+        private void ScoopAtmosphere(IResourceManager resMan)
         {
             string currentResourceName = AtmosphericResourceHandler.GetAtmosphericResourceName(vessel.mainBody, currentresource);
             string resourceDisplayName = AtmosphericResourceHandler.GetAtmosphericResourceDisplayName(vessel.mainBody, currentresource);
+            ResourceName resourceIdentifier;
 
             if (currentResourceName == null)
             {
@@ -225,6 +202,13 @@ namespace KIT.Resources
 
             if (definition == null)
                 return;
+
+            resourceIdentifier = KITResourceSettings.NameToResource(resourceStoragename);
+            if (resourceIdentifier == ResourceName.Unknown)
+            {
+                Debug.Log($"[ISRUScoop.ScoopAtmosphere] missing resource definition for {resourceStoragename}. Please add.");
+                return;
+            }
 
             double resourceDensity = definition.density;
             double maxAltitudeAtmosphere = PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody);
@@ -260,46 +244,38 @@ namespace KIT.Resources
             double airspeed = part.vessel.srf_velocity.magnitude + 40.0;
             double air = airspeed * airDensity * 0.001 * scoopair / resourceDensity;
             double scoopedAtm = air * resourceFraction;
-            double powerRequirementsInMegawatt = 40.0 * scoopair * PluginHelper.PowerConsumptionMultiplier * powerReqMult;
+            double powerRequirementsInKilowatt = 40000.0 * scoopair * PluginHelper.PowerConsumptionMultiplier * powerReqMult;
 
-            if (scoopedAtm > 0 && part.GetResourceSpareCapacity(resourceStoragename) > 0)
+            if (scoopedAtm > 0 && resMan.ResourceSpareCapacity(resourceIdentifier) > 0)
             {
                 // Determine available power, using EC if below 2 MW required
-                double powerReceivedInMegawatt = consumeMegawatts(powerRequirementsInMegawatt, true,
-                    false, powerRequirementsInMegawatt < 2.0);
+                double powerReceivedInMegawatt = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequirementsInKilowatt);
 
-                last_power_percentage = offlineCollecting ? last_power_percentage : powerReceivedInMegawatt / powerRequirementsInMegawatt;
+                last_power_percentage = powerReceivedInMegawatt / powerRequirementsInKilowatt;
             }
             else
             {
                 last_power_percentage = 0;
-                powerRequirementsInMegawatt = 0;
+                powerRequirementsInKilowatt = 0;
             }
 
-            recievedPower = PluginHelper.getFormattedPowerString(last_power_percentage * powerRequirementsInMegawatt) + " / " + PluginHelper.getFormattedPowerString(powerRequirementsInMegawatt);
+            recievedPower = PluginHelper.getFormattedPowerString(last_power_percentage * powerRequirementsInKilowatt) + " / " + PluginHelper.getFormattedPowerString(powerRequirementsInKilowatt);
 
-            double resourceChange = scoopedAtm * last_power_percentage * deltaTimeInSeconds;
+            double resflow = scoopedAtm * last_power_percentage;
 
-            if (offlineCollecting)
-            {
-                string format = resourceChange > 100 ? "0" : "0.00";
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ISRUScoop_CollectedMsg") +" " + resourceChange.ToString(format) + " " + resourceStoragename, 10.0f, ScreenMessageStyle.LOWER_CENTER);//Atmospheric Scoop collected
-            }
-
-            resflowf = part.RequestResource(resourceStoragename, -resourceChange);
-            resflowf = -resflowf / TimeWarp.fixedDeltaTime;
-            UpdateResourceFlow();
+            resMan.ProduceResource(resourceIdentifier, resflow);
         }
 
-        private void UpdateResourceFlow()
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
-            resflow = resflowf.ToString("0.0000000");
+            if (!scoopIsEnabled) return;
+            if (!vessel.mainBody.atmosphere) return;
+
+            ScoopAtmosphere(resMan);
         }
 
-        public override string getResourceManagerDisplayName()
-        {
-            return part.partInfo.title;
-        }
-
+        public string KITPartName() => part.partInfo.title;
     }
 }

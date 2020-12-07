@@ -1,5 +1,6 @@
 ﻿using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 
@@ -221,8 +222,10 @@ namespace KIT.Reactors
             base.OnUpdate();
         }
 
-        public override void OnFixedUpdate()
+        public new void KITFixedUpdate(IResourceManager resMan)
         {
+            throw new Exception("Please fix me");
+            /*
             double timeWarpFixedDeltaTime = TimeWarp.fixedDeltaTime;
             base.OnFixedUpdate();
 
@@ -238,7 +241,7 @@ namespace KIT.Reactors
                 return;
             }
 
-            ProcessCharging();
+            ProcessCharging(resMan);
 
             // quit if no fuel available
             if (stored_fuel_ratio <= 0.01)
@@ -260,7 +263,7 @@ namespace KIT.Reactors
                 primaryPowerReceived = powerRequested;
 
             if (maintenancePowerWasteheatRatio > 0)
-                supplyFNResourcePerSecond(maintenancePowerWasteheatRatio * primaryPowerReceived, ResourceSettings.Config.WasteHeatInMegawatt);
+                resMan.ProduceResource(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * primaryPowerReceived);
 
             // calculate effective primary power ratio
             var powerReceived = primaryPowerReceived;
@@ -356,6 +359,7 @@ namespace KIT.Reactors
                     plasma_ratio = 1;
                 }
             }
+            */
         }
 
         private void UpdateLoopingAnimation(double ratio)
@@ -388,8 +392,10 @@ namespace KIT.Reactors
                 loopingAnimation.Toggle();
         }
 
-        private void ProcessCharging()
+        private void ProcessCharging(IResourceManager resMan)
         {
+            throw new Exception("fix me");
+            /*
             double timeWarpFixedDeltaTime = TimeWarp.fixedDeltaTime;
             if (!canJumpstart || !isChargingForJumpstart || !(part.vessel.geeForce < startupMaximumGeforce)) return;
 
@@ -432,7 +438,8 @@ namespace KIT.Reactors
                 var powerPerSecond = usePowerManagerForPrimaryInputPower ? returnedPrimaryPower : returnedPrimaryPower / timeWarpFixedDeltaTime;
 
                 if (!CheatOptions.IgnoreMaxTemperature && maintenancePowerWasteheatRatio > 0)
-                    supplyFNResourcePerSecond(0.05 * powerPerSecond, ResourceSettings.Config.WasteHeatInMegawatt);
+                    //supplyFNResourcePerSecond(, ResourceSettings.Config.WasteHeatInMegawatt);
+                    resMan.ProduceResource(ResourceName.WasteHeat, 0.05 * powerPerSecond);
 
                 if (powerPerSecond >= minimumChargingPower)
                     accumulatedElectricChargeInMW += returnedPrimaryPower * timeWarpFixedDeltaTime;
@@ -457,6 +464,7 @@ namespace KIT.Reactors
 
                 accumulatedElectricChargeInMW += secondaryPowerReceived / secondaryInputMultiplier;
             }
+            */
         }
     }
 }

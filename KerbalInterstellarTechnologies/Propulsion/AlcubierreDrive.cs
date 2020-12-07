@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using KIT.Constants;
 using KIT.Extensions;
-using KIT.Power;
-using KIT.Powermanagement;
 using KIT.Resources;
-using KIT.Wasteheat;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using UnityEngine;
 using static System.String;
@@ -14,7 +12,7 @@ using static System.String;
 namespace KIT.Propulsion
 {
     [KSPModule("#LOC_KSPIE_AlcubierreDrive_partModuleName")]
-    class AlcubierreDrive : ResourceSuppliableModule
+    class AlcubierreDrive : PartModule, IKITMod
     {
         public const string GROUP = "AlcubierreDrive";
         public const string GROUP_TITLE = "#LOC_KSPIE_AlcubierreDrive_groupName";
@@ -349,13 +347,18 @@ namespace KIT.Propulsion
             if (maximumWarpSpeedFactor < selected_factor)
                 selected_factor = minimumPowerAllowedFactor;
 
-            if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selected_factor]) > getStableResourceSupply(ResourceSettings.Config.ElectricPowerInMegawatt))
+            // TODO fix the stable resource supply thing.
+
+            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selected_factor]) > getStableResourceSupply(ResourceSettings.Config.ElectricPowerInMegawatt))
+            /*
+            if (false)
             {
                 var message = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_warpPowerReqIsHigherThanMaxPowerSupply");
                 Debug.Log("[KSPI]: " + message);
                 ScreenMessages.PostScreenMessage(message, 5.0f, ScreenMessageStyle.UPPER_CENTER);
                 return;
             }
+            */
 
             IsCharging = false;
             antigravityPercentage = 0;
@@ -375,7 +378,7 @@ namespace KIT.Propulsion
             return maxFactor;
         }
 
-        private void InitiateWarp()
+        private void InitiateWarp(IResourceManager resMan)
         {
             Debug.Log("[KSPI]: InitiateWarp started");
 
@@ -389,7 +392,7 @@ namespace KIT.Propulsion
 
             var headingModifier = Math.Abs(Math.Min(0, cosineAngleToMainBody));
 
-            allowedWarpDistancePerFrame = PluginHelper.SpeedOfLight * TimeWarp.fixedDeltaTime * selectedWarpSpeed * headingModifier;
+            allowedWarpDistancePerFrame = PluginHelper.SpeedOfLight * resMan.FixedDeltaTime() * selectedWarpSpeed * headingModifier;
             safetyDistance = spaceSafetyDistance * 1000 * headingModifier;
 
             if (vessel.altitude < ((vessel.mainBody.atmosphere ? vessel.mainBody.atmosphereDepth : 20000) + allowedWarpDistancePerFrame + safetyDistance))
@@ -403,9 +406,7 @@ namespace KIT.Propulsion
 
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(selectedWarpSpeed);
 
-            var powerReturned = CheatOptions.InfiniteElectricity
-                ? currentPowerRequirementForWarp
-                : consumeFNResourcePerSecond(currentPowerRequirementForWarp, ResourceSettings.Config.ElectricPowerInMegawatt);
+            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp * GameConstants.ecPerMJ);
 
             if (powerReturned < 0.99 * currentPowerRequirementForWarp)
             {
@@ -438,7 +439,7 @@ namespace KIT.Propulsion
             vesselWasInOuterspace = false;
 
             // consume all exotic matter to create warp field
-            part.RequestResource(ResourceSettings.Config.ExoticMatter, exotic_power_required);
+            resMan.ConsumeResource(ResourceName.ExoticMatter, exotic_power_required);
 
             warp_sound.Play();
             warp_sound.loop = true;
@@ -1213,134 +1214,6 @@ namespace KIT.Propulsion
             warpEngineThrottle = slowestSublightSpeed;
         }
 
-        public override void OnFixedUpdate()
-        {
-            distanceToClosestBody = DistanceToClosestBody(vessel, out closestCelestrialBody, out selectedTargetVesselIsClosest);
-
-            if (initiateWarpTimeout > 0)
-                InitiateWarp();
-
-            Orbit currentOrbit = vessel.orbitDriver.orbit;
-            double universalTime = Planetarium.GetUniversalTime();
-
-            if (IsEnabled)
-            {
-                counterCurrent++;
-
-                // disable any geeforce effects during warp
-                PluginHelper.IgnoreGForces(part, 2);
-                var reverseHeadingWarp = new Vector3d(-heading_act.x, -heading_act.y, -heading_act.z);
-                Vector3d currentOrbitalVelocity = vessel.orbitDriver.orbit.getOrbitalVelocityAtUT(universalTime);
-                Vector3d newDirection = currentOrbitalVelocity + reverseHeadingWarp;
-
-                Orbit predictedExitOrbit;
-
-                long multiplier = 0;
-                do
-                {
-                    // first predict dropping out of warp
-                    predictedExitOrbit = new Orbit(currentOrbit);
-                    predictedExitOrbit.UpdateFromStateVectors(currentOrbit.pos, newDirection, vessel.orbit.referenceBody, universalTime);
-
-                    // then calculated predicted gravity breaking
-                    if (warpInitialMainBody != null && vessel.mainBody != warpInitialMainBody && !KopernicusHelper.IsStar(part.vessel.mainBody))
-                    {
-                        Vector3d retrogradeNormalizedVelocity = newDirection.normalized * -multiplier;
-                        Vector3d velocityToCancel = predictedExitOrbit.getOrbitalVelocityAtUT(universalTime) * gravityDragRatio;
-
-                        predictedExitOrbit.UpdateFromStateVectors(currentOrbit.pos, retrogradeNormalizedVelocity - velocityToCancel, currentOrbit.referenceBody, universalTime);
-                    }
-
-                    multiplier += 1;
-                } while (multiplier < 10000 && double.IsNaN(predictedExitOrbit.getOrbitalVelocityAtUT(universalTime).magnitude));
-
-                // update expected exit orbit data
-                exitPeriapsis = predictedExitOrbit.PeA * 0.001;
-                exitApoapsis = predictedExitOrbit.ApA * 0.001;
-                exitSpeed = predictedExitOrbit.getOrbitalVelocityAtUT(universalTime).magnitude;
-                exitEccentricity = predictedExitOrbit.eccentricity * 180 / Math.PI;
-                exitMeanAnomaly = predictedExitOrbit.meanAnomaly;
-                exitBurnCircularize = DeltaVToCircularize(predictedExitOrbit);
-            }
-            else
-            {
-                exitPeriapsis = currentOrbit.PeA * 0.001;
-                exitApoapsis = currentOrbit.ApA * 0.001;
-                exitSpeed = currentOrbit.getOrbitalVelocityAtUT(universalTime).magnitude;
-                exitEccentricity = currentOrbit.eccentricity;
-                exitMeanAnomaly = currentOrbit.meanAnomaly * 180 / Math.PI;
-                exitBurnCircularize = DeltaVToCircularize(currentOrbit);
-            }
-
-            warpEngineThrottle = _engineThrottle[selected_factor];
-
-            warp_sound.pitch = (float)Math.Pow(warpEngineThrottle, warpSoundPitchExp);
-            warp_sound.volume = GameSettings.SHIP_VOLUME;
-
-            tex_count += warpEngineThrottle;
-
-            if (!IsSlave)
-            {
-                WarpDriveCharging();
-
-                UpdateWarpSpeed();
-            }
-
-            // update animation
-            if (IsEnabled)
-            {
-                driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Active");//"Active."
-            }
-            else
-            {
-                if (!IsSlave)
-                {
-                    part.GetConnectedResourceTotals(exoticResourceDefinition.id, out currentExoticMatter, out maxExoticMatter);
-
-                    if (currentExoticMatter < exotic_power_required * 0.999 * 0.5)
-                    {
-                        var electricalCurrentPct = Math.Min(100, 100 * currentExoticMatter/(exotic_power_required * 0.5));
-                        driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Charging") + electricalCurrentPct.ToString("0.00") + "%";//String.Format("Charging: ")
-                    }
-                    else
-                        driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Ready");//"Ready."
-                }
-            }
-
-
-
-            if (activeTrail && !hideTrail && warpTrailTimeout == 0)
-            {
-                var shipPos = new Vector3(part.transform.position.x, part.transform.position.y, part.transform.position.z);
-                var endBeamPos = shipPos + part.transform.up * warp_size;
-                var midPos = (shipPos - endBeamPos) / 2f;
-
-                warp_effect.transform.rotation = part.transform.rotation;
-                warp_effect.transform.localScale = new Vector3(effectSize1, midPos.magnitude, effectSize1);
-                warp_effect.transform.position = new Vector3(shipPos.x + midPos.x, shipPos.y + midPos.y, shipPos.z + midPos.z);
-                warp_effect.transform.rotation = part.transform.rotation;
-
-                warp_effect2.transform.rotation = part.transform.rotation;
-                warp_effect2.transform.localScale = new Vector3(effectSize2, midPos.magnitude, effectSize2);
-                warp_effect2.transform.position = new Vector3(shipPos.x + midPos.x, shipPos.y + midPos.y, shipPos.z + midPos.z);
-                warp_effect2.transform.rotation = part.transform.rotation;
-
-                warp_effect1_renderer.material.mainTexture = warp_textures[((int)tex_count) % warp_textures.Length];
-                warp_effect2_renderer.material.mainTexture = warp_textures2[((int)tex_count + 8) % warp_textures2.Length];
-
-                warp_effect2_renderer.enabled = true;
-                warp_effect1_renderer.enabled = true;
-            }
-            else
-            {
-                warp_effect2_renderer.enabled = false;
-                warp_effect1_renderer.enabled = false;
-            }
-
-            if (warpTrailTimeout > 0)
-                warpTrailTimeout--;
-        }
-
         private static double DeltaVToCircularize(Orbit orbit)
         {
             var rAp = orbit.ApR;
@@ -1372,7 +1245,7 @@ namespace KIT.Propulsion
             return Math.Sqrt(body.gravParameter / radius);
         }
 
-        private void WarpDriveCharging()
+        private void WarpDriveCharging(IResourceManager resMan)
         {
             part.GetConnectedResourceTotals(exoticResourceDefinition.id, out currentExoticMatter, out maxExoticMatter);
 
@@ -1389,7 +1262,7 @@ namespace KIT.Propulsion
                 exoticMatterRatio = 0;
             }
 
-            GenerateAntiGravity();
+            GenerateAntiGravity(resMan);
 
             // maintenance power depend on vessel mass and experienced geeforce
 
@@ -1398,19 +1271,19 @@ namespace KIT.Propulsion
 
             requiredExoticMaintenancePower = exoticMatterRatio * exoticMatterRatio * maximumExoticMaintenancePower;
 
-            var overheatingRatio = getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
+            var overheatingRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat); 
 
             var overheatModifier = overheatingRatio < 0.9 ? 1 : (1 - overheatingRatio) * 10;
 
             receivedExoticMaintenancePower = CheatOptions.InfiniteElectricity
                    ? requiredExoticMaintenancePower
-                   : consumeFNResourcePerSecond(overheatModifier * requiredExoticMaintenancePower, ResourceSettings.Config.ElectricPowerInMegawatt);
+                   : resMan.ConsumeResource(ResourceName.ElectricCharge, requiredExoticMaintenancePower * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
 
             minimumExoticMatterMaintenanceRatio = minimumExoticMaintenancePower > 0 ? receivedExoticMaintenancePower / minimumExoticMaintenancePower : 0;
 
             exoticMatterMaintenanceRatio = requiredExoticMaintenancePower > 0 ? receivedExoticMaintenancePower / requiredExoticMaintenancePower : 0;
 
-            ProduceWasteheat(receivedExoticMaintenancePower);
+            ProduceWasteheat(resMan, receivedExoticMaintenancePower);
 
             exoticMatterProduced = (1 - exoticMatterMaintenanceRatio) * -maxExoticMatter;
 
@@ -1429,18 +1302,21 @@ namespace KIT.Propulsion
                 }
                 else
                 {
-                    stablePowerSupply = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                    // TODO fix me 
+                    // stablePowerSupply = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                    stablePowerSupply = 10000;
 
+                    // fix me, should not use fdt here
                     chargePowerDraw = CheatOptions.InfiniteElectricity
                         ? maxChargePowerRequired
                         : Math.Min(maxChargePowerRequired / TimeWarp.fixedDeltaTime, Math.Max(minPowerRequirementForLightSpeed, stablePowerSupply));
 
-                    var resourceBarRatio = getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt);
+                    var resourceBarRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
                     var effectiveResourceThrottling = resourceBarRatio > 0.5 ? 1 : resourceBarRatio * 2;
 
                     exoticMatterProduced = CheatOptions.InfiniteElectricity
                         ? chargePowerDraw
-                        : consumeFNResourcePerSecond(overheatModifier * chargePowerDraw * effectiveResourceThrottling, ResourceSettings.Config.ElectricPowerInMegawatt);
+                        : resMan.ConsumeResource(ResourceName.ElectricCharge, overheatModifier * chargePowerDraw * effectiveResourceThrottling * GameConstants.ecPerMJ);
 
                     if (!CheatOptions.InfinitePropellant && stablePowerSupply < minPowerRequirementForLightSpeed)
                         insufficientPowerTimeout--;
@@ -1462,13 +1338,13 @@ namespace KIT.Propulsion
                     }
                 }
 
-                ProduceWasteheat(exoticMatterProduced);
+                ProduceWasteheat(resMan, exoticMatterProduced);
             }
 
             part.RequestResource(ResourceSettings.Config.ExoticMatter, -exoticMatterProduced * 0.001 * TimeWarp.fixedDeltaTime / powerRequirementMultiplier);
         }
 
-        private void GenerateAntiGravity()
+        private void GenerateAntiGravity(IResourceManager resMan)
         {
             exoticMatterRatio = exotic_power_required > 0 ? Math.Min(1, currentExoticMatter / exotic_power_required) : 0;
 
@@ -1484,30 +1360,28 @@ namespace KIT.Propulsion
             if (!double.IsNaN(antigravityForceVector.x) && !double.IsNaN(antigravityForceVector.y) && !double.IsNaN(antigravityForceVector.z))
             {
                 if (vessel.packed)
-                    vessel.orbit.Perturb(antigravityForceVector * TimeWarp.fixedDeltaTime, Planetarium.GetUniversalTime());
+                    vessel.orbit.Perturb(antigravityForceVector * resMan.FixedDeltaTime(), Planetarium.GetUniversalTime());
                 else
-                    vessel.ChangeWorldVelocity(antigravityForceVector * TimeWarp.fixedDeltaTime);
+                    vessel.ChangeWorldVelocity(antigravityForceVector * resMan.FixedDeltaTime());
             }
 
             verticalSpeed = vessel.verticalSpeed;
 
-            stablePowerSupply = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+            // TODO fixme
+            // stablePowerSupply = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+            stablePowerSupply = 10000; 
 
             if (holdAltitude)
             {
                 orbitMultiplier = vessel.orbit.PeA > vessel.mainBody.atmosphereDepth ? 0 : 1 - Math.Min(1, vessel.horizontalSrfSpeed  /  CircularOrbitSpeed(vessel.mainBody, vessel.mainBody.Radius + vessel.altitude));
                 responseFactor = responseMultiplier * stablePowerSupply / exotic_power_required;
-                antigravityPercentage = (float)Math.Max(0, Math.Min(100 * orbitMultiplier + (gravityAcceleration != 0 ? responseFactor * -verticalSpeed / gravityAcceleration / TimeWarp.fixedDeltaTime : 0), 200));
+                antigravityPercentage = (float)Math.Max(0, Math.Min(100 * orbitMultiplier + (gravityAcceleration != 0 ? responseFactor * -verticalSpeed / gravityAcceleration / resMan.FixedDeltaTime() : 0), 200));
             }
         }
 
-        private void ProduceWasteheat(double powerReturned)
+        private void ProduceWasteheat(IResourceManager resMan, double powerReturned)
         {
-            if (!CheatOptions.IgnoreMaxTemperature)
-                supplyFNResourcePerSecond(powerReturned *
-                    (isupgraded
-                        ? wasteheatRatioUpgraded
-                        : wasteheatRatio), ResourceSettings.Config.WasteHeatInMegawatt);
+            resMan.ProduceResource(ResourceName.WasteHeat, powerReturned * (isupgraded ? wasteheatRatioUpgraded : wasteheatRatio));
         }
 
         private double GetPowerRequirementForWarp(double lightspeedFraction)
@@ -1521,7 +1395,7 @@ namespace KIT.Propulsion
             return powerModifier * exotic_power_required * warpPowerReqMult;
         }
 
-        private void UpdateWarpSpeed()
+        private void UpdateWarpSpeed(IResourceManager resMan)
         {
             if (!IsEnabled || exotic_power_required <= 0) return;
 
@@ -1529,9 +1403,14 @@ namespace KIT.Propulsion
 
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(selectedLightSpeed);
 
+            /*
+             * TODO fixme
             availablePower = CheatOptions.InfiniteElectricity
                 ? currentPowerRequirementForWarp
                 : getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+            */
+
+            availablePower = 10000;
 
             double powerReturned;
 
@@ -1539,13 +1418,13 @@ namespace KIT.Propulsion
                 powerReturned = currentPowerRequirementForWarp;
             else
             {
-                powerReturned = consumeFNResourcePerSecond(currentPowerRequirementForWarp, ResourceSettings.Config.ElectricPowerInMegawatt) ;
-                ProduceWasteheat(powerReturned);
+                powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp * GameConstants.ecPerMJ);
+                ProduceWasteheat(resMan, powerReturned);
             }
 
             var headingModifier = FlightGlobals.fetch.VesselTarget == null ? Math.Abs(Math.Min(0, cosineAngleToClosestBody)) : 1;
 
-            allowedWarpDistancePerFrame = PluginHelper.SpeedOfLight * TimeWarp.fixedDeltaTime * selectedLightSpeed * headingModifier;
+            allowedWarpDistancePerFrame = PluginHelper.SpeedOfLight * resMan.FixedDeltaTime() * selectedLightSpeed * headingModifier;
 
             safetyDistance = FlightGlobals.fetch.VesselTarget == null ? spaceSafetyDistance * 1000 : 0;
 
@@ -1946,5 +1825,139 @@ namespace KIT.Propulsion
 
             return minimumDistance;
         }
+
+        public ResourcePriorityValue ResourceProcessPriority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            distanceToClosestBody = DistanceToClosestBody(vessel, out closestCelestrialBody, out selectedTargetVesselIsClosest);
+
+            if (initiateWarpTimeout > 0)
+                InitiateWarp(resMan);
+
+            Orbit currentOrbit = vessel.orbitDriver.orbit;
+            double universalTime = Planetarium.GetUniversalTime();
+
+            if (IsEnabled)
+            {
+                counterCurrent++;
+
+                // disable any geeforce effects during warp
+                PluginHelper.IgnoreGForces(part, 2);
+                var reverseHeadingWarp = new Vector3d(-heading_act.x, -heading_act.y, -heading_act.z);
+                Vector3d currentOrbitalVelocity = vessel.orbitDriver.orbit.getOrbitalVelocityAtUT(universalTime);
+                Vector3d newDirection = currentOrbitalVelocity + reverseHeadingWarp;
+
+                Orbit predictedExitOrbit;
+
+                long multiplier = 0;
+                do
+                {
+                    // first predict dropping out of warp
+                    predictedExitOrbit = new Orbit(currentOrbit);
+                    predictedExitOrbit.UpdateFromStateVectors(currentOrbit.pos, newDirection, vessel.orbit.referenceBody, universalTime);
+
+                    // then calculated predicted gravity breaking
+                    if (warpInitialMainBody != null && vessel.mainBody != warpInitialMainBody && !KopernicusHelper.IsStar(part.vessel.mainBody))
+                    {
+                        Vector3d retrogradeNormalizedVelocity = newDirection.normalized * -multiplier;
+                        Vector3d velocityToCancel = predictedExitOrbit.getOrbitalVelocityAtUT(universalTime) * gravityDragRatio;
+
+                        predictedExitOrbit.UpdateFromStateVectors(currentOrbit.pos, retrogradeNormalizedVelocity - velocityToCancel, currentOrbit.referenceBody, universalTime);
+                    }
+
+                    multiplier += 1;
+                } while (multiplier < 10000 && double.IsNaN(predictedExitOrbit.getOrbitalVelocityAtUT(universalTime).magnitude));
+
+                // update expected exit orbit data
+                exitPeriapsis = predictedExitOrbit.PeA * 0.001;
+                exitApoapsis = predictedExitOrbit.ApA * 0.001;
+                exitSpeed = predictedExitOrbit.getOrbitalVelocityAtUT(universalTime).magnitude;
+                exitEccentricity = predictedExitOrbit.eccentricity * 180 / Math.PI;
+                exitMeanAnomaly = predictedExitOrbit.meanAnomaly;
+                exitBurnCircularize = DeltaVToCircularize(predictedExitOrbit);
+            }
+            else
+            {
+                exitPeriapsis = currentOrbit.PeA * 0.001;
+                exitApoapsis = currentOrbit.ApA * 0.001;
+                exitSpeed = currentOrbit.getOrbitalVelocityAtUT(universalTime).magnitude;
+                exitEccentricity = currentOrbit.eccentricity;
+                exitMeanAnomaly = currentOrbit.meanAnomaly * 180 / Math.PI;
+                exitBurnCircularize = DeltaVToCircularize(currentOrbit);
+            }
+
+            warpEngineThrottle = _engineThrottle[selected_factor];
+
+            warp_sound.pitch = (float)Math.Pow(warpEngineThrottle, warpSoundPitchExp);
+            warp_sound.volume = GameSettings.SHIP_VOLUME;
+
+            tex_count += warpEngineThrottle;
+
+            if (!IsSlave)
+            {
+                WarpDriveCharging(resMan);
+                UpdateWarpSpeed(resMan);
+            }
+
+            // update animation
+            if (IsEnabled)
+            {
+                driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Active");//"Active."
+            }
+            else
+            {
+                if (!IsSlave)
+                {
+                    part.GetConnectedResourceTotals(exoticResourceDefinition.id, out currentExoticMatter, out maxExoticMatter);
+
+                    if (currentExoticMatter < exotic_power_required * 0.999 * 0.5)
+                    {
+                        var electricalCurrentPct = Math.Min(100, 100 * currentExoticMatter / (exotic_power_required * 0.5));
+                        driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Charging") + electricalCurrentPct.ToString("0.00") + "%";//String.Format("Charging: ")
+                    }
+                    else
+                        driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Ready");//"Ready."
+                }
+            }
+
+
+
+            if (activeTrail && !hideTrail && warpTrailTimeout == 0)
+            {
+                var shipPos = new Vector3(part.transform.position.x, part.transform.position.y, part.transform.position.z);
+                var endBeamPos = shipPos + part.transform.up * warp_size;
+                var midPos = (shipPos - endBeamPos) / 2f;
+
+                warp_effect.transform.rotation = part.transform.rotation;
+                warp_effect.transform.localScale = new Vector3(effectSize1, midPos.magnitude, effectSize1);
+                warp_effect.transform.position = new Vector3(shipPos.x + midPos.x, shipPos.y + midPos.y, shipPos.z + midPos.z);
+                warp_effect.transform.rotation = part.transform.rotation;
+
+                warp_effect2.transform.rotation = part.transform.rotation;
+                warp_effect2.transform.localScale = new Vector3(effectSize2, midPos.magnitude, effectSize2);
+                warp_effect2.transform.position = new Vector3(shipPos.x + midPos.x, shipPos.y + midPos.y, shipPos.z + midPos.z);
+                warp_effect2.transform.rotation = part.transform.rotation;
+
+                warp_effect1_renderer.material.mainTexture = warp_textures[((int)tex_count) % warp_textures.Length];
+                warp_effect2_renderer.material.mainTexture = warp_textures2[((int)tex_count + 8) % warp_textures2.Length];
+
+                warp_effect2_renderer.enabled = true;
+                warp_effect1_renderer.enabled = true;
+            }
+            else
+            {
+                warp_effect2_renderer.enabled = false;
+                warp_effect1_renderer.enabled = false;
+            }
+
+            if (warpTrailTimeout > 0)
+                warpTrailTimeout--;
+        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }

@@ -21,6 +21,50 @@ namespace KIT.Resources
         Oxidizer,
         MonoPropellant,
 
+        Alumina,
+        Aluminium,
+        AmmoniaLqd,
+        ArgonLqd,
+        CarbonDioxideGas,
+        CarbonDioxideLqd,
+        CarbonMonoxideGas,
+        CarbonMonoxideLqd,
+        DeuteriumLqd,
+        DeuteriumGas,
+        Helium4Gas,
+        Helium4Lqd,
+        Helium3Gas,
+        Helium3Lqd,
+        HydrogenGas,
+        HydrogenLqd,
+        HydrogenPeroxide,
+        Hydrazine,
+        FluorineGas,
+        KryptonGas,
+        KryptonLqd,
+        Lithium6,
+        Lithium7,
+        ChlorineGas,
+        MethaneGas,
+        MethaneLqd,
+        NeonGas,
+        NeonLqd,
+        NitrogenGas,
+        NitrogenLqd,
+        Nitrogen15Lqd,
+        OxygenGas,
+        OxygenLqd,
+        Regolith,
+        Sodium,
+        SolarWind,
+        TritiumGas,
+        TritiumLqd,
+        WaterHeavy,
+        WaterPure,
+        WaterRaw,
+        XenonGas,
+        XenonLqd,
+
         Actinides,
         DepletedFuel,
         EnrichedUranium,
@@ -29,6 +73,17 @@ namespace KIT.Resources
         UraniumTetraflouride,
         Uranium233,
         UraniumNitride,
+
+        AntiProtium,
+        VacuumPlasma,
+        ExoticMatter,
+
+        IntakeOxygenAir,
+        IntakeLiquid,
+        IntakeAtmosphere,
+
+        ChargedParticle,
+        ThermalPower,
 
         WasteHeat,
         EndResource,
@@ -71,6 +126,67 @@ namespace KIT.Resources
         public static string UraniumNitride { get; private set; } = "UraniumNitride";
         #endregion
 
+        #region Chemical Resources
+        public static string Alumina { get; private set; } = "Alumina";
+        public static string Aluminium { get; private set; } = "Aluminium";
+        public static string AmmoniaLqd { get; private set; } = "LqdAmmonia";
+        public static string ArgonLqd { get; private set; } = "LqdArgon";
+        public static string CarbonDioxideGas { get; private set; } = "CarbonDioxide";
+        public static string CarbonDioxideLqd { get; private set; } = "LqdCO2";
+        public static string CarbonMonoxideGas { get; private set; } = "CarbonMonoxide";
+        public static string CarbonMonoxideLqd { get; private set; } = "LqdCO";
+        public static string DeuteriumLqd { get; private set; } = "LqdDeuterium";
+        public static string DeuteriumGas { get; private set; } = "Deuterium";
+        public static string Helium4Gas { get; private set; } = "Helium";
+        public static string Helium4Lqd { get; private set; } = "LqdHelium";
+        public static string Helium3Gas { get; private set; } = "Helium3";
+        public static string Helium3Lqd { get; private set; } = "LqdHe3";
+        public static string HydrogenGas { get; private set; } = "Hydrogen";
+        public static string HydrogenLqd { get; private set; } = "LqdHydrogen";
+        public static string HydrogenPeroxide { get; private set; } = "HTP";
+        public static string Hydrazine { get; private set; } = "Hydrazine";
+        public static string FluorineGas { get; private set; } = "Fluorine";
+        public static string KryptonGas { get; private set; } = "KryptonGas";
+        public static string KryptonLqd { get; private set; } = "LqdKrypton";
+        public static string Lithium6 { get; private set; } = "Lithium6";
+        public static string Lithium7 { get; private set; } = "Lithium";
+        public static string ChlorineGas { get; private set; } = "Chlorine";
+        public static string MethaneGas { get; private set; } = "Methane";
+        public static string MethaneLqd { get; private set; } = "LqdMethane";
+        public static string NeonGas { get; private set; } = "LqdGas";
+        public static string NeonLqd { get; private set; } = "LqdNeon";
+        public static string NitrogenGas { get; private set; } = "Nitrogen";
+        public static string NitrogenLqd { get; private set; } = "LqdNitrogen";
+        public static string Nitrogen15Lqd { get; private set; } = "LqdNitrogen15";
+        public static string OxygenGas { get; private set; } = "Oxygen";
+        public static string OxygenLqd { get; private set; } = "LqdOxygen";
+        public static string Regolith { get; private set; } = "Regolith";
+        public static string Sodium { get; private set; } = "Sodium";
+        public static string SolarWind { get; private set; } = "SolarWind";
+        public static string TritiumGas { get; private set; } = "Tritium";
+        public static string TritiumLqd { get; private set; } = "LqdTritium";
+        public static string WaterHeavy { get; private set; } = "HeavyWater";
+        public static string WaterPure { get; private set; } = "Water";
+        public static string WaterRaw { get; private set; } = "LqdWater";
+        public static string XenonGas { get; private set; } = "XenonGas";
+        public static string XenonLqd { get; private set; } = "LqdXenon";
+#endregion
+
+        #region Pseudo resources
+        public static string AntiProtium { get; private set; } = "Antimatter";
+        public static string VacuumPlasma { get; private set; } = "VacuumPlasma";
+        public static string ExoticMatter { get; private set; } = "ExoticMatter";
+        public static string ChargedParticle { get; private set; } = "ChargedParticles";
+        public static string ThermalPower { get; private set; } = "ThermalPower";
+
+        #endregion
+
+        #region Abstract Resources
+        public static string IntakeOxygenAir { get; private set; } = "IntakeAir";
+        public static string IntakeLiquid { get; private set; } = "IntakeLqd";
+        public static string IntakeAtmosphere { get; private set; } = "IntakeAtm";
+        #endregion
+
         public static string ResourceToName(ResourceName resource)
         {
             switch (resource)
@@ -88,6 +204,61 @@ namespace KIT.Resources
                 case ResourceName.UraniumTetraflouride: return UraniumTetraflouride;
                 case ResourceName.Uranium233: return Uranium233;
                 case ResourceName.UraniumNitride: return UraniumNitride;
+
+                case ResourceName.Alumina: return "Alumina";
+                case ResourceName.Aluminium: return "Aluminium";
+                case ResourceName.AmmoniaLqd: return "LqdAmmonia";
+                case ResourceName.ArgonLqd: return "LqdArgon";
+                case ResourceName.CarbonDioxideGas: return "CarbonDioxide";
+                case ResourceName.CarbonDioxideLqd: return "LqdCO2";
+                case ResourceName.CarbonMonoxideGas: return "CarbonMonoxide";
+                case ResourceName.CarbonMonoxideLqd: return "LqdCO";
+                case ResourceName.DeuteriumLqd: return "LqdDeuterium";
+                case ResourceName.DeuteriumGas: return "Deuterium";
+                case ResourceName.Helium4Gas: return "Helium";
+                case ResourceName.Helium4Lqd: return "LqdHelium";
+                case ResourceName.Helium3Gas: return "Helium3";
+                case ResourceName.Helium3Lqd: return "LqdHe3";
+                case ResourceName.HydrogenGas: return "Hydrogen";
+                case ResourceName.HydrogenLqd: return "LqdHydrogen";
+                case ResourceName.HydrogenPeroxide: return "HTP";
+                case ResourceName.Hydrazine: return "Hydrazine";
+                case ResourceName.FluorineGas: return "Fluorine";
+                case ResourceName.KryptonGas: return "KryptonGas";
+                case ResourceName.KryptonLqd: return "LqdKrypton";
+                case ResourceName.Lithium6: return "Lithium6";
+                case ResourceName.Lithium7: return "Lithium";
+                case ResourceName.ChlorineGas: return "Chlorine";
+                case ResourceName.MethaneGas: return "Methane";
+                case ResourceName.MethaneLqd: return "LqdMethane";
+                case ResourceName.NeonGas: return "LqdGas";
+                case ResourceName.NeonLqd: return "LqdNeon";
+                case ResourceName.NitrogenGas: return "Nitrogen";
+                case ResourceName.NitrogenLqd: return "LqdNitrogen";
+                case ResourceName.Nitrogen15Lqd: return "LqdNitrogen15";
+                case ResourceName.OxygenGas: return "Oxygen";
+                case ResourceName.OxygenLqd: return "LqdOxygen";
+                case ResourceName.Regolith: return "Regolith";
+                case ResourceName.Sodium: return "Sodium";
+                case ResourceName.SolarWind: return "SolarWind";
+                case ResourceName.TritiumGas: return "Tritium";
+                case ResourceName.TritiumLqd: return "LqdTritium";
+                case ResourceName.WaterHeavy: return "HeavyWater";
+                case ResourceName.WaterPure: return "Water";
+                case ResourceName.WaterRaw: return "LqdWater";
+                case ResourceName.XenonGas: return "XenonGas";
+                case ResourceName.XenonLqd: return "LqdXenon";
+
+                case ResourceName.AntiProtium: return AntiProtium;
+                case ResourceName.VacuumPlasma: return VacuumPlasma;
+                case ResourceName.ExoticMatter: return ExoticMatter;
+                case ResourceName.ChargedParticle: return ChargedParticle;
+                case ResourceName.ThermalPower: return ThermalPower;
+
+                case ResourceName.IntakeOxygenAir: return IntakeOxygenAir;
+                case ResourceName.IntakeLiquid: return IntakeLiquid;
+                case ResourceName.IntakeAtmosphere: return IntakeAtmosphere;
+
                 case ResourceName.WasteHeat: return WasteHeat;
                 case ResourceName.EndResource: return EndResource;
                 default: throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
@@ -127,46 +298,6 @@ namespace KIT.Resources
                 throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
         }
 
-        /*
-
-        #region Chemical resources
-
-        public static string Alumina { get; private set; } = "Alumina";
-        public static string Aluminium { get; private set; } = "Aluminium";
-        public static string AmmoniaLqd { get; private set; } = "LqdAmmonia";
-        public static string ArgonLqd { get; private set; } = "LqdArgon";
-        public static string CarbonDioxideGas { get; private set; } = "CarbonDioxide";
-        public static string CarbonDioxideLqd { get; private set; } = "LqdCO2";
-        public static string CarbonMonoxideGas { get; private set; } = "CarbonMonoxide";
-        public static string CarbonMonoxideLqd { get; private set; } = "LqdCO";
-        public static string DeuteriumLqd { get; private set; } = "LqdDeuterium";
-        public static string DeuteriumGas { get; private set; } = "Deuterium";
-        public static string Helium4Gas { get; private set; } = "Helium";
-        public static string Helium4Lqd { get; private set; } = "LqdHelium";
-
-        public static string HydrogenLqd { get; private set; } = LqdHydrogen;
-        public static string HydrogenGas { get; private set; } = "Hydrogen";
-        public static string FluorineGas { get; private set; } = "Fluorine";
-        public static string Lithium6 { get; private set; } = "Lithium6";
-        public static string Lithium7 { get; private set; } = "Lithium";
-
-        #endregion
-
-        #region Abstract resources
-        public static string IntakeOxygenAir { get; private set; } = "IntakeAir";
-        public static string IntakeLiquid { get; private set; } = "IntakeLqd";
-        public static string IntakeAtmosphere { get; private set; } = "IntakeAtm";
-
-        #endregion
-
-        #region Pseudo resources
-        public static string ElectricChargePower { get; private set; } = ElectricCharge;
-        public static string AntiProtium { get; private set; } = "Antimatter";
-        public static string VacuumPlasma { get; private set; } = "VacuumPlasma";
-        public static string ExoticMatter { get; private set; } = "ExoticMatter";
-        #endregion
-
-        */
-
+     
     }
 }

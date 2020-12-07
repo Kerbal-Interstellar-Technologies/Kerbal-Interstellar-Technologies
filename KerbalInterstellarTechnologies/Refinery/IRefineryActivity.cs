@@ -1,4 +1,6 @@
-﻿namespace KIT.Refinery
+﻿using KIT.ResourceScheduler;
+
+namespace KIT.Refinery
 {
     interface IRefineryActivity
     {
@@ -22,7 +24,7 @@
 
         string Status { get; }
 
-        void UpdateFrame(double rateMultiplier, double powerFraction,  double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false);
+        void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction,  double productionModifier, bool allowOverflow, bool isStartup = false);
 
         void UpdateGUI();
 

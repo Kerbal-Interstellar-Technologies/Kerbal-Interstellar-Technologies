@@ -7,18 +7,17 @@ using KIT.Refinery.Activity;
 using KIT.Resources;
 using UnityEngine;
 using KSP.Localization;
+using KIT.ResourceScheduler;
 
 namespace KIT
 {
-    class ScienceModule : ResourceSuppliableModule, ITelescopeController, IUpgradeableModule
+    class ScienceModule : PartModule, IKITMod, ITelescopeController, IUpgradeableModule
     {
         // persistant true
         [KSPField(isPersistant = true)]
         public bool IsEnabled;
         [KSPField(isPersistant = true)]
         public int active_mode = 0;
-        [KSPField(isPersistant = true)]
-        public double last_active_time;
         [KSPField(isPersistant = true)]
         public double electrical_power_ratio;
         //[KSPField(isPersistant = true)]
@@ -341,39 +340,7 @@ namespace KIT
                 }
                 //anim.Play ();
                 //anim2.Play ();
-            }
-
-            if (IsEnabled && last_active_time != 0)
-            {
-                double global_rate_multipliers = 1;
-                crew_capacity_ratio = ((float)(part.protoModuleCrew.Count)) / ((float)part.CrewCapacity);
-                global_rate_multipliers = global_rate_multipliers * crew_capacity_ratio;
-
-                /*
-                if (active_mode == 0) // Science persistence
-                {
-                    var time_diff = Planetarium.GetUniversalTime() - last_active_time;
-                    var altitude_multiplier = Math.Max((vessel.altitude / (vessel.mainBody.Radius)), 1);
-                    var kerbalResearchSkillFactor = part.protoModuleCrew.Sum(proto_crew_member => GetKerbalScienceFactor(proto_crew_member) / 2f);
-
-                    double science_to_increment = kerbalResearchSkillFactor * GameConstants.baseScienceRate * time_diff
-                        / PluginHelper.SecondsInDay * electrical_power_ratio * global_rate_multipliers * PluginHelper.getScienceMultiplier(vessel)
-                        / (Math.Sqrt(altitude_multiplier));
-
-                    science_to_increment = (double.IsNaN(science_to_increment) || double.IsInfinity(science_to_increment)) ? 0 : science_to_increment;
-                    science_to_add += science_to_increment;
-
-                }
-                else
-                */
-                if (active_mode == 2) // Antimatter persistence
-                {
-                    var deltaTime = Planetarium.GetUniversalTime() - last_active_time;
-
-                    var electrical_power_provided_in_Megajoules = electrical_power_ratio * global_rate_multipliers * powerReqMult * PluginHelper.BaseAMFPowerConsumption * deltaTime;
-
-                    antimatterGenerator.Produce(electrical_power_provided_in_Megajoules);
-                }
+            
             }
         }
 
@@ -585,7 +552,9 @@ namespace KIT
             return kerbalFactor * (1.1f - (kerbal.stupidity / 5f));
         }
 
-        public override void OnFixedUpdate()
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             double global_rate_multipliers = 1;
             crew_capacity_ratio = ((float)part.protoModuleCrew.Count) / ((float)part.CrewCapacity);
@@ -621,17 +590,15 @@ namespace KIT
             */
             if (active_mode == 1) // Fuel Reprocessing
             {
-                var powerRequest = powerReqMult * PluginHelper.BasePowerConsumption * TimeWarp.fixedDeltaTime;
+                var powerRequest = powerReqMult * PluginHelper.BasePowerConsumption;
 
-                double electrical_power_provided = CheatOptions.InfiniteElectricity
-                    ? powerRequest
-                    : consumeFNResource(powerRequest, ResourceSettings.Config.ElectricPowerInMegawatt);
+                double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
 
-                electrical_power_ratio = electrical_power_provided / TimeWarp.fixedDeltaTime / PluginHelper.BasePowerConsumption / powerReqMult;
+                electrical_power_ratio = electrical_power_provided /  PluginHelper.BasePowerConsumption / powerReqMult;
 
                 var productionModifier = global_rate_multipliers;
                 global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;
-                reprocessor.UpdateFrame(global_rate_multipliers, electrical_power_ratio, productionModifier, true, TimeWarp.fixedDeltaTime);
+                reprocessor.UpdateFrame(resMan, global_rate_multipliers, electrical_power_ratio, productionModifier, true);
 
                 if (reprocessor.getActinidesRemovedPerHour() > 0)
                     reprocessing_rate_f = reprocessor.getRemainingAmountToReprocess() / reprocessor.getActinidesRemovedPerHour();
@@ -640,12 +607,10 @@ namespace KIT
             }
             else if (active_mode == 2) //Antimatter
             {
-                var powerRequestInMegajoules = powerReqMult * PluginHelper.BaseAMFPowerConsumption * TimeWarp.fixedDeltaTime;
+                var powerRequestInMegajoules = powerReqMult * PluginHelper.BaseAMFPowerConsumption *  GameConstants.ecPerMJ;
 
-                var energy_provided_in_megajoules = CheatOptions.InfiniteElectricity
-                    ? powerRequestInMegajoules
-                    : consumeFNResource(powerRequestInMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
-
+                var energy_provided_in_megajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequestInMegajoules);
+                
                 electrical_power_ratio = powerRequestInMegajoules > 0 ? energy_provided_in_megajoules / powerRequestInMegajoules : 0;
                 antimatterGenerator.Produce(energy_provided_in_megajoules * global_rate_multipliers);
                 antimatter_rate_f = antimatterGenerator.ProductionRate;
@@ -658,16 +623,14 @@ namespace KIT
             {
                 if (vessel.Splashed)
                 {
-                    var powerRequest = powerReqMult * PluginHelper.BaseCentriPowerConsumption * TimeWarp.fixedDeltaTime;
+                    var powerRequest = powerReqMult * PluginHelper.BaseCentriPowerConsumption;
 
-                    double electrical_power_provided = CheatOptions.InfiniteElectricity
-                        ? powerRequest
-                        : consumeFNResource(powerRequest, ResourceSettings.Config.ElectricPowerInMegawatt);
+                    double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
 
-                    electrical_power_ratio = electrical_power_provided / TimeWarp.fixedDeltaTime / PluginHelper.BaseCentriPowerConsumption / powerReqMult;
+                    electrical_power_ratio = electrical_power_provided  / PluginHelper.BaseCentriPowerConsumption / powerReqMult;
                     global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;
                     double deut_produced = global_rate_multipliers * GameConstants.deuterium_timescale * GameConstants.deuterium_abudance * 1000.0f;
-                    deut_rate_f = -part.RequestResource(ResourceSettings.Config.DeuteriumLqd, -deut_produced * TimeWarp.fixedDeltaTime) / TimeWarp.fixedDeltaTime;
+                    deut_rate_f = -part.RequestResource(ResourceSettings.Config.DeuteriumLqd, -deut_produced);
                 }
                 else
                 {
@@ -684,60 +647,14 @@ namespace KIT
                 antimatter_rate_f = 0;
                 reprocessing_rate_f = 0;
             }
-
-            last_active_time = Planetarium.GetUniversalTime();
         }
 
-        /*
-        protected override bool generateScienceData()
-        {
-            ScienceExperiment experiment = ResearchAndDevelopment.GetExperiment(experimentID);
-            if (experiment == null) return false;
-
-            if (science_to_add > 0)
-            {
-                ScienceSubject subject = ResearchAndDevelopment.GetExperimentSubject(experiment, ScienceUtil.GetExperimentSituation(vessel), vessel.mainBody, "", "");
-                if (subject == null)
-                    return false;
-                subject.subjectValue = PluginHelper.getScienceMultiplier(vessel);
-                subject.scienceCap = 167 * subject.subjectValue; ///PluginHelper.getScienceMultiplier(vessel.mainBody.flightGlobalsIndex, false);
-                subject.dataScale = 1.25f;
-
-                float remaining_base_science = (subject.scienceCap - subject.science) / subject.subjectValue;
-                science_to_add = Math.Min(science_to_add, remaining_base_science);
-
-                // transmission of zero data breaks the experiment result dialog box
-                data_size = Math.Max(float.Epsilon, science_to_add * subject.dataScale);
-                science_data = new ScienceData((float)data_size, 1, 0, subject.id, "Science Lab Data");
-
-                result_title = experiment.experimentTitle;
-                result_string = "Science experiments were conducted in the vicinity of " + vessel.mainBody.name + ".";
-
-                recovery_value = science_to_add;
-                transmit_value = recovery_value;
-                xmit_scalar = 1;
-
-                ref_value = subject.scienceCap;
-
-                return true;
-            }
-            return false;
-        }
-
-        protected override void cleanUpScienceData()
-        {
-            science_to_add = 0;
-        }
-        */
-
-        public override string getResourceManagerDisplayName()
+        public string KITPartName()
         {
             if (IsEnabled)
                 return Localizer.Format("#LOC_KSPIE_ScienceModule_ResourceManagerDisplayName", modes[active_mode]);//"Science Lab (" +  + ")"
 
             return Localizer.Format("#LOC_KSPIE_ScienceModule_ResourceManagerDisplayName2");//"Science Lab"
         }
-
-
     }
 }

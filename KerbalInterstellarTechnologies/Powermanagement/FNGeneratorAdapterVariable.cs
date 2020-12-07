@@ -1,22 +1,25 @@
 ﻿using System;
 using KIT.Constants;
-using KIT.Power;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using UnityEngine;
 
 namespace KIT.Powermanagement
 {
+
+    /*
+    
+    With no Megajoules present, this should no longer be needed.
+
     [KSPModule("Generator Adapter")]
-    class FNGeneratorAdapterVariable : ResourceSuppliableModule
+    class FNGeneratorAdapterVariable : PartModule, IKITMod
     {
         [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_FNGeneratorAdapter_Powerinput", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]//Power input
         public double powerGeneratorPowerInput;
         [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_FNGeneratorAdapter_Poweroutput", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]//Power output
         public double powerGeneratorPowerOutput;
 
-        [KSPField(isPersistant = true)]
-        public double last_active_time;
         [KSPField(isPersistant = true)]
         private double initialInputAmount;
         [KSPField(isPersistant = true)]
@@ -88,7 +91,7 @@ namespace KIT.Powermanagement
                 if (moduleGenerator == null) return;
 
                 string[] resourcesToSupply = { ResourceSettings.Config.ElectricPowerInMegawatt };
-                this.resources_to_supply = resourcesToSupply;
+                // this.resources_to_supply = resourcesToSupply;
                 base.OnStart(state);
 
                 outputType = ResourceType.other;
@@ -112,19 +115,6 @@ namespace KIT.Powermanagement
 
                         break;
                     }
-                }
-
-                if (offlineProcessing && moduleInputResource != null && last_active_time > 0 && powerGeneratorPowerInput > 0)
-                {
-                    var timePassedSinceLastProcessing = Planetarium.GetUniversalTime() - last_active_time;
-
-                    var consumption = timePassedSinceLastProcessing * powerGeneratorPowerInput;
-
-                    part.RequestResource(moduleInputResource.name, consumption);
-
-                    var message =  Localizer.Format("#LOC_KSPIE_FNGeneratorAdapter_msg", timePassedSinceLastProcessing,consumption,moduleInputResource.name);// <<1>> seconds passed durring which <<2>> <<3>> was consumed "
-
-                    Debug.Log("[KSPI]: " + message);
                 }
 
                 foreach (ModuleResource moduleResource in moduleGenerator.resHandler.outputResources)
@@ -193,10 +183,10 @@ namespace KIT.Powermanagement
             powerGeneratorPowerOutputField.guiActive = moduleOutputResource != null && showPowerOuput;
         }
 
+        // TODO I think these next two functions are basically wrong / out of date, but I'm not sure at the moment. Will check later.
         public override void OnFixedUpdate()
         {
             if (!HighLogic.LoadedSceneIsFlight) return;
-
             if (moduleGenerator == null) return;
 
             active = true;
@@ -214,23 +204,10 @@ namespace KIT.Powermanagement
                 base.OnFixedUpdate();
         }
 
-        public override string getResourceManagerDisplayName()
-        {
-            // use identical names so it will be grouped together
-            return part.partInfo.title;
-        }
+        public ResourcePriorityValue ResourceProcessPriority() => maximumPowerGeneration == 0 ? ResourcePriorityValue.First : ResourcePriorityValue.Second;
 
-        public override int getPowerPriority()
+        public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (maximumPowerGeneration == 0)
-                return 1;
-            else
-                return 2;
-        }
-
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
-            last_active_time = Planetarium.GetUniversalTime();
 
             powerGeneratorPowerOutput = 0;
             powerGeneratorPowerInput = 0;
@@ -242,13 +219,14 @@ namespace KIT.Powermanagement
             if (!moduleGenerator.generatorIsActive && !moduleGenerator.isAlwaysActive)
             {
                 mockInputResource.rate = 0;
-                supplyFNResourcePerSecondWithMax(0, 0, ResourceSettings.Config.ElectricPowerInMegawatt);
+                // supplyFNResourcePerSecondWithMax(0, 0, ResourceSettings.Config.ElectricPowerInMegawatt);
                 return;
             }
 
             if (maximumPowerGeneration != 0)
             {
-                currentMegajoulesDemand =  Math.Max(0, GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt));
+                currentMegajoulesDemand = Math.Max(0, 0);
+                // TODO - current demand. GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt));
                 currentMegajoulesSupply = Math.Min(currentMegajoulesDemand, maximumPowerGeneration);
             }
 
@@ -286,6 +264,10 @@ namespace KIT.Powermanagement
 
                 powerGeneratorPowerOutput = supplyFNResourcePerSecondWithMax(generatorSupplyInMegajoules, generatorSupplyInMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
             }
+
         }
+
+        public string KITPartName() => part.partInfo.title;
     }
+    */
 }

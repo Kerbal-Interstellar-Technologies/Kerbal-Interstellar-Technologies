@@ -2,10 +2,11 @@
 using System;
 using KIT.Powermanagement;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 
 namespace KIT.Refinery
 {
-    class AntimatterFactory : ResourceSuppliableModule
+    class AntimatterFactory : PartModule, IKITMod
     {
         public const double ONE_THIRD = 1.0 / 3.0;
 
@@ -17,8 +18,6 @@ namespace KIT.Refinery
         [KSPField]
         public string activateTitle = "#LOC_KSPIE_AntimatterFactory_producePositron";
 
-        [KSPField(isPersistant = true)]
-        public double lastActiveTime;
         [KSPField(isPersistant = true)]
         public double electricalPowerRatio;
         [KSPField(guiActive = true, guiName = "#LOC_KSPIE_AntimatterFactory_productionRate")]
@@ -48,15 +47,6 @@ namespace KIT.Refinery
             _disabledText = Localizer.Format("#LOC_KSPIE_AntimatterFactory_disabled");
 
             Fields["isActive"].guiName = Localizer.Format(activateTitle);
-
-            if (!isActive)
-                return;
-
-            var deltaTime = Planetarium.GetUniversalTime() - lastActiveTime;
-
-            var energyProvidedInMegajoules = electricalPowerRatio * powerCapacity * deltaTime;
-
-            _generator.Produce(energyProvidedInMegajoules);
         }
 
         public override void OnUpdate()
@@ -66,8 +56,6 @@ namespace KIT.Refinery
                 productionRateTxt = _disabledText;
                 return;
             }
-
-            lastActiveTime = Planetarium.GetUniversalTime();
 
             double antimatterRatePerDay = productionRate * PluginHelper.SecondsInDay;
 
@@ -87,20 +75,22 @@ namespace KIT.Refinery
             }
         }
 
-        public void FixedUpdate()
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             if (!isActive)
                 return;
 
-            var availablePower = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
-            var resourceBarRatio = getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt);
+            // TODO 
+            var availablePower = 300; //  getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+            var resourceBarRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
             var effectiveResourceThrottling = resourceBarRatio > ONE_THIRD ? 1 : resourceBarRatio * 3;
 
             var energyRequestedInMegajoulesPerSecond = Math.Min(powerCapacity, effectiveResourceThrottling * availablePower * (double)(decimal)powerPercentage * 0.01);
 
-            var energyProvidedInMegajoulesPerSecond = CheatOptions.InfiniteElectricity
-                ? energyRequestedInMegajoulesPerSecond
-                : consumeFNResourcePerSecond(energyRequestedInMegajoulesPerSecond, ResourceSettings.Config.ElectricPowerInMegawatt);
+            // XXX
+            var energyProvidedInMegajoulesPerSecond = resMan.ConsumeResource(ResourceName.ElectricCharge, energyRequestedInMegajoulesPerSecond);
 
             electricalPowerRatio = energyRequestedInMegajoulesPerSecond > 0 ? energyProvidedInMegajoulesPerSecond / energyRequestedInMegajoulesPerSecond : 0;
 
@@ -108,5 +98,7 @@ namespace KIT.Refinery
 
             productionRate = _generator.ProductionRate;
         }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }

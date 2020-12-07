@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Refinery.Activity;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -10,14 +11,12 @@ using UnityEngine;
 namespace KIT.Refinery
 {
     [KSPModule("ISRU Refinery")]
-    class InterstellarRefineryController : PartModule
+    class InterstellarRefineryController : PartModule, IKITMod
     {
         [KSPField(isPersistant = true, guiActive = false)]
         protected bool refinery_is_enabled;
         [KSPField(isPersistant = true, guiActive = false)]
         protected bool lastOverflowSettings;
-        [KSPField(isPersistant = true, guiActive = false)]
-        protected double lastActiveTime;
         [KSPField(isPersistant = true, guiActive = false)]
         protected double lastPowerRatio;
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Refinery_Current")]//Current
@@ -177,34 +176,6 @@ namespace KIT.Refinery
                     _current_activity = availableRefineries.FirstOrDefault(a => a.GetType().Name == lastClassName);
                 }
             }
-
-            if (_current_activity != null)
-            {
-                bool hasRequirement = _current_activity.HasActivityRequirements();
-                lastActivityName = _current_activity.ActivityName;
-
-                Debug.Log("[KSPI]: ISRU Refinery initializing " + lastActivityName + " for which hasRequirement: " + hasRequirement);
-
-                var timeDifference = (Planetarium.GetUniversalTime() - lastActiveTime);
-
-                if (timeDifference > 0.01)
-                {
-                    string message = Localizer.Format("#LOC_KSPIE_Refinery_Postmsg1", lastActivityName, timeDifference.ToString("0")); //"IRSU performed " +  + " for " +  + " seconds"
-                    Debug.Log("[KSPI]: " + message);
-                    ScreenMessages.PostScreenMessage(message, 20, ScreenMessageStyle.LOWER_CENTER);
-                }
-
-                var productionModifier = productionMult * baseProduction;
-                if (lastActivityName == "Atmospheric Extraction")
-                    ((AtmosphereProcessor) _current_activity).ExtractAir(lastPowerRatio * productionModifier,
-                        lastPowerRatio, productionModifier, lastOverflowSettings, timeDifference, true);
-                else if (lastActivityName == "Seawater Extraction")
-                    ((OceanProcessor) _current_activity).ExtractSeawater(lastPowerRatio * productionModifier,
-                        lastPowerRatio, productionModifier, lastOverflowSettings, timeDifference, true);
-                else
-                    _current_activity.UpdateFrame(lastPowerRatio * productionModifier, lastPowerRatio,
-                        productionModifier, lastOverflowSettings, timeDifference, true);
-            }
         }
 
         private void AddIfMissing(List<IRefineryActivity> list, IRefineryActivity refinery)
@@ -242,44 +213,7 @@ namespace KIT.Refinery
 
         public void FixedUpdate()
         {
-            currentPowerReq = 0;
 
-            if (!HighLogic.LoadedSceneIsFlight || !refinery_is_enabled || _current_activity == null)
-            {
-                lastActivityName = string.Empty;
-                return;
-            }
-
-            currentPowerReq = powerReqMult * _current_activity.PowerRequirements * baseProduction;
-
-            var powerRequest = currentPowerReq * (powerPercentage / 100);
-
-            consumedPowerMW = CheatOptions.InfiniteElectricity
-                ? powerRequest
-                : powerSupply.ConsumeMegajoulesPerSecond(powerRequest);
-
-            var shortage = Math.Max(currentPowerReq - consumedPowerMW, 0);
-
-            var fixedDeltaTime = (double)(decimal)TimeWarp.fixedDeltaTime;
-
-            var receivedElectricCharge = part.RequestResource(ResourceSettings.Config.ElectricPowerInKilowatt, shortage *
-                GameConstants.ecPerMJ * fixedDeltaTime) / fixedDeltaTime;
-
-            consumedPowerMW += receivedElectricCharge / GameConstants.ecPerMJ;
-
-            var power_ratio = currentPowerReq > 0 ? consumedPowerMW / currentPowerReq : 0;
-
-            utilisationPercentage = power_ratio * 100;
-
-            var productionModifier = productionMult * baseProduction;
-
-            _current_activity.UpdateFrame(power_ratio * productionModifier, power_ratio, productionModifier, _overflowAllowed, fixedDeltaTime);
-
-            lastPowerRatio = power_ratio; // save the current power ratio in case the vessel is unloaded
-            lastOverflowSettings = _overflowAllowed; // save the current overflow settings in case the vessel is unloaded
-            lastActivityName = _current_activity.ActivityName; // take the string with the name of the current activity, store it in persistent string
-            lastClassName = _current_activity.GetType().Name;
-            lastActiveTime = Planetarium.GetUniversalTime();
         }
 
         public override string GetInfo()
@@ -381,5 +315,49 @@ namespace KIT.Refinery
 
         }
 
+        public ResourcePriorityValue ResourceProcessPriority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            currentPowerReq = 0;
+
+            if (!HighLogic.LoadedSceneIsFlight || !refinery_is_enabled || _current_activity == null)
+            {
+                lastActivityName = string.Empty;
+                return;
+            }
+
+            currentPowerReq = powerReqMult * _current_activity.PowerRequirements * baseProduction;
+
+            var powerRequest = currentPowerReq * (powerPercentage / 100);
+
+            consumedPowerMW = CheatOptions.InfiniteElectricity
+                ? powerRequest
+                : powerSupply.ConsumeMegajoulesPerSecond(powerRequest);
+
+            var shortage = Math.Max(currentPowerReq - consumedPowerMW, 0);
+
+            var receivedElectricCharge = resMan.ConsumeResource(ResourceName.ElectricCharge, shortage * GameConstants.ecPerMJ);
+
+            consumedPowerMW += receivedElectricCharge / GameConstants.ecPerMJ;
+
+            var power_ratio = currentPowerReq > 0 ? consumedPowerMW / currentPowerReq : 0;
+
+            utilisationPercentage = power_ratio * 100;
+
+            var productionModifier = productionMult * baseProduction;
+
+            _current_activity.UpdateFrame(resMan, power_ratio * productionModifier, power_ratio, productionModifier, _overflowAllowed);
+
+            lastPowerRatio = power_ratio; // save the current power ratio in case the vessel is unloaded
+            lastOverflowSettings = _overflowAllowed; // save the current overflow settings in case the vessel is unloaded
+            lastActivityName = _current_activity.ActivityName; // take the string with the name of the current activity, store it in persistent string
+            lastClassName = _current_activity.GetType().Name;
+        }
+
+        public string KITPartName() => $"{part.partInfo.title}{(_current_activity != null ? " (" + lastActivityName + ")" : "")}";
     }
 }

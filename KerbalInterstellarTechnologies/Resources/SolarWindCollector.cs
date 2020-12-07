@@ -1,6 +1,7 @@
 using KIT.Constants;
 using KIT.Extensions;
 using KIT.Powermanagement;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -9,7 +10,7 @@ using UnityEngine;
 namespace KIT.Resources
 {
     [KSPModule("Solar Wind Collector")]
-    class SolarWindCollector : ResourceSuppliableModule
+    class SolarWindCollector : PartModule, IKITMod
     {
         public const string GROUP = "SolarWindCollector";
         public const string GROUP_TITLE = "#LOC_KSPIE_SolarwindCollector_groupName";
@@ -17,8 +18,6 @@ namespace KIT.Resources
         // Persistent True
         [KSPField(isPersistant = true)]
         public bool bIsEnabled;
-        [KSPField(isPersistant = true)]
-        public double dLastActiveTime;
         [KSPField(isPersistant = true)]
         public double dLastPowerRatio;
         [KSPField(isPersistant = true)]
@@ -182,11 +181,12 @@ namespace KIT.Resources
         CelestialBody _localStar;
         CelestialBody _homeWorld;
 
+        
         PartResourceDefinition _helium4GasResourceDefinition;
         PartResourceDefinition _lqdHelium4ResourceDefinition;
         PartResourceDefinition _hydrogenResourceDefinition;
         PartResourceDefinition _solarWindResourceDefinition;
-
+        
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_activateCollector", active = true)]
         public void ActivateCollector()
         {
@@ -270,9 +270,6 @@ namespace KIT.Resources
             // verify collector was enabled
             if (!bIsEnabled) return;
 
-            // verify a timestamp is available
-            if (dLastActiveTime == 0) return;
-
             // verify any power was available in previous state
             if (dLastPowerRatio < 0.01) return;
 
@@ -286,16 +283,6 @@ namespace KIT.Resources
             // if the part should be extended (from last time), go to the extended animation
             if (bIsExtended && _deployAnimation != null)
                 _deployAnimation[animName].normalizedTime = 1;
-
-            // calculate time difference since last time the vessel was active
-            var dTimeDifference =  Math.Abs(Planetarium.GetUniversalTime() - dLastActiveTime);
-
-            // increase buffer to allow processing
-            var solarWindBuffer = part.Resources[_solarWindResourceDefinition.name];
-            solarWindBuffer.maxAmount = 100 * part.mass * dTimeDifference;
-
-            // collect solar wind for entire duration
-            CollectSolarWind(dTimeDifference, true);
         }
 
         public override void OnUpdate()
@@ -386,47 +373,6 @@ namespace KIT.Resources
         public double SquareDragFactor => ((100d - pulsatingPercentage) / 100d) + squareVelocityDragRatio;
 
         public double CollectionRatio => pulsatingPercentage / 100d;
-
-        public void FixedUpdate()
-        {
-            if (!HighLogic.LoadedSceneIsFlight)
-                return;
-
-            var solarWindBuffer = part.Resources[_solarWindResourceDefinition.name];
-            if (solarWindBuffer != null)
-                solarWindBuffer.maxAmount = 10 * part.mass * TimeWarp.fixedDeltaTime;
-
-            UpdateIonizationAnimation();
-
-            if (FlightGlobals.fetch == null) return;
-
-            UpdateDistanceInGui(); // passes the distance to the GUI
-
-            if (!bIsEnabled)
-            {
-                strCollectingStatus = Localizer.Format("#LOC_KSPIE_SolarwindCollector_Disabled");//"Disabled"
-                fEffectiveOrbitalDragInKiloNewton = 0;
-                fSolarWindVesselForceInNewton = 0;
-
-                return;
-            }
-
-            // won't collect in atmosphere
-            if (!IsCollectLegal())
-            {
-                DisableCollector();
-                return;
-            }
-
-            // collect solar wind for a single frame
-            CollectSolarWind(TimeWarp.fixedDeltaTime, false);
-
-            // store current time in case vessel is unloaded
-            dLastActiveTime = Planetarium.GetUniversalTime();
-
-            // store current strength of the magnetic field in case vessel is unloaded
-            dLastMagnetoStrength = GetMagnetosphereRatio(vessel.altitude, PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody));
-        }
 
 
         /* Calculates the strength of the magnetosphere. Will return 1 if in atmosphere, otherwise a ratio of max atmospheric altitude to current
@@ -669,7 +615,7 @@ namespace KIT.Resources
         }
 
         // the main collecting function
-        private void CollectSolarWind(double deltaTimeInSeconds, bool offlineCollecting)
+        private void CollectSolarWind(IResourceManager resMan, double deltaTimeInSeconds, bool offlineCollecting)
         {
             var ionizationPowerCost = IsIonizing ? ionRequirements * Math.Pow(ionizationPercentage * 0.01, 2) : 0;
 
@@ -681,8 +627,8 @@ namespace KIT.Resources
             var dWasteheatProductionMw = powerReqMult * PluginHelper.PowerConsumptionMultiplier * (magneticPulsatingPowerCost + magneticSuperconductorPowerReqCost * 0.05 + ionizationPowerCost * 0.3);
 
             // checks for free space in solar wind 'tanks'
-            _dSolarWindSpareCapacity = part.GetResourceSpareCapacity(_solarWindResourceDefinition.name);
-            _dHydrogenSpareCapacity = part.GetResourceSpareCapacity(_hydrogenResourceDefinition.name);
+            _dSolarWindSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.SolarWind); 
+            _dHydrogenSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.HydrogenLqd);
 
             if (solarWindMolesPerSquareMeterPerSecond > 0 || hydrogenMolarMassPerSquareMeterPerSecond > 0 || interstellarDustMolesPerCubicMeter > 0)
             {
@@ -701,11 +647,11 @@ namespace KIT.Resources
                 var heliumRatio = Math.Min(1,  requiredHeliumMass > 0 ? (receivedHeliumGasMass + receiverLqdHeliumMass) / requiredHeliumMass : 0);
 
                 // calculate available power
-                var receivedPowerMw = consumeFNResourcePerSecond(dPowerRequirementsMw * heliumRatio, ResourceSettings.Config.ElectricPowerInMegawatt);
+                var receivedPowerMw = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMw * heliumRatio * GameConstants.ecPerMJ);
 
                 dLastPowerRatio = offlineCollecting ? dLastPowerRatio : (dPowerRequirementsMw > 0 ? receivedPowerMw / dPowerRequirementsMw : 0);
 
-                supplyManagedFNResourcePerSecond(dWasteheatProductionMw * dLastPowerRatio, ResourceSettings.Config.WasteHeatInMegawatt);
+                resMan.ProduceResource(ResourceName.WasteHeat, dWasteheatProductionMw * dLastPowerRatio);
 
                 // show in GUI
                 strCollectingStatus = Localizer.Format("#LOC_KSPIE_SolarwindCollector_Collecting");//"Collecting solar wind"
@@ -868,11 +814,6 @@ namespace KIT.Resources
                 Debug.LogError("[KSPI]: Illegal solarPushDeltaVv: " + orbitalDragDeltaVv);
         }
 
-        public override int getPowerPriority()
-        {
-            return 4;
-        }
-
         public override string GetInfo()
         {
             var sb = StringBuilderCache.Acquire();
@@ -882,6 +823,48 @@ namespace KIT.Resources
 
             return sb.ToStringAndRelease();
         }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;
+
+            var solarWindBuffer = part.Resources[_solarWindResourceDefinition.name];
+            if (solarWindBuffer != null)
+                solarWindBuffer.maxAmount = 10 * part.mass * TimeWarp.fixedDeltaTime;
+
+            UpdateIonizationAnimation();
+
+            if (FlightGlobals.fetch == null) return;
+
+            UpdateDistanceInGui(); // passes the distance to the GUI
+
+            if (!bIsEnabled)
+            {
+                strCollectingStatus = Localizer.Format("#LOC_KSPIE_SolarwindCollector_Disabled");//"Disabled"
+                fEffectiveOrbitalDragInKiloNewton = 0;
+                fSolarWindVesselForceInNewton = 0;
+
+                return;
+            }
+
+            // won't collect in atmosphere
+            if (!IsCollectLegal())
+            {
+                DisableCollector();
+                return;
+            }
+
+            // collect solar wind for a single frame
+            CollectSolarWind(resMan, TimeWarp.fixedDeltaTime, false);
+
+            // store current strength of the magnetic field in case vessel is unloaded
+            dLastMagnetoStrength = GetMagnetosphereRatio(vessel.altitude, PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody));
+        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }
 

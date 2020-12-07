@@ -6,8 +6,5 @@ using System.Threading.Tasks;
 
 namespace KIT.Power
 {
-    struct Useless
-    {
-        int nameThis;
-    }
+
 }

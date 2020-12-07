@@ -1,8 +1,6 @@
 ﻿using KIT.Constants;
 using KIT.External;
-using KIT.Power;
-using KIT.Resources;
-using KIT.Wasteheat;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -566,8 +564,10 @@ namespace KIT.Propulsion
             }
         }
 
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
+        public new void KITFixedUpdate(IResourceManager resMan)
         {
+            throw new Exception("FusionECU2 - KITFixedUpdate getResourceAvailability");
+            /*
             temperatureStr = part.temperature.ToString("F0") + "K / " + part.maxTemp.ToString("F0") + "K";
             MinIsp = BaseFloatCurve.Evaluate((float)Altitude);
 
@@ -704,6 +704,7 @@ namespace KIT.Propulsion
             maxTempatureRadiators = FNRadiator.GetAverageMaximumRadiatorTemperatureForVessel(vessel);
             radiatorPerformance = Math.Max(1 - (coldBathTemp / maxTempatureRadiators), 0.000001);
             partEmissiveConstant = part.emissiveConstant;
+            */
         }
 
         private void SetRatios()
@@ -770,22 +771,6 @@ namespace KIT.Propulsion
                 crewPart.RemoveCrewmember(crewMember);
                 crewMember.Die();
             }
-        }
-
-        public override string getResourceManagerDisplayName()
-        {
-            return part.partInfo.title;
-        }
-
-        public override int getPowerPriority()
-        {
-            // when providing surplus power, we want to be one of the first to consume and therefore provide power
-            return PowerProductionMaximum > PowerRequirementMaximum ? 1 : powerPriority;
-        }
-
-        public override int getSupplyPriority()
-        {
-            return 1;
         }
     }
 }

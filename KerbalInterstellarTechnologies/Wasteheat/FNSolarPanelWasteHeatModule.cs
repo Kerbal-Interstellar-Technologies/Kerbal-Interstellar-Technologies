@@ -1,11 +1,9 @@
-using KIT.Constants;
-using KIT.Power;
 using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Powermanagement;
 using UnityEngine;
+using KIT.ResourceScheduler;
 
 namespace KIT
 {
@@ -20,7 +18,7 @@ namespace KIT
     }
 
     [KSPModule("Solar Panel Adapter")]
-    class FNSolarPanelWasteHeatModule : ResourceSuppliableModule, ISolarPower
+    class FNSolarPanelWasteHeatModule : PartModule, IKITMod, ISolarPower
     {
         public const string GROUP = "FNSolarPanelWasteHeatModule";
         public const string GROUP_TITLE = "Interstellar Solar Generator";
@@ -62,7 +60,7 @@ namespace KIT
 
         BeamedPowerReceiver _microwavePowerReceiver;
         ModuleDeployableSolarPanel _solarPanel;
-        ResourceType _outputType = 0;
+
         List<StarLight> _stars;
 
         private BaseField _mjSolarSupplyField;
@@ -108,19 +106,12 @@ namespace KIT
             }
 
             string[] resourcesToSupply = { ResourceSettings.Config.ElectricPowerInMegawatt };
-            this.resources_to_supply = resourcesToSupply;
+            //this.resources_to_supply = resourcesToSupply;
             base.OnStart(state);
 
             _outputResource = _solarPanel.resHandler.outputResources.FirstOrDefault();
 
             resourceName = _solarPanel.resourceName;
-
-            if (resourceName == ResourceSettings.Config.ElectricPowerInMegawatt)
-                _outputType = ResourceType.megajoule;
-            else if (resourceName == ResourceSettings.Config.ElectricPowerInKilowatt)
-                _outputType = ResourceType.electricCharge;
-            else
-                _outputType = ResourceType.other;
 
             _stars = KopernicusHelper.Stars;
         }
@@ -142,16 +133,6 @@ namespace KIT
                 base.OnFixedUpdate();
         }
 
-        public override string getResourceManagerDisplayName()
-        {
-            // use identical names so it will be grouped together
-            return part.partInfo.title;
-        }
-
-        public override int getPowerPriority()
-        {
-            return 1;
-        }
 
         public override void OnUpdate()
         {
@@ -160,64 +141,6 @@ namespace KIT
 
             if (_mjMaxSupplyField != null)
                 _mjMaxSupplyField.guiActive = solarMaxSupply > 0;
-        }
-
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
-            if (_solarPanel == null) return;
-
-            if (_fieldKerbalismNominalRate != null)
-            {
-                kerbalism_nominalRate = _fieldKerbalismNominalRate.GetValue<double>(_solarPanelFixer);
-                kerbalism_panelState = _fieldKerbalismPanelStatus.GetValue<string>(_solarPanelFixer);
-
-                var kerbalismPanelStateArray = kerbalism_panelState.Split(' ');
-
-                kerbalism_panelOutput = kerbalismPanelStateArray[0];
-
-                double.TryParse(kerbalism_panelOutput, out kerbalism_panelPower);
-            }
-
-            if (_outputResource != null && _solarPanel.deployState == ModuleDeployablePart.DeployState.EXTENDED)
-            {
-                outputResourceRate = _outputResource.rate;
-                outputResourceCurrentRequest = _outputResource.currentRequest;
-            }
-            else
-            {
-                outputResourceRate = 0;
-                outputResourceCurrentRequest = 0;
-            }
-
-            if (_outputType == ResourceType.other) return;
-
-            chargeRate = _solarPanel.chargeRate;
-
-            double age = (Planetarium.GetUniversalTime() - _solarPanel.launchUT) * 1.15740740740741E-05;
-            calculatedEfficency = _solarPanel._efficMult > 0 ? _solarPanel._efficMult :
-                _solarPanel.temperatureEfficCurve.Evaluate((float)part.skinTemperature) *
-                _solarPanel.timeEfficCurve.Evaluate((float)age) * _solarPanel.efficiencyMult;
-
-            double maxSupply = 0.0, solarRate = 0.0;
-            sunAOA = 0;
-            CalculateSolarFlowRate(calculatedEfficency / scale, ref maxSupply, ref solarRate);
-
-            if (_outputResource != null)
-            {
-                if (kerbalism_panelPower > 0)
-                    part.RequestResource(_solarPanel.resourceName, kerbalism_panelPower * fixedDeltaTime);
-                else if (_outputResource != null)
-                    _outputResource.rate = 0;
-                else
-                    part.RequestResource(_solarPanel.resourceName, solarRate * fixedDeltaTime);
-            }
-
-            // provide power to supply manager
-            solar_supply = _outputType == ResourceType.megajoule ? solarRate : solarRate / GameConstants.ecPerMJ;
-            solarMaxSupply = _outputType == ResourceType.megajoule ? maxSupply : maxSupply / GameConstants.ecPerMJ;
-
-            mjSolarSupply = PluginHelper.getFormattedPowerString(supplyFNResourcePerSecondWithMax(solar_supply, solarMaxSupply, ResourceSettings.Config.ElectricPowerInMegawatt));
-            mjMaxSupply = PluginHelper.getFormattedPowerString(solarMaxSupply);
         }
 
         private void CalculateSolarFlowRate(double efficiency, ref double maximumSupply, ref double solarPowerRate)
@@ -279,5 +202,70 @@ namespace KIT
             var distanceInAu = distanceToSurfaceStar / astronomicalUnit;
             return 1d / (distanceInAu * distanceInAu);
         }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (_solarPanel == null) return;
+
+            if (_fieldKerbalismNominalRate != null)
+            {
+                kerbalism_nominalRate = _fieldKerbalismNominalRate.GetValue<double>(_solarPanelFixer);
+                kerbalism_panelState = _fieldKerbalismPanelStatus.GetValue<string>(_solarPanelFixer);
+
+                var kerbalismPanelStateArray = kerbalism_panelState.Split(' ');
+
+                kerbalism_panelOutput = kerbalismPanelStateArray[0];
+
+                double.TryParse(kerbalism_panelOutput, out kerbalism_panelPower);
+            }
+
+            if (_outputResource != null && _solarPanel.deployState == ModuleDeployablePart.DeployState.EXTENDED)
+            {
+                outputResourceRate = _outputResource.rate;
+                outputResourceCurrentRequest = _outputResource.currentRequest;
+            }
+            else
+            {
+                outputResourceRate = 0;
+                outputResourceCurrentRequest = 0;
+            }
+
+            chargeRate = _solarPanel.chargeRate;
+
+            double age = (Planetarium.GetUniversalTime() - _solarPanel.launchUT) * 1.15740740740741E-05;
+            calculatedEfficency = _solarPanel._efficMult > 0 ? _solarPanel._efficMult :
+                _solarPanel.temperatureEfficCurve.Evaluate((float)part.skinTemperature) *
+                _solarPanel.timeEfficCurve.Evaluate((float)age) * _solarPanel.efficiencyMult;
+
+            double maxSupply = 0.0, solarRate = 0.0;
+            sunAOA = 0;
+            CalculateSolarFlowRate(calculatedEfficency / scale, ref maxSupply, ref solarRate);
+
+            if (_outputResource != null)
+            {
+                var resID = KITResourceSettings.NameToResource(_solarPanel.resourceName);
+                if (resID == ResourceName.Unknown)
+                {
+                    Debug.Log($"[FNSolarPanelWasteHeatModule.KITFixedUpdate] - do not know how to handle Kerbalism resource request of {_solarPanel.resourceName}");
+
+                }
+                else
+                {
+                    if (kerbalism_panelPower > 0) resMan.ProduceResource(resID, kerbalism_panelPower);
+                    else if (_outputResource != null)
+                        _outputResource.rate = 0;
+                    else
+                        resMan.ProduceResource(resID, solarRate);
+                }
+            }
+
+            resMan.ProduceResource(ResourceName.ElectricCharge, solarRate);
+            mjSolarSupply = PluginHelper.getFormattedPowerString(solarRate);
+            mjMaxSupply = PluginHelper.getFormattedPowerString(maxSupply);
+        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }

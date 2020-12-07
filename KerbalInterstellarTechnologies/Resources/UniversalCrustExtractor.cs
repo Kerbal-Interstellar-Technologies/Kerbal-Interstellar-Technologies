@@ -1,4 +1,5 @@
 ﻿using KIT.Powermanagement;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace KIT.Resources
         public double Local { get; set; }
     }
 
-    class UniversalCrustExtractor : ResourceSuppliableModule
+    class UniversalCrustExtractor : PartModule, IKITMod
     {
         public const string GROUP = "UniversalCrustExtractor";
         public const string GROUP_TITLE = "#LOC_KSPIE_UniversalCrustExtractor_groupName";
@@ -25,12 +26,6 @@ namespace KIT.Resources
         public bool bIsEnabled = false;
         [KSPField(groupName = GROUP, isPersistant = true, guiActive = false, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillDeployed")]//Deployed
         public bool isDeployed;
-
-        // previous data
-        [KSPField(isPersistant = true)]
-        double dLastActiveTime;
-        [KSPField(isPersistant = true)]
-        double dLastPseudoMinedAmount;
 
         [KSPField(isPersistant = true)]
         public float windowPositionX = 20;
@@ -193,7 +188,7 @@ namespace KIT.Resources
         public override void OnStart(PartModule.StartState state)
         {
             // initialise resources
-            resources_to_supply = new[] { ResourceSettings.Config.WasteHeatInMegawatt };
+            //resources_to_supply = new[] { ResourceSettings.Config.WasteHeatInMegawatt };
             base.OnStart(state);
 
             _moduleScienceExperiment = part.FindModuleImplementing<ModuleScienceExperiment>();
@@ -231,12 +226,6 @@ namespace KIT.Resources
 
                 // create the id for the GUI window
                 _window_ID = new System.Random(part.GetInstanceID()).Next(int.MinValue, int.MaxValue);
-
-                if (bIsEnabled && CheckForPreviousData())
-                {
-                    double timeDifference = (Planetarium.GetUniversalTime() - dLastActiveTime) * 55;
-                    MineResources(true, timeDifference);
-                }
             }
 
         }
@@ -309,27 +298,6 @@ namespace KIT.Resources
             }
         }
 
-        //public override void OnFixedUpdate()
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
-            if (bIsEnabled)
-            {
-                ToggleEmmitters(true);
-                UpdateLoopingAnimation();
-
-                //double fixedDeltaTime = (double)(decimal)Math.Round(TimeWarp.fixedDeltaTime, 7);
-                MineResources(false, fixedDeltaTime);
-                // Save time data for offline mining
-                dLastActiveTime = Planetarium.GetUniversalTime();
-            }
-            else
-            {
-                foreach (CrustalResource resource in localResources)
-                {
-                    CalculateSpareRoom(resource);
-                }
-            }
-        }
 
         private void OnGUI()
         {
@@ -359,24 +327,6 @@ namespace KIT.Resources
                 return true;
             }
         }
-
-        private bool CheckForPreviousData()
-        {
-            // verify a timestamp is available
-            if (dLastActiveTime == 0)
-            {
-                return false;
-            }
-
-            // verify any power was available in previous state
-            //if (dLastPowerPercentage < 0.01)
-            //{
-            //    return false;
-            //}
-
-            return true;
-        }
-
         // *** END OF STARTUP FUNCTIONS ***
 
         // *** MINING FACILITATION FUNCTIONS ***
@@ -462,26 +412,6 @@ namespace KIT.Resources
 
             groundDistance = hit.distance;
             return !(groundDistance <= 0);
-        }
-
-        /// <summary>
-        /// Helper function to calculate whether the extractor is getting enough power.
-        /// It also takes care of the power consumption.
-        /// Returns true if there's enough power (or the Cheat Option Infinite Electricity is ON).
-        /// </summary>
-        /// <returns>Double indicating how much power is available to the drill</returns>
-        private double HasEnoughPower(double deltaTime)
-        {
-            if (CheatOptions.InfiniteElectricity || mwRequirements == 0) // is the cheat option of infinite electricity ON? Then skip all these checks.
-                return 100;
-
-            double dPowerRequirementsMW = PluginHelper.PowerConsumptionMultiplier * mwRequirements;
-            // Determine available power, using EC if below 5 MW required
-            double dNormalisedRecievedPowerMW = consumeMegawatts(dPowerRequirementsMW,
-                true, false, dPowerRequirementsMW < 5.0);
-
-            // Workaround for some weird glitches where dNormalisedRecievedPowerMW gets slightly smaller than it should be during timewarping
-            return dNormalisedRecievedPowerMW / dPowerRequirementsMW;
         }
 
         /// <summary>
@@ -626,17 +556,20 @@ namespace KIT.Resources
         /// </summary>
         /// <param name="amount">The amount of resource to collect/add.</param>
         /// <param name="resourceName">The name of the current resource.</param>
-        private double AddResource(double amount, string resourceName)
+        private double AddResource(IResourceManager resMan, double amount, string resourceName)
         {
-            return part.RequestResource(resourceName, -amount, ResourceFlowMode.ALL_VESSEL);
+            ResourceName resID;
+            resID = KITResourceSettings.NameToResource(resourceName);
+            if (resID == ResourceName.Unknown)
+            {
+                return part.RequestResource(resourceName, -amount, ResourceFlowMode.ALL_VESSEL);
+            }
+            else
+            {
+                resMan.ProduceResource(resID, amount);
+                return amount;
+            }
         }
-
-        private void StoreDataForOfflineMining(double amount)
-        {
-            // then add to the end of the list
-            dLastPseudoMinedAmount = amount;
-        }
-
 
         // *** The important function controlling the mining ***
         /// <summary>
@@ -645,108 +578,66 @@ namespace KIT.Resources
         /// </summary>
         /// <param name="offlineCollecting">Bool parameter, signifies if this collection is done in catch-up mode (i.e. after the focus has been on another vessel).</param>
         /// <param name="deltaTime">Double, signifies the amount of time since last Fixed Update (Unity).</param>
-        private void MineResources(bool offlineCollecting, double deltaTime)
+        private void MineResources(IResourceManager resMan)
         {
-            if (!offlineCollecting)
+            double wantedPower = PluginHelper.PowerConsumptionMultiplier * mwRequirements;
+            double percentPower = resMan.ConsumeResource(ResourceName.ElectricCharge, wantedPower) / wantedPower;
+
+            if (percentPower < minimumPowerNeeded)
             {
-                double percentPower = HasEnoughPower(deltaTime);
-
-                if(percentPower < minimumPowerNeeded)
+                if (powerCountdown > 0)
                 {
-                    if(powerCountdown > 0)
-                    {
-                        powerCountdown -= 1;
-                        return;
-                    }
-
-                    ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg1"), 3.0f, ScreenMessageStyle.LOWER_CENTER);//"Not enough power to run the universal drill."
-                    DisableCollector();
+                    powerCountdown -= 1;
                     return;
                 }
 
-                reasonNotCollecting = CheckIfCollectingPossible();
-
-                if (!string.IsNullOrEmpty(reasonNotCollecting)) // collecting not possible due to some reasons.
-                {
-                    ScreenMessages.PostScreenMessage(reasonNotCollecting, 3.0f, ScreenMessageStyle.LOWER_CENTER);
-
-                    DisableCollector();
-                    return; // let's get out of here, no mining for now
-                }
-
-                if (!GetResourceData()) // if the resource data was not okay, no mining
-                {
-                    ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg2"), 3.0f, ScreenMessageStyle.LOWER_CENTER);//"The universal drill is not sure where you are trying to mine. Please contact the mod author, tell him the details of this situation and provide the output log."
-                    DisableCollector();
-                    return;
-                }
-
-                if (!CalculateCrustThickness(vessel.altitude, FlightGlobals.currentMainBody, out var crustThickness)) // crust thickness calculation off, no mining
-                {
-                    DisableCollector();
-                    return;
-                }
-
-                double minedAmount = crustThickness * drillSize * effectiveness * percentPower;
-                double minedAmountStock = 0.0005 * drillSize * effectiveness * percentPower;
-
-                StoreDataForOfflineMining(minedAmount);
-
-                foreach (CrustalResource resource in localResources)
-                {
-                    CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
-
-                    if (abundance == null)
-                        continue;
-
-                    if (resource.ResourceName == "Ore")
-                        resource.Production = minedAmountStock * abundance.Local;
-                    else
-                        resource.Production = minedAmount * abundance.Local;
-
-                    CalculateSpareRoom(resource);
-
-                    if (resource.SpareRoom > 0) // if there's space, add the resource
-                        AddResource(resource.Production * deltaTime, resource.ResourceName);
-                }
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg1"), 3.0f, ScreenMessageStyle.LOWER_CENTER);//"Not enough power to run the universal drill."
+                DisableCollector();
+                return;
             }
-            else // this is offline collecting, so use the simplified version
+
+            reasonNotCollecting = CheckIfCollectingPossible();
+
+            if (!string.IsNullOrEmpty(reasonNotCollecting)) // collecting not possible due to some reasons.
             {
-                // ensure the drill doesn't turn itself off too quickly
-                powerCountdown = powerCountdownMax;
+                ScreenMessages.PostScreenMessage(reasonNotCollecting, 3.0f, ScreenMessageStyle.LOWER_CENTER);
 
-                // these are helper variables for the message
-                double totalAmount = 0;
-                int numberOfResources = 0;
+                DisableCollector();
+                return; // let's get out of here, no mining for now
+            }
 
-                // get the resource data
-                if (!GetResourceData()) // if getting the resource data went wrong, no offline mining
-                {
-                    Debug.Log("[KSPI]: Universal Drill - Error while getting resource data for offline mining calculations.");
-                    return;
-                }
+            if (!GetResourceData()) // if the resource data was not okay, no mining
+            {
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg2"), 3.0f, ScreenMessageStyle.LOWER_CENTER);//"The universal drill is not sure where you are trying to mine. Please contact the mod author, tell him the details of this situation and provide the output log."
+                DisableCollector();
+                return;
+            }
 
-                // go through each resource, calculate the percentage, abundance, amount collected and spare room in tanks. If possible, add the resource
-                foreach (CrustalResource resource in localResources)
-                {
-                    CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
-                    if (abundance == null)
-                        continue;
+            if (!CalculateCrustThickness(vessel.altitude, FlightGlobals.currentMainBody, out var crustThickness)) // crust thickness calculation off, no mining
+            {
+                DisableCollector();
+                return;
+            }
 
-                    //amount = CalculateResourceAmountCollected(dLastPseudoMinedAmount, abundance.GlobalWithVariance, abundance.Local, deltaTime);
-                    resource.Production = dLastPseudoMinedAmount * abundance.Local;
-                    CalculateSpareRoom(resource);
-                    if (resource.SpareRoom > 0 && resource.Production > 0)
-                    {
-                        var additionFixed = resource.Production * deltaTime;
-                        AddResource(additionFixed, resource.ResourceName);
-                        totalAmount += (additionFixed > resource.SpareRoom) ? resource.SpareRoom : additionFixed; // add the mined amount to the total for the message, but only the amount that actually got into the tanks
-                        numberOfResources++;
-                    }
+            double minedAmount = crustThickness * drillSize * effectiveness * percentPower;
+            double minedAmountStock = 0.0005 * drillSize * effectiveness * percentPower;
 
-                }
-                // inform the player about the offline processing
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg3", deltaTime.ToString("0"), totalAmount.ToString("0.000"), numberOfResources), 10.0f, ScreenMessageStyle.LOWER_CENTER);//"Universal drill mined offline for <<1>> seconds, drilling out <<2>> units of <<3>> resources."
+            foreach (CrustalResource resource in localResources)
+            {
+                CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
+
+                if (abundance == null)
+                    continue;
+
+                if (resource.ResourceName == "Ore")
+                    resource.Production = minedAmountStock * abundance.Local;
+                else
+                    resource.Production = minedAmount * abundance.Local;
+
+                CalculateSpareRoom(resource);
+
+                if (resource.SpareRoom > 0) // if there's space, add the resource
+                    AddResource(resMan, resource.Production, resource.ResourceName);
             }
         }
 
@@ -866,6 +757,34 @@ namespace KIT.Resources
             loopAnimation[loopingAnimationName].speed = 0;
             loopAnimation[loopingAnimationName].normalizedTime = animationState;
             loopAnimation.Blend(loopingAnimationName, 1);
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (bIsEnabled)
+            {
+                ToggleEmmitters(true);
+                UpdateLoopingAnimation();
+
+                MineResources(resMan);
+            }
+            else
+            {
+                foreach (CrustalResource resource in localResources)
+                {
+                    CalculateSpareRoom(resource);
+                }
+            }
+        }
+
+        public string KITPartName()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -163,7 +164,7 @@ namespace KIT.Refinery.Activity
         private double _nitrogenMassByFraction  = 0.04173108;
         private double _neonMassByFraction      = 0.06012;
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow,  bool isStartup = false)
         {
             _current_power = PowerRequirements * rateMultiplier;
             _current_rate = CurrentPower / EnergyPerTon;
@@ -218,12 +219,12 @@ namespace KIT.Refinery.Activity
             _spareRoomNeonMass = _maxCapacityNeonMass - _storedNeonMass;
 
             // this should determine how much resource this process can consume
-            double fixedMaxSolarWindConsumptionRate = _current_rate * fixedDeltaTime * _solarWindDensity;
+            double fixedMaxSolarWindConsumptionRate = _current_rate  * _solarWindDensity;
             double solarWindConsumptionRatio = fixedMaxSolarWindConsumptionRate > 0
                 ? Math.Min(fixedMaxSolarWindConsumptionRate, _storedSolarWindMass) / fixedMaxSolarWindConsumptionRate
                 : 0;
 
-            _fixedConsumptionRate = _current_rate * fixedDeltaTime * solarWindConsumptionRatio;
+            _fixedConsumptionRate = _current_rate  * solarWindConsumptionRatio;
 
             // begin the solar wind processing
             if (_fixedConsumptionRate > 0 && (_spareRoomHydrogenMass > 0 || _spareRoomDeuteriumMass > 0 || _spareRoomHelium3Mass > 0 || _spareRoomHelium4Mass > 0 || _spareRoomMonoxideMass > 0 || _spareRoomNitrogenMass > 0)) // check if there is anything to consume and spare room for at least one of the products
@@ -259,7 +260,7 @@ namespace KIT.Refinery.Activity
                 double minConsumptionStorageRatio = consumptionStorageRatios.Min();
 
                 // this consumes the resource
-                _solarWindConsumptionRate = _part.RequestResource(_solarWindResourceName, minConsumptionStorageRatio * _fixedConsumptionRate / _solarWindDensity) / fixedDeltaTime * _solarWindDensity;
+                _solarWindConsumptionRate = _part.RequestResource(_solarWindResourceName, minConsumptionStorageRatio  / _solarWindDensity) / _solarWindDensity;
 
                 // this produces the products
                 var hydrogenRateTemp = _solarWindConsumptionRate * _hydrogenMassByFraction;
@@ -270,26 +271,26 @@ namespace KIT.Refinery.Activity
                 var nitrogenRateTemp = _solarWindConsumptionRate * _nitrogenMassByFraction;
                 var neonRateTemp = _solarWindConsumptionRate * _neonMassByFraction;
 
-                _hydrogenProductionRate = -_part.RequestResource(_hydrogenGasResourceName, -hydrogenRateTemp * fixedDeltaTime / _hydrogenGasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _hydrogenGasDensity;
-                _hydrogenProductionRate += -_part.RequestResource(_hydrogenLiquidResourceName, -(hydrogenRateTemp - _hydrogenProductionRate) * fixedDeltaTime / _hydrogenLiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _hydrogenLiquidDensity;
+                _hydrogenProductionRate = -_part.RequestResource(_hydrogenGasResourceName, -hydrogenRateTemp  / _hydrogenGasDensity, ResourceFlowMode.ALL_VESSEL) /  _hydrogenGasDensity;
+                _hydrogenProductionRate += -_part.RequestResource(_hydrogenLiquidResourceName, -(hydrogenRateTemp - _hydrogenProductionRate)  / _hydrogenLiquidDensity, ResourceFlowMode.ALL_VESSEL) / _hydrogenLiquidDensity;
 
-                _deuteriumProductionRate = -_part.RequestResource(_deuteriumGasResourceName, -deuteriumRateTemp * fixedDeltaTime / _deuteriumGasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _deuteriumGasDensity;
-                _deuteriumProductionRate += -_part.RequestResource(_deuteriumLiquidResourceName, -(deuteriumRateTemp - _deuteriumProductionRate) * fixedDeltaTime / _deuteriumLiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _deuteriumLiquidDensity;
+                _deuteriumProductionRate = -_part.RequestResource(_deuteriumGasResourceName, -deuteriumRateTemp  / _deuteriumGasDensity, ResourceFlowMode.ALL_VESSEL) / _deuteriumGasDensity;
+                _deuteriumProductionRate += -_part.RequestResource(_deuteriumLiquidResourceName, -(deuteriumRateTemp - _deuteriumProductionRate)  / _deuteriumLiquidDensity, ResourceFlowMode.ALL_VESSEL) /  _deuteriumLiquidDensity;
 
-                _liquidHelium3ProductionRate = -_part.RequestResource(_helium3GasResourceName, -helium3RateTemp * fixedDeltaTime / _liquidHelium3GasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _liquidHelium3GasDensity;
-                _liquidHelium3ProductionRate += -_part.RequestResource(_helium3LiquidResourceName, -(helium3RateTemp - _liquidHelium3ProductionRate) * fixedDeltaTime / _liquidHelium3LiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _liquidHelium3LiquidDensity;
+                _liquidHelium3ProductionRate = -_part.RequestResource(_helium3GasResourceName, -helium3RateTemp / _liquidHelium3GasDensity, ResourceFlowMode.ALL_VESSEL) /  _liquidHelium3GasDensity;
+                _liquidHelium3ProductionRate += -_part.RequestResource(_helium3LiquidResourceName, -(helium3RateTemp - _liquidHelium3ProductionRate)  / _liquidHelium3LiquidDensity, ResourceFlowMode.ALL_VESSEL) /  _liquidHelium3LiquidDensity;
 
-                _liquidHelium4ProductionRate = -_part.RequestResource(_helium4GasResourceName, -helium4RateTemp * fixedDeltaTime / _liquidHelium4GasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _liquidHelium4GasDensity;
-                _liquidHelium4ProductionRate += -_part.RequestResource(_helium4LiquidResourceName, -(helium4RateTemp - _liquidHelium4ProductionRate) * fixedDeltaTime / _liquidHelium4LiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _liquidHelium4LiquidDensity;
+                _liquidHelium4ProductionRate = -_part.RequestResource(_helium4GasResourceName, -helium4RateTemp / _liquidHelium4GasDensity, ResourceFlowMode.ALL_VESSEL) / _liquidHelium4GasDensity;
+                _liquidHelium4ProductionRate += -_part.RequestResource(_helium4LiquidResourceName, -(helium4RateTemp - _liquidHelium4ProductionRate)  / _liquidHelium4LiquidDensity, ResourceFlowMode.ALL_VESSEL) / _liquidHelium4LiquidDensity;
 
-                _monoxideProductionRate = -_part.RequestResource(_monoxideGasResourceName, -monoxideRateTemp * fixedDeltaTime / _monoxideGasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _monoxideGasDensity;
-                _monoxideProductionRate += -_part.RequestResource(_monoxideLiquidResourceName, -(monoxideRateTemp - _monoxideProductionRate) * fixedDeltaTime / _monoxideLiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _monoxideLiquidDensity;
+                _monoxideProductionRate = -_part.RequestResource(_monoxideGasResourceName, -monoxideRateTemp  / _monoxideGasDensity, ResourceFlowMode.ALL_VESSEL) / _monoxideGasDensity;
+                _monoxideProductionRate += -_part.RequestResource(_monoxideLiquidResourceName, -(monoxideRateTemp - _monoxideProductionRate)  / _monoxideLiquidDensity, ResourceFlowMode.ALL_VESSEL) /  _monoxideLiquidDensity;
 
-                _nitrogenProductionRate = -_part.RequestResource(_nitrogenGasResourceName, -nitrogenRateTemp * fixedDeltaTime / _nitrogenGasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _nitrogenGasDensity;
-                _nitrogenProductionRate += -_part.RequestResource(_nitrogenLiquidResourceName, -(nitrogenRateTemp - _nitrogenProductionRate) * fixedDeltaTime / _nitrogenLiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _nitrogenLiquidDensity;
+                _nitrogenProductionRate = -_part.RequestResource(_nitrogenGasResourceName, -nitrogenRateTemp  / _nitrogenGasDensity, ResourceFlowMode.ALL_VESSEL) / _nitrogenGasDensity;
+                _nitrogenProductionRate += -_part.RequestResource(_nitrogenLiquidResourceName, -(nitrogenRateTemp - _nitrogenProductionRate)  / _nitrogenLiquidDensity, ResourceFlowMode.ALL_VESSEL) /  _nitrogenLiquidDensity;
 
-                _neonProductionRate = -_part.RequestResource(_neonGasResourceName, -neonRateTemp * fixedDeltaTime / _neonGasDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _neonGasDensity;
-                _neonProductionRate += -_part.RequestResource(_neonLiquidResourceName, -(neonRateTemp - _neonProductionRate) * fixedDeltaTime / _neonLiquidDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _neonLiquidDensity;
+                _neonProductionRate = -_part.RequestResource(_neonGasResourceName, -neonRateTemp / _neonGasDensity, ResourceFlowMode.ALL_VESSEL) / _neonGasDensity;
+                _neonProductionRate += -_part.RequestResource(_neonLiquidResourceName, -(neonRateTemp - _neonProductionRate) / _neonLiquidDensity, ResourceFlowMode.ALL_VESSEL) /  _neonLiquidDensity;
             }
             else
             {

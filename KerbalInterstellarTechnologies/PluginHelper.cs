@@ -87,8 +87,8 @@ namespace KIT
         {
             Debug.Log("[KSPI]: GameEventSubscriber - detected OnDockingComplete");
 
-            ResourceOvermanager.Reset();
-            SupplyPriorityManager.Reset();
+            //ResourceOvermanager.Reset();
+            //SupplyPriorityManager.Reset();
 
             ResetReceivers();
         }
@@ -127,8 +127,6 @@ namespace KIT
         {
             Debug.Log("[KSPI]: GameEventSubscriber - detected OnPartDeCoupleComplete");
 
-            ResourceOvermanager.Reset();
-            SupplyPriorityManager.Reset();
             FNRadiator.Reset();
 
             ResetReceivers();
@@ -136,7 +134,6 @@ namespace KIT
 
         void OnVesselDestroy(Vessel vessel)
         {
-            ResourceOvermanager.ResetForVessel(vessel);
         }
 
         private static void ResetReceivers()

@@ -670,8 +670,9 @@ namespace KIT.Powermanagement
                     stableDistributed[priority] += stableSupplied;
                 }
 
+                // TODO this was removed. 
                 // notify of supply
-                resourceSuppliable.receiveFNResource(powerSupplied, resourceName);
+                //resourceSuppliable.receiveFNResource(powerSupplied, resourceName);
             }
 
             // Process any priority requests not run due to low priority items not existing

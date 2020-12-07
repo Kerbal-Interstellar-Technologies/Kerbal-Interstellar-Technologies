@@ -8,6 +8,7 @@ using System.Linq;
 using KIT.Powermanagement;
 using KIT.Resources;
 using UnityEngine;
+using KIT.ResourceScheduler;
 
 namespace KIT.Beamedpower
 {
@@ -17,7 +18,7 @@ namespace KIT.Beamedpower
 
     class BeamedPowerLaserTransmitter : BeamedPowerTransmitter { }
 
-    class BeamedPowerTransmitter : ResourceSuppliableModule, IMicrowavePowerTransmitter //, IScalarModule
+    class BeamedPowerTransmitter : PartModule, IKITMod, IMicrowavePowerTransmitter //, IScalarModule
     {
         public const string GROUP = "BeamedPowerTransmitter";
         public const string GROUP_TITLE = "#LOC_KSPIE_MicrowavePowerTransmitter_groupName";
@@ -547,62 +548,7 @@ namespace KIT.Beamedpower
 
         public void FixedUpdate()
         {
-            if (activeBeamGenerator != null)
-                transmissionEfficiencyPercentage = activeBeamGenerator.efficiencyPercentage;
-
-            if (!HighLogic.LoadedSceneIsFlight) return;
-
-            nuclear_power = 0;
-            solar_power = 0;
-            availablePower = 0;
-            requestedPower = 0;
-
-            CollectBiomeData();
-
-            base.OnFixedUpdate();
-
-            if (activeBeamGenerator != null && IsEnabled && !relay)
-            {
-                double powerTransmissionRatio = (double)(decimal)transmitPower / 100d;
-                double transmissionWasteRatio = (100 - activeBeamGenerator.efficiencyPercentage) / 100d;
-                double transmissionEfficiencyRatio = activeBeamGenerator.efficiencyPercentage / 100d;
-
-                availablePower = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
-
-                if (CheatOptions.InfiniteElectricity)
-                {
-                    requestedPower = power_capacity;
-                }
-                else
-                {
-                    var megajoulesRatio = getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt);
-                    var wasteheatRatio = getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
-
-                    var effectiveResourceThrotling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1  - wasteheatRatio) * 10);
-
-                    requestedPower = Math.Min(Math.Min(power_capacity, availablePower) * powerTransmissionRatio, effectiveResourceThrotling * availablePower);
-                }
-
-                double receivedPower = CheatOptions.InfiniteElectricity ? requestedPower :
-                    consumeFNResourcePerSecond(requestedPower, ResourceSettings.Config.ElectricPowerInMegawatt);
-
-                nuclear_power += GameConstants.ecPerMJ * transmissionEfficiencyRatio * receivedPower;
-
-                solar_power += GameConstants.ecPerMJ * transmissionEfficiencyRatio * solarCells.Sum(m => m.SolarPower);
-
-                // generate wasteheat for converting electric power to beamed power
-                if (!CheatOptions.IgnoreMaxTemperature)
-                    supplyFNResourcePerSecond(receivedPower * transmissionWasteRatio, ResourceSettings.Config.WasteHeatInMegawatt);
-            }
-
-            // extract solar power from stable power
-            nuclear_power -= solar_power;
-
-            if (double.IsInfinity(nuclear_power) || double.IsNaN(nuclear_power) || nuclear_power < 0)
-                nuclear_power = 0;
-
-            if (double.IsInfinity(solar_power) || double.IsNaN(solar_power) || solar_power < 0)
-                solar_power = 0;
+          
         }
 
         private void CollectBiomeData()
@@ -974,5 +920,72 @@ namespace KIT.Beamedpower
 
             return info.ToStringAndRelease();
         }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (activeBeamGenerator != null)
+                transmissionEfficiencyPercentage = activeBeamGenerator.efficiencyPercentage;
+
+            if (!HighLogic.LoadedSceneIsFlight) return;
+
+            nuclear_power = 0;
+            solar_power = 0;
+            availablePower = 0;
+            requestedPower = 0;
+
+            CollectBiomeData();
+
+            base.OnFixedUpdate();
+
+
+            throw new Exception("what is a stable supply of power?");
+            /*
+            if (activeBeamGenerator != null && IsEnabled && !relay)
+            {
+                double powerTransmissionRatio = (double)(decimal)transmitPower / 100d;
+                double transmissionWasteRatio = (100 - activeBeamGenerator.efficiencyPercentage) / 100d;
+                double transmissionEfficiencyRatio = activeBeamGenerator.efficiencyPercentage / 100d;
+
+                availablePower = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+
+                if (CheatOptions.InfiniteElectricity)
+                {
+                    requestedPower = power_capacity;
+                }
+                else
+                {
+                    var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
+                    var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+
+                    var effectiveResourceThrotling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
+
+                    requestedPower = Math.Min(Math.Min(power_capacity, availablePower) * powerTransmissionRatio, effectiveResourceThrotling * availablePower);
+                }
+
+                double receivedPower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
+
+                nuclear_power += transmissionEfficiencyRatio * receivedPower;
+
+                solar_power += transmissionEfficiencyRatio * solarCells.Sum(m => m.SolarPower);
+
+                // generate wasteheat for converting electric power to beamed power
+                if (!CheatOptions.IgnoreMaxTemperature)
+                    resMan.ProduceResource(ResourceName.WasteHeat, receivedPower * transmissionWasteRatio);
+            }
+
+            // extract solar power from stable power
+            nuclear_power -= solar_power;
+
+            if (double.IsInfinity(nuclear_power) || double.IsNaN(nuclear_power) || nuclear_power < 0)
+                nuclear_power = 0;
+
+            if (double.IsInfinity(solar_power) || double.IsNaN(solar_power) || solar_power < 0)
+                solar_power = 0;
+            */
+        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }

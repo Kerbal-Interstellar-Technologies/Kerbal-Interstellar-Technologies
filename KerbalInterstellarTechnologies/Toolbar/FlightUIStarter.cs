@@ -29,6 +29,9 @@ namespace KIT
 
             if (vessel == null) return;
 
+            throw new System.Exception("fix this");
+            /*
+
             var megajoules_overmanager = ResourceOvermanager.getResourceOvermanagerForResource(ResourceSettings.Config.ElectricPowerInMegawatt);
             if (megajoules_overmanager.hasManagerForVessel(vessel) && !hide_button)
             {
@@ -90,6 +93,8 @@ namespace KIT
             }
 
             show_window = false;
+
+            */
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -37,12 +38,12 @@ namespace KIT.Refinery.Activity
             _vessel = localPart.vessel;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
             _current_power = PowerRequirements * rateMultiplier;
 
             var nuclearReactors = _vessel.FindPartModulesImplementing<INuclearFuelReprocessable>();
-            double remainingCapacityToReprocess = GameConstants.baseReprocessingRate * fixedDeltaTime / PluginHelper.SecondsInDay * rateMultiplier;
+            double remainingCapacityToReprocess = GameConstants.baseReprocessingRate / PluginHelper.SecondsInDay * rateMultiplier;
             double enumActinidesChange = 0;
 
             foreach (INuclearFuelReprocessable nuclearReactor in nuclearReactors)
@@ -54,8 +55,8 @@ namespace KIT.Refinery.Activity
 
             _remainingToReprocess = nuclearReactors.Sum(nfr => nfr.WasteToReprocess);
             _fixedCurrentRate = enumActinidesChange;
-            _current_rate = _fixedCurrentRate / fixedDeltaTime;
-            _remainingSeconds = _remainingToReprocess / _fixedCurrentRate/ fixedDeltaTime;
+            _current_rate = _fixedCurrentRate;
+            _remainingSeconds = _remainingToReprocess / _fixedCurrentRate;
             _status = _fixedCurrentRate > 0 ? Localizer.Format("#LOC_KSPIE_NuclearFuelReprocessor_statu1") : _remainingToReprocess > 0 ? Localizer.Format("#LOC_KSPIE_NuclearFuelReprocessor_statu2") : Localizer.Format("#LOC_KSPIE_NuclearFuelReprocessor_statu3");//"Online""Power Deprived""No Fuel To Reprocess"
         }
 

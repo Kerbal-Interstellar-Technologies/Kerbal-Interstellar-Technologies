@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using UnityEngine;
@@ -35,6 +36,7 @@ namespace KIT.Refinery.Activity
 
         public RefineryType RefineryType => RefineryType.Synthesize;
 
+        // These functions are called from a GUI thread, not the KITFixedUpdate thread
         public bool HasActivityRequirements ()
         {
             return HasAccessToHydrogen() & HasAccessToNitrogen() & HasSpareCapacityAmmonia();
@@ -42,22 +44,23 @@ namespace KIT.Refinery.Activity
 
         private bool HasAccessToHydrogen()
         {
-            _availableHydrogen = _part.GetResourceAvailable(_definitionHydrogen, ResourceFlowMode.ALL_VESSEL);
-
+            double tmp;
+            part.GetConnectedResourceTotals(_definitionHydrogen.GetHashCode(), out tmp, out _availableHydrogen);
             return _availableHydrogen > 0;
         }
 
         private bool HasAccessToNitrogen()
         {
-            _availableNitrogen = _part.GetResourceAvailable(_definitionNitrogen, ResourceFlowMode.ALL_VESSEL);
-
+            double tmp;
+            part.GetConnectedResourceTotals(_definitionNitrogen.GetHashCode(), out tmp, out _availableNitrogen);
             return _availableNitrogen > 0;
         }
 
         private bool HasSpareCapacityAmmonia()
         {
-            _spareCapacityAmmonia = _part.GetResourceSpareCapacity(_definitionAmmonia, ResourceFlowMode.ALL_VESSEL);
-
+            double tmp, tmp1;
+            part.GetConnectedResourceTotals(_definitionAmmonia.GetHashCode(), out tmp, out tmp1);
+            _spareCapacityAmmonia = tmp1 - tmp;
             return _spareCapacityAmmonia > 0;
         }
 
@@ -79,7 +82,7 @@ namespace KIT.Refinery.Activity
             _nitrogenDensity = _definitionNitrogen.density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
             _effectiveMaxPowerRequirements = PowerRequirements * productionModifier;
             _current_power = powerFraction * _effectiveMaxPowerRequirements;
@@ -88,8 +91,8 @@ namespace KIT.Refinery.Activity
             var hydrogenRate = _current_rate * GameConstants.ammoniaHydrogenFractionByMass;
             var nitrogenRate = _current_rate * (1 - GameConstants.ammoniaHydrogenFractionByMass);
 
-            var requiredHydrogen = hydrogenRate * fixedDeltaTime / _hydrogenDensity;
-            var requiredNitrogen = nitrogenRate * fixedDeltaTime / _nitrogenDensity;
+            var requiredHydrogen = hydrogenRate / _hydrogenDensity;
+            var requiredNitrogen = nitrogenRate / _nitrogenDensity;
             var maxProductionAmmonia = requiredHydrogen * _hydrogenDensity / GameConstants.ammoniaHydrogenFractionByMass / _ammoniaDensity;
 
             var supplyRatioHydrogen = requiredHydrogen > 0 ? Math.Min(1, _availableHydrogen / requiredHydrogen) : 0;
@@ -98,8 +101,8 @@ namespace KIT.Refinery.Activity
 
             var adjustedRateRatio = Math.Min(productionRatioAmmonia, Math.Min(supplyRatioHydrogen, supplyRatioNitrogen));
 
-            _hydrogenConsumptionRate = _part.RequestResource(_definitionHydrogen.id, adjustedRateRatio * requiredHydrogen, ResourceFlowMode.ALL_VESSEL) * _hydrogenDensity / fixedDeltaTime;
-            _nitrogenConsumptionRate = _part.RequestResource(_definitionNitrogen.id, adjustedRateRatio * requiredNitrogen, ResourceFlowMode.ALL_VESSEL) * _nitrogenDensity / fixedDeltaTime;
+            _hydrogenConsumptionRate = _part.RequestResource(_definitionHydrogen.id, adjustedRateRatio * requiredHydrogen, ResourceFlowMode.ALL_VESSEL) * _hydrogenDensity;
+            _nitrogenConsumptionRate = _part.RequestResource(_definitionNitrogen.id, adjustedRateRatio * requiredNitrogen, ResourceFlowMode.ALL_VESSEL) * _nitrogenDensity;
 
             var consumedRatioHydrogen = hydrogenRate > 0 ? _hydrogenConsumptionRate / hydrogenRate : 0;
             var consumedRatioNitrogen = nitrogenRate > 0 ? _nitrogenConsumptionRate / nitrogenRate : 0;
@@ -110,7 +113,7 @@ namespace KIT.Refinery.Activity
             {
                 var ammoniaProduction = -consumedRatio * maxProductionAmmonia;
                 var ammoniaProduced = -_part.RequestResource(_definitionAmmonia.id, ammoniaProduction, ResourceFlowMode.ALL_VESSEL);
-                _ammoniaProductionRate = ammoniaProduced * _ammoniaDensity / fixedDeltaTime;
+                _ammoniaProductionRate = ammoniaProduced * _ammoniaDensity;
 
                 if (isStartup)
                 {

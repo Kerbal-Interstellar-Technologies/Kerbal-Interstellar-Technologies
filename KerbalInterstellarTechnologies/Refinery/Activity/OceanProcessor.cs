@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -51,16 +52,23 @@ namespace KIT.Refinery.Activity
         double _currentResourceProductionRate;
         // end of variables for the ExtractSeawater function
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double timeDifference, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
-            ExtractSeawater(rateMultiplier, powerFraction, productionModifier, allowOverflow, timeDifference, false);
+            ExtractSeawater(resMan, rateMultiplier, powerFraction, productionModifier, allowOverflow);
 
             UpdateStatusMessage();
         }
         // this is a function used for IRefinery HasActivityRequirements check
         public bool IsThereAnyLiquid()
         {
-            return GetTotalLiquidScoopedPerSecond() > 0 || _part.GetResourceAvailable(_intakeLiquidDefinition) > 0;
+            double tmpAvail, tmpMax;
+
+            bool ret;
+            ret = GetTotalLiquidScoopedPerSecond() > 0;
+
+            part.GetConnectedResourceTotals(_intakeLiquidDefinition.GetHashCode(), out tmpAvail, out tmpMax);
+
+            return ret;
         }
 
         /* This is just a short cycle that goes through the air intakes on the vessel, looks at which ones are submerged and multiplies the percentage of the part's submersion
@@ -91,7 +99,7 @@ namespace KIT.Refinery.Activity
             return tempLqd;
         }
 
-        public void ExtractSeawater(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double timeDifference, bool offlineCollecting)
+        public void ExtractSeawater(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow)
         {
             _effectiveMaxPower = productionModifier * PowerRequirements;
 
@@ -102,18 +110,16 @@ namespace KIT.Refinery.Activity
             _availableIntakeLiquidMass = GetTotalLiquidScoopedPerSecond() * _intakeLiquidDefinition.density;
 
             // this should determine how much resource this process can consume
-            var fixedMaxLiquidConsumptionRate = _current_rate * timeDifference * _intakeLiquidDefinition.density;
+            var fixedMaxLiquidConsumptionRate = _current_rate * _intakeLiquidDefinition.density;
 
             // supplement any missing LiquidIntake by intake
             var shortage = fixedMaxLiquidConsumptionRate > _availableIntakeLiquidMass ? fixedMaxLiquidConsumptionRate - _availableIntakeLiquidMass : 0;
             if (shortage > 0)
                 _availableIntakeLiquidMass += _part.RequestResource(_intakeLiquidDefinition.id, shortage, ResourceFlowMode.ALL_VESSEL);
 
-            var liquidConsumptionRatio = offlineCollecting ? 1
-                    : fixedMaxLiquidConsumptionRate > 0
-                    ? Math.Min(fixedMaxLiquidConsumptionRate, _availableIntakeLiquidMass) / fixedMaxLiquidConsumptionRate : 0;
+            var liquidConsumptionRatio = Math.Min(fixedMaxLiquidConsumptionRate, _availableIntakeLiquidMass) / fixedMaxLiquidConsumptionRate;
 
-            fixedConsumptionRate = _current_rate * timeDifference * liquidConsumptionRatio;
+            fixedConsumptionRate = _current_rate * liquidConsumptionRatio;
 
             if (fixedConsumptionRate <= 0) return;
 
@@ -145,19 +151,13 @@ namespace KIT.Refinery.Activity
                 var currentResourceRatio = currentResourceMaxRate <= 0 ? 0 : currentResourcePossibleRate / currentResourceMaxRate;
 
                 // calculate the consumption rate of the intake liquid
-                _intakeLqdConsumptionRate = (currentResourceRatio * fixedConsumptionRate / _intakeLiquidDefinition.density) / timeDifference * _intakeLiquidDefinition.density;
-
-                if (offlineCollecting) // if collecting offline, multiply by the elapsed time
-                {
-                    _intakeLqdConsumptionRate = fixedConsumptionRate * timeDifference;
-                    ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SeawaterExtract_Postmsg1", _intakeLiquidDefinition.name, timeDifference.ToString("F0"), _intakeLqdConsumptionRate.ToString("F2")), 60.0f, ScreenMessageStyle.UPPER_CENTER);//"The ocean extractor processed " +  + " for " +  + " seconds, processing " +  + " units in total."
-                }
+                _intakeLqdConsumptionRate = (currentResourceRatio * fixedConsumptionRate / _intakeLiquidDefinition.density) /  _intakeLiquidDefinition.density;
 
                 // calculate the rate of production
                 var currentResourceTempProductionRate = _intakeLqdConsumptionRate * resource.ResourceAbundance;
 
                 // add the produced resource
-                 var currentProductionRate = -_part.RequestResource(resource.ResourceName, -currentResourceTempProductionRate * timeDifference / resource.Definition.density, ResourceFlowMode.ALL_VESSEL) / timeDifference * resource.Definition.density;
+                 var currentProductionRate = -_part.RequestResource(resource.ResourceName, -currentResourceTempProductionRate  / resource.Definition.density, ResourceFlowMode.ALL_VESSEL) / resource.Definition.density;
 
                 _productionRateDict.Add(resource.ResourceName, currentProductionRate);
 

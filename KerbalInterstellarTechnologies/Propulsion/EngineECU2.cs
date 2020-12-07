@@ -1,5 +1,6 @@
 ﻿using KIT.Powermanagement;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace KIT.Propulsion
 {
     enum GenerationType { Mk1 = 0, Mk2 = 1, Mk3 = 2, Mk4 = 3, Mk5 = 4, Mk6 = 5, Mk7 = 6, Mk8 = 7, Mk9 = 8 }
 
-    abstract class EngineECU2 : ResourceSuppliableModule
+    abstract class EngineECU2 : PartModule, IKITMod
     {
         public const string GROUP = "EngineECU2";
         public const string GROUP_TITLE = "#LOC_KSPIE_EngineECU2_groupName";
@@ -262,10 +263,7 @@ namespace KIT.Propulsion
 
         public void FixedUpdate()
         {
-            if (_fuelConfigurationWithEffect != null)
-                _fuelConfigurationWithEffect.ForEach(prop => part.Effect(prop.effectname, 0, -1));
-            if (_currentActiveConfiguration != null && !string.IsNullOrEmpty(_currentActiveConfiguration.effectname))
-                part.Effect(_currentActiveConfiguration.effectname, (float)(curEngineT.currentThrottle * fusionRatio), -1);
+
         }
 
         private void InitializeHideFuels()
@@ -545,7 +543,7 @@ namespace KIT.Propulsion
         public override void OnStart(StartState state)
         {
             String[] resources_to_supply = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
-            this.resources_to_supply = resources_to_supply;
+            // this.resources_to_supply = resources_to_supply;
 
             Debug.Log("[KSPI]: Start Current State: " + (int)state + " " + state.ToString());
             Debug.Log("[KSPI]: OnStart Already Launched: " + Launched);
@@ -687,6 +685,18 @@ namespace KIT.Propulsion
                 actionWindow.displayDirty = true;
             }
         }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (_fuelConfigurationWithEffect != null)
+                _fuelConfigurationWithEffect.ForEach(prop => part.Effect(prop.effectname, 0, -1));
+            if (_currentActiveConfiguration != null && !string.IsNullOrEmpty(_currentActiveConfiguration.effectname))
+                part.Effect(_currentActiveConfiguration.effectname, (float)(curEngineT.currentThrottle * fusionRatio), -1);
+        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 
     class FuelConfiguration : PartModule
