@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace KIT.Powermanagement
 {
+    /*
     class SupplyPriorityManager
     {
         private static Dictionary<Vessel, SupplyPriorityManager> supply_priority_managers = new Dictionary<Vessel, SupplyPriorityManager>();
@@ -85,5 +86,5 @@ namespace KIT.Powermanagement
         }
 
     }
-
+    */
 }

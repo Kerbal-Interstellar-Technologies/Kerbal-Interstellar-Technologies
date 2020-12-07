@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -64,7 +65,7 @@ namespace KIT.Refinery.Activity
             _hydrogen = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.HydrogenGas);
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow,  bool isStartup = false)
         {
             _effectiveMaxPower = productionModifier * PowerRequirements;
 
@@ -89,7 +90,7 @@ namespace KIT.Refinery.Activity
             _spareRoomHydrogenMass = partsThatContainHydrogen.Sum(r => r.maxAmount - r.amount) * _hydrogen.density;
 
             // determine how much water we can consume
-            _fixedMaxConsumptionWaterRate = Math.Min(_current_rate * fixedDeltaTime, allowOverflow? _availableWaterMass + _availableLqdWaterMass : _availableLqdWaterMass);
+            _fixedMaxConsumptionWaterRate = Math.Min(_current_rate, allowOverflow? _availableWaterMass + _availableLqdWaterMass : _availableLqdWaterMass);
 
             if (_fixedMaxConsumptionWaterRate > 0 && (_spareRoomOxygenMass > 0 && _spareRoomHydrogenMass > 0
                                                       || allowOverflow && (_spareRoomOxygenMass > 0 || _spareRoomHydrogenMass > 0)) )
@@ -115,22 +116,22 @@ namespace KIT.Refinery.Activity
                 }
 
                 // now we do the real electrolysis
-                _waterConsumptionRate = fixedWaterConsumptionRate / fixedDeltaTime;
+                _waterConsumptionRate = fixedWaterConsumptionRate;
                 var hydrogenRateTemp = _waterConsumptionRate * HydrogenMassByFraction;
                 var oxygenRateTemp = _waterConsumptionRate * OxygenMassByFraction;
 
                 var hydrogenProductionAmount = -_part.RequestResource(
                     resourceName: ResourceSettings.Config.HydrogenLqd,
-                    demand: -hydrogenRateTemp * fixedDeltaTime / _hydrogen.density,
+                    demand: -hydrogenRateTemp / _hydrogen.density,
                     flowMode: ResourceFlowMode.ALL_VESSEL);
 
                 var oxygenProductionAmount = -_part.RequestResource(
                     resourceName: ResourceSettings.Config.OxygenGas,
-                    demand: -oxygenRateTemp * fixedDeltaTime / _oxygen.density,
+                    demand: -oxygenRateTemp  / _oxygen.density,
                     flowMode: ResourceFlowMode.ALL_VESSEL);
 
-                _hydrogenProductionRate = hydrogenProductionAmount / fixedDeltaTime * _hydrogen.density;
-                _oxygenProductionRate = oxygenProductionAmount / fixedDeltaTime * _oxygen.density;
+                _hydrogenProductionRate = hydrogenProductionAmount /  _hydrogen.density;
+                _oxygenProductionRate = oxygenProductionAmount /  _oxygen.density;
             }
             else
             {

@@ -3,6 +3,8 @@ using KSP.Localization;
 using System;
 using System.Linq;
 using UnityEngine;
+using KIT.ResourceScheduler;
+using KIT.Resources;
 
 namespace KIT.Reactors
 {
@@ -260,9 +262,6 @@ namespace KIT.Reactors
             fuel_mode = fuelModes.IndexOf(CurrentFuelMode);
         }
 
-        public override int getPowerPriority()
-        {
-            return powerPriority;
-        }
+        public new ResourcePriorityValue ResourceProcessPriority => (ResourcePriorityValue)powerPriority;
     }
 }

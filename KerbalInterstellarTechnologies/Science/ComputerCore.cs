@@ -1,6 +1,7 @@
 using CommNet;
 using KIT.Constants;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -73,8 +74,6 @@ namespace KIT
         public bool isupgraded;
         [KSPField(isPersistant = true)]
         public double electrical_power_ratio;
-        [KSPField(isPersistant = true)]
-        public double last_active_time;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_Datastored", guiActive = true, guiActiveEditor = false)]//Data stored
         public double science_to_add;
         [KSPField(isPersistant = true)]
@@ -143,7 +142,7 @@ namespace KIT
         public override void OnStart(StartState state)
         {
             string[] resourcesToSupply = { ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
-            this.resources_to_supply = resourcesToSupply;
+            // this.resources_to_supply = resourcesToSupply;
 
             _isEnabledField = Fields[nameof(IsEnabled)];
             _isPoweredField = Fields[nameof(IsPowered)];
@@ -173,19 +172,6 @@ namespace KIT
             else
                 computercoreType = originalName;
 
-            if (IsEnabled)
-            {
-                var timeDifference = Planetarium.GetUniversalTime() - last_active_time;
-                var altitudeMultiplier = vessel.altitude / vessel.mainBody.Radius;
-                altitudeMultiplier = Math.Max(altitudeMultiplier, 1);
-
-                var scienceMultiplier = PluginHelper.getScienceMultiplier(vessel);
-
-                var scienceToIncrement = baseScienceRate * timeDifference / GameConstants.KEBRIN_DAY_SECONDS * electrical_power_ratio * scienceMultiplier / (Math.Sqrt(altitudeMultiplier));
-                scienceToIncrement = (double.IsNaN(scienceToIncrement) || double.IsInfinity(scienceToIncrement)) ? 0 : scienceToIncrement;
-                science_to_add += scienceToIncrement;
-            }
-
             _effectivePowerRequirement = (isupgraded ? upgradedMegajouleRate : megajouleRate) * powerReqMult;
         }
 
@@ -209,83 +195,11 @@ namespace KIT
             _scienceRateField.guiActive = isUpgradedOrNoActiveScience;
             _isPoweredField.guiActive = isUpgradedOrNoActiveScience;
 
-            var science =  _scienceRateF * GameConstants.KEBRIN_DAY_SECONDS * PluginHelper.getScienceMultiplier(vessel);
+            var science = _scienceRateF * GameConstants.KEBRIN_DAY_SECONDS * PluginHelper.getScienceMultiplier(vessel);
             scienceRate = science.ToString("0.000") + "/ Day";
 
             if (ResearchAndDevelopment.Instance != null)
                 upgradeCostStr = ResearchAndDevelopment.Instance.Science + "/" + upgradeCost.ToString("0") + " Science";//
-        }
-
-        public override void OnFixedUpdate()
-        {
-            base.OnFixedUpdate();
-
-            if (isupgraded && IsEnabled)
-            {
-                var powerReturned = CheatOptions.InfiniteElectricity
-                    ? _effectivePowerRequirement
-                    : consumeFNResourcePerSecond(_effectivePowerRequirement, ResourceSettings.Config.ElectricPowerInMegawatt);
-
-                electrical_power_ratio = powerReturned / _effectivePowerRequirement;
-                IsPowered = electrical_power_ratio > 0.99;
-
-                if (IsPowered)
-                {
-                    part.isControlSource = Vessel.ControlLevel.FULL;
-
-                    if (vessel != null && vessel.connection != null)
-                    {
-                        vessel.connection.RegisterCommandSource(this);
-
-                        part.isControlSource = Vessel.ControlLevel.FULL;
-
-                        if (vessel.connection.Comm != null)
-                        {
-                            vessel.connection.Comm.isHome = true;
-                            vessel.connection.Comm.isControlSource = true;
-                        }
-                    }
-
-                    var altitudeMultiplier = Math.Max(vessel.altitude / vessel.mainBody.Radius, 1);
-
-                    var scienceMultiplier = PluginHelper.getScienceMultiplier(vessel);
-
-                    _scienceRateF = baseScienceRate * scienceMultiplier / GameConstants.KEBRIN_DAY_SECONDS * powerReturned / _effectivePowerRequirement / Math.Sqrt(altitudeMultiplier);
-
-                    if (ResearchAndDevelopment.Instance != null && !double.IsInfinity(_scienceRateF) && !double.IsNaN(_scienceRateF))
-                        science_to_add += _scienceRateF * TimeWarp.fixedDeltaTime;
-                }
-                else
-                {
-                    if (vessel != null && vessel.connection != null)
-                    {
-                        vessel.connection.UnregisterCommandSource(this);
-
-                        part.isControlSource = Vessel.ControlLevel.NONE;
-
-                        if (vessel.connection.Comm != null)
-                        {
-                            vessel.connection.Comm.isHome = false;
-                            vessel.connection.Comm.isControlSource = false;
-                        }
-                    }
-
-                    part.RequestResource(ResourceSettings.Config.ElectricPowerInMegawatt, -powerReturned * TimeWarp.fixedDeltaTime);
-                }
-            }
-            else
-            {
-                IsPowered = false;
-                _scienceRateF = 0;
-                electrical_power_ratio = 0;
-                science_to_add = 0;
-            }
-
-            last_active_time = Planetarium.GetUniversalTime();
-        }
-
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
         }
 
         protected override bool generateScienceData()
@@ -325,16 +239,6 @@ namespace KIT
         protected override void cleanUpScienceData()
         {
             science_to_add = 0;
-        }
-
-        public override int getPowerPriority()
-        {
-            return 2;
-        }
-
-        public override int getSupplyPriority()
-        {
-            return 1;
         }
 
         public override string GetInfo()
@@ -404,12 +308,77 @@ namespace KIT
 
             Is_Enabled = Is_Powered = false;
 
-            if(!mSnap.moduleValues.TryGetValue(nameof(ComputerCore.IsEnabled), ref Is_Enabled)) return false;
-            if(!mSnap.moduleValues.TryGetValue(nameof(ComputerCore.IsPowered), ref Is_Powered)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(ComputerCore.IsEnabled), ref Is_Enabled)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(ComputerCore.IsPowered), ref Is_Powered)) return false;
 
             return Is_Enabled && Is_Powered;
         }
 
+        public new ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+
+        public new void KITFixedUpdate(IResourceManager resMan)
+        {
+            base.KITFixedUpdate(resMan);
+
+            if (!isupgraded || !IsEnabled)
+            {
+                IsPowered = false;
+                _scienceRateF = 0;
+                electrical_power_ratio = 0;
+                science_to_add = 0;
+            }
+
+            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, _effectivePowerRequirement * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+
+            electrical_power_ratio = powerReturned / _effectivePowerRequirement;
+            IsPowered = electrical_power_ratio > 0.99;
+
+            if (!IsPowered)
+            {
+                if (vessel != null && vessel.connection != null)
+                {
+                    vessel.connection.UnregisterCommandSource(this);
+
+                    part.isControlSource = Vessel.ControlLevel.NONE;
+
+                    if (vessel.connection.Comm != null)
+                    {
+                        vessel.connection.Comm.isHome = false;
+                        vessel.connection.Comm.isControlSource = false;
+                    }
+                }
+
+                part.RequestResource(ResourceSettings.Config.ElectricPowerInMegawatt, -powerReturned * TimeWarp.fixedDeltaTime);
+                return;
+            }
+            
+            part.isControlSource = Vessel.ControlLevel.FULL;
+
+            if (vessel != null && vessel.connection != null)
+            {
+                vessel.connection.RegisterCommandSource(this);
+
+                part.isControlSource = Vessel.ControlLevel.FULL;
+
+                if (vessel.connection.Comm != null)
+                {
+                    vessel.connection.Comm.isHome = true;
+                    vessel.connection.Comm.isControlSource = true;
+                }
+
+                return;
+            }
+
+            var altitudeMultiplier = Math.Max(vessel.altitude / vessel.mainBody.Radius, 1);
+
+            var scienceMultiplier = PluginHelper.getScienceMultiplier(vessel);
+
+            _scienceRateF = baseScienceRate * scienceMultiplier / GameConstants.KEBRIN_DAY_SECONDS * powerReturned / _effectivePowerRequirement / Math.Sqrt(altitudeMultiplier);
+
+            if (ResearchAndDevelopment.Instance != null && !double.IsInfinity(_scienceRateF) && !double.IsNaN(_scienceRateF))
+                science_to_add += _scienceRateF * TimeWarp.fixedDeltaTime;
+        }
     }
 }
+
 

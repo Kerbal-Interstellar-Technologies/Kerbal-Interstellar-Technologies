@@ -1,11 +1,9 @@
 ﻿using KIT.Constants;
-using KIT.Extensions;
-using KIT.Power;
 using KSP.Localization;
 using System;
-using KIT.Powermanagement;
 using KIT.Resources;
 using UnityEngine;
+using KIT.ResourceScheduler;
 
 namespace KIT
 {
@@ -13,7 +11,7 @@ namespace KIT
     class ModuleStorageCryostat: FNModuleCryostat {}
 
     [KSPModule("Cryostat")]
-    class FNModuleCryostat : ResourceSuppliableModule
+    class FNModuleCryostat : PartModule, IKITMod
     {
         public const string GROUP = "FNModuleCryostat";
         public const string GROUP_TITLE = "Interstellar Cryostat";
@@ -185,8 +183,17 @@ namespace KIT
                 " / " + PluginHelper.getFormattedPowerString(currentPowerReq / GameConstants.ecPerMJ);
         }
 
-        // FixedUpdate is also called while not staged
-        public void FixedUpdate()
+        public override string GetInfo()
+        {
+            double envMod = ((convectionMod <= -1.0) ? 0.0 : convectionMod + 1.0 /
+                (convectionMod + 1.0)) * Math.Max(0.0, 300.0 - boilOffTemp) / 300.0;
+            return string.Format("{0} @ {1:F1} K\nPower Requirements: {2:F1} KW", resourceName,
+                boilOffTemp, powerReqKW * 0.2 * powerReqMult * envMod);
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Second;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             var cryostat_resource = part.Resources[resourceName];
             if (cryostat_resource == null || double.IsPositiveInfinity(currentPowerReq))
@@ -195,12 +202,9 @@ namespace KIT
                 return;
             }
 
-            double fixedDeltaTime = TimeWarp.fixedDeltaTime;
-
             if (!isDisabled && currentPowerReq > 0.0)
             {
-                recievedPowerKW = consumeMegawatts(currentPowerReq /
-                    GameConstants.ecPerMJ, true, true, true) * GameConstants.ecPerMJ;
+                recievedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq * GameConstants.ecPerMJ);
             }
             else
                 recievedPowerKW = 0;
@@ -209,11 +213,11 @@ namespace KIT
 
             var boiloffReduction = !hasExtraBoiloff ? boilOffRate : boilOffRate + (boilOffAddition * (1 - recievedPowerKW / currentPowerReq));
 
-            boiloff = CheatOptions.IgnoreMaxTemperature ||  boiloffReduction <= 0 ? 0 : boiloffReduction * environmentBoiloff;
+            boiloff = CheatOptions.IgnoreMaxTemperature || boiloffReduction <= 0 ? 0 : boiloffReduction * environmentBoiloff;
 
             if (boiloff > 1e-10)
             {
-                var boilOffAmount = boiloff * fixedDeltaTime;
+                var boilOffAmount = boiloff;
 
                 cryostat_resource.amount = Math.Max(0, cryostat_resource.amount - boilOffAmount);
 
@@ -237,23 +241,7 @@ namespace KIT
             previousRecievedPowerKW = recievedPowerKW;
         }
 
-        public override string getResourceManagerDisplayName()
-        {
-            return resourceGUIName + " " + Localizer.Format("#LOC_KSPIE_ModuleCryostat_Cryostat");//Cryostat
-        }
-
-        public override int getPowerPriority()
-        {
-            return 2;
-        }
-
-        public override string GetInfo()
-        {
-            double envMod = ((convectionMod <= -1.0) ? 0.0 : convectionMod + 1.0 /
-                (convectionMod + 1.0)) * Math.Max(0.0, 300.0 - boilOffTemp) / 300.0;
-            return string.Format("{0} @ {1:F1} K\nPower Requirements: {2:F1} KW", resourceName,
-                boilOffTemp, powerReqKW * 0.2 * powerReqMult * envMod);
-        }
+        public string KITPartName() => $"{resourceGUIName} {Localizer.Format("#LOC_KSPIE_ModuleCryostat_Cryostat")}"; //Cryostat
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -76,7 +77,7 @@ namespace KIT.Refinery.Activity
             _monoxideDensity = PartResourceLibrary.Instance.GetDefinition(_monoxideResourceName).density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
             _allowOverflow = allowOverflow;
 
@@ -100,13 +101,13 @@ namespace KIT.Refinery.Activity
             _spareRoomHydrogenMass = partsThatContainHydrogen.Sum(r => r.maxAmount - r.amount) * _hydrogenDensity;
 
             // determine how much carbon dioxide we can consume
-            var fixedMaxWaterConsumptionRate = _current_rate * WaterMassByFraction * fixedDeltaTime;
+            var fixedMaxWaterConsumptionRate = _current_rate * WaterMassByFraction;
             var waterConsumptionRatio = fixedMaxWaterConsumptionRate > 0 ? Math.Min(fixedMaxWaterConsumptionRate, _availableWaterMass) / fixedMaxWaterConsumptionRate : 0;
 
-            var fixedMaxMonoxideConsumptionRate =  _current_rate * MonoxideMassByFraction * fixedDeltaTime;
+            var fixedMaxMonoxideConsumptionRate =  _current_rate * MonoxideMassByFraction;
             var monoxideConsumptionRatio = fixedMaxMonoxideConsumptionRate > 0 ? Math.Min(fixedMaxMonoxideConsumptionRate, _availableMonoxideMass) / fixedMaxMonoxideConsumptionRate : 0;
 
-            _fixedConsumptionRate = _current_rate * fixedDeltaTime * Math.Min(waterConsumptionRatio, monoxideConsumptionRatio);
+            _fixedConsumptionRate = _current_rate * Math.Min(waterConsumptionRatio, monoxideConsumptionRatio);
 
             if (_fixedConsumptionRate > 0 && (_spareRoomHydrogenMass > 0 || _spareRoomDioxideMass > 0))
             {
@@ -120,15 +121,15 @@ namespace KIT.Refinery.Activity
                 _consumptionStorageRatio = Math.Min(fixedMaxPossibleHydrogenRate / fixedMaxHydrogenRate, fixedMaxPossibleDioxideRate / fixedMaxDioxideRate);
 
                 // now we do the real electrolysis
-                _waterConsumptionRate = _part.RequestResource(_waterResourceName, WaterMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _waterDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _waterDensity;
-                _monoxideConsumptionRate = _part.RequestResource(_monoxideResourceName, MonoxideMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _monoxideDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _monoxideDensity;
+                _waterConsumptionRate = _part.RequestResource(_waterResourceName, WaterMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _waterDensity, ResourceFlowMode.ALL_VESSEL) / _waterDensity;
+                _monoxideConsumptionRate = _part.RequestResource(_monoxideResourceName, MonoxideMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _monoxideDensity, ResourceFlowMode.ALL_VESSEL) / _monoxideDensity;
                 var combinedConsumptionRate = _waterConsumptionRate + _monoxideConsumptionRate;
 
                 var hydrogenRateTemp = combinedConsumptionRate * HydrogenMassByFraction;
                 var dioxideRateTemp = combinedConsumptionRate * DioxideMassByFraction;
 
-                _hydrogenProductionRate = -_part.RequestResource(_hydrogenResourceName, -hydrogenRateTemp * fixedDeltaTime / _hydrogenDensity) / fixedDeltaTime * _hydrogenDensity;
-                _dioxideProductionRate = -_part.RequestResource(_dioxideResourceName, -dioxideRateTemp * fixedDeltaTime / _dioxideDensity) / fixedDeltaTime * _dioxideDensity;
+                _hydrogenProductionRate = -_part.RequestResource(_hydrogenResourceName, -hydrogenRateTemp  / _hydrogenDensity) /  _hydrogenDensity;
+                _dioxideProductionRate = -_part.RequestResource(_dioxideResourceName, -dioxideRateTemp/ _dioxideDensity) / _dioxideDensity;
             }
             else
             {

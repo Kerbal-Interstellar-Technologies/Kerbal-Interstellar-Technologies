@@ -1,5 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
+using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using UnityEngine;
@@ -207,6 +209,19 @@ namespace KIT.Propulsion
             masslessFuelPercentage4 = propellantResourceDefinition4 != null && propellantResourceDefinition4.density <= 0 ? ratio4 / ratioSumWithoutMass : 0;
         }
 
+
+        public static double GetResourceAvailable(Part part, PartResourceDefinition definition, ResourceFlowMode flowmode)
+        {
+            if (definition == null)
+            {
+                Debug.LogError("[KSPI]: PartResourceDefinition definition is NULL");
+                return 0;
+            }
+
+            part.GetConnectedResourceTotals(definition.id, flowmode, out var currentAmount, out _);
+            return currentAmount;
+        }
+
         private double CollectFuel(double demandMass, ResourceFlowMode fuelMode = ResourceFlowMode.STACK_PRIORITY_SEARCH)
         {
             fuelRequestAmount1 = 0;
@@ -229,22 +244,22 @@ namespace KIT.Propulsion
             if (propellantResourceDefinition1 != null && ratio1 > 0)
             {
                 fuelRequestAmount1 = fuelWithMassPercentage1 > 0 ? fuelWithMassPercentage1 * propellantWithMassNeededInLiter : masslessFuelPercentage1 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, part.GetResourceAvailable(propellantResourceDefinition1, fuelMode) / fuelRequestAmount1);
+                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition1, fuelMode) / fuelRequestAmount1);
             }
             if (propellantResourceDefinition2 != null && ratio2 > 0)
             {
                 fuelRequestAmount2 = fuelWithMassPercentage2 > 0 ? fuelWithMassPercentage2 * propellantWithMassNeededInLiter : masslessFuelPercentage2 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, part.GetResourceAvailable(propellantResourceDefinition2, fuelMode) / fuelRequestAmount2);
+                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition2, fuelMode) / fuelRequestAmount2);
             }
             if (propellantResourceDefinition3 != null && ratio3 > 0)
             {
                 fuelRequestAmount3 = fuelWithMassPercentage3 > 0 ? fuelWithMassPercentage3 * propellantWithMassNeededInLiter : masslessFuelPercentage3 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, part.GetResourceAvailable(propellantResourceDefinition3, fuelMode) / fuelRequestAmount3);
+                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition3, fuelMode) / fuelRequestAmount3);
             }
             if (propellantResourceDefinition4 != null && ratio4 > 0)
             {
                 fuelRequestAmount4 = fuelWithMassPercentage4 > 0 ? fuelWithMassPercentage4 * propellantWithMassNeededInLiter : masslessFuelPercentage4 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, part.GetResourceAvailable(propellantResourceDefinition4, fuelMode) / fuelRequestAmount4);
+                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition4, fuelMode) / fuelRequestAmount4);
             }
 
             // ignore insignificant amount

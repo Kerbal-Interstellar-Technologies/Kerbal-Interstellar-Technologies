@@ -133,6 +133,14 @@ namespace KIT.Reactors
             Events["SwitchMode"].guiActiveEditor = Events["SwitchMode"].guiActive = Events["SwitchMode"].guiActiveUnfocused = modesAvailable > 1;
         }
 
+        protected double GetLocalResourceRatio(ReactorFuel fuel)
+        {
+            if (part.Resources.Contains(fuel.ResourceName))
+                return part.Resources[fuel.ResourceName].amount / part.Resources[fuel.ResourceName].maxAmount;
+            else
+                return 0;
+        }
+
         [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_ManualRestart", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Manual Restart
         public void ManualRestart()
         {

@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace KIT.Refinery.Activity
             _deuteriumDensity = PartResourceLibrary.Instance.GetDefinition(_deuteriumResourceName).density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow,  bool isStartup = false)
         {
             // determine how much mass we can produce at max
             _current_power = PowerRequirements * rateMultiplier;
@@ -84,7 +85,7 @@ namespace KIT.Refinery.Activity
             _spareRoomDeuteriumMass = partsThatContainDeuterium.Sum(r => r.maxAmount - r.amount) * _deuteriumDensity;
 
             // determine how much water we can consume
-            _fixedMaxConsumptionWaterRate = Math.Min(_current_rate * fixedDeltaTime, _availableHeavyWaterMass);
+            _fixedMaxConsumptionWaterRate = Math.Min(_current_rate , _availableHeavyWaterMass);
 
             if (_fixedMaxConsumptionWaterRate > 0 && (_spareRoomOxygenMass > 0 || _spareRoomDeuteriumMass > 0))
             {
@@ -100,13 +101,13 @@ namespace KIT.Refinery.Activity
                 _consumptionStorageRatio = Math.Min(fixedMaxPossibleHydrogenRatio, fixedMaxPossibleOxygenRatio);
 
                 // now we do the real electrolysis
-                _heavyWaterConsumptionRate = _part.RequestResource(_waterHeavyResourceName, _consumptionStorageRatio * _fixedMaxConsumptionWaterRate / _heavyWaterDensity) / fixedDeltaTime * _heavyWaterDensity;
+                _heavyWaterConsumptionRate = _part.RequestResource(_waterHeavyResourceName, _consumptionStorageRatio * _fixedMaxConsumptionWaterRate / _heavyWaterDensity) / _heavyWaterDensity;
 
                 var deuteriumRateTemp = _heavyWaterConsumptionRate * DeuteriumMassByFraction;
                 var oxygenRateTemp = _heavyWaterConsumptionRate * OxygenMassByFraction;
 
-                _deuteriumProductionRate = -_part.RequestResource(_deuteriumResourceName, -deuteriumRateTemp * fixedDeltaTime / _deuteriumDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _deuteriumDensity;
-                _oxygenProductionRate = -_part.RequestResource(_oxygenResourceName, -oxygenRateTemp * fixedDeltaTime / _oxygenDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _oxygenDensity;
+                _deuteriumProductionRate = -_part.RequestResource(_deuteriumResourceName, -deuteriumRateTemp  / _deuteriumDensity, ResourceFlowMode.ALL_VESSEL) / _deuteriumDensity;
+                _oxygenProductionRate = -_part.RequestResource(_oxygenResourceName, -oxygenRateTemp  / _oxygenDensity, ResourceFlowMode.ALL_VESSEL) /  _oxygenDensity;
             }
             else
             {

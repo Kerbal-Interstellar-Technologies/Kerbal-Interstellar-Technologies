@@ -9,8 +9,6 @@ namespace KIT
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_ResourceScience_Active")]//Active
         public bool generatorActive;
         [KSPField(isPersistant = true)]
-        public double last_active_time;
-        [KSPField(isPersistant = true)]
         public double lastGeneratedPerSecond;
 
         [KSPField(isPersistant = false, guiActive = false)]
@@ -84,25 +82,10 @@ namespace KIT
                 PlayAnimation("Deploy", true, true, false);
 
             base.OnStart(state);
-
-            // calcualte time past since last frame
-            if (generatorActive && last_active_time > 0)
-            {
-                double time_diff = Planetarium.GetUniversalTime() - last_active_time;
-                
-                var minutes = time_diff / 60;
-                Debug.Log("[KSPI]: InterstellarResourceScienceModule - time difference " + minutes + " minutes");
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ResourceScience_Postmsg", minutes.ToString("0.00")), 5.0f, ScreenMessageStyle.LOWER_CENTER);//"Generated Science Data for " +  + " minutes"
-
-                GenerateScience(time_diff, true);
-            }
         }
 
         public override void OnUpdate()
         {
-            // store current time in case vesel is unloaded
-            last_active_time = Planetarium.GetUniversalTime();
-
             int lcrewCount = part.protoModuleCrew.Count;
             if (generatorActive)
             {

@@ -32,6 +32,27 @@ namespace KIT.ResourceScheduler
         /// <param name="amount">Amount of resource to produce per second</param>
         void ProduceResource(ResourceName resource, double amount);
 
+        /// <summary>
+        /// Checks to see how much storage is available for the given resource, returning 0 if there is none.
+        /// </summary>
+        /// <param name="resourceIdentifier"></param>
+        /// <returns></returns>
+        double ResourceSpareCapacity(ResourceName resourceIdentifier);
+
+        /// <summary>
+        /// ResourceCurrentCapacity returns how much of a resource is available, ship wide.
+        /// </summary>
+        /// <param name="resourceIdentifier"></param>
+        /// <returns></returns>
+        double ResourceCurrentCapacity(ResourceName resourceIdentifier);
+
+        /// <summary>
+        /// ResourceFillFraction returns how full the resource is, expressed between 0 and 1.
+        /// </summary>
+        /// <param name="resourceIdentifier"></param>
+        /// <returns></returns>
+        double ResourceFillFraction(ResourceName resourceIdentifier);
+
         /// <summary>Provides access to the (equivilient) of TimeWarp.fixedDeltaTime.</summary>
         /// <remarks>
         /// The resource interface automatically converts everything to per-second values for you. You only need
@@ -98,7 +119,7 @@ namespace KIT.ResourceScheduler
         /// </summary>
         /// <param name="name"></param>
         /// <param name="requestedAmount"></param>
-        /// <returns></returns>
+        /// <returns>bool - indicating if this module should be called again this KITFixedUpdate() cycle.</returns>
         bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount);
     }
 

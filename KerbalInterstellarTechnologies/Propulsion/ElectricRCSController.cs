@@ -2,6 +2,7 @@
 using KIT.Extensions;
 using KIT.Powermanagement;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace KIT.Propulsion
 {
-    class ElectricRCSController : ResourceSuppliableModule
+    class ElectricRCSController : PartModule, IKITMod
     {
         public const string GROUP = "InterstellarRCSModule";
         public const string GROUP_TITLE = "#LOC_KSPIE_RCSModule_groupName";
@@ -109,56 +110,6 @@ namespace KIT.Propulsion
             SwitchToPreviousPropellant();
         }
 
-        // FixedUpdate is also called when not activated
-        public void FixedUpdate()
-        {
-            if (attachedRCS != null && HighLogic.LoadedSceneIsFlight && vessel.ActionGroups[
-                KSPActionGroup.RCS])
-            {
-                double dt = TimeWarp.fixedDeltaTime;
-                bool powerConsumed = false;
-
-                var forces = attachedRCS.thrustForces;
-                int forcesCount = forces.Length;
-                currentThrust = 0.0f;
-                for (int i = 0; i < forcesCount; i++)
-                {
-                    currentThrust += forces[i];
-                }
-
-                double received = 0.0, requested = 0.0;
-                if (powerEnabled)
-                {
-                    if (currentThrust > 0.0f)
-                    {
-                        requested = 0.5 * powerMult * currentThrust * maxIsp * GameConstants.
-                            STANDARD_GRAVITY / (efficiency * 1000.0 * CurrentPropellant.
-                            ThrustMultiplier);
-                    }
-                    received = consumeMegawatts(requested + Math.Min(requested, Math.Max(0.0,
-                        maxStoredPower - storedPower) / dt), true, false, false);
-                    supplyFNResourcePerSecond(received * (1.0 - efficiency), ResourceSettings.Config.WasteHeatInMegawatt);
-
-                    double totalPower = storedPower + received * dt, energyNeed = requested *
-                        dt;
-                    if (totalPower >= energyNeed)
-                    {
-                        powerConsumed = true;
-                        totalPower -= energyNeed;
-                    }
-                    storedPower = totalPower;
-                }
-                powerConsumptionStr = PluginHelper.getFormattedPowerString(received) + " / " +
-                    PluginHelper.getFormattedPowerString(requested);
-
-                if (hasSufficientPower != powerConsumed)
-                {
-                    hasSufficientPower = powerConsumed;
-                    SetPropellant(true);
-                }
-            }
-        }
-
         private void LoadConfig()
         {
             double effectiveIspMultiplier = (type == (int)ElectricEngineType.ARCJET) ?
@@ -214,8 +165,6 @@ namespace KIT.Propulsion
             if (partMass == 0)
                 partMass = part.mass;
 
-            resources_to_supply = new string[] { ResourceSettings.Config.WasteHeatInMegawatt };
-
             oldPowerEnabled = powerEnabled;
             efficiencyStr = efficiency.ToString("P1");
 
@@ -267,16 +216,6 @@ namespace KIT.Propulsion
 
             maxStoredPower = bufferMult * maxThrust * powerMult * maxIsp * GameConstants.
                 STANDARD_GRAVITY / (efficiency * 1000.0);
-        }
-
-        public override int getPowerPriority()
-        {
-            return 2;
-        }
-
-        public override string getResourceManagerDisplayName()
-        {
-            return part.partInfo.title + " (" + propNameStr + ")";
         }
 
         private void MovePropellant(bool moveNext)
@@ -412,5 +351,56 @@ namespace KIT.Propulsion
                 oldPowerEnabled = powerEnabled;
             }
         }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Second;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (attachedRCS == null || !HighLogic.LoadedSceneIsFlight || !vessel.ActionGroups[KSPActionGroup.RCS]) return;
+
+            bool powerConsumed = false;
+
+            var forces = attachedRCS.thrustForces;
+            int forcesCount = forces.Length;
+            currentThrust = 0.0f;
+            for (int i = 0; i < forcesCount; i++)
+            {
+                currentThrust += forces[i];
+            }
+
+            double received = 0.0, requested = 0.0;
+            if (powerEnabled)
+            {
+                if (currentThrust > 0.0f)
+                {
+                    requested = 0.5 * powerMult * currentThrust * maxIsp * GameConstants.
+                        STANDARD_GRAVITY / (efficiency * 1000.0 * CurrentPropellant.
+                        ThrustMultiplier);
+                }
+                // XXX - is this the amount correct, might need a * ec in MJ conversion.
+
+                var wanted = requested + Math.Min(requested, Math.Max(0.0, maxStoredPower - storedPower));
+                received = resMan.ConsumeResource(ResourceName.ElectricCharge, wanted);
+                resMan.ProduceResource(ResourceName.WasteHeat, received * (1.0 - efficiency));
+
+                double totalPower = storedPower + received, energyNeed = requested;
+                if (totalPower >= energyNeed)
+                {
+                    powerConsumed = true;
+                    totalPower -= energyNeed;
+                }
+                storedPower = totalPower;
+            }
+            powerConsumptionStr = PluginHelper.getFormattedPowerString(received) + " / " +
+                PluginHelper.getFormattedPowerString(requested);
+
+            if (hasSufficientPower != powerConsumed)
+            {
+                hasSufficientPower = powerConsumed;
+                SetPropellant(true);
+            }
+        }
+
+        public string KITPartName() => $"{part.partInfo.title} ({propNameStr})";
     }
 }

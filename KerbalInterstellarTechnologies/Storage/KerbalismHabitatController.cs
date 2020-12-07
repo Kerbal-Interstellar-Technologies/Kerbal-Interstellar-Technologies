@@ -72,14 +72,14 @@ namespace KIT.Storage
 		{
 			isInitialized = true;
 
-			bool found = false;
+			// bool found = false;
 
 			foreach (PartModule module in part.Modules)
 			{
 				if (module.moduleName == "Habitat")
 				{
 					habitatModule = module;
-					found = true;
+					// found = true;
 
 					habitatVolumeField = module.Fields["volume"];
 

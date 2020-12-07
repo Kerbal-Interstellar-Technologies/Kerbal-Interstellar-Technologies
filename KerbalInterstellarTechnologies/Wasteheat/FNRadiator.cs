@@ -1,9 +1,8 @@
 using KIT.Constants;
 using KIT.Extensions;
-using KIT.Power;
-using KIT.Powermanagement;
 using KIT.Propulsion;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -22,7 +21,7 @@ namespace KIT.Wasteheat
     class FlatFNRadiator : FNRadiator { }
 
     [KSPModule("Radiator")]
-    class ActiveRadiator3 : ResourceSuppliableModule, IPartMassModifier, IPartCostModifier
+    class ActiveRadiator3 : PartModule, IKITMod, IPartMassModifier, IPartCostModifier
     {
         public const string GROUP = "ActiveRadiator3";
         public const string GROUP_TITLE = "Interstellar Active Cooler";
@@ -330,17 +329,19 @@ namespace KIT.Wasteheat
             intakeLqdDensity = intakeLqdDefinition.density;
         }
 
-        private double DrawPower()
+        private double DrawPower(IResourceManager resMan)
         {
             // what does electricity look like, anyways?
 
             var powerNeeded = powerDrawInJoules;
-            var powerAvail = consumeFNResourcePerSecond(powerNeeded, ResourceSettings.Config.ElectricPowerInMegawatt);
+            var powerAvail = resMan.ConsumeResource(ResourceName.ElectricCharge, powerNeeded);
 
             return Math.Round(powerAvail / powerNeeded, 2);
         }
 
-        public void FixedUpdate()
+        public ResourcePriorityValue ResourceProcessPriority() => (ResourcePriorityValue)powerPriority;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
@@ -355,15 +356,11 @@ namespace KIT.Wasteheat
             if (intakeAtmAmount == 0 && intakeLqdAmount == 0) return;
 
             /* reduce the efficiency of the transfer if there is not enough power to run at 100% */
-            var efficiency = DrawPower();
+            var efficiency = DrawPower(resMan);
             if (efficiency == 0) return;
 
-            var wasteheatManager = getManagerForVessel(ResourceSettings.Config.WasteHeatInMegawatt);
-
-            maxSupplyOfHeat = wasteheatManager.CurrentSurplus + wasteheatManager.GetResourceAvailability();
+            maxSupplyOfHeat = resMan.ResourceCurrentCapacity(ResourceName.WasteHeat);
             if (maxSupplyOfHeat == 0) return;
-
-            var fixedDeltaTime = (double)(decimal)TimeWarp.fixedDeltaTime;
 
             airHeatTransferrable = waterHeatTransferrable = steamHeatTransferrable = heatTransferrable = 0;
 
@@ -373,7 +370,7 @@ namespace KIT.Wasteheat
 
             // Peter Han has mentioned performance concerns with Get Average Radiator Temp, and suggested I use ResourceFillFraction as a short cut.
             // AntaresMC mentioned that the upgrade system should max out at 1800K, and that 900K should be the starting point.
-            double hotTemp = Math.Max(coldTemp + 0.1, coldTemp + (wasteheatManager.ResourceFillFraction * maxExternalTemp));
+            double hotTemp = Math.Max(coldTemp + 0.1, coldTemp + (resMan.ResourceFillFraction(ResourceName.WasteHeat) * maxExternalTemp));
 
             if (intakeAtmAmount > 0)
             {
@@ -510,17 +507,16 @@ namespace KIT.Wasteheat
                  */
             }
 
-            var heatTransferred = consumeFNResourcePerSecond(actuallyReduced, ResourceSettings.Config.WasteHeatInMegawatt);
+            var heatTransferred = resMan.ConsumeResource(ResourceName.WasteHeat, actuallyReduced * GameConstants.ecPerMJ);
 
             if (heatTransferred == 0) return;
 
-            if (intakeAtmAmount > 0) part.RequestResource(intakeAtmID, intakeAtmAmount * intakeReduction * fixedDeltaTime);
-            if (intakeLqdAmount > 0) part.RequestResource(intakeLqdID, intakeLqdAmount * intakeReduction * fixedDeltaTime);
+            if (intakeAtmAmount > 0) resMan.ConsumeResource(ResourceName.IntakeAtmosphere, intakeAtmAmount * intakeReduction);
+            if (intakeLqdAmount > 0) resMan.ConsumeResource(ResourceName.IntakeLiquid, intakeLqdAmount * intakeReduction);
+
         }
-        public override int getPowerPriority()
-        {
-            return (int)powerPriority;
-        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 
 
@@ -680,7 +676,7 @@ namespace KIT.Wasteheat
     }
 
     [KSPModule("Radiator")]
-    class FNRadiator : ResourceSuppliableModule
+    class FNRadiator : PartModule, IKITMod
     {
         public const string GROUP = "FNRadiator";
         public const string GROUP_TITLE = "#LOC_KSPIE_Radiator_groupName";
@@ -1230,7 +1226,7 @@ namespace KIT.Wasteheat
         public override void OnStart(StartState state)
         {
             string[] resourcesToSupply = { ResourceSettings.Config.WasteHeatInMegawatt };
-            this.resources_to_supply = resourcesToSupply;
+            // this.resources_to_supply = resourcesToSupply;
 
             base.OnStart(state);
 
@@ -1559,120 +1555,7 @@ namespace KIT.Wasteheat
 
         public void FixedUpdate() // FixedUpdate is also called when not activated
         {
-            try
-            {
-                if (!HighLogic.LoadedSceneIsFlight)
-                    return;
-
-                if (!_active)
-                    base.OnFixedUpdate();
-
-                // get resource bar ratio at start of frame
-                var wasteheatManager = getManagerForVessel(ResourceSettings.Config.WasteHeatInMegawatt) as WasteHeatResourceManager;
-
-                if (double.IsNaN(wasteheatManager.TemperatureRatio))
-                {
-                    Debug.LogError("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in TemperatureRatio");
-                    return;
-                }
-
-                // ToDo replace wasteheatManager.SqrtResourceBarRatioBegin by ResourceBarRatioBegin after generators hotbath takes into account expected temperature
-                radiator_temperature_temp_val = Math.Min(maxRadiatorTemperature * wasteheatManager.TemperatureRatio, maxCurrentRadiatorTemperature);
-
-                atmosphericMultiplier = Math.Sqrt(vessel.atmDensity);
-
-                deltaTemp = Math.Max(radiator_temperature_temp_val - Math.Max(ExternalTemp() * Math.Min(1, atmosphericMultiplier), PhysicsGlobals.SpaceTemperature), 0);
-                var deltaTempToPowerFour = deltaTemp * deltaTemp * deltaTemp * deltaTemp;
-
-                if (radiatorIsEnabled)
-                {
-                    if (!CheatOptions.IgnoreMaxTemperature && wasteheatManager.ResourceFillFraction >= 1 && CurrentRadiatorTemperature >= maxRadiatorTemperature)
-                    {
-                        _explodeCounter++;
-                        if (_explodeCounter > 25)
-                            part.explode();
-                    }
-                    else
-                        _explodeCounter = 0;
-
-                    _thermalPowerDissipationPerSecond = wasteheatManager.RadiatorEfficiency * deltaTempToPowerFour * _stefanArea;
-
-                    if (double.IsNaN(_thermalPowerDissipationPerSecond))
-                        Debug.LogWarning("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in _thermalPowerDissipationPerSecond");
-
-                    _radiatedThermalPower = canRadiateHeat ? ConsumeWasteHeatPerSecond(_thermalPowerDissipationPerSecond, wasteheatManager) : 0;
-
-                    if (double.IsNaN(_radiatedThermalPower))
-                        Debug.LogError("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in radiatedThermalPower after call consumeWasteHeat (" + _thermalPowerDissipationPerSecond + ")");
-
-                    instantaneous_rad_temp = CalculateInstantaneousRadTemp();
-
-                    CurrentRadiatorTemperature = instantaneous_rad_temp;
-
-                    if (_moduleDeployableRadiator)
-                        _moduleDeployableRadiator.hasPivot = pivotEnabled;
-                }
-                else
-                {
-                    _thermalPowerDissipationPerSecond = wasteheatManager.RadiatorEfficiency * deltaTempToPowerFour * _stefanArea * 0.5;
-
-                    _radiatedThermalPower = canRadiateHeat ? ConsumeWasteHeatPerSecond(_thermalPowerDissipationPerSecond, wasteheatManager) : 0;
-
-                    instantaneous_rad_temp = CalculateInstantaneousRadTemp();
-
-                    CurrentRadiatorTemperature = instantaneous_rad_temp;
-                }
-
-                if (CanConvect())
-                {
-                    atmDensity = AtmDensity();
-
-                    // density * exposed surface area * specific heat capacity
-
-                    var heatTransferModifier = atmDensity * (intakeAtmDensity * effectiveRadiatorArea * intakeAtmSpecificHeatCapacity) * (1 - part.submergedPortion);
-                    heatTransferModifier *= convectiveBonus;
-                    heatTransferModifier += intakeLqdDensity * effectiveRadiatorArea * intakeLqdSpecificHeatCapacity * part.submergedPortion;
-
-                    atmosphere_modifier = heatTransferModifier * Math.Max(1, vessel.speed.Sqrt() + PartRotationDistance().Sqrt());
-
-                    temperatureDifference = Math.Max(0, CurrentRadiatorTemperature - ExternalTemp());
-
-                    var heatTransferCoefficient = (part.submergedPortion > 0) ? lqdHeatTransferCoefficient : airHeatTransferCoefficient;
-
-                    var convPowerDissipation = wasteheatManager.RadiatorEfficiency * atmosphere_modifier * temperatureDifference * effectiveRadiatorArea * heatTransferCoefficient;
-
-                    if (!radiatorIsEnabled)
-                        convPowerDissipation *= 0.25;
-
-                    if(_isGraphene)
-                    {
-                        // Per AntaresMC and others in #development, graphene is chemically unstable in an atmosphere,
-                        // prone to oxidation etc which reduces its effectiveness.
-                        convPowerDissipation *= 0.10;
-                    }
-
-                    _convectedThermalPower = canRadiateHeat ? ConsumeWasteHeatPerSecond(convPowerDissipation, wasteheatManager) : 0;
-
-                    if (_radiatorDeployDelay >= DEPLOYMENT_DELAY)
-                        DeploymentControl();
-                }
-                else
-                {
-                    submergedModifier = 0;
-                    temperatureDifference = 0;
-                    _convectedThermalPower = 0;
-
-                    if (radiatorIsEnabled || !isAutomated || !canRadiateHeat || !showControls || _radiatorDeployDelay < DEPLOYMENT_DELAY) return;
-
-                    Deploy();
-                }
-
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("[KSPI]: Exception on " + part.name + " during FNRadiator.FixedUpdate with message " + e.Message);
-                throw;
-            }
+      
         }
 
         protected virtual bool CanConvect()
@@ -1725,17 +1608,6 @@ namespace KIT.Wasteheat
                 Debug.Log("[KSPI]: DeploymentControl Auto Deploy");
                 Deploy();
             }
-        }
-
-        private double ConsumeWasteHeatPerSecond(double wasteheatToConsume, ResourceManager wasteheatManager)
-        {
-            if (!radiatorIsEnabled) return 0;
-
-            var consumedWasteheat = CheatOptions.IgnoreMaxTemperature || wasteheatToConsume == 0
-                ? wasteheatToConsume
-                : consumeFNResourcePerSecond(wasteheatToConsume, ResourceSettings.Config.WasteHeatInMegawatt, wasteheatManager);
-
-            return Double.IsNaN(consumedWasteheat) ? 0 : consumedWasteheat;
         }
 
         public double CurrentRadiatorTemperature
@@ -1817,11 +1689,6 @@ namespace KIT.Wasteheat
             return sb.ToStringAndRelease();
         }
 
-        public override int getPowerPriority()
-        {
-            return 3;
-        }
-
         private void SetHeatAnimationRatio(float color)
         {
             var heatStatesCount = _heatStates.Count();
@@ -1891,10 +1758,124 @@ namespace KIT.Wasteheat
             }
         }
 
-        public override string getResourceManagerDisplayName()
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
-            // use identical names so it will be grouped together
-            return part.partInfo.title + (clarifyFunction ? " (radiator)" : "");
+            try
+            {
+                if (!HighLogic.LoadedSceneIsFlight)
+                    return;
+
+                if (!_active)
+                    base.OnFixedUpdate();
+
+                // ToDo replace wasteheatManager.SqrtResourceBarRatioBegin by ResourceBarRatioBegin after generators hotbath takes into account expected temperature
+                radiator_temperature_temp_val = Math.Min(maxRadiatorTemperature * resMan.ResourceFillFraction(ResourceName.WasteHeat), maxCurrentRadiatorTemperature);
+
+                atmosphericMultiplier = Math.Sqrt(vessel.atmDensity);
+
+                deltaTemp = Math.Max(radiator_temperature_temp_val - Math.Max(ExternalTemp() * Math.Min(1, atmosphericMultiplier), PhysicsGlobals.SpaceTemperature), 0);
+                var deltaTempToPowerFour = deltaTemp * deltaTemp * deltaTemp * deltaTemp;
+
+                if (radiatorIsEnabled)
+                {
+                    if (!CheatOptions.IgnoreMaxTemperature && resMan.ResourceFillFraction(ResourceName.WasteHeat) >= 1 && CurrentRadiatorTemperature >= maxRadiatorTemperature)
+                    {
+                        _explodeCounter++;
+                        if (_explodeCounter > 25)
+                            part.explode();
+                    }
+                    else
+                        _explodeCounter = 0;
+
+                    Debug.Log($"[FNRadiator.KITFixedUpdate] radiator efficiency levels need to be done");
+                    // _thermalPowerDissipationPerSecond = wasteheatManager.RadiatorEfficiency * deltaTempToPowerFour * _stefanArea;
+                    _thermalPowerDissipationPerSecond = 1 * deltaTempToPowerFour * _stefanArea;
+
+                    if (double.IsNaN(_thermalPowerDissipationPerSecond))
+                        Debug.LogWarning("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in _thermalPowerDissipationPerSecond");
+
+                    _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
+
+                    if (double.IsNaN(_radiatedThermalPower))
+                        Debug.LogError("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in radiatedThermalPower after call consumeWasteHeat (" + _thermalPowerDissipationPerSecond + ")");
+
+                    instantaneous_rad_temp = CalculateInstantaneousRadTemp();
+
+                    CurrentRadiatorTemperature = instantaneous_rad_temp;
+
+                    if (_moduleDeployableRadiator)
+                        _moduleDeployableRadiator.hasPivot = pivotEnabled;
+                }
+                else
+                {
+                    Debug.Log($"[FNRadiator.KITFixedUpdate] radiator efficiency levels need to be done");
+                    //_thermalPowerDissipationPerSecond = wasteheatManager.RadiatorEfficiency * deltaTempToPowerFour * _stefanArea * 0.5;
+                    _thermalPowerDissipationPerSecond = 1 * deltaTempToPowerFour * _stefanArea * 0.5;
+
+                    _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
+
+                    instantaneous_rad_temp = CalculateInstantaneousRadTemp();
+
+                    CurrentRadiatorTemperature = instantaneous_rad_temp;
+                }
+
+                if (CanConvect())
+                {
+                    atmDensity = AtmDensity();
+
+                    // density * exposed surface area * specific heat capacity
+
+                    var heatTransferModifier = atmDensity * (intakeAtmDensity * effectiveRadiatorArea * intakeAtmSpecificHeatCapacity) * (1 - part.submergedPortion);
+                    heatTransferModifier *= convectiveBonus;
+                    heatTransferModifier += intakeLqdDensity * effectiveRadiatorArea * intakeLqdSpecificHeatCapacity * part.submergedPortion;
+
+                    atmosphere_modifier = heatTransferModifier * Math.Max(1, vessel.speed.Sqrt() + PartRotationDistance().Sqrt());
+
+                    temperatureDifference = Math.Max(0, CurrentRadiatorTemperature - ExternalTemp());
+
+                    var heatTransferCoefficient = (part.submergedPortion > 0) ? lqdHeatTransferCoefficient : airHeatTransferCoefficient;
+
+                    Debug.Log($"[FNRadiator.KITFixedUpdate] radiator efficiency levels need to be done CanConvect");
+                    //var convPowerDissipation = wasteheatManager.RadiatorEfficiency * atmosphere_modifier * temperatureDifference * effectiveRadiatorArea * heatTransferCoefficient;
+                    var convPowerDissipation = 1 * atmosphere_modifier * temperatureDifference * effectiveRadiatorArea * heatTransferCoefficient;
+
+                    if (!radiatorIsEnabled)
+                        convPowerDissipation *= 0.25;
+
+                    if (_isGraphene)
+                    {
+                        // Per AntaresMC and others in #development, graphene is chemically unstable in an atmosphere,
+                        // prone to oxidation etc which reduces its effectiveness.
+                        convPowerDissipation *= 0.10;
+                    }
+
+                    _convectedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, convPowerDissipation) : 0;
+
+                    if (_radiatorDeployDelay >= DEPLOYMENT_DELAY)
+                        DeploymentControl();
+                }
+                else
+                {
+                    submergedModifier = 0;
+                    temperatureDifference = 0;
+                    _convectedThermalPower = 0;
+
+                    if (radiatorIsEnabled || !isAutomated || !canRadiateHeat || !showControls || _radiatorDeployDelay < DEPLOYMENT_DELAY) return;
+
+                    Deploy();
+                }
+
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[KSPI]: Exception on " + part.name + " during FNRadiator.FixedUpdate with message " + e.Message);
+                throw;
+            }
         }
+
+        public string KITPartName() => $"{part.partInfo.title}{(clarifyFunction ? "(radiator)" : "")}";
     }
 }

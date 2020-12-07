@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -78,7 +79,7 @@ namespace KIT.Refinery.Activity
             _hydrazineDensity = PartResourceLibrary.Instance.GetDefinition(_hydrazineResourceName).density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
             _effectiveMaxPower = PowerRequirements * productionModifier;
             _current_power = PowerRequirements * powerFraction;
@@ -102,14 +103,14 @@ namespace KIT.Refinery.Activity
             _spareRoomWaterMass = partsThatContainWater.Sum(r => r.maxAmount - r.amount) * _waterDensity;
 
             // determine how much we can consume
-            var fixedMaxAmmoniaConsumptionRate = _current_rate * AmmoniaMassConsumptionRatio * fixedDeltaTime;
+            var fixedMaxAmmoniaConsumptionRate = _current_rate * AmmoniaMassConsumptionRatio;
             var ammoniaConsumptionRatio = fixedMaxAmmoniaConsumptionRate > 0 ? Math.Min(fixedMaxAmmoniaConsumptionRate, _availableAmmoniaMass) / fixedMaxAmmoniaConsumptionRate : 0;
 
-            var fixedMaxHydrogenPeroxideConsumptionRate = _current_rate * HydrogenPeroxideMassConsumptionRatio * fixedDeltaTime;
+            var fixedMaxHydrogenPeroxideConsumptionRate = _current_rate * HydrogenPeroxideMassConsumptionRatio;
             var hydrogenPeroxideConsumptionRatio = fixedMaxHydrogenPeroxideConsumptionRate > 0 ? Math.Min(fixedMaxHydrogenPeroxideConsumptionRate, _availableHydrogenPeroxideMass) / fixedMaxHydrogenPeroxideConsumptionRate : 0;
 
-            _fixedConsumptionRate = _current_rate * fixedDeltaTime * Math.Min(ammoniaConsumptionRatio, hydrogenPeroxideConsumptionRatio);
-            _consumptionRate = _fixedConsumptionRate / fixedDeltaTime;
+            _fixedConsumptionRate = _current_rate * Math.Min(ammoniaConsumptionRatio, hydrogenPeroxideConsumptionRatio);
+            _consumptionRate = _fixedConsumptionRate;
 
             if (_fixedConsumptionRate > 0 && (_spareRoomHydrazineMass > 0 || _spareRoomWaterMass > 0))
             {
@@ -124,18 +125,18 @@ namespace KIT.Refinery.Activity
 
                 // now we do the real consumption
                 var ammoniaRequest = _fixedConsumptionRate * AmmoniaMassConsumptionRatio * _consumptionStorageRatio / _ammoniaDensity;
-                _ammoniaConsumptionRate = _part.RequestResource(_ammoniaResourceName, ammoniaRequest) * _ammoniaDensity / fixedDeltaTime;
+                _ammoniaConsumptionRate = _part.RequestResource(_ammoniaResourceName, ammoniaRequest) * _ammoniaDensity;
 
                 var hydrogenPeroxideRequest = _fixedConsumptionRate * HydrogenPeroxideMassConsumptionRatio * _consumptionStorageRatio / _hydrogenPeroxideDensity;
-                _hydrogenPeroxideConsumptionRate = _part.RequestResource(_hydrogenPeroxideName, hydrogenPeroxideRequest) * _hydrogenPeroxideDensity / fixedDeltaTime;
+                _hydrogenPeroxideConsumptionRate = _part.RequestResource(_hydrogenPeroxideName, hydrogenPeroxideRequest) * _hydrogenPeroxideDensity;
 
                 var combinedConsumptionRate = _ammoniaConsumptionRate + _hydrogenPeroxideConsumptionRate;
 
-                var fixedHydrazineProduction = combinedConsumptionRate * HydrazineMassProductionRatio * fixedDeltaTime / _hydrazineDensity;
-                    _hydrazineProductionRate = -_part.RequestResource(_hydrazineResourceName, -fixedHydrazineProduction) * _hydrazineDensity / fixedDeltaTime;
+                var fixedHydrazineProduction = combinedConsumptionRate * HydrazineMassProductionRatio / _hydrazineDensity;
+                _hydrazineProductionRate = -_part.RequestResource(_hydrazineResourceName, -fixedHydrazineProduction) * _hydrazineDensity;
 
-                var fixedWaterProduction = combinedConsumptionRate * WaterMassProductionRatio * fixedDeltaTime / _waterDensity;
-                    _waterProductionRate = -_part.RequestResource(_waterResourceName, -fixedWaterProduction) * _waterDensity / fixedDeltaTime;
+                var fixedWaterProduction = combinedConsumptionRate * WaterMassProductionRatio / _waterDensity;
+                _waterProductionRate = -_part.RequestResource(_waterResourceName, -fixedWaterProduction) * _waterDensity; ;
             }
             else
             {

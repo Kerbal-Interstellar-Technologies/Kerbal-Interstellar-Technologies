@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Powermanagement;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace KIT.Resources
 {
-    class RegolithCollector : ResourceSuppliableModule
+    class RegolithCollector : PartModule, IKITMod
     {
         public const string GROUP = "RegolithCollector";
         public const string GROUP_TITLE = "#LOC_KSPIE_RegolithCollector_groupName";
@@ -16,8 +17,6 @@ namespace KIT.Resources
         // Persistent True
         [KSPField(isPersistant = true)]
         public bool bIsEnabled;
-        [KSPField(isPersistant = true)]
-        public double dLastActiveTime;
         [KSPField(isPersistant = true)]
         public double dLastPowerPercentage;
         [KSPField(isPersistant = true)]
@@ -93,7 +92,6 @@ namespace KIT.Resources
         }
 
         protected string strRegolithResourceName;
-        protected double dResourceFlow = 0;
         //protected double dDistanceFromStar = 0; // distance of the current vessel from the system's star
         protected double dConcentrationRegolith = 0; // regolith concentration at the current location
         protected double dRegolithSpareCapacity = 0; // spare capacity for the regolith on the vessel
@@ -138,26 +136,6 @@ namespace KIT.Resources
                 MAG.Fields[nameof(MAG.status)].guiActive = false;
                 MAG.Fields[nameof(MAG.status)].guiActiveEditor = false;
             }
-
-            // verify collector was enabled
-            if (!bIsEnabled) return;
-
-            // verify a timestamp is available
-            if (dLastActiveTime == 0) return;
-
-            // verify any power was available in previous state
-            if (dLastPowerPercentage < 0.01) return;
-
-            // verify vessel is landed, not splashed and not in atmosphere
-            if (IsCollectLegal() == false) return;
-
-            // calculate time difference since last time the vessel was active
-            double dTimeDifference = (Planetarium.GetUniversalTime() - dLastActiveTime) * 55;
-
-            //bTouchDown = this.part.GroundContact; // is the drill touching the ground?
-
-            // collect regolith for the amount of time that passed since last time (i.e. take care of offline collecting)
-            CollectRegolith(dTimeDifference, true);
         }
 
 
@@ -186,45 +164,7 @@ namespace KIT.Resources
 
         public override void OnFixedUpdate()
         {
-            if (FlightGlobals.fetch == null) return;
 
-            if (!bIsEnabled)
-            {
-                strCollectingStatus = Localizer.Format("#LOC_KSPIE_RegolithCollector_Disabled");//"Disabled"
-                strStarDist = UpdateDistanceInGUI(); // passes the distance to the GUI
-                return;
-            }
-
-            // won't collect in atmosphere, while splashed and while flying
-            if (IsCollectLegal() == false)
-            {
-                DisableCollector();
-                return;
-            }
-
-            strStarDist = UpdateDistanceInGUI();
-
-            // collect solar wind for a single frame
-            CollectRegolith(TimeWarp.fixedDeltaTime, false);
-
-            // store current time in case vessel is unloaded
-            dLastActiveTime = (float)Planetarium.GetUniversalTime();
-
-            // store current solar wind concentration in case vessel is unloaded
-            //dLastRegolithConcentration = CalculateRegolithConcentration(FlightGlobals.currentMainBody.position, localStar.transform.position, vessel.altitude);
-            dLastRegolithConcentration = GetFinalConcentration();
-
-            /* This bit will check if the regolith drill has not lost contact with ground. Raycasts are apparently not all that expensive, but still,
-                 * the counter will delay the check so that it runs only once per hundred cycles. This should be enough and should make it more performance friendly and
-                 * also less prone to kraken glitches. It also makes sure that this doesn't run before the vessel is fully loaded and shown to the player.
-                 */
-            if (++_anotherCounter % 100 != 0) return;
-
-            bTouchDown = TryRaycastToHitTerrain();
-            if (bTouchDown) return;
-
-            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_RegolithCollector_PostMsg2"), 3, ScreenMessageStyle.LOWER_CENTER);//"Regolith drill not in contact with ground. Disabling drill."
-            DisableCollector();
         }
 
         // checks if the vessel is not in atmosphere and if it can therefore collect regolith. Also checks if the vessel is landed and if it is not splashed (not sure if non atmospheric bodies can have oceans in KSP or modded galaxies, let's put this in to be sure)
@@ -323,25 +263,26 @@ namespace KIT.Resources
         }
 
         // the main collecting function
-        private void CollectRegolith(double deltaTimeInSeconds, bool offlineCollecting)
+        private void CollectRegolith(IResourceManager resMan)
         {
-            double dt = TimeWarp.fixedDeltaTime;
             dConcentrationRegolith = GetFinalConcentration();
 
             double dPowerRequirementsMW = PluginHelper.PowerConsumptionMultiplier * mwRequirements; // change the mwRequirements number in part config to change the power consumption
 
-            dRegolithSpareCapacity = part.GetConnectedResources(strRegolithResourceName).Sum(r => r.maxAmount - r.amount);
+            dRegolithSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.Regolith);
 
+            /*
             if (offlineCollecting)
                 dConcentrationRegolith = dLastRegolithConcentration; // if resolving offline collection, pass the saved value, because OnStart doesn't resolve the above function CalculateRegolithConcentration correctly
+
+            TODO does this still stand?
+
+            */
 
             if (dConcentrationRegolith > 0 && (dRegolithSpareCapacity > 0))
             {
                 // Determine available power, using EC if below 2 MW required
-                double powerreceivedMW = consumeMegawatts(dPowerRequirementsMW, true,
-                    false, dPowerRequirementsMW < 2.0);
-
-                dLastPowerPercentage = offlineCollecting ? dLastPowerPercentage : powerreceivedMW / dPowerRequirementsMW;
+                double powerreceivedMW = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMW * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
 
                 // show in GUI
                 strCollectingStatus = Localizer.Format("#LOC_KSPIE_RegolithCollector_Collectingregolith");//"Collecting regolith"
@@ -361,18 +302,10 @@ namespace KIT.Resources
 
             resourceProduction = dConcentrationRegolith * drillSize * dRegolithDensity * effectiveness * dLastPowerPercentage;
 
-            double dResourceChange = resourceProduction * deltaTimeInSeconds;
-
-            // if the vessel has been out of focus, print out the collected amount for the player
-            if (offlineCollecting)
-            {
-                string strNumberFormat = dResourceChange > 100 ? "0" : "0.00";
-                // let the player know that offline collecting worked
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_RegolithCollector_PostMsg3", dResourceChange.ToString(strNumberFormat),strRegolithResourceName), 10.0f, ScreenMessageStyle.LOWER_CENTER);//"The Regolith Drill collected <<1>> units of <<2>>
-            }
+            double dResourceChange = resourceProduction;
 
             // this is the second important bit - do the actual change of the resource amount in the vessel
-            dResourceFlow = -part.RequestResource(strRegolithResourceName, -dResourceChange) / dt;
+            resMan.ProduceResource(ResourceName.Regolith, dResourceChange); 
 
             /* This takes care of wasteheat production (but takes into account if waste heat mechanics weren't disabled).
              * It's affected by two properties of the drill part - its power requirements and waste heat production percentage.
@@ -383,7 +316,55 @@ namespace KIT.Resources
             if (CheatOptions.IgnoreMaxTemperature) return;
 
             dTotalWasteHeatProduction = dPowerRequirementsMW * wasteHeatModifier; // calculate amount of heat to be produced
-            supplyFNResourcePerSecond(dTotalWasteHeatProduction, ResourceSettings.Config.WasteHeatInMegawatt); // push the heat onto them
+
+            resMan.ProduceResource(ResourceName.WasteHeat, dTotalWasteHeatProduction * GameConstants.ecPerMJ);
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (FlightGlobals.fetch == null) return;
+
+            if (!bIsEnabled)
+            {
+                strCollectingStatus = Localizer.Format("#LOC_KSPIE_RegolithCollector_Disabled");//"Disabled"
+                strStarDist = UpdateDistanceInGUI(); // passes the distance to the GUI
+                return;
+            }
+
+            // won't collect in atmosphere, while splashed and while flying
+            if (IsCollectLegal() == false)
+            {
+                DisableCollector();
+                return;
+            }
+
+            strStarDist = UpdateDistanceInGUI();
+
+            // collect solar wind for a single frame
+            CollectRegolith(resMan);
+
+            // store current solar wind concentration in case vessel is unloaded
+            //dLastRegolithConcentration = CalculateRegolithConcentration(FlightGlobals.currentMainBody.position, localStar.transform.position, vessel.altitude);
+            dLastRegolithConcentration = GetFinalConcentration();
+
+            /* This bit will check if the regolith drill has not lost contact with ground. Raycasts are apparently not all that expensive, but still,
+                 * the counter will delay the check so that it runs only once per hundred cycles. This should be enough and should make it more performance friendly and
+                 * also less prone to kraken glitches. It also makes sure that this doesn't run before the vessel is fully loaded and shown to the player.
+                 */
+            if (++_anotherCounter % 100 != 0) return;
+
+            bTouchDown = TryRaycastToHitTerrain();
+            if (bTouchDown) return;
+
+            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_RegolithCollector_PostMsg2"), 3, ScreenMessageStyle.LOWER_CENTER);//"Regolith drill not in contact with ground. Disabling drill."
+            DisableCollector();
+        }
+
+        public string KITPartName()
+        {
+            throw new NotImplementedException();
         }
     }
 }

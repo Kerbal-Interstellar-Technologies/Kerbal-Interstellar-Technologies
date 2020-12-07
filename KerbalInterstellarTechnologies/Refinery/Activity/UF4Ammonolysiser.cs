@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System.Linq;
 using UnityEngine;
@@ -43,17 +44,17 @@ namespace KIT.Refinery.Activity
             _uraniumNitrideDensity = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.UraniumNitride).density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow,  bool isStartup = false)
         {
             _current_power = PowerRequirements * rateMultiplier;
             _current_rate = CurrentPower / EnergyPerTon;
             double uf4Fraction = _current_rate * 1.24597 / _uraniumTetrafluorideDensity;
             double ammoniaFraction = _current_rate * 0.901 / _ammoniaDensity;
-            _uraniumTetrafluorideConsumptionRate = _part.RequestResource(ResourceSettings.Config.UraniumTetraflouride, uf4Fraction * fixedDeltaTime, ResourceFlowMode.ALL_VESSEL) * _uraniumTetrafluorideDensity / fixedDeltaTime;
-            _ammoniaConsumptionRate = _part.RequestResource(ResourceSettings.Config.AmmoniaLqd, ammoniaFraction * fixedDeltaTime, ResourceFlowMode.ALL_VESSEL) * _ammoniaDensity / fixedDeltaTime;
+            _uraniumTetrafluorideConsumptionRate = _part.RequestResource(ResourceSettings.Config.UraniumTetraflouride, uf4Fraction, ResourceFlowMode.ALL_VESSEL) * _uraniumTetrafluorideDensity;
+            _ammoniaConsumptionRate = _part.RequestResource(ResourceSettings.Config.AmmoniaLqd, ammoniaFraction, ResourceFlowMode.ALL_VESSEL) * _ammoniaDensity;
 
             if (_ammoniaConsumptionRate > 0 && _uraniumTetrafluorideConsumptionRate > 0)
-                _uraniumNitrideProductionRate = -_part.RequestResource(ResourceSettings.Config.UraniumNitride, -_uraniumTetrafluorideConsumptionRate / 1.24597 / _uraniumNitrideDensity * fixedDeltaTime, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _uraniumNitrideDensity;
+                _uraniumNitrideProductionRate = -_part.RequestResource(ResourceSettings.Config.UraniumNitride, -_uraniumTetrafluorideConsumptionRate / 1.24597 / _uraniumNitrideDensity, ResourceFlowMode.ALL_VESSEL) /  _uraniumNitrideDensity;
 
             UpdateStatusMessage();
         }

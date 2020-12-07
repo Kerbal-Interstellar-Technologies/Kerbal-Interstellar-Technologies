@@ -8,11 +8,12 @@ using KIT.Powermanagement;
 using KIT.Resources;
 using TweakScale;
 using UnityEngine;
+using KIT.ResourceScheduler;
 
 namespace KIT
 {
     [KSPModule("Antimatter Storage")]
-    class AntimatterStorageTank : ResourceSuppliableModule, IPartMassModifier, IRescalable<FNGenerator>, IPartCostModifier
+    class AntimatterStorageTank : PartModule, IKITMod, IPartMassModifier, IRescalable<FNGenerator>, IPartCostModifier
     {
         public const string GROUP = "AntimatterStorageTank";
         public const string GROUP_TITLE = "#LOC_KSPIE_AntimatterStorageTank_groupName";
@@ -138,7 +139,7 @@ namespace KIT
         public string GeeforceStr;
         [KSPField]
         public bool canExplodeFromHeat = false;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterStorageTank_PartMass", guiUnits = " t", guiFormat = "F3" )]//Part Mass
+        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterStorageTank_PartMass", guiUnits = " t", guiFormat = "F3")]//Part Mass
         public double partMass;
         [KSPField]
         public bool calculatedMass = false;
@@ -621,37 +622,6 @@ namespace KIT
                 part.maxTemp = maxTemperature;
         }
 
-        public void FixedUpdate()
-        {
-            if (HighLogic.LoadedSceneIsEditor)
-                return;
-
-            GForcesIgnored = PluginHelper.GForcesIgnored;
-
-            if (!vessel.packed)
-            {
-                var newGeeForce = PluginHelper.GForcesIgnored ? 0 : vessel.geeForce;
-                currentGeeForce = _geeforceQueue.Any(m => m > 0) ?  _geeforceQueue.Where(m => m > 0).Min() : _geeforceQueue.Average();
-                _geeforceQueue.Enqueue(newGeeForce);
-                if (_geeforceQueue.Count > 20)
-                    _geeforceQueue.Dequeue();
-            }
-            else
-            {
-                var acceleration = PluginHelper.GForcesIgnored ? 0 : (Math.Max(0, (Math.Abs(_previousSpeed - vessel.obt_speed) / (Math.Max(TimeWarp.fixedDeltaTime, _previousFixedTime)))));
-                currentGeeForce = _geeforceQueue.Any(m => m > 0) ? _geeforceQueue.Where(m => m > 0).Min() : _geeforceQueue.Average();
-                _geeforceQueue.Enqueue(acceleration / GameConstants.STANDARD_GRAVITY);
-                if (_geeforceQueue.Count > 20)
-                    _geeforceQueue.Dequeue();
-            }
-            _previousSpeed = vessel.obt_speed;
-            _previousFixedTime = TimeWarp.fixedDeltaTime;
-
-            MaintainContainment();
-
-            ExplodeContainer();
-        }
-
         [KSPEvent(guiActive = true, guiName = "#LOC_KSPIE_AntimatterStorageTank_SelfDestruct", active = true)]//Self Destruct
         public void SelfDestruct()
         {
@@ -664,7 +634,7 @@ namespace KIT
             DoExplode();//"Antimatter container exploded because self destruct was activated"
         }
 
-        private void MaintainContainment()
+        private void MaintainContainment(IResourceManager resMan)
         {
             var antimatterResource = part.Resources[resourceName];
             if (antimatterResource == null)
@@ -673,37 +643,45 @@ namespace KIT
             if (chargeStatus > 0 && antimatterResource.amount > _minimumAntimatterAmount)
             {
                 // chargeStatus is in seconds
-                chargeStatus -= vessel.packed ? 0.05f : TimeWarp.fixedDeltaTime;
+                chargeStatus -= vessel.packed ? 0.05f : resMan.FixedDeltaTime();
             }
 
             if (!_shouldCharge && antimatterResource.amount <= _minimumAntimatterAmount) return;
 
             var powerModifier = canExplodeFromGeeForce
                 ? (resourceRatio * (currentGeeForce / 10) * 0.8) + ((part.temperature / 1000) * 0.2)
-                :  Math.Pow(resourceRatio, 2);
+                : Math.Pow(resourceRatio, 2);
 
             effectivePowerNeeded = chargeNeeded * powerModifier;
 
-            if (effectivePowerNeeded > 0.0)
+            if (effectivePowerNeeded <= 0.0)
             {
-                double powerRequest = (chargeStatus >= maxCharge ? 1.0 : 2.0) *
-                    effectivePowerNeeded * TimeWarp.fixedDeltaTime;
-                double chargeToAdd = consumeMegawatts(powerRequest / GameConstants.ecPerMJ,
-                    true, true, true) * GameConstants.ecPerMJ / effectivePowerNeeded;
-                chargeStatus += chargeToAdd;
+                _effectiveMaxGeeforce = 0;
+                _temperatureExplodeCounter = 0;
+                _geeforceExplodeCounter = 0;
+                _powerExplodeCounter = 0;
+                return;
+            }
 
-                if (chargeToAdd >= TimeWarp.fixedDeltaTime)
-                    _charging = true;
-                else
+
+            double powerRequest = (chargeStatus >= maxCharge ? 1.0 : 2.0) *
+                effectivePowerNeeded;
+            // TODO, not sure about this change.
+            double chargeToAdd = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest) / effectivePowerNeeded;
+            chargeStatus += chargeToAdd;
+
+            if (chargeToAdd >= resMan.FixedDeltaTime())
+                _charging = true;
+            else
+            {
+                _charging = false;
+                if (TimeWarp.CurrentRateIndex > 3 && (antimatterResource.amount > _minimumAntimatterAmount))
                 {
-                    _charging = false;
-                    if (TimeWarp.CurrentRateIndex > 3 && (antimatterResource.amount > _minimumAntimatterAmount))
-                    {
-                        TimeWarp.SetRate(3, true);
-                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_AntimatterStorageTank_Postmsg7", TimeWarp.CurrentRate,antimatterResource.resourceName), 1, ScreenMessageStyle.UPPER_CENTER);//"Cannot Time Warp faster than " +  + "x while " +  + " Tank is Unpowered"
-                    }
+                    TimeWarp.SetRate(3, true);
+                    ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_AntimatterStorageTank_Postmsg7", TimeWarp.CurrentRate, antimatterResource.resourceName), 1, ScreenMessageStyle.UPPER_CENTER);//"Cannot Time Warp faster than " +  + "x while " +  + " Tank is Unpowered"
                 }
             }
+
 
             if (_startupTimeout > 0)
                 _startupTimeout--;
@@ -711,7 +689,7 @@ namespace KIT
             if (_startupTimeout == 0 && antimatterResource.amount > _minimumAntimatterAmount)
             {
                 //verify temperature
-                if (!CheatOptions.IgnoreMaxTemperature &&  canExplodeFromHeat && part.temperature > (double)(decimal)maxTemperature)
+                if (!CheatOptions.IgnoreMaxTemperature && canExplodeFromHeat && part.temperature > (double)(decimal)maxTemperature)
                 {
                     _temperatureExplodeCounter++;
                     if (_temperatureExplodeCounter > 20)
@@ -763,13 +741,7 @@ namespace KIT
                 else
                     _powerExplodeCounter = 0;
             }
-            else
-            {
-                _effectiveMaxGeeforce = 0;
-                _temperatureExplodeCounter = 0;
-                _geeforceExplodeCounter = 0;
-                _powerExplodeCounter = 0;
-            }
+
 
             if (chargeStatus > maxCharge)
                 chargeStatus = maxCharge;
@@ -785,6 +757,7 @@ namespace KIT
 
             _explosionSize = Mathf.Sqrt((float)antimatterResource.amount) * 5;
 
+            // We want this to be called from OnJustAboutToBeDestroyed above. Not ideal, but.
             _curExplosionSize += TimeWarp.fixedDeltaTime * _explosionSize * _explosionSize / _explosionTime;
             _lightGameObject.transform.localScale = new Vector3(Mathf.Sqrt(_curExplosionSize), Mathf.Sqrt(_curExplosionSize), Mathf.Sqrt(_curExplosionSize));
             _lightGameObject.GetComponent<Light>().range = Mathf.Sqrt(_curExplosionSize) * 15f;
@@ -829,15 +802,40 @@ namespace KIT
             return info.ToString();
         }
 
-        public override int getPowerPriority()
+        public ResourcePriorityValue ResourceProcessPriority() => 0;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
-            return 0;
+            if (HighLogic.LoadedSceneIsEditor)
+                return;
+
+            GForcesIgnored = PluginHelper.GForcesIgnored;
+
+            if (!vessel.packed)
+            {
+                var newGeeForce = PluginHelper.GForcesIgnored ? 0 : vessel.geeForce;
+                currentGeeForce = _geeforceQueue.Any(m => m > 0) ? _geeforceQueue.Where(m => m > 0).Min() : _geeforceQueue.Average();
+                _geeforceQueue.Enqueue(newGeeForce);
+                if (_geeforceQueue.Count > 20)
+                    _geeforceQueue.Dequeue();
+            }
+            else
+            {
+                var acceleration = PluginHelper.GForcesIgnored ? 0 : (Math.Max(0, (Math.Abs(_previousSpeed - vessel.obt_speed) / (Math.Max(resMan.FixedDeltaTime(), _previousFixedTime)))));
+                currentGeeForce = _geeforceQueue.Any(m => m > 0) ? _geeforceQueue.Where(m => m > 0).Min() : _geeforceQueue.Average();
+                _geeforceQueue.Enqueue(acceleration / GameConstants.STANDARD_GRAVITY);
+                if (_geeforceQueue.Count > 20)
+                    _geeforceQueue.Dequeue();
+            }
+            _previousSpeed = vessel.obt_speed;
+            _previousFixedTime = resMan.FixedDeltaTime();
+
+            MaintainContainment(resMan);
+
+            ExplodeContainer();
         }
 
-        public override string getResourceManagerDisplayName()
-        {
-            // use identical names so it will be grouped together
-            return part.partInfo.title;
-        }
+        public string KITPartName() => part.partInfo.title;
+
     }
 }

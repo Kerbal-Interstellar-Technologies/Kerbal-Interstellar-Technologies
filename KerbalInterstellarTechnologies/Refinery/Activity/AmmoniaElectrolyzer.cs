@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System.Linq;
 using UnityEngine;
@@ -41,16 +42,16 @@ namespace KIT.Refinery.Activity
             _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.HydrogenLqd).density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
             _current_power = PowerRequirements * rateMultiplier;
             _currentMassRate = (CurrentPower / EnergyPerTon);
 
-            var spareCapacityNitrogen = _part.GetResourceSpareCapacity(ResourceSettings.Config.NitrogenLqd);
-            var spareCapacityHydrogen = _part.GetResourceSpareCapacity(ResourceSettings.Config.HydrogenLqd);
+            var spareCapacityNitrogen = resMan.ResourceSpareCapacity(ResourceName.NitrogenLqd);
+            var spareCapacityHydrogen = resMan.ResourceSpareCapacity(ResourceName.HydrogenLqd);
 
-            var maxNitrogenMassRate = (_currentMassRate * (1 - GameConstants.ammoniaHydrogenFractionByMass)) * fixedDeltaTime / _nitrogenDensity;
-            var maxHydrogenMassRate = (_currentMassRate * GameConstants.ammoniaHydrogenFractionByMass) * fixedDeltaTime / _hydrogenDensity;
+            var maxNitrogenMassRate = (_currentMassRate * (1 - GameConstants.ammoniaHydrogenFractionByMass))  / _nitrogenDensity;
+            var maxHydrogenMassRate = (_currentMassRate * GameConstants.ammoniaHydrogenFractionByMass)  / _hydrogenDensity;
 
             // prevent overflow
             if (spareCapacityNitrogen <= maxNitrogenMassRate || spareCapacityHydrogen <= maxHydrogenMassRate)
@@ -61,12 +62,16 @@ namespace KIT.Refinery.Activity
             }
             else
             {
-                _ammoniaConsumptionMassRate = _part.RequestResource(ResourceSettings.Config.AmmoniaLqd, _currentMassRate * fixedDeltaTime / _ammoniaDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _ammoniaDensity;
+                var tmp = resMan.ConsumeResource(ResourceName.AmmoniaLqd, _currentMassRate / _ammoniaDensity);
+                _ammoniaConsumptionMassRate = _currentMassRate * (tmp / (_currentMassRate / _ammoniaDensity));
+                
                 var hydrogenMassRate = _ammoniaConsumptionMassRate * GameConstants.ammoniaHydrogenFractionByMass;
                 var nitrogenMassRate = _ammoniaConsumptionMassRate * (1 - GameConstants.ammoniaHydrogenFractionByMass);
 
-                _hydrogenProductionMassRate = -_part.RequestResource(ResourceSettings.Config.HydrogenLqd, -hydrogenMassRate * fixedDeltaTime / _hydrogenDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _hydrogenDensity;
-                _nitrogenProductionMassRate = -_part.RequestResource(ResourceSettings.Config.NitrogenLqd, -nitrogenMassRate * fixedDeltaTime / _nitrogenDensity, ResourceFlowMode.ALL_VESSEL) / fixedDeltaTime * _nitrogenDensity;
+                _hydrogenProductionMassRate = hydrogenMassRate;
+                resMan.ProduceResource(ResourceName.HydrogenLqd, hydrogenMassRate / _hydrogenDensity);
+                _nitrogenProductionMassRate = nitrogenMassRate;
+                resMan.ProduceResource(ResourceName.NitrogenLqd, nitrogenMassRate / _nitrogenDensity);
             }
 
             UpdateStatusMessage();
@@ -93,7 +98,8 @@ namespace KIT.Refinery.Activity
             GUILayout.Label((_nitrogenProductionMassRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000") + " mT/" + Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
 
-            var spareCapacityNitrogen = _part.GetResourceSpareCapacity(ResourceSettings.Config.NitrogenLqd);
+            part.GetConnectedResourceTotals(ResourceSettings.Config.NitrogenLqd.GetHashCode(), out var amount, out var maxAmount);
+            var spareCapacityNitrogen = maxAmount - amount;
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_SpareCapacityNitrogen"), _bold_label, GUILayout.Width(labelWidth));//"Spare Capacity Nitrogen"

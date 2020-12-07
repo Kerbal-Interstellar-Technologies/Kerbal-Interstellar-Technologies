@@ -8,6 +8,5 @@ namespace KIT
 
         string getResourceManagerDisplayName();
 
-        double supplyFNResourceFixed(double supply, String resourceName);
     }
 }

@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using KIT.Powermanagement;
+using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.UI.Screens.Flight.Dialogs;
 
 namespace KIT
 {
 
-    class ModuleModableScienceGenerator : ResourceSuppliableModule, IScienceDataContainer
+    class ModuleModableScienceGenerator : PartModule, IKITMod, IScienceDataContainer
     {
         [KSPField(isPersistant = false)]
         public bool canDeploy = false;
@@ -254,9 +256,13 @@ namespace KIT
 
         }
 
-        public override int getPowerPriority()
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
-            return 4;
         }
+
+        public string KITPartName() => "${part.partInfo.title}";
     }
 }

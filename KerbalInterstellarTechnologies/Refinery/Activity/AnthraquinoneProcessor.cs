@@ -1,6 +1,7 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -68,7 +69,7 @@ namespace KIT.Refinery.Activity
             _hydrogenPeroxideDensity = PartResourceLibrary.Instance.GetDefinition(_hydrogenPeroxideResourceName).density;
         }
 
-        public void UpdateFrame(double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, double fixedDeltaTime, bool isStartup = false)
+        public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
             _effectiveMaxPower = PowerRequirements * productionModifier;
 
@@ -89,14 +90,14 @@ namespace KIT.Refinery.Activity
             _spareRoomHydrogenPeroxideMass = partsThatContainPeroxide.Sum(r => r.maxAmount - r.amount) * _hydrogenPeroxideDensity;
 
             // determine how much we can consume
-            var fixedMaxOxygenConsumptionRate = _current_rate * OxygenMassByFraction * fixedDeltaTime;
+            var fixedMaxOxygenConsumptionRate = _current_rate * OxygenMassByFraction;
             var oxygenConsumptionRatio = fixedMaxOxygenConsumptionRate > 0 ? Math.Min(fixedMaxOxygenConsumptionRate, _availableOxygenMass) / fixedMaxOxygenConsumptionRate : 0;
 
-            var fixedMaxHydrogenConsumptionRate = _current_rate * HydrogenMassByFraction * fixedDeltaTime;
+            var fixedMaxHydrogenConsumptionRate = _current_rate * HydrogenMassByFraction;
             var hydrogenConsumptionRatio = fixedMaxHydrogenConsumptionRate > 0 ? Math.Min(fixedMaxHydrogenConsumptionRate, _availableHydrogenMass) / fixedMaxHydrogenConsumptionRate : 0;
 
-            _fixedConsumptionRate = _current_rate * fixedDeltaTime * Math.Min(oxygenConsumptionRatio, hydrogenConsumptionRatio);
-            _consumptionRate = _fixedConsumptionRate / fixedDeltaTime;
+            _fixedConsumptionRate = _current_rate * Math.Min(oxygenConsumptionRatio, hydrogenConsumptionRatio);
+            _consumptionRate = _fixedConsumptionRate;
 
             if (_fixedConsumptionRate > 0 && _spareRoomHydrogenPeroxideMass > 0)
             {
@@ -106,12 +107,12 @@ namespace KIT.Refinery.Activity
                 var oxygenConsumptionRate = fixedMaxPossibleHydrogenPeroxideRate * OxygenMassByFraction;
 
                 // consume the resource
-                _hydrogenConsumptionRate = _part.RequestResource(_hydrogenResourceName, hydrogenConsumptionRate / _hydrogenDensity) / fixedDeltaTime * _hydrogenDensity;
-                _oxygenConsumptionRate = _part.RequestResource(_oxygenResourceName, oxygenConsumptionRate / _oxygenDensity) / fixedDeltaTime * _oxygenDensity;
+                _hydrogenConsumptionRate = _part.RequestResource(_hydrogenResourceName, hydrogenConsumptionRate / _hydrogenDensity) * _hydrogenDensity;
+                _oxygenConsumptionRate = _part.RequestResource(_oxygenResourceName, oxygenConsumptionRate / _oxygenDensity)  * _oxygenDensity;
 
-                var combinedConsumptionRate = (_hydrogenConsumptionRate + _oxygenConsumptionRate) * fixedDeltaTime / _hydrogenPeroxideDensity;
+                var combinedConsumptionRate = (_hydrogenConsumptionRate + _oxygenConsumptionRate) / _hydrogenPeroxideDensity;
 
-                _hydrogenPeroxideProductionRate = -_part.RequestResource(_hydrogenPeroxideResourceName, -combinedConsumptionRate) / fixedDeltaTime * _hydrogenPeroxideDensity;
+                _hydrogenPeroxideProductionRate = -_part.RequestResource(_hydrogenPeroxideResourceName, -combinedConsumptionRate)  * _hydrogenPeroxideDensity;
             }
             else
             {

@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace KIT.Powermanagement
 {
-    public class ResourceOvermanager
+ /*
+  * public class ResourceOvermanager
     {
         private static readonly Dictionary<string, ResourceOvermanager> resourceOverManagers = new Dictionary<string, ResourceOvermanager>();
 
@@ -74,4 +75,5 @@ namespace KIT.Powermanagement
             return managers.ContainsKey(vess);
         }
     }
+ */
 }

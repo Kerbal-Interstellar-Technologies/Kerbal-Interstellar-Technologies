@@ -1,11 +1,12 @@
 ﻿using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 
 namespace KIT.Reactors
 {
     [KSPModule("Magnetic Confinement Fusion Engine")]
-    class  InterstellarTokamakFusionEngine : InterstellarTokamakFusionReactor {}
+    class InterstellarTokamakFusionEngine : InterstellarTokamakFusionReactor { }
 
     [KSPModule("Magnetic Confinement Fusion Reactor")]
     class InterstellarTokamakFusionReactor : InterstellarFusionReactor
@@ -45,6 +46,8 @@ namespace KIT.Reactors
 
         public override void OnUpdate()
         {
+            throw new ArgumentException("please fix tokomak OnUpdate");
+            /*
             base.OnUpdate();
             if (!isSwappingFuelMode && (!CheatOptions.InfiniteElectricity && getDemandStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt) > 1.01
                                                                           && getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt) < 0.25) && IsEnabled && !fusion_alert)
@@ -62,6 +65,7 @@ namespace KIT.Reactors
             }
 
             electricPowerMaintenance = PluginHelper.getFormattedPowerString(power_consumed) + " / " + PluginHelper.getFormattedPowerString(heatingPowerRequirements);
+            */
         }
 
         private double GetPlasmaRatio(double receivedPowerPerSecond, double fusionPowerRequirement)
@@ -89,6 +93,10 @@ namespace KIT.Reactors
             base.StartReactor();
 
             if (HighLogic.LoadedSceneIsEditor) return;
+
+            throw new ArgumentException("please fix tokomak StartReactor");
+
+            /*
 
             var fixedDeltaTime = (double)(decimal)TimeWarp.fixedDeltaTime;
 
@@ -123,46 +131,46 @@ namespace KIT.Reactors
             }
             else
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_TokomakFusionReator_PostMsg4"), 5f, ScreenMessageStyle.LOWER_CENTER);//"Not enough power to start fusion reaction"
+
+            */
         }
 
-        public override void OnFixedUpdate()
+        public new void KITFixedUpdate(IResourceManager resMan)
         {
             base.OnFixedUpdate();
-            if (IsEnabled)
-            {
-                var fusionPowerRequirement = HeatingPowerRequirements;
-
-                var requestedPower = fusionPowerRequirement + ((plasmaBufferSize - storedPlasmaEnergyRatio) * PowerRequirement);
-
-                // consume power from managed power source
-                power_consumed = CheatOptions.InfiniteElectricity
-                    ? requestedPower
-                    : consumeFNResourcePerSecond(requestedPower, ResourceSettings.Config.ElectricPowerInMegawatt);
-
-                if (maintenancePowerWasteheatRatio > 0)
-                    supplyFNResourcePerSecond(maintenancePowerWasteheatRatio * power_consumed, ResourceSettings.Config.WasteHeatInMegawatt);
-
-                if (isSwappingFuelMode)
-                {
-                    plasma_ratio = 1;
-                    isSwappingFuelMode = false;
-                }
-                else if (jumpstartPowerTime > 0)
-                {
-                    plasma_ratio = 1;
-                    jumpstartPowerTime--;
-                }
-                else
-                {
-                    plasma_ratio = GetPlasmaRatio(power_consumed, fusionPowerRequirement);
-                    allowJumpStart = plasma_ratio > 0.99;
-                }
-            }
-            else
+            if (!IsEnabled)
             {
                 plasma_ratio = 0;
                 power_consumed = 0;
+                return;
             }
+
+            var fusionPowerRequirement = HeatingPowerRequirements;
+
+            var requestedPower = fusionPowerRequirement + ((plasmaBufferSize - storedPlasmaEnergyRatio) * PowerRequirement);
+
+            // consume power from managed power source
+            power_consumed = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
+
+            if (maintenancePowerWasteheatRatio > 0)
+                resMan.ProduceResource(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * power_consumed);
+
+            if (isSwappingFuelMode)
+            {
+                plasma_ratio = 1;
+                isSwappingFuelMode = false;
+            }
+            else if (jumpstartPowerTime > 0)
+            {
+                plasma_ratio = 1;
+                jumpstartPowerTime--;
+            }
+            else
+            {
+                plasma_ratio = GetPlasmaRatio(power_consumed, fusionPowerRequirement);
+                allowJumpStart = plasma_ratio > 0.99;
+            }
+
         }
 
         public override void OnStart(PartModule.StartState state)

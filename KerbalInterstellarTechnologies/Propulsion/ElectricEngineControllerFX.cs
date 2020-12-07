@@ -1,9 +1,8 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
-using KIT.Power;
 using KIT.Powermanagement;
 using KIT.Resources;
-using KIT.Wasteheat;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace KIT.Propulsion
     class ElectrostaticEngineControllerFX : ElectricEngineControllerFX { }
 
     [KSPModule("#LOC_KSPIE_ElectricEngine_partModuleName")]
-    class ElectricEngineControllerFX : ResourceSuppliableModule, IUpgradeableModule, IRescalable<ElectricEngineControllerFX>, IPartMassModifier
+    class ElectricEngineControllerFX : PartModule, IKITMod, IUpgradeableModule, IRescalable<ElectricEngineControllerFX>, IPartMassModifier
     {
         public const string GROUP = "ElectricEngineControllerFX";
         public const string GROUP_TITLE = "#LOC_KSPIE_ElectricEngine_groupName";
@@ -350,6 +349,7 @@ namespace KIT.Propulsion
                 ? CurrentPropellant.DecomposedIspMult
                 : CurrentPropellant.IspMultiplier;
 
+        private double mostRecentWasteHeatRatio;
         public double ThermalEfficiency
         {
             get
@@ -357,9 +357,7 @@ namespace KIT.Propulsion
                 if (HighLogic.LoadedSceneIsFlight || CheatOptions.IgnoreMaxTemperature || ignoreWasteheat)
                     return 1;
 
-                var wasteheatRatio = getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
-
-                return 1 - wasteheatRatio * wasteheatRatio * wasteheatRatio;
+                return 1 - mostRecentWasteHeatRatio * mostRecentWasteHeatRatio * mostRecentWasteHeatRatio;
             }
         }
 
@@ -501,7 +499,7 @@ namespace KIT.Propulsion
             ScaleParameters();
 
             // initialise resources
-            resources_to_supply = new [] { ResourceSettings.Config.WasteHeatInMegawatt };
+            //resources_to_supply = new [] { ResourceSettings.Config.WasteHeatInMegawatt };
             base.OnStart(state);
 
             AttachToEngine();
@@ -734,6 +732,217 @@ namespace KIT.Propulsion
         // ReSharper disable once UnusedMember.Global
         public void FixedUpdate()
         {
+
+        }
+
+        private void IdleEngine()
+        {
+            thrust_d = 0;
+
+            if (IsValidPositiveNumber(simulated_max_thrust) && IsValidPositiveNumber(simulatedThrustInSpace))
+            {
+                UpdateIsp(Math.Max(0, simulated_max_thrust / simulatedThrustInSpace));
+                _maxFuelFlowRate = (float)Math.Max(_simulatedSpaceFuelFlowRate, 0);
+                _attachedEngine.maxFuelFlow = _maxFuelFlowRate;
+            }
+            else
+            {
+                UpdateIsp(1);
+                _maxFuelFlowRate = 0;
+                _attachedEngine.maxFuelFlow = _maxFuelFlowRate;
+            }
+
+            if (_attachedEngine is ModuleEnginesFX && particleEffectMult > 0)
+                part.Effect(CurrentPropellant.ParticleFXName, 0, -1);
+        }
+
+        private void CalculateTimeDialation()
+        {
+            var worldSpaceVelocity = vessel.orbit.GetFrameVel().magnitude;
+
+            lightSpeedRatio = Math.Min(_effectiveSpeedOfLight == 0.0 ? 1.0 : worldSpaceVelocity / _effectiveSpeedOfLight, 0.9999999999);
+
+            timeDilation = Math.Sqrt(1 - (lightSpeedRatio * lightSpeedRatio));
+        }
+
+        private static bool IsValidPositiveNumber(double value)
+        {
+            if (double.IsNaN(value))
+                return false;
+
+            if (double.IsInfinity(value))
+                return false;
+
+            return !(value <= 0);
+        }
+
+        private void PersistentThrust(double fixedDeltaTime, double universalTime, Vector3d thrustDirection, double vesselMass, double thrust, double isp)
+        {
+            var deltaVv = CalculateDeltaVV(thrustDirection, vesselMass, fixedDeltaTime, thrust, isp, out var demandMass);
+            string message;
+
+            var persistentThrustDot = Vector3d.Dot(thrustDirection, vessel.obt_velocity);
+            if (persistentThrustDot < 0 && (vessel.obt_velocity.magnitude <= deltaVv.magnitude * 2))
+            {
+                message = Localizer.Format("#LOC_KSPIE_ElectricEngineController_PostMsg1");
+                ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);//"Thrust warp stopped - orbital speed too low"
+                Debug.Log("[KSPI]: " + message);
+                TimeWarp.SetRate(0, true);
+                return;
+            }
+
+            double fuelRatio = 0;
+
+            // determine fuel availability
+            if (!CurrentPropellant.IsInfinite && !CheatOptions.InfinitePropellant && CurrentPropellant.ResourceDefinition.density > 0)
+            {
+                var requestedAmount = demandMass / (double)(decimal)CurrentPropellant.ResourceDefinition.density;
+                if (IsValidPositiveNumber(requestedAmount))
+                    fuelRatio = part.RequestResource(CurrentPropellant.Propellant.name, requestedAmount) / requestedAmount;
+            }
+            else
+                fuelRatio = 1;
+
+            if (!double.IsNaN(fuelRatio) && !double.IsInfinity(fuelRatio) && fuelRatio > 0)
+            {
+                vessel.orbit.Perturb(deltaVv * fuelRatio, universalTime);
+            }
+
+            if (thrust > 0.0000005 && fuelRatio < 0.999999 && _isFullyStarted)
+            {
+                message = Localizer.Format("#LOC_KSPIE_ElectricEngineController_PostMsg2", fuelRatio, thrust);// "Thrust warp stopped - " + + " propellant depleted thust: " +
+                ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
+                Debug.Log("[KSPI]: " + message);
+                TimeWarp.SetRate(0, true);
+            }
+        }
+
+        public void upgradePartModule()
+        {
+            isupgraded = true;
+            type = upgradedtype;
+            _vesselPropellants = ElectricEnginePropellant.GetPropellantsEngineForType(type);
+            engineTypeStr = upgradedName;
+
+            if (!vacplasmaadded && type == (int)ElectricEngineType.VACUUMTHRUSTER)
+            {
+                vacplasmaadded = true;
+                var node = new ConfigNode("RESOURCE");
+                node.AddValue("name", ResourceSettings.Config.VacuumPlasma);
+                node.AddValue("maxAmount", scaledMaxPower * 0.0000001);
+                node.AddValue("amount", scaledMaxPower * 0.0000001);
+                part.AddResource(node);
+            }
+        }
+
+        public override string GetInfo()
+        {
+            return Localizer.Format("#LOC_KSPIE_ElectricEngine_maxPowerConsumption") + ": " + PluginHelper.getFormattedPowerString(maxPower * powerReqMult);
+        }
+
+        private void TogglePropellant(bool next)
+        {
+            if (next)
+                ToggleNextPropellant();
+            else
+                TogglePreviousPropellant();
+        }
+
+        private void ToggleNextPropellant()
+        {
+            Debug.Log("[KSPI]: ElectricEngineControllerFX toggleNextPropellant");
+            fuel_mode++;
+            if (fuel_mode >= _vesselPropellants.Count)
+                fuel_mode = 0;
+
+            SetupPropellants(true);
+
+            UpdateIsp();
+        }
+
+        private void TogglePreviousPropellant()
+        {
+            Debug.Log("[KSPI]: ElectricEngineControllerFX togglePreviousPropellant");
+            fuel_mode--;
+            if (fuel_mode < 0)
+                fuel_mode = _vesselPropellants.Count - 1;
+
+            SetupPropellants(false);
+
+            UpdateIsp();
+        }
+
+        private double EvaluateMaxThrust(double powerSupply)
+        {
+            if (CurrentPropellant == null) return 0;
+
+            if (_modifiedCurrentPropellantIspMultiplier <= 0) return 0;
+
+            return CurrentPropellantEfficiency * GetPowerThrustModifier() * powerSupply / (_modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * GameConstants.STANDARD_GRAVITY);
+        }
+
+        private void UpdateIsp(double ispEfficiency = 1)
+        {
+            _ispFloatCurve.Curve.RemoveKey(0);
+            engineIsp = timeDilation * ispEfficiency * _modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * CurrentPropellantThrustMultiplier * ThrottleModifiedIsp();
+            _ispFloatCurve.Add(0, (float)engineIsp);
+            _attachedEngine.atmosphereCurve = _ispFloatCurve;
+        }
+
+        private double GetPowerThrustModifier()
+        {
+            return GameConstants.BaseThrustPowerMultiplier * PluginHelper.GlobalElectricEnginePowerMaxThrustMult * this.powerThrustMultiplier;
+        }
+
+        private double GetAtmosphericDensityModifier()
+        {
+            return Math.Max(1.0 - (part.vessel.atmDensity * PluginHelper.ElectricEngineAtmosphericDensityThrustLimiter), 0.0);
+        }
+
+        private static List<ElectricEnginePropellant> GetAllPropellants()
+        {
+            var configNodes = GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT");
+
+            List<ElectricEnginePropellant> propellantList;
+            if (configNodes.Length == 0)
+            {
+                PluginHelper.ShowInstallationErrorMessage();
+                propellantList = new List<ElectricEnginePropellant>();
+            }
+            else
+                propellantList = configNodes.Select(prop => new ElectricEnginePropellant(prop)).ToList();
+
+            return propellantList;
+        }
+
+        public static Vector3d CalculateDeltaVV(Vector3d thrustDirection, double totalMass, double deltaTime, double thrust, double isp, out double demandMass)
+        {
+            // Mass flow rate
+            var massFlowRate = thrust / (isp * GameConstants.STANDARD_GRAVITY);
+            // Change in mass over time interval dT
+            var dm = massFlowRate * deltaTime;
+            // Resource demand from propellants with mass
+            demandMass = dm;
+            // Mass at end of time interval dT
+            var finalMass = totalMass - dm;
+            // deltaV amount
+            var deltaV = finalMass > 0 && totalMass > 0
+                ? isp * GameConstants.STANDARD_GRAVITY * Math.Log(totalMass / finalMass)
+                : 0;
+
+            // Return deltaV vector
+            return deltaV * thrustDirection;
+        }
+
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (_attachedEngine == null || !HighLogic.LoadedSceneIsFlight) return;
+
+            mostRecentWasteHeatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+
             // disable exhaust effects
             if (!string.IsNullOrEmpty(EffectName))
                 part.Effect(EffectName, (float)effectPower, -1);
@@ -748,15 +957,7 @@ namespace KIT.Propulsion
                 }
             }
 
-            // if not force activated or staged, still call OnFixedUpdateResourceSuppliable
-            if (!isEnabled)
-                OnFixedUpdateResourceSuppliable((double) (decimal) TimeWarp.fixedDeltaTime);
-        }
-
-        // ReSharper disable once UnusedMember.Global
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
-            if (_attachedEngine == null || !HighLogic.LoadedSceneIsFlight) return;
+            if (!isEnabled) return;
 
             if (_initializationCountdown > 0)
                 _initializationCountdown--;
@@ -780,6 +981,8 @@ namespace KIT.Propulsion
             modifiedThrotte = ModifiedThrottle;
             modifiedMaxThrottlePower = maxEffectivePower * modifiedThrotte;
 
+            throw new Exception("need to implement the below");
+            /*
             totalPowerSupplied = getTotalPowerSupplied(ResourceSettings.Config.ElectricPowerInMegawatt);
             megaJoulesBarRatio = getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt);
 
@@ -815,9 +1018,7 @@ namespace KIT.Propulsion
                     : Math.Min(modifiedCurrentPowerForEngine, modifiedMaxThrottlePower);
 
             // request electric power
-            actualPowerReceived = CheatOptions.InfiniteElectricity
-                ? current_power_request
-                : consumeFNResourcePerSecond(current_power_request, maximum_power_request, ResourceSettings.Config.ElectricPowerInMegawatt);
+            actualPowerReceived = resMan.ConsumeResource(ResourceName.ElectricCharge, current_power_request * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
 
             simulatedPowerReceived = Math.Min(effectiveMaximumAvailablePowerForEngine, maxEffectivePower);
 
@@ -826,9 +1027,8 @@ namespace KIT.Propulsion
             var heatToProduce = actualPowerReceived * heatModifier;
             var maxHeatToProduce = maximumAvailablePowerForEngine * heatModifier;
 
-            _heatProductionF = CheatOptions.IgnoreMaxTemperature
-                ? heatToProduce
-                : supplyFNResourcePerSecondWithMax(heatToProduce, maxHeatToProduce, ResourceSettings.Config.WasteHeatInMegawatt);
+            _heatProductionF = heatToProduce;
+            resMan.ProduceResource(ResourceName.WasteHeat, heatToProduce * GameConstants.ecPerMJ);
 
             // update GUI Values
             _electricalConsumptionF = actualPowerReceived;
@@ -940,215 +1140,9 @@ namespace KIT.Propulsion
                 vacuumPlasmaResource.maxAmount = vacuumPlasmaResourceAmount;
                 part.RequestResource(ResourceSettings.Config.VacuumPlasma, -vacuumPlasmaResource.maxAmount);
             }
+            */
         }
 
-        private void IdleEngine()
-        {
-            thrust_d = 0;
-
-            if (IsValidPositiveNumber(simulated_max_thrust) && IsValidPositiveNumber(simulatedThrustInSpace))
-            {
-                UpdateIsp(Math.Max(0, simulated_max_thrust / simulatedThrustInSpace));
-                _maxFuelFlowRate = (float)Math.Max(_simulatedSpaceFuelFlowRate, 0);
-                _attachedEngine.maxFuelFlow = _maxFuelFlowRate;
-            }
-            else
-            {
-                UpdateIsp(1);
-                _maxFuelFlowRate = 0;
-                _attachedEngine.maxFuelFlow = _maxFuelFlowRate;
-            }
-
-            if (_attachedEngine is ModuleEnginesFX && particleEffectMult > 0)
-                part.Effect(CurrentPropellant.ParticleFXName, 0, -1);
-        }
-
-        private void CalculateTimeDialation()
-        {
-            var worldSpaceVelocity = vessel.orbit.GetFrameVel().magnitude;
-
-            lightSpeedRatio = Math.Min(_effectiveSpeedOfLight == 0.0 ? 1.0 : worldSpaceVelocity / _effectiveSpeedOfLight, 0.9999999999);
-
-            timeDilation = Math.Sqrt(1 - (lightSpeedRatio * lightSpeedRatio));
-        }
-
-        private static bool IsValidPositiveNumber(double value)
-        {
-            if (double.IsNaN(value))
-                return false;
-
-            if (double.IsInfinity(value))
-                return false;
-
-            return !(value <= 0);
-        }
-
-        private void PersistentThrust(double fixedDeltaTime, double universalTime, Vector3d thrustDirection, double vesselMass, double thrust, double isp)
-        {
-            var deltaVv = CalculateDeltaVV(thrustDirection, vesselMass, fixedDeltaTime, thrust, isp, out var demandMass);
-            string message;
-
-            var persistentThrustDot = Vector3d.Dot(thrustDirection, vessel.obt_velocity);
-            if (persistentThrustDot < 0 && (vessel.obt_velocity.magnitude <= deltaVv.magnitude * 2))
-            {
-                message = Localizer.Format("#LOC_KSPIE_ElectricEngineController_PostMsg1");
-                ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);//"Thrust warp stopped - orbital speed too low"
-                Debug.Log("[KSPI]: " + message);
-                TimeWarp.SetRate(0, true);
-                return;
-            }
-
-            double fuelRatio = 0;
-
-            // determine fuel availability
-            if (!CurrentPropellant.IsInfinite && !CheatOptions.InfinitePropellant && CurrentPropellant.ResourceDefinition.density > 0)
-            {
-                var requestedAmount = demandMass / (double)(decimal)CurrentPropellant.ResourceDefinition.density;
-                if (IsValidPositiveNumber(requestedAmount))
-                    fuelRatio = part.RequestResource(CurrentPropellant.Propellant.name, requestedAmount) / requestedAmount;
-            }
-            else
-                fuelRatio = 1;
-
-            if (!double.IsNaN(fuelRatio) && !double.IsInfinity(fuelRatio) && fuelRatio > 0)
-            {
-                vessel.orbit.Perturb(deltaVv * fuelRatio, universalTime);
-            }
-
-            if (thrust > 0.0000005 && fuelRatio < 0.999999 && _isFullyStarted)
-            {
-                message = Localizer.Format("#LOC_KSPIE_ElectricEngineController_PostMsg2", fuelRatio, thrust);// "Thrust warp stopped - " + + " propellant depleted thust: " +
-                ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
-                Debug.Log("[KSPI]: " + message);
-                TimeWarp.SetRate(0, true);
-            }
-        }
-
-        public void upgradePartModule()
-        {
-            isupgraded = true;
-            type = upgradedtype;
-            _vesselPropellants = ElectricEnginePropellant.GetPropellantsEngineForType(type);
-            engineTypeStr = upgradedName;
-
-            if (!vacplasmaadded && type == (int)ElectricEngineType.VACUUMTHRUSTER)
-            {
-                vacplasmaadded = true;
-                var node = new ConfigNode("RESOURCE");
-                node.AddValue("name", ResourceSettings.Config.VacuumPlasma);
-                node.AddValue("maxAmount", scaledMaxPower * 0.0000001);
-                node.AddValue("amount", scaledMaxPower * 0.0000001);
-                part.AddResource(node);
-            }
-        }
-
-        public override string GetInfo()
-        {
-            return Localizer.Format("#LOC_KSPIE_ElectricEngine_maxPowerConsumption") + ": " + PluginHelper.getFormattedPowerString(maxPower * powerReqMult);
-        }
-
-        public override string getResourceManagerDisplayName()
-        {
-            return part.partInfo.title + (CurrentPropellant != null ? " (" + CurrentPropellant.PropellantGUIName + ")" : "");
-        }
-
-        private void TogglePropellant(bool next)
-        {
-            if (next)
-                ToggleNextPropellant();
-            else
-                TogglePreviousPropellant();
-        }
-
-        private void ToggleNextPropellant()
-        {
-            Debug.Log("[KSPI]: ElectricEngineControllerFX toggleNextPropellant");
-            fuel_mode++;
-            if (fuel_mode >= _vesselPropellants.Count)
-                fuel_mode = 0;
-
-            SetupPropellants(true);
-
-            UpdateIsp();
-        }
-
-        private void TogglePreviousPropellant()
-        {
-            Debug.Log("[KSPI]: ElectricEngineControllerFX togglePreviousPropellant");
-            fuel_mode--;
-            if (fuel_mode < 0)
-                fuel_mode = _vesselPropellants.Count - 1;
-
-            SetupPropellants(false);
-
-            UpdateIsp();
-        }
-
-        private double EvaluateMaxThrust(double powerSupply)
-        {
-            if (CurrentPropellant == null) return 0;
-
-            if (_modifiedCurrentPropellantIspMultiplier <= 0) return 0;
-
-            return CurrentPropellantEfficiency * GetPowerThrustModifier() * powerSupply / (_modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * GameConstants.STANDARD_GRAVITY);
-        }
-
-        private void UpdateIsp(double ispEfficiency = 1)
-        {
-            _ispFloatCurve.Curve.RemoveKey(0);
-            engineIsp = timeDilation * ispEfficiency * _modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * CurrentPropellantThrustMultiplier * ThrottleModifiedIsp();
-            _ispFloatCurve.Add(0, (float)engineIsp);
-            _attachedEngine.atmosphereCurve = _ispFloatCurve;
-        }
-
-        private double GetPowerThrustModifier()
-        {
-            return GameConstants.BaseThrustPowerMultiplier * PluginHelper.GlobalElectricEnginePowerMaxThrustMult * this.powerThrustMultiplier;
-        }
-
-        private double GetAtmosphericDensityModifier()
-        {
-            return Math.Max(1.0 - (part.vessel.atmDensity * PluginHelper.ElectricEngineAtmosphericDensityThrustLimiter), 0.0);
-        }
-
-        private static List<ElectricEnginePropellant> GetAllPropellants()
-        {
-            var configNodes = GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT");
-
-            List<ElectricEnginePropellant> propellantList;
-            if (configNodes.Length == 0)
-            {
-                PluginHelper.ShowInstallationErrorMessage();
-                propellantList = new List<ElectricEnginePropellant>();
-            }
-            else
-                propellantList = configNodes.Select(prop => new ElectricEnginePropellant(prop)).ToList();
-
-            return propellantList;
-        }
-
-        public static Vector3d CalculateDeltaVV(Vector3d thrustDirection, double totalMass, double deltaTime, double thrust, double isp, out double demandMass)
-        {
-            // Mass flow rate
-            var massFlowRate = thrust / (isp * GameConstants.STANDARD_GRAVITY);
-            // Change in mass over time interval dT
-            var dm = massFlowRate * deltaTime;
-            // Resource demand from propellants with mass
-            demandMass = dm;
-            // Mass at end of time interval dT
-            var finalMass = totalMass - dm;
-            // deltaV amount
-            var deltaV = finalMass > 0 && totalMass > 0
-                ? isp * GameConstants.STANDARD_GRAVITY * Math.Log(totalMass / finalMass)
-                : 0;
-
-            // Return deltaV vector
-            return deltaV * thrustDirection;
-        }
-
-        public override int getPowerPriority()
-        {
-            return 3;
-        }
+        public string KITPartName() => $"{part.partInfo.title}{(CurrentPropellant != null ? " (" + CurrentPropellant.PropellantGUIName + ")" : "")}";
     }
 }

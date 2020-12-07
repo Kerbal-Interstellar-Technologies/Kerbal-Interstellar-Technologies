@@ -1,17 +1,15 @@
 using KIT.Constants;
-using KIT.Power;
-using KIT.Redist;
 using KIT.Resources;
-using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Linq;
 using KIT.Powermanagement;
 using UnityEngine;
+using KIT.ResourceScheduler;
 
 namespace KIT.Propulsion
 {
-    class InterstellarMagneticNozzleControllerFX : ResourceSuppliableModule, IFNEngineNoozle
+    class InterstellarMagneticNozzleControllerFX : PartModule, IKITMod, IFNEngineNoozle
     {
         public const string GROUP = "MagneticNozzleController";
         public const string GROUP_TITLE = "#LOC_KSPIE_MagneticNozzleControllerFX_groupName";
@@ -330,17 +328,126 @@ namespace KIT.Propulsion
         // FixedUpdate is also called in the Editor
         public void FixedUpdate()
         {
-            if (HighLogic.LoadedSceneIsEditor)
-                return;
 
-            UpdateRunningEffect();
-            UpdatePowerEffect();
         }
 
 
         public override void OnFixedUpdate()
         {
             base.OnFixedUpdate();
+
+        }
+
+        private void UpdatePowerEffect()
+        {
+            if (string.IsNullOrEmpty(powerEffectName))
+                return;
+
+            var powerEffectRatio = exhaustAllowed && _attached_engine != null && _attached_engine.isOperational && _chargedParticleMaximumPercentageUsage > 0 && currentThrust > 0 ? _attached_engine.currentThrottle : 0;
+            part.Effect(powerEffectName, powerEffectRatio, -1);
+        }
+
+        private void UpdateRunningEffect()
+        {
+            if (string.IsNullOrEmpty(runningEffectName))
+                return;
+
+            var runningEffectRatio = exhaustAllowed && _attached_engine != null && _attached_engine.isOperational && _chargedParticleMaximumPercentageUsage > 0 && currentThrust > 0 ? _attached_engine.currentThrottle : 0;
+            part.Effect(runningEffectName, runningEffectRatio, -1);
+        }
+
+        // Note: does not seem to be called while in vab mode
+        public override void OnUpdate()
+        {
+            if (_attached_engine == null)
+                return;
+
+            exhaustAllowed = AllowedExhaust();
+        }
+
+        public void UpdatePropellantBuffer(double calculatedConsumptionInTon)
+        {
+            if (propellantBufferResourceDefinition == null)
+                return;
+
+            PartResource propellantPartResource = part.Resources[propellantBufferResourceName];
+
+            if (propellantPartResource == null || propellantBufferResourceDefinition.density == 0)
+                return;
+
+            var newMaxAmount = Math.Max(minimumPropellantBuffer, 2 * TimeWarp.fixedDeltaTime * calculatedConsumptionInTon / propellantBufferResourceDefinition.density);
+
+            var storageShortage = Math.Max(0, propellantPartResource.amount - newMaxAmount);
+
+            propellantPartResource.maxAmount = newMaxAmount;
+            propellantPartResource.amount = Math.Min(newMaxAmount, propellantPartResource.amount);
+
+            if (storageShortage > 0)
+                part.RequestResource(propellantBufferResourceName, -storageShortage);
+        }
+
+        public override string GetInfo()
+        {
+            return "";
+        }
+
+        private bool AllowedExhaust()
+        {
+            if (CheatOptions.IgnoreAgencyMindsetOnContracts)
+                return true;
+
+            var homeworld = FlightGlobals.GetHomeBody();
+            var toHomeworld = vessel.CoMD - homeworld.position;
+            var distanceToSurfaceHomeworld = toHomeworld.magnitude - homeworld.Radius;
+            var cosineAngle = Vector3d.Dot(part.transform.up.normalized, toHomeworld.normalized);
+            var currentExhaustAngle = Math.Acos(cosineAngle) * (180 / Math.PI);
+
+            if (double.IsNaN(currentExhaustAngle) || double.IsInfinity(currentExhaustAngle))
+                currentExhaustAngle = cosineAngle > 0 ? 180 : 0;
+
+            if (AttachedReactor == null)
+                return false;
+
+            double allowedExhaustAngle;
+            if (AttachedReactor.MayExhaustInAtmosphereHomeworld)
+            {
+                allowedExhaustAngle = 180;
+                return true;
+            }
+
+            var minAltitude = AttachedReactor.MayExhaustInLowSpaceHomeworld ? homeworld.atmosphereDepth : homeworld.scienceValues.spaceAltitudeThreshold;
+
+            if (distanceToSurfaceHomeworld < minAltitude)
+                return false;
+
+            if (AttachedReactor.MayExhaustInLowSpaceHomeworld && distanceToSurfaceHomeworld > 10 * homeworld.Radius)
+                return true;
+
+            if (!AttachedReactor.MayExhaustInLowSpaceHomeworld && distanceToSurfaceHomeworld > 20 * homeworld.Radius)
+                return true;
+
+            var radiusDividedByAltitude = (homeworld.Radius + minAltitude) / toHomeworld.magnitude;
+
+            var coneAngle = 45 * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude;
+
+            allowedExhaustAngle = coneAngle + Math.Tanh(radiusDividedByAltitude) * (180 / Math.PI);
+
+            if (allowedExhaustAngle < 3)
+                return true;
+
+            return currentExhaustAngle > allowedExhaustAngle;
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (HighLogic.LoadedSceneIsEditor)
+                return;
+
+            UpdateRunningEffect();
+            UpdatePowerEffect();
+
 
             if (_attached_engine == null)
                 return;
@@ -363,13 +470,14 @@ namespace KIT.Propulsion
 
             if (_chargedParticleMaximumPercentageUsage > 0)
             {
-                maximumChargedPower =  _attached_reactor.MaximumChargedPower;
+                maximumChargedPower = _attached_reactor.MaximumChargedPower;
                 var currentMaximumChargedPower = maximum_isp == minimum_isp ? maximumChargedPower * _attached_engine.currentThrottle : maximumChargedPower;
 
                 _max_charged_particles_power = currentMaximumChargedPower * exchanger_thrust_divisor * _attached_reactor.ChargedParticlePropulsionEfficiency;
                 _charged_particles_requested = exhaustAllowed && _attached_engine.isOperational && _attached_engine.currentThrottle > 0 ? _max_charged_particles_power : 0;
 
-                _charged_particles_received = _charged_particles_requested > 0 ? consumeFNResourcePerSecond(_charged_particles_requested, ResourceSettings.Config.ChargedParticleInMegawatt) : 0;
+                _charged_particles_received = _charged_particles_requested > 0 ?
+                    resMan.ConsumeResource(ResourceName.ChargedParticle, _charged_particles_requested) : 0;
 
                 // update Isp
                 currentIsp = !_attached_engine.isOperational || _attached_engine.currentThrottle == 0 ? maximum_isp : Math.Min(maximum_isp, minimum_isp / Math.Pow(_attached_engine.currentThrottle, throtleExponent));
@@ -409,7 +517,8 @@ namespace KIT.Propulsion
                         _previous_charged_particles_received = 0;
                     }
 
-                    consumeFNResourcePerSecond(wasteheatConsumption, ResourceSettings.Config.WasteHeatInMegawatt);
+                    // TODO track this down. resMan.ConsumeResource(ResourceName.WasteHeat, WasteHeatInMegawatt * GameConstants.ecPerMJ);
+                    resMan.ConsumeResource(ResourceName.WasteHeat, wasteheatConsumption);
                 }
 
                 if (_charged_particles_received == 0)
@@ -423,12 +532,12 @@ namespace KIT.Propulsion
                 // calculate power cost
                 var ispPowerCostMultiplier = 1 + max_power_multiplier - Math.Log10(currentIsp / minimum_isp);
                 var minimumEnginePower = _attached_reactor.MagneticNozzlePowerMult * _charged_particles_received * ispPowerCostMultiplier * 0.005 * Math.Max(_attached_reactor_distance, 1);
-                var neededBufferPower = Math.Min(getResourceAvailability(ResourceSettings.Config.ElectricPowerInMegawatt) ,  Math.Min(Math.Max(powerBufferMax - powerBufferStore, 0), minimumEnginePower));
+                var neededBufferPower = Math.Min(resMan.ResourceCurrentCapacity(ResourceName.ElectricCharge), Math.Min(Math.Max(powerBufferMax - powerBufferStore, 0), minimumEnginePower));
                 _requestedElectricPower = minimumEnginePower + neededBufferPower;
 
                 _recievedElectricPower = CheatOptions.InfiniteElectricity || _requestedElectricPower == 0
                     ? _requestedElectricPower
-                    : consumeFNResourcePerSecond(_requestedElectricPower, ResourceSettings.Config.ElectricPowerInMegawatt);
+                    : resMan.ConsumeResource(ResourceName.ElectricCharge, _requestedElectricPower * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
 
                 // adjust power buffer
                 var powerSurplus = _recievedElectricPower - minimumEnginePower;
@@ -504,109 +613,6 @@ namespace KIT.Propulsion
             currentThrust = _attached_engine.GetCurrentThrust();
         }
 
-        private void UpdatePowerEffect()
-        {
-            if (string.IsNullOrEmpty(powerEffectName))
-                return;
-
-            var powerEffectRatio = exhaustAllowed && _attached_engine != null && _attached_engine.isOperational && _chargedParticleMaximumPercentageUsage > 0 && currentThrust > 0 ? _attached_engine.currentThrottle : 0;
-            part.Effect(powerEffectName, powerEffectRatio, -1);
-        }
-
-        private void UpdateRunningEffect()
-        {
-            if (string.IsNullOrEmpty(runningEffectName))
-                return;
-
-            var runningEffectRatio = exhaustAllowed && _attached_engine != null && _attached_engine.isOperational && _chargedParticleMaximumPercentageUsage > 0 && currentThrust > 0 ? _attached_engine.currentThrottle : 0;
-            part.Effect(runningEffectName, runningEffectRatio, -1);
-        }
-
-        // Note: does not seem to be called while in vab mode
-        public override void OnUpdate()
-        {
-            if (_attached_engine == null)
-                return;
-
-            exhaustAllowed = AllowedExhaust();
-        }
-
-        public void UpdatePropellantBuffer(double calculatedConsumptionInTon)
-        {
-            if (propellantBufferResourceDefinition == null)
-                return;
-
-            PartResource propellantPartResource = part.Resources[propellantBufferResourceName];
-
-            if (propellantPartResource == null || propellantBufferResourceDefinition.density == 0)
-                return;
-
-            var newMaxAmount = Math.Max(minimumPropellantBuffer, 2 * TimeWarp.fixedDeltaTime * calculatedConsumptionInTon / propellantBufferResourceDefinition.density);
-
-            var storageShortage = Math.Max(0, propellantPartResource.amount - newMaxAmount);
-
-            propellantPartResource.maxAmount = newMaxAmount;
-            propellantPartResource.amount = Math.Min(newMaxAmount, propellantPartResource.amount);
-
-            if (storageShortage > 0)
-                part.RequestResource(propellantBufferResourceName, -storageShortage);
-        }
-
-        public override string GetInfo()
-        {
-            return "";
-        }
-
-        public override string getResourceManagerDisplayName()
-        {
-            return part.partInfo.title;
-        }
-
-        private bool AllowedExhaust()
-        {
-            if (CheatOptions.IgnoreAgencyMindsetOnContracts)
-                return true;
-
-            var homeworld = FlightGlobals.GetHomeBody();
-            var toHomeworld = vessel.CoMD - homeworld.position;
-            var distanceToSurfaceHomeworld = toHomeworld.magnitude - homeworld.Radius;
-            var cosineAngle = Vector3d.Dot(part.transform.up.normalized, toHomeworld.normalized);
-            var currentExhaustAngle = Math.Acos(cosineAngle) * (180 / Math.PI);
-
-            if (double.IsNaN(currentExhaustAngle) || double.IsInfinity(currentExhaustAngle))
-                currentExhaustAngle = cosineAngle > 0 ? 180 : 0;
-
-            if (AttachedReactor == null)
-                return false;
-
-            double allowedExhaustAngle;
-            if (AttachedReactor.MayExhaustInAtmosphereHomeworld)
-            {
-                allowedExhaustAngle = 180;
-                return true;
-            }
-
-            var minAltitude = AttachedReactor.MayExhaustInLowSpaceHomeworld ? homeworld.atmosphereDepth : homeworld.scienceValues.spaceAltitudeThreshold;
-
-            if (distanceToSurfaceHomeworld < minAltitude)
-                return false;
-
-            if (AttachedReactor.MayExhaustInLowSpaceHomeworld && distanceToSurfaceHomeworld > 10 * homeworld.Radius)
-                return true;
-
-            if (!AttachedReactor.MayExhaustInLowSpaceHomeworld && distanceToSurfaceHomeworld > 20 * homeworld.Radius)
-                return true;
-
-            var radiusDividedByAltitude = (homeworld.Radius + minAltitude) / toHomeworld.magnitude;
-
-            var coneAngle = 45 * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude;
-
-            allowedExhaustAngle = coneAngle + Math.Tanh(radiusDividedByAltitude) * (180 / Math.PI);
-
-            if (allowedExhaustAngle < 3)
-                return true;
-
-            return currentExhaustAngle > allowedExhaustAngle;
-        }
+        public string KITPartName() => part.partInfo.title;
     }
 }

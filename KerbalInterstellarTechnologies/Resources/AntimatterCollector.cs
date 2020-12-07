@@ -1,12 +1,13 @@
 ﻿using KIT.Constants;
 using KIT.Extensions;
 using KIT.Powermanagement;
+using KIT.ResourceScheduler;
 using System;
 using System.Linq;
 
 namespace KIT.Resources
 {
-    class AntimatterCollector : ResourceSuppliableModule
+    class AntimatterCollector : PartModule, IKITMod
     {
         public const string GROUP = "AntimatterCollector";
         public const string GROUP_TITLE = "#LOC_KSPIE_AntimatterCollector_groupName";
@@ -21,8 +22,6 @@ namespace KIT.Resources
         public double collectionMultiplier = 1;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CelestrialBodyFieldStrengthMod", guiFormat = "F2")]//Field Strength Multiplier
         public double celestrialBodyFieldStrengthMod = 1;
-        [KSPField(isPersistant = true)]
-        public double last_active_time;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CanCollect")]//Can collect
         public bool canCollect = true;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_PowerReqKW", guiUnits = " KW")]//Power Usage
@@ -35,8 +34,7 @@ namespace KIT.Resources
         private CelestialBody _homeworld;
 
         private double _effectiveFlux;
-        private double _offlineResource;
-
+        
         public override void OnStart(PartModule.StartState state)
         {
             _antimatterDef = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.AntiProtium);
@@ -49,12 +47,10 @@ namespace KIT.Resources
 
             _homeworld = FlightGlobals.fetch.bodies.First(m => m.isHomeWorld == true);
 
-            if (last_active_time == 0 || !(vessel.orbit.eccentricity < 1) || !active || !canCollect) return;
+            if (!(vessel.orbit.eccentricity < 1) || !active || !canCollect) return;
 
             var vesselAvgAlt = (vessel.orbit.ApA + vessel.orbit.PeA) / 2;
             flux = collectionMultiplier * 0.5 * (vessel.mainBody.GetBeltAntiparticles(_homeworld, vesselAvgAlt, vessel.orbit.inclination) + vessel.mainBody.GetBeltAntiparticles(_homeworld, vesselAvgAlt, 0.0));
-            var timeDiff = Planetarium.GetUniversalTime() - last_active_time;
-            _offlineResource = timeDiff * flux;
         }
 
         public override void OnUpdate()
@@ -67,7 +63,9 @@ namespace KIT.Resources
             canCollect = _moduleAnimateGeneric == null ? true :  _moduleAnimateGeneric.GetScalar == 1;
         }
 
-        public void FixedUpdate()
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             if (!HighLogic.LoadedSceneIsFlight) return;
 
@@ -77,25 +75,13 @@ namespace KIT.Resources
                 return;
             }
 
-            double receivedPowerKW = consumeMegawatts(powerReqKW / GameConstants.ecPerMJ, true, false, true) * GameConstants.ecPerMJ;
+            double receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, powerReqKW);
             double powerRatio = powerReqKW > 0.0 ? receivedPowerKW / powerReqKW : 0.0;
 
             _effectiveFlux = powerRatio * flux;
-            part.RequestResource(_antimatterDef.id, -_effectiveFlux * TimeWarp.fixedDeltaTime - _offlineResource, ResourceFlowMode.STACK_PRIORITY_SEARCH);
-            _offlineResource = 0;
-            last_active_time = Planetarium.GetUniversalTime();
+            resMan.ProduceResource(ResourceName.AntiProtium, _effectiveFlux);
         }
 
-        public override int getPowerPriority()
-        {
-            return 4;
-        }
-
-        public override string getResourceManagerDisplayName()
-        {
-            // use identical names so it will be grouped together
-            return part.partInfo.title;
-        }
-
+        public string KITPartName() => part.partInfo.title;
     }
 }

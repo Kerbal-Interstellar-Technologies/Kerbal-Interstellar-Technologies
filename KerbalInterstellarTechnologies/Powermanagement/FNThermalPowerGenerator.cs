@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KIT.Wasteheat;
 
 namespace KIT.Powermanagement
@@ -14,7 +15,7 @@ namespace KIT.Powermanagement
 
 
     [KSPModule("Thermal Power Generator")]
-    class FNThermalPowerGenerator : ResourceSuppliableModule
+    class FNThermalPowerGenerator : PartModule, IKITMod
     {
         //Configuration
         [KSPField] public double maximumPowerCapacity = 0.02; // 20 Kw
@@ -50,7 +51,7 @@ namespace KIT.Powermanagement
         public override void OnStart(PartModule.StartState state)
         {
             String[] resources = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
-            this.resources_to_supply = resources;
+            //this.resources_to_supply = resources;
             base.OnStart(state);
 
             if (state == StartState.Editor)
@@ -69,7 +70,14 @@ namespace KIT.Powermanagement
             currentPowerSupply = PluginHelper.getFormattedPowerString(currentPowerSupplyInMegaWatt);
         }
 
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
+        public override string GetInfo()
+        {
+            return "Maximum Power: " + PluginHelper.getFormattedPowerString(maximumPowerCapacity);
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             var hasRadiators = FNRadiator.HasRadiatorsForVessel(vessel);
 
@@ -98,7 +106,9 @@ namespace KIT.Powermanagement
                 : thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency) *
                   Math.Pow(hotColdBathRatio * (1 / requiredTemperatureRatio), hotColdBathRatioExponent);
 
-            var currentUnfilledResourceDemand = Math.Max(0, GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt));
+            // TODO 
+            // var currentUnfilledResourceDemand = Math.Max(0, GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt));
+            double currentUnfilledResourceDemand = 10000;
 
             var requiredRatio = Math.Min(1, currentUnfilledResourceDemand / maximumPowerSupplyInMegaWatt);
 
@@ -107,55 +117,14 @@ namespace KIT.Powermanagement
             var wasteheatInMegaJoules = (1 - thermalConversionEfficiency) * currentPowerSupplyInMegaWatt;
 
             if (hasRadiators)
-                supplyFNResourcePerSecondWithMax(maximumPowerSupplyInMegaWatt, wasteheatInMegaJoules, ResourceSettings.Config.WasteHeatInMegawatt);
-            else // dump heat in attached part
-                DumpWasteheatInAttachedParts(fixedDeltaTime, wasteheatInMegaJoules);
-
-            ExtractSystemHeat(fixedDeltaTime);
+                resMan.ProduceResource(ResourceName.WasteHeat, wasteheatInMegaJoules * 1000);
+            // TODO supplyFNResourcePerSecondWithMax(maximumPowerSupplyInMegaWatt, wasteheatInMegaJoules, ResourceSettings.Config.WasteHeatInMegawatt);
 
             // generate thermal power
-            supplyFNResourcePerSecondWithMax(currentPowerSupplyInMegaWatt, maximumPowerSupplyInMegaWatt, ResourceSettings.Config.ElectricPowerInMegawatt);
+            resMan.ProduceResource(ResourceName.ElectricCharge, currentPowerSupplyInMegaWatt * 1000);
+            
         }
 
-        private void ExtractSystemHeat(double fixedDeltaTime)
-        {
-            var thermalMassPerKilogram = timeWarpModifer * part.mass * part.thermalMassModifier * PhysicsGlobals.StandardSpecificHeatCapacity * 1e-3;
-
-            var temperatureChange = 0.5 * fixedDeltaTime * (currentPowerSupplyInMegaWatt / thermalMassPerKilogram);
-
-            // lower part temperature
-            if (!temperatureChange.IsInfinityOrNaN())
-            {
-                part.temperature = Math.Max(spaceTemperature, part.temperature - temperatureChange);
-                part.skinTemperature = Math.Max(spaceTemperature, part.skinTemperature - temperatureChange);
-            }
-        }
-
-        private void DumpWasteheatInAttachedParts(double fixedDeltaTime, double wasteheatInMegaJoules)
-        {
-            var stackAttachedPart = _stackAttachedParts.First(m => m.temperature <= radiatorTemperature);
-
-            var stackThermalMassPerKilogram = timeWarpModifer * stackAttachedPart.mass * stackAttachedPart.thermalMassModifier * PhysicsGlobals.StandardSpecificHeatCapacity * 1e-3;
-
-            var stackWasteTemperatureChange =
-                0.5 * fixedDeltaTime * (wasteheatInMegaJoules / _stackAttachedParts.Count / stackThermalMassPerKilogram);
-
-            // increase stack part with waste temperature
-            if (!stackWasteTemperatureChange.IsInfinityOrNaN())
-            {
-                stackAttachedPart.temperature = Math.Max(spaceTemperature, stackAttachedPart.temperature + stackWasteTemperatureChange);
-                stackAttachedPart.skinTemperature = Math.Max(spaceTemperature, stackAttachedPart.skinTemperature + stackWasteTemperatureChange);
-            }
-        }
-
-        public override int getSupplyPriority()
-        {
-            return 1;
-        }
-
-        public override string GetInfo()
-        {
-            return "Maximum Power: " + PluginHelper.getFormattedPowerString(maximumPowerCapacity);
-        }
+        public string KITPartName() => part.partInfo.title;
     }
 }

@@ -9,6 +9,7 @@ using KIT.Resources;
 
 namespace KIT.Wasteheat
 {
+    /*
 	class RadiatorManager
 	{
 		private static Dictionary<Vessel, RadiatorManager> managers = new Dictionary<Vessel, RadiatorManager>();
@@ -119,4 +120,6 @@ namespace KIT.Wasteheat
 			var radiator_temperature_temp_val_graphene = external_temperature + Math.Min((MaxVacuumTemperatureGraphene - external_temperature) * sqrtWasteHeatRatio, maxCurrentTemperatureGraphene - external_temperature);
 		}
 	}
+    */
+
 }

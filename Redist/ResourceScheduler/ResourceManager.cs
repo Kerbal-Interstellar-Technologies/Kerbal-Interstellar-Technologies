@@ -15,6 +15,7 @@ namespace KIT.ResourceScheduler
         private IVesselResources vesselResources;
         private static double fudgeFactor = 0.99999;
         private Dictionary<ResourceName, double> currentResources;
+        private Dictionary<ResourceName, double> currentMaxResources;
 
         private double fixedDeltaTime;
 
@@ -59,6 +60,7 @@ namespace KIT.ResourceScheduler
                 Debug.Log("[KITResourceManager.ConsumeResource] don't do this.");
                 return 0;
             }
+
             if (myCheatOptions.InfiniteElectricity && resource == ResourceName.ElectricCharge)
             {
                 resourceFlow[(int)ResourceName.ElectricCharge].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
@@ -155,6 +157,7 @@ namespace KIT.ResourceScheduler
             int index = 0;
 
             currentResources = resourceAmounts;
+            currentMaxResources = resourceMaxAmounts;
 
             tappedOutMods.Clear();
             fixedUpdateCalledMods.Clear();
@@ -281,6 +284,21 @@ namespace KIT.ResourceScheduler
             }
 
             return obtainedAmount;
+        }
+
+        double IResourceManager.ResourceSpareCapacity(ResourceName resourceIdentifier)
+        {
+            return currentMaxResources[resourceIdentifier] - currentResources[resourceIdentifier];
+        }
+
+        double IResourceManager.ResourceCurrentCapacity(ResourceName resourceIdentifier)
+        {
+            return currentResources[resourceIdentifier];
+        }
+
+        double IResourceManager.ResourceFillFraction(ResourceName resourceIdentifier)
+        {
+            return currentResources[resourceIdentifier] / currentMaxResources[resourceIdentifier];
         }
         #endregion
 

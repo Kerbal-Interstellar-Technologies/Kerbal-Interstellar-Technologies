@@ -2,7 +2,6 @@
 using KIT.Constants;
 using KIT.Extensions;
 using KIT.Microwave;
-using KIT.Power;
 using KIT.Propulsion;
 using KIT.Redist;
 using KIT.Resources;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using KIT.Powermanagement;
 using UnityEngine;
+using KIT.ResourceScheduler;
 
 namespace KIT
 {
@@ -75,7 +75,7 @@ namespace KIT
     class BeamedPowerReceiverDish : BeamedPowerReceiver { }
 
     [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName17")]//Beamed Power Receiver
-    class BeamedPowerReceiver : ResourceSuppliableModule, IFNPowerSource, IElectricPowerGeneratorSource, IBeamedPowerReceiver // tweakscales with exponent 2.5
+    class BeamedPowerReceiver : PartModule, IKITMod, IFNPowerSource, IElectricPowerGeneratorSource, IBeamedPowerReceiver // tweakscales with exponent 2.5
     {
         public const string GROUP = "BeamedPowerReceiver";
         public const string GROUP_TITLE = "#LOC_KSPIE_BeamPowerReceiver_groupName";
@@ -539,7 +539,10 @@ namespace KIT
                 if (!HighLogic.LoadedSceneIsFlight || CheatOptions.IgnoreMaxTemperature || isThermalReceiver)
                     return 1;
 
-                var wasteheatRatio = getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
+                // TODO may this better.. OnAwake, set the ResourceName id?
+                // var wasteheatRatio = getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
+                part.GetConnectedResourceTotals("WasteHeat".GetHashCode(), out var amount, out var max);
+                wasteheatRatio = amount / max;
 
                 return 1 - wasteheatRatio * wasteheatRatio;
             }
@@ -704,7 +707,7 @@ namespace KIT
 
         public bool ShouldApplyBalance(ElectricGeneratorType generatorType) { return false; }
 
-        public override void AttachThermalReciever(Guid key, double radius)
+        public void AttachThermalReciever(Guid key, double radius)
         {
             if (!connectedRecievers.ContainsKey(key))
             {
@@ -718,7 +721,7 @@ namespace KIT
 
         public void Refresh() { }
 
-        public override void DetachThermalReciever(Guid key)
+        public void DetachThermalReciever(Guid key)
         {
             if (connectedRecievers.ContainsKey(key))
             {
@@ -728,7 +731,7 @@ namespace KIT
             }
         }
 
-        public override double GetFractionThermalReciever(Guid key)
+        public double GetFractionThermalReciever(Guid key)
         {
             return connectedRecieversFraction.TryGetValue(key, out double result) ? result : 0.0;
         }
@@ -998,7 +1001,7 @@ namespace KIT
         {
             string[] resources_to_supply = new [] {ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt};
 
-            this.resources_to_supply = resources_to_supply;
+            // this.resources_to_supply = resources_to_supply;
             base.OnStart(state);
 
             DetermineTechLevel();
@@ -1663,195 +1666,6 @@ namespace KIT
             GUILayout.EndHorizontal();
         }
 
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
-            powerCapacityEfficiency = PowerCapacityEfficiency;
-
-            StoreGeneratorRequests();
-
-            wasteheatRatio = CheatOptions.IgnoreMaxTemperature ? 0 : getResourceBarRatio(ResourceSettings.Config.WasteHeatInMegawatt);
-
-            CalculateThermalSolarPower();
-
-            if (isMirror && receiverIsEnabled)
-            {
-                var thermalMassPerKilogram = part.mass * part.thermalMassModifier * PhysicsGlobals.StandardSpecificHeatCapacity * 1e-3;
-                dissipationInMegaJoules = PluginHelper.GetBlackBodyDissipation(solarReceptionSurfaceArea, part.temperature) * 1e-6; ;
-                var temperatureChange = fixedDeltaTime * -(dissipationInMegaJoules / thermalMassPerKilogram);
-                part.temperature = part.temperature + temperatureChange;
-            }
-
-            if (initializationCountdown > 0)
-            {
-                initializationCountdown--;
-
-                part.temperature = storedTemp;
-                part.skinTemperature = storedTemp;
-            }
-            else
-                storedTemp = part.temperature;
-
-            if (receiverIsEnabled && radiatorMode)
-            {
-                if (fnRadiator != null)
-                {
-                    fnRadiator.canRadiateHeat = true;
-                    fnRadiator.radiatorIsEnabled = true;
-                }
-                PowerDown();
-                return;
-            }
-
-            if (fnRadiator != null)
-            {
-                fnRadiator.canRadiateHeat = false;
-                fnRadiator.radiatorIsEnabled = false;
-            }
-
-            try
-            {
-                if (restartCounter > 0)
-                {
-                    restartCounter--;
-                    RemoveOtherVesselData();
-                    OnUpdate();
-                }
-
-                UpdatePowerInput();
-
-                if (receiverIsEnabled && !radiatorMode)
-                {
-                    if (wasteheatRatio >= 0.95 && !isThermalReceiver && !solarPowerMode )
-                    {
-                        receiverIsEnabled = false;
-                        deactivate_timer++;
-                        if (FlightGlobals.ActiveVessel == vessel && deactivate_timer > 2)
-                            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_OverheatingMsg"), 5f, ScreenMessageStyle.UPPER_CENTER);//"Warning Dangerous Overheating Detected: Emergency beam power shutdown occuring NOW!"
-                        PowerDown();
-                        return;
-                    }
-
-                    // add alternator power
-                    AddAlternatorPower();
-
-                    // update energy buffers
-                    UpdateBuffers();
-
-                    if (isThermalReceiverSlave || thermalMode)
-                    {
-                        slavesAmount = thermalReceiverSlaves.Count;
-                        slavesPower = thermalReceiverSlaves.Sum(m => m.total_thermal_power_provided);
-
-                        total_thermal_power_available = thermalSolarInputMegajoules + total_beamed_power + slavesPower;
-                        total_thermal_power_provided = Math.Min(MaximumRecievePower, total_thermal_power_available);
-                        total_thermal_power_provided_max = Math.Min(MaximumRecievePower, total_beamed_power_max + thermalSolarInputMegajoulesMax);
-
-                        if (!isThermalReceiverSlave && total_thermal_power_provided > 0)
-                        {
-                            var thermalEngineThrottleRatio = connectedEngines.Any(m => !m.RequiresChargedPower) ? connectedEngines.Where(m => !m.RequiresChargedPower).Max(e => e.CurrentThrottle) : 0;
-                            var minimumRatio =  Math.Max(minimumConsumptionPercentage / 100d, Math.Max(storedGeneratorThermalEnergyRequestRatio, thermalEngineThrottleRatio));
-
-                            var powerGeneratedResult = managedPowerSupplyPerSecondMinimumRatio(total_thermal_power_provided, total_thermal_power_provided_max, minimumRatio, ResourceSettings.Config.ThermalPowerInMegawatt);
-
-                            if (!CheatOptions.IgnoreMaxTemperature)
-                            {
-                                var supplyRatio = powerGeneratedResult.CurrentSupply / total_thermal_power_provided;
-                                var finalThermalWasteheat = powerGeneratedResult.CurrentSupply + supplyRatio * total_conversion_waste_heat_production;
-
-                                supplyFNResourcePerSecondWithMax(finalThermalWasteheat, total_thermal_power_provided_max, ResourceSettings.Config.WasteHeatInMegawatt);
-                            }
-
-                            thermal_power_ratio = total_thermal_power_available > 0 ? powerGeneratedResult.CurrentSupply / total_thermal_power_available : 0;
-
-                            foreach (var item in received_power)
-                            {
-                                item.Value.ConsumedPower = item.Value.AvailablePower * thermal_power_ratio;
-                            }
-
-                            foreach (var slave in thermalReceiverSlaves)
-                            {
-                                foreach (var item in slave.received_power)
-                                {
-                                    item.Value.ConsumedPower = item.Value.AvailablePower * thermal_power_ratio;
-                                }
-                            }
-                        }
-
-                        if (animT != null)
-                        {
-                            var maximumRecievePower = MaximumRecievePower;
-                            animT[animTName].normalizedTime = maximumRecievePower > 0 ? (float)Math.Min(total_thermal_power_provided / maximumRecievePower, 1) : 0;
-                            animT.Sample();
-                        }
-
-                        ThermalPower = ThermalPower <= 0
-                            ? total_thermal_power_provided
-                            : total_thermal_power_provided * GameConstants.microwave_alpha + GameConstants.microwave_beta * ThermalPower;
-                    }
-                    else
-                    {
-                        wasteheatElectricConversionEfficiency = WasteheatElectricConversionEfficiency;
-                        effectiveSolarThermalElectricEfficiency = wasteheatElectricConversionEfficiency * solarElectricEfficiency;
-                        effectiveBeamedPowerElectricEfficiency = wasteheatElectricConversionEfficiency * electricMaxEfficiency;
-
-                        var total_beamed_electric_power_available = thermalSolarInputMegajoules * effectiveSolarThermalElectricEfficiency + total_beamed_power * effectiveBeamedPowerElectricEfficiency;
-                        var total_beamed_electric_power_provided = Math.Min(MaximumRecievePower, total_beamed_electric_power_available);
-
-                        if (!(total_beamed_electric_power_provided > 0)) return;
-
-                        var minimumRequestedPower = MaximumRecievePower * (minimumConsumptionPercentage / 100d);
-                        var calculatedMinimumRatio = Math.Min(1, minimumRequestedPower / total_beamed_electric_power_provided);
-
-                        var powerGeneratedResult = managedPowerSupplyPerSecondMinimumRatio(total_beamed_electric_power_provided, total_beamed_electric_power_provided, calculatedMinimumRatio, ResourceSettings.Config.ElectricPowerInMegawatt);
-                        var supply_ratio = powerGeneratedResult.CurrentProvided / total_beamed_electric_power_provided;
-
-                        // only generate wasteheat from beamed power when actualy using the energy
-                        if (!CheatOptions.IgnoreMaxTemperature)
-                        {
-                            var solarWasteheat = thermalSolarInputMegajoules * (1 - effectiveSolarThermalElectricEfficiency);
-                            supplyFNResourcePerSecond(supply_ratio * total_conversion_waste_heat_production + supply_ratio * solarWasteheat, ResourceSettings.Config.WasteHeatInMegawatt);
-                        }
-
-                        foreach (var item in received_power)
-                        {
-                            item.Value.ConsumedPower = item.Value.AvailablePower * supply_ratio;
-                        }
-                    }
-                }
-                else
-                {
-                    total_thermal_power_provided = 0;
-                    total_sat_efficiency_fraction = 0;
-                    total_beamed_power = 0;
-                    total_beamed_power_max = 0;
-                    total_beamed_wasteheat = 0;
-
-                    powerInputMegajoules = 0;
-                    powerInputMegajoulesMax = 0;
-
-                    thermalSolarInputMegajoules = 0;
-                    thermalSolarInputMegajoulesMax = 0;
-
-                    solarFacingFactor = 0;
-                    ThermalPower = 0;
-
-                    PowerDown();
-
-                    if (stockModuleGenerator != null)
-                        stockModuleGenerator.generatorIsActive = false;
-
-                    if (animT == null) return;
-
-                    animT[animTName].normalizedTime = 0;
-                    animT.Sample();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("[KSPI]: Exception in MicrowavePowerReceiver.OnFixedUpdateResourceSuppliable " + e.Message + " at " + e.StackTrace);
-            }
-        }
-
         private void StoreGeneratorRequests()
         {
             storedIsThermalEnergyGeneratorEfficiency = currentIsThermalEnergyGeneratorEfficiency;
@@ -2073,7 +1887,7 @@ namespace KIT
             thermalSolarInputMegajoules = thermalSolarInputMegajoulesMax * solarFacingFactor;
         }
 
-        private void AddAlternatorPower()
+        private void AddAlternatorPower(IResourceManager resMan)
         {
             if (alternatorRatio == 0)
                 return;
@@ -2083,10 +1897,12 @@ namespace KIT
 
             var alternatorPower = alternatorRatio * powerInputMegajoules * 0.001;
 
-            var alternatorWasteheat = Math.Min(alternatorPower * AverageEfficiencyFraction, GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt) * AverageEfficiencyFraction);
+            // TODO
+            //var alternatorWasteheat = Math.Min(alternatorPower * AverageEfficiencyFraction, GetCurrentUnfilledResourceDemand/(ResourceSettings.Config.ElectricPowerInMegawatt) * AverageEfficiencyFraction);
+            var alternatorWasteheat = alternatorPower * AverageEfficiencyFraction;
 
-            supplyFNResourcePerSecond(alternatorPower, ResourceSettings.Config.ElectricPowerInMegawatt);
-            supplyFNResourcePerSecond(alternatorWasteheat, ResourceSettings.Config.WasteHeatInMegawatt);
+            resMan.ProduceResource(ResourceName.ElectricCharge, alternatorPower * GameConstants.ecPerMJ);
+            resMan.ProduceResource(ResourceName.WasteHeat, alternatorWasteheat * GameConstants.ecPerMJ);
 
             if (stockModuleGenerator != null)
                 stockModuleGenerator.generatorIsActive = alternatorPower > 0;
@@ -2162,11 +1978,6 @@ namespace KIT
                 }
             }
             return enumerated_power;
-        }
-
-        public override int getPowerPriority()
-        {
-            return 1;
         }
 
         private string WavelengthToText(double wavelength)
@@ -2247,6 +2058,217 @@ namespace KIT
 
                 stockModuleGenerator.resHandler.inputResources.Add(mockInputResource);
             }
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            powerCapacityEfficiency = PowerCapacityEfficiency;
+
+            StoreGeneratorRequests();
+
+            wasteheatRatio = CheatOptions.IgnoreMaxTemperature ? 0 : resMan.ResourceFillFraction(ResourceName.WasteHeat);
+
+            CalculateThermalSolarPower();
+
+            if (isMirror && receiverIsEnabled)
+            {
+                var thermalMassPerKilogram = part.mass * part.thermalMassModifier * PhysicsGlobals.StandardSpecificHeatCapacity * 1e-3;
+                dissipationInMegaJoules = PluginHelper.GetBlackBodyDissipation(solarReceptionSurfaceArea, part.temperature) * 1e-6; ;
+                var temperatureChange = resMan.FixedDeltaTime() * -(dissipationInMegaJoules / thermalMassPerKilogram);
+                part.temperature = part.temperature + temperatureChange;
+            }
+
+            if (initializationCountdown > 0)
+            {
+                initializationCountdown--;
+
+                part.temperature = storedTemp;
+                part.skinTemperature = storedTemp;
+            }
+            else
+                storedTemp = part.temperature;
+
+            if (receiverIsEnabled && radiatorMode)
+            {
+                if (fnRadiator != null)
+                {
+                    fnRadiator.canRadiateHeat = true;
+                    fnRadiator.radiatorIsEnabled = true;
+                }
+                PowerDown();
+                return;
+            }
+
+            if (fnRadiator != null)
+            {
+                fnRadiator.canRadiateHeat = false;
+                fnRadiator.radiatorIsEnabled = false;
+            }
+
+            try
+            {
+                if (restartCounter > 0)
+                {
+                    restartCounter--;
+                    RemoveOtherVesselData();
+                    OnUpdate();
+                }
+
+                UpdatePowerInput();
+
+                if (receiverIsEnabled && !radiatorMode)
+                {
+                    if (wasteheatRatio >= 0.95 && !isThermalReceiver && !solarPowerMode)
+                    {
+                        receiverIsEnabled = false;
+                        deactivate_timer++;
+                        if (FlightGlobals.ActiveVessel == vessel && deactivate_timer > 2)
+                            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_OverheatingMsg"), 5f, ScreenMessageStyle.UPPER_CENTER);//"Warning Dangerous Overheating Detected: Emergency beam power shutdown occuring NOW!"
+                        PowerDown();
+                        return;
+                    }
+
+                    // add alternator power
+                    AddAlternatorPower(resMan);
+
+                    // update energy buffers
+                    UpdateBuffers();
+
+                    if (isThermalReceiverSlave || thermalMode)
+                    {
+                        slavesAmount = thermalReceiverSlaves.Count;
+                        slavesPower = thermalReceiverSlaves.Sum(m => m.total_thermal_power_provided);
+
+                        total_thermal_power_available = thermalSolarInputMegajoules + total_beamed_power + slavesPower;
+                        total_thermal_power_provided = Math.Min(MaximumRecievePower, total_thermal_power_available);
+                        total_thermal_power_provided_max = Math.Min(MaximumRecievePower, total_beamed_power_max + thermalSolarInputMegajoulesMax);
+
+                        if (!isThermalReceiverSlave && total_thermal_power_provided > 0)
+                        {
+                            var thermalEngineThrottleRatio = connectedEngines.Any(m => !m.RequiresChargedPower) ? connectedEngines.Where(m => !m.RequiresChargedPower).Max(e => e.CurrentThrottle) : 0;
+                            var minimumRatio = Math.Max(minimumConsumptionPercentage / 100d, Math.Max(storedGeneratorThermalEnergyRequestRatio, thermalEngineThrottleRatio));
+
+                            // TODO - max resource settings
+                            //var powerGeneratedResult = managedPowerSupplyPerSecondMinimumRatio(total_thermal_power_provided, total_thermal_power_provided_max, minimumRatio, ResourceSettings.Config.ThermalPowerInMegawatt);
+
+                            resMan.ProduceResource(ResourceName.ThermalPower, total_thermal_power_provided);
+                            var powerGeneratedResult = total_thermal_power_provided;
+                            
+                            if (!CheatOptions.IgnoreMaxTemperature)
+                            {
+                                // TODO fix me.
+                                // var supplyRatio = powerGeneratedResult.CurrentSupply / total_thermal_power_provided;
+                                // var finalThermalWasteheat = powerGeneratedResult.CurrentSupply + supplyRatio * total_conversion_waste_heat_production;
+
+                                // supplyFNResourcePerSecondWithMax(finalThermalWasteheat, total_thermal_power_provided_max, ResourceSettings.Config.WasteHeatInMegawatt);
+                                resMan.ProduceResource(ResourceName.WasteHeat, total_thermal_power_provided);
+                            }
+
+                            // TODO fix me
+                            // thermal_power_ratio = total_thermal_power_available > 0 ? powerGeneratedResult.CurrentSupply / total_thermal_power_available : 0;
+
+                            thermal_power_ratio = 1;
+
+                            foreach (var item in received_power)
+                            {
+                                item.Value.ConsumedPower = item.Value.AvailablePower * thermal_power_ratio;
+                            }
+
+                            foreach (var slave in thermalReceiverSlaves)
+                            {
+                                foreach (var item in slave.received_power)
+                                {
+                                    item.Value.ConsumedPower = item.Value.AvailablePower * thermal_power_ratio;
+                                }
+                            }
+                        }
+
+                        if (animT != null)
+                        {
+                            var maximumRecievePower = MaximumRecievePower;
+                            animT[animTName].normalizedTime = maximumRecievePower > 0 ? (float)Math.Min(total_thermal_power_provided / maximumRecievePower, 1) : 0;
+                            animT.Sample();
+                        }
+
+                        ThermalPower = ThermalPower <= 0
+                            ? total_thermal_power_provided
+                            : total_thermal_power_provided * GameConstants.microwave_alpha + GameConstants.microwave_beta * ThermalPower;
+                    }
+                    else
+                    {
+                        wasteheatElectricConversionEfficiency = WasteheatElectricConversionEfficiency;
+                        effectiveSolarThermalElectricEfficiency = wasteheatElectricConversionEfficiency * solarElectricEfficiency;
+                        effectiveBeamedPowerElectricEfficiency = wasteheatElectricConversionEfficiency * electricMaxEfficiency;
+
+                        var total_beamed_electric_power_available = thermalSolarInputMegajoules * effectiveSolarThermalElectricEfficiency + total_beamed_power * effectiveBeamedPowerElectricEfficiency;
+                        var total_beamed_electric_power_provided = Math.Min(MaximumRecievePower, total_beamed_electric_power_available);
+
+                        if (!(total_beamed_electric_power_provided > 0)) return;
+
+                        var minimumRequestedPower = MaximumRecievePower * (minimumConsumptionPercentage / 100d);
+                        var calculatedMinimumRatio = Math.Min(1, minimumRequestedPower / total_beamed_electric_power_provided);
+
+                        // TODO what
+                        // var powerGeneratedResult = managedPowerSupplyPerSecondMinimumRatio(total_beamed_electric_power_provided, total_beamed_electric_power_provided, calculatedMinimumRatio, ResourceSettings.Config.ElectricPowerInMegawatt);
+                        // var supply_ratio = powerGeneratedResult.CurrentProvided / total_beamed_electric_power_provided;
+
+                        var powerGeneratedResult = total_beamed_electric_power_provided;
+                        var supply_ratio = 1;
+                        resMan.ProduceResource(ResourceName.ElectricCharge, total_beamed_electric_power_provided);
+
+                        // only generate wasteheat from beamed power when actualy using the energy
+                        if (!CheatOptions.IgnoreMaxTemperature)
+                        {
+                            var solarWasteheat = thermalSolarInputMegajoules * (1 - effectiveSolarThermalElectricEfficiency);
+                            resMan.ProduceResource(ResourceName.WasteHeat, supply_ratio * total_conversion_waste_heat_production + supply_ratio * solarWasteheat * GameConstants.ecPerMJ);
+                        }
+
+                        foreach (var item in received_power)
+                        {
+                            item.Value.ConsumedPower = item.Value.AvailablePower * supply_ratio;
+                        }
+                    }
+                }
+                else
+                {
+                    total_thermal_power_provided = 0;
+                    total_sat_efficiency_fraction = 0;
+                    total_beamed_power = 0;
+                    total_beamed_power_max = 0;
+                    total_beamed_wasteheat = 0;
+
+                    powerInputMegajoules = 0;
+                    powerInputMegajoulesMax = 0;
+
+                    thermalSolarInputMegajoules = 0;
+                    thermalSolarInputMegajoulesMax = 0;
+
+                    solarFacingFactor = 0;
+                    ThermalPower = 0;
+
+                    PowerDown();
+
+                    if (stockModuleGenerator != null)
+                        stockModuleGenerator.generatorIsActive = false;
+
+                    if (animT == null) return;
+
+                    animT[animTName].normalizedTime = 0;
+                    animT.Sample();
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[KSPI]: Exception in MicrowavePowerReceiver.OnFixedUpdateResourceSuppliable " + e.Message + " at " + e.StackTrace);
+            }
+
+        }
+
+        public string KITPartName()
+        {
+            throw new NotImplementedException();
         }
     }
 }

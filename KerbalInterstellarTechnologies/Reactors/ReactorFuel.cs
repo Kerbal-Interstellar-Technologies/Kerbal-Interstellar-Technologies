@@ -91,7 +91,14 @@ namespace KIT.Reactors
             }
 
             if (HighLogic.LoadedSceneIsFlight)
-                return part.GetResourceAvailable(this.Definition);
+            {
+                // return part.GetResourceAvailable(this.Definition);
+                for (var i = 0; i < part.Resources.Count; i++)
+                    if (part.Resources[i].resourceName == this.Definition.name)
+                        return part.Resources[i].amount;
+
+                return 0;
+            }  
             else
                 return part.FindAmountOfAvailableFuel(this.ResourceName, 4);
         }

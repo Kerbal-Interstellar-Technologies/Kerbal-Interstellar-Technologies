@@ -102,7 +102,6 @@
     <Compile Include="Powermanagement\DefaultResourceManager.cs" />
     <Compile Include="Powermanagement\PowerDistribution.cs" />
     <Compile Include="Powermanagement\TPResourceManager.cs" />
-    <Compile Include="Powermanagement\FNBatteryGenerator.cs" />
     <Compile Include="Powermanagement\FNGeneratorAdapterVariable.cs" />
     <Compile Include="Powermanagement\IFNChargedParticleSource.cs" />
     <Compile Include="Powermanagement\IFNPowerSource.cs" />

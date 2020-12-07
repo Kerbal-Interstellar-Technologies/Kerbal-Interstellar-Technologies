@@ -3,6 +3,7 @@ using KIT.Extensions;
 using KIT.External;
 using KIT.Powermanagement;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace KIT.Propulsion
     class FusionEngineController : DaedalusEngineController { }
 
     [KSPModule("Confinement Fusion Engine")]
-    class DaedalusEngineController : ResourceSuppliableModule, IUpgradeableModule , IRescalable<DaedalusEngineController>
+    class DaedalusEngineController : PartModule, IKITMod, IUpgradeableModule , IRescalable<DaedalusEngineController>
     {
         public const string GROUP = "FusionEngine";
         public const string GROUP_TITLE = "#LOC_KSPIE_FusionEngine_groupName";
@@ -318,9 +319,13 @@ namespace KIT.Propulsion
         BaseEvent activateRadSafetyEvent;
         BaseField radhazardstrField;
 
-        PartResourceDefinition fuelResourceDefinition1;
-        PartResourceDefinition fuelResourceDefinition2;
-        PartResourceDefinition fuelResourceDefinition3;
+        PartResourceDefinition fuelResourceDefinition1 = null;
+        PartResourceDefinition fuelResourceDefinition2 = null;
+        PartResourceDefinition fuelResourceDefinition3 = null;
+
+        ResourceName fuelResourceID1;
+        ResourceName fuelResourceID2;
+        ResourceName fuelResourceID3;
 
         const string LIGHTBLUE = "#7fdfffff";
 
@@ -527,7 +532,7 @@ namespace KIT.Propulsion
         public override void OnStart(StartState state)
         {
             string[] resources_to_supply = { ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt };
-            this.resources_to_supply = resources_to_supply;
+            //this.resources_to_supply = resources_to_supply;
             base.OnStart(state);
 
             engineSpeedOfLight = GameConstants.speedOfLight * PluginHelper.SpeedOfLightMult;
@@ -586,6 +591,7 @@ namespace KIT.Propulsion
 
         private void UpdateFuelFactors()
         {
+            fuelResourceID1 = fuelResourceID2 = fuelResourceID3 = 0;
 
             if (!string.IsNullOrEmpty(fuelName1))
                 fuelResourceDefinition1 = PartResourceLibrary.Instance.GetDefinition(fuelName1);
@@ -607,16 +613,19 @@ namespace KIT.Propulsion
 
             if (fuelResourceDefinition1 != null)
             {
+                fuelResourceID1 = KITResourceSettings.NameToResource(fuelResourceDefinition1.name);
                 ratioSum += fuelRatio1;
                 densitySum += fuelResourceDefinition1.density * fuelRatio1;
             }
             if (fuelResourceDefinition2 != null)
             {
+                fuelResourceID2 = KITResourceSettings.NameToResource(fuelResourceDefinition2.name);
                 ratioSum += fuelRatio2;
                 densitySum += fuelResourceDefinition2.density * fuelRatio2;
             }
             if (fuelResourceDefinition3 != null)
             {
+                fuelResourceID3 = KITResourceSettings.NameToResource(fuelResourceDefinition3.name);
                 ratioSum += fuelRatio3;
                 densitySum += fuelResourceDefinition3.density * fuelRatio3;
             }
@@ -826,142 +835,6 @@ namespace KIT.Propulsion
             CalculateTimeDialation();
         }
 
-        public override void OnFixedUpdateResourceSuppliable(double fixedDeltaTime)
-        {
-            if (curEngineT == null) return;
-
-            if (vesselChangedSIOCountdown > 0)
-                vesselChangedSIOCountdown--;
-
-            UpdateTime();
-
-            throttle = !curEngineT.getFlameoutState && curEngineT.currentThrottle > 0 ? Mathf.Max(curEngineT.currentThrottle, 0.01f) : 0;
-
-            if (throttle > 0)
-            {
-                if (vessel.atmDensity > maxAtmosphereDensity)
-                    ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason1"));//"Inertial Fusion cannot operate in atmosphere!"
-
-                if (radhazard && rad_safety_features)
-                    ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason2"));//"Engines throttled down as they presently pose a radiation hazard"
-            }
-
-            KillKerbalsWithRadiation(throttle);
-
-            if (!vessel.packed && !warpToReal)
-                storedThrotle = vessel.ctrlState.mainThrottle;
-
-            // Update ISP
-            effectiveIsp = timeDilation * engineIsp;
-
-            UpdateAtmosphericCurve(effectiveIsp);
-
-            if (throttle > 0 && !vessel.packed)
-            {
-                TimeWarp.GThreshold = GThreshold;
-
-                var thrustRatio = Math.Max(curEngineT.thrustPercentage * 0.01, 0.01);
-                var scaledThrottle = Math.Pow(thrustRatio * throttle, ispThrottleExponent);
-                effectiveIsp = timeDilation * engineIsp * scaledThrottle;
-
-                UpdateAtmosphericCurve(effectiveIsp);
-
-                fusionRatio = ProcessPowerAndWasteHeat(throttle);
-
-                if (!string.IsNullOrEmpty(effectName))
-                    part.Effect(effectName, (float)(throttle * fusionRatio), -1);
-
-                // Update FuelFlow
-                effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.STANDARD_GRAVITY;
-                massFlowRateKgPerSecond = thrustRatio * curEngineT.currentThrottle * calculatedFuelflow * 0.001;
-
-                if (!curEngineT.getFlameoutState && fusionRatio < 0.01)
-                {
-                    curEngineT.status = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_curEngineTstatus1");//"Insufficient Electricity"
-                }
-
-                ratioHeadingVersusRequest = 0;
-            }
-            else if (vessel.packed && curEngineT.currentThrottle > 0 && curEngineT.getIgnitionState && curEngineT.enabled && FlightGlobals.ActiveVessel == vessel && throttle > 0 && percentageFuelRemaining > (100 - fuelLimit) && lightSpeedRatio < speedLimit)
-            {
-                warpToReal = true; // Set to true for transition to realtime
-
-                fusionRatio = CheatOptions.InfiniteElectricity
-                    ? 1
-                    : maximizeThrust
-                        ? ProcessPowerAndWasteHeat(1)
-                        : ProcessPowerAndWasteHeat(storedThrotle);
-
-                if (fusionRatio <= 0.01)
-                {
-                    var message = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg1");//"Thrust warp stopped - insufficient power"
-                    UnityEngine.Debug.Log("[KSPI]: " + message);
-                    ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
-                    // Return to realtime
-                    TimeWarp.SetRate(0, true);
-                }
-
-                effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = effectiveIsp > 0 ? fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / PhysicsGlobals.GravitationalAcceleration : 0;
-                massFlowRateKgPerSecond = calculatedFuelflow * 0.001;
-
-                if (TimeWarp.fixedDeltaTime > 20)
-                {
-                    var deltaCalculations = (float)Math.Ceiling(TimeWarp.fixedDeltaTime * 0.05);
-                    var deltaTimeStep = TimeWarp.fixedDeltaTime / deltaCalculations;
-
-                    for (var step = 0; step < deltaCalculations; step++)
-                    {
-                        PersistentThrust(deltaTimeStep, universalTime + (step * deltaTimeStep), part.transform.up, vessel.totalMass);
-                        CalculateTimeDialation();
-                    }
-                }
-                else
-                    PersistentThrust(TimeWarp.fixedDeltaTime, universalTime, part.transform.up, vessel.totalMass);
-
-                if (fuelRatio < 0.999)
-                {
-                    var message = (fuelRatio <= 0) ? Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg2") : Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg3");//"Thrust warp stopped - propellant depleted" : "Thrust warp stopped - running out of propellant"
-                    UnityEngine.Debug.Log("[KSPI]: " + message);
-                    ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
-                    // Return to realtime
-                    TimeWarp.SetRate(0, true);
-                }
-
-                if (!string.IsNullOrEmpty(effectName))
-                    part.Effect(effectName, (float)(throttle * fusionRatio), -1);
-            }
-            else
-            {
-                ratioHeadingVersusRequest = vessel.PersistHeading(vesselChangedSIOCountdown > 0, ratioHeadingVersusRequest == 1);
-
-                if (!string.IsNullOrEmpty(effectName))
-                    part.Effect(effectName, 0, -1);
-
-                powerUsage = "0.00" + Localizer.Format("#LOC_KSPIE_Reactor_megawattUnit") + " / " + EffectiveMaxPowerRequirement.ToString("F2") + Localizer.Format("#LOC_KSPIE_Reactor_megawattUnit");
-
-                if (!(percentageFuelRemaining > (100 - fuelLimit) || lightSpeedRatio > speedLimit))
-                {
-                    warpToReal = false;
-                    vessel.ctrlState.mainThrottle = 0;
-                }
-
-                effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.STANDARD_GRAVITY;
-                massFlowRateKgPerSecond = 0;
-                fusionRatio = 0;
-            }
-
-            curEngineT.maxFuelFlow = Mathf.Max((float)calculatedFuelflow,  1e-10f);
-            curEngineT.maxThrust =  Mathf.Max((float)effectiveMaxThrustInKiloNewton, 0.0001f);
-
-            massFlowRateTonPerHour = massFlowRateKgPerSecond * 3.6;
-            thrustPowerInTeraWatt = effectiveMaxThrustInKiloNewton * 500 * effectiveIsp * GameConstants.STANDARD_GRAVITY * 1e-12;
-
-            UpdateKerbalismEmitter();
-        }
-
         private void UpdateAtmosphericCurve(double isp)
         {
             var newAtmosphereCurve = new FloatCurve();
@@ -970,7 +843,7 @@ namespace KIT.Propulsion
             curEngineT.atmosphereCurve = newAtmosphereCurve;
         }
 
-        private void PersistentThrust(float modifiedFixedDeltaTime, double modifiedUniversalTime, Vector3d thrustVector, double vesselMass)
+        private void PersistentThrust(IResourceManager resMan, float modifiedFixedDeltaTime, double modifiedUniversalTime, Vector3d thrustVector, double vesselMass)
         {
             ratioHeadingVersusRequest = vessel.PersistHeading(vesselChangedSIOCountdown > 0, ratioHeadingVersusRequest == 1);
             if (ratioHeadingVersusRequest != 1)
@@ -993,7 +866,7 @@ namespace KIT.Propulsion
                 return;
             }
 
-            fuelRatio = CollectFuel(demandMass);
+            fuelRatio = CollectFuel(resMan, demandMass);
 
             effectiveMaxThrustInKiloNewton = timeDilationMaximumThrust * fuelRatio;
 
@@ -1003,7 +876,7 @@ namespace KIT.Propulsion
             vessel.orbit.Perturb(deltaVv * fuelRatio, modifiedUniversalTime);
         }
 
-        private double CollectFuel(double demandMass)
+        private double CollectFuel(IResourceManager resMan, double demandMass)
         {
             if (CheatOptions.InfinitePropellant || demandMass <= 0)
                 return 1;
@@ -1018,17 +891,17 @@ namespace KIT.Propulsion
             if (fuelFactor1 > 0)
             {
                 fusionFuelRequestAmount1 = fuelFactor1 * totalAmount;
-                availableRatio = Math.Min(part.GetResourceAvailable(fuelResourceDefinition1, ResourceFlowMode.STACK_PRIORITY_SEARCH) / fusionFuelRequestAmount1, availableRatio);
+                availableRatio = Math.Min(resMan.ResourceCurrentCapacity(fuelResourceID1) / fusionFuelRequestAmount1, availableRatio);
             }
             if (fuelFactor2 > 0)
             {
                 fusionFuelRequestAmount2 = fuelFactor2 * totalAmount;
-                availableRatio = Math.Min(part.GetResourceAvailable(fuelResourceDefinition2, ResourceFlowMode.STACK_PRIORITY_SEARCH) / fusionFuelRequestAmount2, availableRatio);
+                availableRatio = Math.Min(resMan.ResourceCurrentCapacity(fuelResourceID2) / fusionFuelRequestAmount2, availableRatio);
             }
             if (fuelFactor3 > 0)
             {
                 fusionFuelRequestAmount3 = fuelFactor3 * totalAmount;
-                availableRatio = Math.Min(part.GetResourceAvailable(fuelResourceDefinition3, ResourceFlowMode.STACK_PRIORITY_SEARCH) / fusionFuelRequestAmount3, availableRatio);
+                availableRatio = Math.Min(resMan.ResourceCurrentCapacity(fuelResourceID3) / fusionFuelRequestAmount3, availableRatio);
             }
 
             if (availableRatio <= float.Epsilon)
@@ -1053,14 +926,14 @@ namespace KIT.Propulsion
             return receivedRatio;
         }
 
-        private double ProcessPowerAndWasteHeat(float requestedThrottle)
+        private double ProcessPowerAndWasteHeat(IResourceManager resMan, float requestedThrottle)
         {
             // Calculate Fusion Ratio
             var effectiveMaxPowerRequirement = EffectiveMaxPowerRequirement;
             var effectiveMaxPowerProduction = EffectiveMaxPowerProduction;
             var effectiveMaxFusionWasteHeat = EffectiveMaxFusionWasteHeat;
 
-            var wasteheatRatio = getResourceBarFraction(ResourceSettings.Config.WasteHeatInMegawatt);
+            var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
 
             var wasteheatModifier = CheatOptions.IgnoreMaxTemperature || wasteheatRatio < 0.9 ? 1 : (1  - wasteheatRatio) * 10;
 
@@ -1068,9 +941,7 @@ namespace KIT.Propulsion
 
             finalRequestedPower = requestedPower * wasteheatModifier;
 
-            var receivedPower = CheatOptions.InfiniteElectricity || requestedPower <= 0
-                ? finalRequestedPower
-                : consumeFNResourcePerSecond(finalRequestedPower, ResourceSettings.Config.ElectricPowerInMegawatt);
+            var receivedPower = resMan.ConsumeResource(ResourceName.ElectricCharge, finalRequestedPower * GameConstants.ecPerMJ);
 
             var plasmaRatio = !requestedPower.IsInfinityOrNaNorZero() && !receivedPower.IsInfinityOrNaNorZero() ? Math.Min(1, receivedPower / requestedPower) : 0;
 
@@ -1078,11 +949,15 @@ namespace KIT.Propulsion
 
             // The Absorbed wasteheat from Fusion production and reaction
             wasteHeat = requestedThrottle * plasmaRatio * effectiveMaxFusionWasteHeat;
-            if (!CheatOptions.IgnoreMaxTemperature && effectiveMaxFusionWasteHeat > 0)
-                supplyFNResourcePerSecondWithMax(wasteHeat, effectiveMaxFusionWasteHeat, ResourceSettings.Config.WasteHeatInMegawatt);
+            if (effectiveMaxFusionWasteHeat > 0)
+                resMan.ProduceResource(ResourceName.WasteHeat, wasteHeat);
+
+            // supplyFNResourcePerSecondWithMax(wasteHeat, effectiveMaxFusionWasteHeat, ResourceSettings.Config.WasteHeatInMegawatt);
 
             if (!CheatOptions.InfiniteElectricity && effectiveMaxPowerProduction > 0)
-                supplyFNResourcePerSecondWithMax(requestedThrottle * plasmaRatio * effectiveMaxPowerProduction, effectiveMaxPowerProduction, ResourceSettings.Config.ElectricPowerInMegawatt);
+                resMan.ProduceResource(ResourceName.ElectricCharge, requestedThrottle * plasmaRatio * effectiveMaxPowerProduction * GameConstants.ecPerMJ);
+
+            //    supplyFNResourcePerSecondWithMax(requestedThrottle * plasmaRatio * effectiveMaxPowerProduction, effectiveMaxPowerProduction, ResourceSettings.Config.ElectricPowerInMegawatt);
 
             return plasmaRatio;
         }
@@ -1132,17 +1007,6 @@ namespace KIT.Propulsion
                 partWithCrewMember.RemoveCrewmember(crewMember);
                 crewMember.Die();
             }
-        }
-
-        public override int getPowerPriority()
-        {
-            // when providing surplus power, we want to be one of the first to consume and therefore provide power
-            return PowerProduction > PowerRequirement ? 1 : powerPriority;
-        }
-
-        public override int getSupplyPriority()
-        {
-            return 1;
         }
 
         public override string GetInfo()
@@ -1212,6 +1076,152 @@ namespace KIT.Propulsion
             sb.Append("</size>");
 
             return sb.ToStringAndRelease();
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            if (curEngineT == null) return;
+
+            if (vesselChangedSIOCountdown > 0)
+                vesselChangedSIOCountdown--;
+
+            UpdateTime();
+
+            throttle = !curEngineT.getFlameoutState && curEngineT.currentThrottle > 0 ? Mathf.Max(curEngineT.currentThrottle, 0.01f) : 0;
+
+            if (throttle > 0)
+            {
+                if (vessel.atmDensity > maxAtmosphereDensity)
+                    ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason1"));//"Inertial Fusion cannot operate in atmosphere!"
+
+                if (radhazard && rad_safety_features)
+                    ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason2"));//"Engines throttled down as they presently pose a radiation hazard"
+            }
+
+            KillKerbalsWithRadiation(throttle);
+
+            if (!vessel.packed && !warpToReal)
+                storedThrotle = vessel.ctrlState.mainThrottle;
+
+            // Update ISP
+            effectiveIsp = timeDilation * engineIsp;
+
+            UpdateAtmosphericCurve(effectiveIsp);
+
+            if (throttle > 0 && !vessel.packed)
+            {
+                TimeWarp.GThreshold = GThreshold;
+
+                var thrustRatio = Math.Max(curEngineT.thrustPercentage * 0.01, 0.01);
+                var scaledThrottle = Math.Pow(thrustRatio * throttle, ispThrottleExponent);
+                effectiveIsp = timeDilation * engineIsp * scaledThrottle;
+
+                UpdateAtmosphericCurve(effectiveIsp);
+
+                fusionRatio = ProcessPowerAndWasteHeat(resMan, throttle);
+
+                if (!string.IsNullOrEmpty(effectName))
+                    part.Effect(effectName, (float)(throttle * fusionRatio), -1);
+
+                // Update FuelFlow
+                effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
+                calculatedFuelflow = fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.STANDARD_GRAVITY;
+                massFlowRateKgPerSecond = thrustRatio * curEngineT.currentThrottle * calculatedFuelflow * 0.001;
+
+                if (!curEngineT.getFlameoutState && fusionRatio < 0.01)
+                {
+                    curEngineT.status = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_curEngineTstatus1");//"Insufficient Electricity"
+                }
+
+                ratioHeadingVersusRequest = 0;
+            }
+            else if (vessel.packed && curEngineT.currentThrottle > 0 && curEngineT.getIgnitionState && curEngineT.enabled && FlightGlobals.ActiveVessel == vessel && throttle > 0 && percentageFuelRemaining > (100 - fuelLimit) && lightSpeedRatio < speedLimit)
+            {
+                warpToReal = true; // Set to true for transition to realtime
+
+                fusionRatio = CheatOptions.InfiniteElectricity
+                    ? 1
+                    : maximizeThrust
+                        ? ProcessPowerAndWasteHeat(resMan, 1)
+                        : ProcessPowerAndWasteHeat(resMan, storedThrotle);
+
+                if (fusionRatio <= 0.01)
+                {
+                    var message = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg1");//"Thrust warp stopped - insufficient power"
+                    UnityEngine.Debug.Log("[KSPI]: " + message);
+                    ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
+                    // Return to realtime
+                    TimeWarp.SetRate(0, true);
+                }
+
+                effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
+                calculatedFuelflow = effectiveIsp > 0 ? fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / PhysicsGlobals.GravitationalAcceleration : 0;
+                massFlowRateKgPerSecond = calculatedFuelflow * 0.001;
+
+                if (TimeWarp.fixedDeltaTime > 20)
+                {
+                    var deltaCalculations = (float)Math.Ceiling(TimeWarp.fixedDeltaTime * 0.05);
+                    var deltaTimeStep = TimeWarp.fixedDeltaTime / deltaCalculations;
+
+                    for (var step = 0; step < deltaCalculations; step++)
+                    {
+                        PersistentThrust(resMan, deltaTimeStep, universalTime + (step * deltaTimeStep), part.transform.up, vessel.totalMass);
+                        CalculateTimeDialation();
+                    }
+                }
+                else
+                    PersistentThrust(resMan, TimeWarp.fixedDeltaTime, universalTime, part.transform.up, vessel.totalMass);
+
+                if (fuelRatio < 0.999)
+                {
+                    var message = (fuelRatio <= 0) ? Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg2") : Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg3");//"Thrust warp stopped - propellant depleted" : "Thrust warp stopped - running out of propellant"
+                    UnityEngine.Debug.Log("[KSPI]: " + message);
+                    ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
+                    // Return to realtime
+                    TimeWarp.SetRate(0, true);
+                }
+
+                if (!string.IsNullOrEmpty(effectName))
+                    part.Effect(effectName, (float)(throttle * fusionRatio), -1);
+            }
+            else
+            {
+                ratioHeadingVersusRequest = vessel.PersistHeading(vesselChangedSIOCountdown > 0, ratioHeadingVersusRequest == 1);
+
+                if (!string.IsNullOrEmpty(effectName))
+                    part.Effect(effectName, 0, -1);
+
+                powerUsage = "0.00" + Localizer.Format("#LOC_KSPIE_Reactor_megawattUnit") + " / " + EffectiveMaxPowerRequirement.ToString("F2") + Localizer.Format("#LOC_KSPIE_Reactor_megawattUnit");
+
+                if (!(percentageFuelRemaining > (100 - fuelLimit) || lightSpeedRatio > speedLimit))
+                {
+                    warpToReal = false;
+                    vessel.ctrlState.mainThrottle = 0;
+                }
+
+                effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
+                calculatedFuelflow = effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.STANDARD_GRAVITY;
+                massFlowRateKgPerSecond = 0;
+                fusionRatio = 0;
+            }
+
+            curEngineT.maxFuelFlow = Mathf.Max((float)calculatedFuelflow, 1e-10f);
+            curEngineT.maxThrust = Mathf.Max((float)effectiveMaxThrustInKiloNewton, 0.0001f);
+
+            massFlowRateTonPerHour = massFlowRateKgPerSecond * 3.6;
+            thrustPowerInTeraWatt = effectiveMaxThrustInKiloNewton * 500 * effectiveIsp * GameConstants.STANDARD_GRAVITY * 1e-12;
+
+            UpdateKerbalismEmitter();
+        }
+
+        public string KITPartName()
+        {
+            throw new NotImplementedException();
         }
     }
 }
