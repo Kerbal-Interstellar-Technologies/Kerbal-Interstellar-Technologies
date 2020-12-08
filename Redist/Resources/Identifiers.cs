@@ -16,7 +16,15 @@ namespace KIT.Resources
     public enum ResourceName
     {
         Unknown,
+
+        // We will track vessel wide stats between ElectricCharge and WasteHeat. Do not change this ordering
+        // unless you have consulted ResourceManager.cs and resourceProductionStats, as otherwise you might be in for a surprise.
         ElectricCharge,
+        ThermalPower,
+        ChargedParticle,
+        WasteHeat,
+        // End vessel wide tracking. The below order is not important.
+
         LiquidFuel,
         Oxidizer,
         MonoPropellant,
@@ -81,11 +89,7 @@ namespace KIT.Resources
         IntakeOxygenAir,
         IntakeLiquid,
         IntakeAtmosphere,
-
-        ChargedParticle,
-        ThermalPower,
-
-        WasteHeat,
+        
         EndResource,
     }
 

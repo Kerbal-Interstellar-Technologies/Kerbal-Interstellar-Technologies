@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace KIT.Reactors
 {
@@ -56,6 +57,8 @@ namespace KIT.Reactors
          * FissionProducts seems worse than Plutonium-238 
          */
 
+        PartResourceDefinition resourceDefinition;
+
         private void FindResourceIndex()
         {
             for (rtg_resource_index = 0; rtg_resource_index < part.Resources.Count; rtg_resource_index++)
@@ -63,24 +66,31 @@ namespace KIT.Reactors
                 if (part.Resources[rtg_resource_index].resourceName == "WasteHeat") continue;
                 break;
             }
-            if (rtg_resource_index == part.Resources.Count)
+            if (rtg_resource_index == part.Resources.Count) rtg_resource_index = -1;
+
+            resourceDefinition = PartResourceLibrary.Instance.GetDefinition(part.Resources[rtg_resource_index].resourceName);
+            if (resourceDefinition == null)
             {
-                rtg_resource_index = -1;
+                Debug.Log($"[KITRadioisotopeGenerator.FindResourceIndex] unable to GetDefinition({part.Resources[rtg_resource_index].resourceName})");
+                rtg_resource_index = -2;
                 return;
             }
+
         }
 
         public void Update()
         {
             if (rtg_resource_index == -1 || part.Resources[rtg_resource_index].resourceName == "WasteHeat") FindResourceIndex();
-            if (rtg_resource_index == -1) return;
+            if (rtg_resource_index < 0) return;
 
             currentPowerOutput = part.Resources[rtg_resource_index].amount * energyGenerated * peltierEfficency;
         }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (rtg_resource_index == -1) return;
+            if (!HighLogic.LoadedSceneIsFlight) return;
+
+            if (rtg_resource_index < 0) return;
             var totalHeat = part.Resources[rtg_resource_index].amount * energyGenerated;
             var energyExtracted = totalHeat * peltierEfficency;
 
