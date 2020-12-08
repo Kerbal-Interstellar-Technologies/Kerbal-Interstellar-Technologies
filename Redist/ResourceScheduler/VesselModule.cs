@@ -66,8 +66,7 @@ namespace KIT.ResourceScheduler
                 return;
             }
 
-            if (!HighLogic.LoadedSceneIsFlight || vessel.vesselType == VesselType.SpaceObject ||
-                vessel.isEVA || vessel.vesselType == VesselType.Debris) return;
+            if (vessel.vesselType == VesselType.SpaceObject || vessel.isEVA || vessel.vesselType == VesselType.Debris) return;
 
             if (lastExecuted == 0) catchUpNeeded = false;
             double currentTime = Planetarium.GetUniversalTime();

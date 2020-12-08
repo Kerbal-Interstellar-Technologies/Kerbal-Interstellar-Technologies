@@ -35,6 +35,17 @@ namespace KIT.ResourceScheduler
             }
         }
 
+        private static KITResourceVesselModule FindVesselModuleImplementing(Vessel v)
+        {
+            KITResourceVesselModule ret;
+            for (var i = 0; i < v.vesselModules.Count; i++)
+            {
+                ret = v.vesselModules[i] as KITResourceVesselModule;
+                if(ret != null) return ret;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Looks up the corresponding KITResourceManager and tells it to refresh its module cache.
         /// </summary>
@@ -42,7 +53,7 @@ namespace KIT.ResourceScheduler
         private static void refreshActiveParts(Part data)
         {
             if (data == null || data.vessel == null) return;
-            var resourceMod = data.vessel.FindVesselModuleImplementing<KITResourceVesselModule>();
+            var resourceMod = FindVesselModuleImplementing(data.vessel);
             if (resourceMod == null) return;
             resourceMod.refreshEventOccurred = true;
         }
@@ -53,7 +64,7 @@ namespace KIT.ResourceScheduler
         private static void refreshActiveParts(Vessel data)
         {
             if (data == null) return;
-            var resourceMod = data.FindVesselModuleImplementing<KITResourceVesselModule>();
+            var resourceMod = FindVesselModuleImplementing(data);
             if (resourceMod == null) return;
             resourceMod.refreshEventOccurred = true;
         }

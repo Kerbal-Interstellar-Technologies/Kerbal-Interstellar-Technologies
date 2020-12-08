@@ -9,6 +9,29 @@ using UnityEngine;
 
 namespace KIT.ResourceScheduler
 {
+    public struct ResourceProduction : IResourceProduction
+    {
+        internal double _currentlyRequested;
+        internal double _currentlySupplied;
+        internal double _previouslyRequested;
+        internal double _previouslySupplied;
+
+        public double CurrentlyRequested() => _currentlyRequested;
+        public double CurrentSupplied() => _currentlySupplied;
+
+        public double PreviousUnmetDemand() => Math.Max(0, _previouslyRequested - _previouslySupplied);
+        public bool PreviousDemandMet() => _previouslySupplied >= _previouslyRequested;
+
+        public double PreviouslyRequested() => _previouslyRequested;
+        public double PreviouslySupplied() => _previouslySupplied;
+
+        public double PreviousSurplus() => Math.Max(0, _previouslySupplied - _previouslyRequested);
+
+        public bool PreviousDataSupplied() => _previouslySupplied != 0 && _previouslyRequested != 0;
+    }
+
+    /// <summary>
+
     public class ResourceManager : IResourceManager, IResourceScheduler
     {
         private ICheatOptions myCheatOptions = RealCheatOptions.Instance;
@@ -36,6 +59,8 @@ namespace KIT.ResourceScheduler
             {
                 resourceFlow[i] = new List<KeyValuePair<IKITMod, double>>(64);
             }
+
+            resourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat - ResourceName.ElectricCharge)];
         }
 
         #region IResourceManager implementation
@@ -55,6 +80,9 @@ namespace KIT.ResourceScheduler
         {
             KITResourceSettings.ValidateResource(resource);
 
+            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
+                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlyRequested += wanted;
+            
             if (!inExecuteKITModules)
             {
                 Debug.Log("[KITResourceManager.ConsumeResource] don't do this.");
@@ -78,6 +106,10 @@ namespace KIT.ResourceScheduler
             var tmp = Math.Min(currentResources[resource], modifiedAmount);
             obtainedAmount += tmp;
             currentResources[resource] -= tmp;
+
+            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat && tmp > 0)
+                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlySupplied += tmp;
+
             if (obtainedAmount >= modifiedAmount)
             {
                 resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
@@ -91,7 +123,8 @@ namespace KIT.ResourceScheduler
             obtainedAmount = wanted * (obtainedAmount / modifiedAmount);
             obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted);
 
-            //return obtainedAmount;
+            // We do not need to account for _currentlySupplied here, as the modules called above will call
+            // ProduceResource which credits the _currentlySupplied field here.
 
             // is it close enough to being fully requested? (accounting for precision issues)
             var result = (modifiedAmount * fudgeFactor <= obtainedAmount) ? wanted : wanted * (obtainedAmount / modifiedAmount);
@@ -112,9 +145,12 @@ namespace KIT.ResourceScheduler
         /// </summary>
         /// <param name="resource">Resource to produce</param>
         /// <param name="amount">Amount you are providing</param>
-        void IResourceManager.ProduceResource(ResourceName resource, double amount)
+        void IResourceManager.ProduceResource(ResourceName resource, double amount, double max = -1)
         {
             KITResourceSettings.ValidateResource(resource);
+
+            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
+                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlySupplied += amount;
 
             //Debug.Log($"ProduceResource {resource} - {amount}");
 
@@ -159,13 +195,27 @@ namespace KIT.ResourceScheduler
             currentResources = resourceAmounts;
             currentMaxResources = resourceMaxAmounts;
 
+            // Cycle the resource tracking data over.
+            for(int i = 0; i < (int)(ResourceName.WasteHeat - ResourceName.ElectricCharge); i++)
+            {
+                resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._currentlyRequested;
+                resourceProductionStats[i]._previouslySupplied = resourceProductionStats[i]._currentlySupplied;
+
+                resourceProductionStats[i]._currentlyRequested = resourceProductionStats[i]._currentlySupplied =
+                    resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._previouslySupplied = 
+                    0;
+            }
+
             tappedOutMods.Clear();
             fixedUpdateCalledMods.Clear();
 
-            if (modsCurrentlyRunning.Count > 0 && complainedToWaiterAboutOrder == false)
+            if (modsCurrentlyRunning.Count > 0)
             {
-                Debug.Log($"[ResourceManager.ExecuteKITModules] modsCurrentlyRunning.Count != 0. there may be resource production / consumption issues.");
-                complainedToWaiterAboutOrder = true;
+                if(complainedToWaiterAboutOrder == false)
+                    Debug.Log($"[ResourceManager.ExecuteKITModules] URGENT modsCurrentlyRunning.Count != 0. there may be resource production / consumption issues.");
+                else
+                    complainedToWaiterAboutOrder = true;
+
                 modsCurrentlyRunning.Clear();
             }
 
@@ -197,6 +247,7 @@ namespace KIT.ResourceScheduler
 
                 try
                 {
+                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.ExecuteKITModules.{mod.KITPartName()}");
                     mod.KITFixedUpdate(this);
                 }
                 catch (Exception ex)
@@ -207,6 +258,10 @@ namespace KIT.ResourceScheduler
                         // XXX - part names and all that.
                         Debug.Log($"[KITResourceManager.ExecuteKITModules] Exception when processing [{mod.KITPartName()}, {(mod as PartModule).ClassName}]: {ex.ToString()}");
                     }
+                }
+                finally
+                {
+                    UnityEngine.Profiling.Profiler.EndSample();
                 }
 
                 if (vesselResources.VesselModified())
@@ -258,13 +313,29 @@ namespace KIT.ResourceScheduler
                 {
                     // Hasn't had it's KITFixedUpdate() yet? call that first.
                     fixedUpdateCalledMods.Add(KITMod);
-                    KITMod.KITFixedUpdate(this);
+                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.Init.{KITMod.KITPartName()}");
+
+                    try
+                    {
+                        KITMod.KITFixedUpdate(this);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Log($"[KITResourceManager.CallVariableSuppliers] Exception when processing [{KITMod.KITPartName()}, {(mod as PartModule).ClassName}]: {ex.ToString()}");
+                    }
+                    finally
+                    {
+                        UnityEngine.Profiling.Profiler.EndSample();
+                    }
+                    
                 }
 
                 double perSecondAmount = originalAmount * (1 - (obtainedAmount / originalAmount));
 
                 try
                 {
+                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{KITMod.KITPartName()}");
+
                     var canContinue = mod.ProvideResource(this, resource, perSecondAmount);
                     if (!canContinue) tappedOutMods.Add(mod);
                 }
@@ -272,6 +343,10 @@ namespace KIT.ResourceScheduler
                 {
                     if (UseThisToHelpWithTesting) throw;
                     Debug.Log($"[KITResourceManager.callVariableSuppliers] calling KITMod {KITMod.KITPartName()} resulted in {ex.ToString()}");
+                }
+                finally
+                {
+                    UnityEngine.Profiling.Profiler.EndSample();
                 }
 
                 var tmp = Math.Min(currentResources[resource], perSecondAmount);
@@ -299,6 +374,16 @@ namespace KIT.ResourceScheduler
         double IResourceManager.ResourceFillFraction(ResourceName resourceIdentifier)
         {
             return currentResources[resourceIdentifier] / currentMaxResources[resourceIdentifier];
+        }
+
+        private ResourceProduction[] resourceProductionStats;
+
+        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier)
+        {
+            if (resourceIdentifier >= ResourceName.ElectricCharge && resourceIdentifier <= ResourceName.WasteHeat)
+                return resourceProductionStats[resourceIdentifier - ResourceName.ElectricCharge];
+
+            return null;
         }
         #endregion
 

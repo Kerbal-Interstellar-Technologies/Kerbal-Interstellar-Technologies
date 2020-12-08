@@ -17,7 +17,7 @@ using UnityEngine;
 namespace KIT.Reactors
 {
     [KSPModule("#LOC_KSPIE_Reactor_moduleName")]
-    class InterstellarReactor : PartModule, IKITMod, IFNPowerSource, IRescalable<InterstellarReactor>, IPartCostModifier
+    class InterstellarReactor : PartModule, IKITMod, IKITVariableSupplier, IFNPowerSource, IRescalable<InterstellarReactor>, IPartCostModifier
     {
         public const string GROUP = "InterstellarReactor";
         public const string GROUP_TITLE = "#LOC_KSPIE_Reactor_groupName";
@@ -41,12 +41,6 @@ namespace KIT.Reactors
         public float powerPercentage = 100;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_ForcedMinimumThrotle"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0)]//Forced Minimum Throtle
         public float forcedMinimumThrottle = 0;
-
-        // onFieldChanged = PriorityChanged
-        public virtual void PriorityChanged(BaseField baseField, object value)
-        {
-            GameEvents.onPartPriorityChanged.Fire(part);
-        }
 
         // Persistent True
         [KSPField(isPersistant = true)] public int fuelmode_index = -1;
@@ -377,6 +371,10 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_startEnabled"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_startEnabled_True", enabledText = "#LOC_KSPIE_Reactor_startEnabled_False")]//True-False
         public bool startDisabled;
 
+        // This field is NOT used for catch up processing, it is used to determine
+        // if the reactor can be refueled / decay has stopped, etc.
+        [KSPField] public double last_active_time;
+
         // shared variabels
         protected bool decay_ongoing;
         protected bool initialized;
@@ -450,7 +448,6 @@ namespace KIT.Reactors
 
         bool hasSpecificFuelModeTechs;
         bool? hasBimodelUpgradeTechReq;
-        bool isFixedUpdatedCalled;
 
         // properties
         public double ForcedMinimumThrottleRatio => ((double)(decimal)forcedMinimumThrottle) / 100;
@@ -840,7 +837,7 @@ namespace KIT.Reactors
             UpdateConnectedReceiversStr();
         }
         */
-        
+
 
         public virtual void OnRescale(ScalingFactor factor)
         {
@@ -1214,6 +1211,11 @@ namespace KIT.Reactors
             UpdateReactorCharacteristics();
 
             InitializeKerbalismEmitter();
+
+            Fields[nameof(electricPowerPriority)].OnValueModified += (a) =>
+            {
+                GameEvents.onPartPriorityChanged.Fire(part);
+            };
 
             hydrogenDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.HydrogenLqd);
 
@@ -1593,19 +1595,6 @@ namespace KIT.Reactors
         /// </summary>
         public void FixedUpdate()
         {
-            if (!HighLogic.LoadedSceneIsFlight)
-            {
-                DeterminePowerOutput();
-                maximumThermalPowerEffective = MaximumThermalPower;
-                return;
-            }
-
-            if (!enabled)
-                base.OnFixedUpdate();
-
-            if (isFixedUpdatedCalled) return;
-
-            isFixedUpdatedCalled = true;
         }
 
         public override void OnFixedUpdate() // OnFixedUpdate is only called when (force) activated
@@ -1779,7 +1768,7 @@ namespace KIT.Reactors
             stored_fuel_ratio = currentFuelVariant.FuelRatio;
         }
 
-        private void StoreGeneratorRequests(double timeWarpFixedDeltaTime)
+        private void StoreGeneratorRequests(/*double timeWarpFixedDeltaTime*/)
         {
             storedIsThermalEnergyGeneratorEfficiency = _currentIsThermalEnergyGeneratorEfficiency;
             storedIsPlasmaEnergyGeneratorEfficiency = _currentIsPlasmaEnergyGeneratorEfficiency;
@@ -1809,8 +1798,8 @@ namespace KIT.Reactors
             var plasmaThrottleIsGrowing = _currentGeneratorPlasmaEnergyRequestRatio > storedGeneratorPlasmaEnergyRequestRatio;
             var chargedThrottleIsGrowing = _currentGeneratorChargedEnergyRequestRatio > storedGeneratorChargedEnergyRequestRatio;
 
-            var fixedReactorSpeedMultiplier = ReactorSpeedMult * timeWarpFixedDeltaTime;
-            var minimumAcceleration = timeWarpFixedDeltaTime * timeWarpFixedDeltaTime;
+            var fixedReactorSpeedMultiplier = ReactorSpeedMult; // * timeWarpFixedDeltaTime;
+            var minimumAcceleration = 1; //  timeWarpFixedDeltaTime * timeWarpFixedDeltaTime;
 
             var thermalAccelerationReductionRatio = thermalThrottleIsGrowing
                 ? storedGeneratorThermalEnergyRequestRatio <= 0.5 ? 1 : minimumAcceleration + (1 - storedGeneratorThermalEnergyRequestRatio) / 0.5
@@ -1851,7 +1840,7 @@ namespace KIT.Reactors
             return fuelUseForPower > 0 ? GetFuelAvailability(reactorFuel) / fuelUseForPower : 0;
         }
 
-        private void BreedTritium(IResourceManager resMan, double neutronPowerReceivedEachSecond)
+        private void BreedTritium(IResourceManager resMan)
         {
             _lithiumConsumedPerSecond = 0;
             _tritiumProducedPerSecond = 0;
@@ -1859,7 +1848,7 @@ namespace KIT.Reactors
             totalAmountLithium = 0;
             totalMaxAmountLithium = 0;
 
-            if (breedtritium == false || neutronPowerReceivedEachSecond <= 0)
+            if (breedtritium == false)
                 return;
 
             // verify if there is any lithium6 present
@@ -1879,7 +1868,7 @@ namespace KIT.Reactors
                 return;
 
             // calculate current maximum lithium consumption
-            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * neutronPowerReceivedEachSecond * lithiumNeutronAbsorbtion;
+            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * lithiumNeutronAbsorbtion;
             var lithiumRate = breedRate / _lithium6Density;
 
             // get spare room tritium
@@ -1893,7 +1882,7 @@ namespace KIT.Reactors
             // consume the lithium
             var lithiumUsed = CheatOptions.InfinitePropellant
                 ? lithiumRequest
-                : part.RequestResource(_lithium6Def.id, lithiumRequest, ResourceFlowMode.STACK_PRIORITY_SEARCH);
+                : resMan.ConsumeResource(ResourceName.Lithium6, lithiumRequest);
 
             // calculate effective lithium used for tritium breeding
             _lithiumConsumedPerSecond = lithiumUsed;
@@ -2669,191 +2658,45 @@ namespace KIT.Reactors
             */
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+        public ResourcePriorityValue ResourceProcessPriority() => (ResourcePriorityValue)electricPowerPriority;
+
+        /// <summary>
+        /// electricChargeGeneratedLastUpdate indicates how much ElectricCharge was generated in the since the previous FixedUpdate()
+        /// call. 
+        /// </summary>
+        private double electricChargeGeneratedLastUpdate;
+
+        /// <summary>
+        /// electricChargeMissingLastUpdate indicates how much ElectricCharge we could not provide in the last FixedUpdate call.
+        /// It is the result of electricChargeBeingRequestedThisUpdate - electricChargeBeingSuppliedThisUpdate
+        /// </summary>
+        private double electricChargeMissingLastUpdate;
+
+        /// <summary>
+        ///  electricChargeBeingRequestedThisUpdate provides a running total of Electric Charge being requested this cycle.
+        /// </summary>
+        private double electricChargeBeingRequestedThisUpdate;
+
+        /// <summary>
+        /// electricChargeBeingSuppliedThisUpdate provides a running total of how much Electric Charge we've been able to provide.
+        /// </summary>
+        private double electricChargeBeingSuppliedThisUpdate;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            throw new IndexOutOfRangeException("InterstellarReactor.KITFixedUpdate need to work out how to do this ");
-
-            /*
-            if (!IsEnabled && !IsStarted)
+            if (!HighLogic.LoadedSceneIsFlight)
             {
-                IsStarted = true;
-                IsEnabled = true;
+                DeterminePowerOutput();
+                maximumThermalPowerEffective = MaximumThermalPower;
+                return;
             }
 
+            // KITFixedUpdate always runs before each power draw attempt.
+            electricChargeGeneratedLastUpdate = electricChargeBeingSuppliedThisUpdate;
+            electricChargeMissingLastUpdate = electricChargeBeingRequestedThisUpdate - electricChargeBeingSuppliedThisUpdate;
+            electricChargeBeingRequestedThisUpdate = electricChargeBeingSuppliedThisUpdate = 0;
 
-            StoreGeneratorRequests(resMan.FixedDeltaTime());
-
-            decay_ongoing = false;
-
-            maximumPower = MaximumPower;
-
-            if (IsEnabled && maximumPower > 0)
-            {
-                maxPowerToSupply = Math.Max(maximumPower, 0);
-
-                UpdateGeeforceModifier();
-
-                if (hasOverheatEffects && !CheatOptions.IgnoreMaxTemperature)
-                {
-                    averageOverheat.Enqueue(resMan.ResourceFillFraction(ResourceName.WasteHeat));
-                    if (averageOverheat.Count > 10)
-                        averageOverheat.Dequeue();
-
-                    double scaledOverheating = Math.Pow(Math.Max(resMan.ResourceFillFraction(ResourceName.WasteHeat) - overheatTreshHold, 0) * overheatMultiplier, overheatExponent);
-
-                    overheatModifier = Math.Min(Math.Max(1 - scaledOverheating, minOverheatModifier), 1);
-                }
-                else
-                    overheatModifier = 1;
-
-                currentFuelVariantsSorted = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply * geeForceModifier * overheatModifier, fuelUsePerMJMult);
-                currentFuelVariant = currentFuelVariantsSorted.FirstOrDefault();
-
-                fuel_mode_variant = currentFuelVariant?.Name;
-
-                stored_fuel_ratio = CheatOptions.InfinitePropellant ? 1 : currentFuelVariant != null ? Math.Min(currentFuelVariant.FuelRatio, 1) : 0;
-
-                LookForAlternativeFuelTypes();
-
-                var trueVariant = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult, false).FirstOrDefault();
-                fuel_ratio = CheatOptions.InfinitePropellant ? 1 : trueVariant != null ? Math.Min(trueVariant.FuelRatio, 1) : 0;
-
-                if (fuel_ratio < 0.99999)
-                {
-                    if (!messagedRanOutOfFuel)
-                    {
-                        messagedRanOutOfFuel = true;
-                        var message = Localizer.Format("#LOC_KSPIE_Reactor_ranOutOfFuelFor") + " " + CurrentFuelMode.ModeGUIName;
-                        Debug.Log("[KSPI]: " + message);
-                        ScreenMessages.PostScreenMessage(message, 20.0f, ScreenMessageStyle.UPPER_CENTER);
-                    }
-                }
-                else
-                    messagedRanOutOfFuel = false;
-
-                thermalThrottleRatio = connectedEngines.Any(m => m.RequiresThermalHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresThermalHeat).Sum(e => e.CurrentThrottle)) : 0;
-                plasmaThrottleRatio = connectedEngines.Any(m => m.RequiresPlasmaHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresPlasmaHeat).Sum(e => e.CurrentThrottle)) : 0;
-                chargedThrottleRatio = connectedEngines.Any(m => m.RequiresChargedPower) ? Math.Min(1, connectedEngines.Where(m => m.RequiresChargedPower).Max(e => e.CurrentThrottle)) : 0;
-
-                var thermalPropulsionRatio = ThermalPropulsionEfficiency * thermalThrottleRatio;
-                var plasmaPropulsionRatio = PlasmaPropulsionEfficiency * plasmaThrottleRatio;
-                var chargedPropulsionRatio = ChargedParticlePropulsionEfficiency * chargedThrottleRatio;
-
-                var thermalGeneratorRatio = thermalEnergyEfficiency * storedGeneratorThermalEnergyRequestRatio;
-                var plasmaGeneratorRatio = plasmaEnergyEfficiency * storedGeneratorPlasmaEnergyRequestRatio;
-                var chargedGeneratorRatio = chargedParticleEnergyEfficiency * storedGeneratorChargedEnergyRequestRatio;
-
-                _propulsionRequestRatioSum = Math.Min(1, thermalPropulsionRatio + plasmaPropulsionRatio + chargedPropulsionRatio);
-
-                maximum_thermal_request_ratio = Math.Min(thermalPropulsionRatio + plasmaPropulsionRatio + thermalGeneratorRatio + plasmaGeneratorRatio, 1);
-                maximum_charged_request_ratio = Math.Min(chargedPropulsionRatio + chargedGeneratorRatio, 1);
-
-                maximum_reactor_request_ratio = Math.Max(maximum_thermal_request_ratio, maximum_charged_request_ratio);
-
-                var powerAccessModifier = Math.Max(
-                    Math.Max(
-                        connectedEngines.Any(m => !m.RequiresChargedPower) ? 1 : 0,
-                        connectedEngines.Any(m => m.RequiresChargedPower) ? 1 : 0),
-                   Math.Max(
-                        Math.Max(storedIsThermalEnergyGeneratorEfficiency > 0 ? 1 : 0, storedIsPlasmaEnergyGeneratorEfficiency > 0 ? 1 : 0),
-                        storedIsChargedEnergyGeneratorEfficiency > 0 ? 1 : 0
-                   ));
-
-                maximumChargedPower = MaximumChargedPower;
-                maximumThermalPower = MaximumThermalPower;
-
-                
-
-                var maxStoredGeneratorEnergyRequestedRatio = Math.Max(Math.Max(storedGeneratorThermalEnergyRequestRatio, storedGeneratorPlasmaEnergyRequestRatio), storedGeneratorChargedEnergyRequestRatio);
-                var maxThrottleRatio = Math.Max(Math.Max(thermalThrottleRatio, plasmaThrottleRatio), chargedThrottleRatio);
-
-                power_request_ratio = Math.Max(maxThrottleRatio, maxStoredGeneratorEnergyRequestedRatio);
-
-                maxChargedToSupplyPerSecond = maximumChargedPower * stored_fuel_ratio * geeForceModifier * overheatModifier * powerAccessModifier;
-                requestedChargedToSupplyPerSecond = maxChargedToSupplyPerSecond * power_request_ratio * maximum_charged_request_ratio;
-
-                var chargedParticlesManager = getManagerForVessel(ResourceSettings.Config.ChargedParticleInMegawatt);
-                var thermalHeatManager = getManagerForVessel(ResourceSettings.Config.ThermalPowerInMegawatt);
-
-                minThrottle = stored_fuel_ratio > 0 ? MinimumThrottle / stored_fuel_ratio : 1;
-                var neededChargedPowerPerSecond = getNeededPowerSupplyPerSecondWithMinimumRatio(maxChargedToSupplyPerSecond, minThrottle, ResourceSettings.Config.ChargedParticleInMegawatt, chargedParticlesManager);
-                charged_power_ratio = Math.Min(maximum_charged_request_ratio, maximumChargedPower > 0 ? neededChargedPowerPerSecond / maximumChargedPower : 0);
-
-                maxThermalToSupplyPerSecond = maximumThermalPower * stored_fuel_ratio * geeForceModifier * overheatModifier * powerAccessModifier;
-                requestedThermalToSupplyPerSecond = maxThermalToSupplyPerSecond * power_request_ratio * maximum_thermal_request_ratio;
-
-                var neededThermalPowerPerSecond = getNeededPowerSupplyPerSecondWithMinimumRatio(maxThermalToSupplyPerSecond, minThrottle, ResourceSettings.Config.ThermalPowerInMegawatt, thermalHeatManager);
-                requested_thermal_power_ratio = maximumThermalPower > 0 ? neededThermalPowerPerSecond / maximumThermalPower : 0;
-                thermal_power_ratio = Math.Min(maximum_thermal_request_ratio, requested_thermal_power_ratio);
-
-                reactor_power_ratio = Math.Min(overheatModifier * maximum_reactor_request_ratio, PowerRatio);
-
-                ongoing_charged_power_generated = managedProvidedPowerSupplyPerSecondMinimumRatio(requestedChargedToSupplyPerSecond, maxChargedToSupplyPerSecond, reactor_power_ratio, ResourceSettings.Config.ChargedParticleInMegawatt, chargedParticlesManager);
-                ongoing_thermal_power_generated = managedProvidedPowerSupplyPerSecondMinimumRatio(requestedThermalToSupplyPerSecond, maxThermalToSupplyPerSecond, reactor_power_ratio, ResourceSettings.Config.ThermalPowerInMegawatt, thermalHeatManager);
-                ongoing_total_power_generated = ongoing_thermal_power_generated + ongoing_charged_power_generated;
-
-                var totalPowerReceivedFixed = ongoing_total_power_generated * timeWarpFixedDeltaTime;
-
-                UpdateEmbrittlement(Math.Max(thermalThrottleRatio, plasmaThrottleRatio), timeWarpFixedDeltaTime);
-
-                
-
-                ongoing_consumption_rate = maximumPower > 0 ? ongoing_total_power_generated / maximumPower : 0;
-                PluginHelper.SetAnimationRatio((float)Math.Pow(ongoing_consumption_rate, animExponent), pulseAnimation);
-                powerPcnt = 100 * ongoing_consumption_rate;
-
-                // produce wasteheat
-                if (!CheatOptions.IgnoreMaxTemperature)
-                {
-                    // skip first frame of wasteheat production
-                    var delayedWasteheatRate = ongoing_consumption_rate > ongoing_wasteheat_rate ? Math.Min(ongoing_wasteheat_rate, ongoing_consumption_rate) : ongoing_consumption_rate;
-
-                    supplyFNResourcePerSecondWithMax(delayedWasteheatRate * maximumPower, StableMaximumReactorPower, ResourceSettings.Config.WasteHeatInMegawatt);
-
-                    ongoing_wasteheat_rate = ongoing_consumption_rate;
-                }
-                
-                // consume fuel
-                if (!CheatOptions.InfinitePropellant)
-                {
-                    _consumedFuelTotalFixed = 0;
-
-                    foreach (var reactorFuel in currentFuelVariant.ReactorFuels)
-                    {
-                        _consumedFuelTotalFixed += ConsumeReactorFuel(reactorFuel, totalPowerReceivedFixed / geeForceModifier);
-                    }
-
-                    // refresh production list
-                    reactorProduction.Clear();
-
-                    // produce reactor products
-                    foreach (var product in currentFuelVariant.ReactorProducts)
-                    {
-                        var massProduced = ProduceReactorProduct(product, totalPowerReceivedFixed / geeForceModifier);
-                        if (product.IsPropellant)
-                            reactorProduction.Add(new ReactorProduction() { fuelmode = product, mass = massProduced });
-                    }
-                }
-
-                BreedTritium(resMan, ongoing_thermal_power_generated);
-
-            }
-            else if (!IsEnabled && IsNuclear && MaximumPower > 0 && (Planetarium.GetUniversalTime() - last_active_time <= 3 * PluginHelper.SecondsInDay))
-            {
-                reactor_power_ratio = 0;
-                PluginHelper.SetAnimationRatio(0, pulseAnimation);
-                var powerFraction = 0.1 * Math.Exp(-(Planetarium.GetUniversalTime() - last_active_time) / PluginHelper.SecondsInDay / 24.0 * 9.0);
-                var powerToSupply = Math.Max(MaximumPower * powerFraction, 0);
-                ongoing_thermal_power_generated = supplyManagedFNResourcePerSecondWithMinimumRatio(powerToSupply, 1, ResourceSettings.Config.ThermalPowerInMegawatt);
-                ongoing_total_power_generated = ongoing_thermal_power_generated;
-                BreedTritium(ongoing_thermal_power_generated, timeWarpFixedDeltaTime);
-                ongoing_consumption_rate = MaximumPower > 0 ? ongoing_thermal_power_generated / MaximumPower : 0;
-                powerPcnt = 100 * ongoing_consumption_rate;
-                decay_ongoing = true;
-            }
-            else
+            if (!IsEnabled)
             {
                 currentFuelVariantsSorted = CurrentFuelMode.GetVariantsOrderedByFuelRatio(part, FuelEfficiency, NormalisedMaximumPower, fuelUsePerMJMult);
                 currentFuelVariant = currentFuelVariantsSorted.FirstOrDefault();
@@ -2865,11 +2708,201 @@ namespace KIT.Reactors
                 PluginHelper.SetAnimationRatio(0, pulseAnimation);
                 powerPcnt = 0;
             }
+
+            // By default, this is IsEnabled == false and IsStarted == false, so enable them for now.
+            if (!IsEnabled && !IsStarted)
+            {
+                IsStarted = true;
+                IsEnabled = true;
+            }
+
+            StoreGeneratorRequests();
+            decay_ongoing = false;
+
+            if (!IsEnabled && IsNuclear && MaximumPower > 0 && (Planetarium.GetUniversalTime() - last_active_time <= 3 * PluginHelper.SecondsInDay))
+            {
+                reactor_power_ratio = 0;
+                PluginHelper.SetAnimationRatio(0, pulseAnimation);
+                var powerFraction = 0.1 * Math.Exp(-(Planetarium.GetUniversalTime() - last_active_time) / PluginHelper.SecondsInDay / 24.0 * 9.0);
+                var powerToSupply = Math.Max(MaximumPower * powerFraction, 0);
+                ongoing_thermal_power_generated = powerToSupply;
+                resMan.ProduceResource(ResourceName.ThermalPower, powerToSupply);
+
+                ongoing_total_power_generated = ongoing_thermal_power_generated;
+                // TODO FIX ME .. revert changes. BreedTritium(ongoing_thermal_power_generated);
+                ongoing_consumption_rate = MaximumPower > 0 ? ongoing_thermal_power_generated / MaximumPower : 0;
+                powerPcnt = 100 * ongoing_consumption_rate;
+                decay_ongoing = true;
+
+                return;
+            }
+
+            last_active_time = Planetarium.GetUniversalTime();
+
+            // throw new IndexOutOfRangeException("InterstellarReactor.KITFixedUpdate need to work out how to do this ");
             
+            
+            maximumPower = MaximumPower;
+            UpdateGeeforceModifier();
+
+            if (IsEnabled && maximumPower > 0) CalculateMaxPowerOutput(resMan);
+
             UpdatePlayedSound();
 
             _previousReactorPowerRatio = reactor_power_ratio;
+            
+        }
+
+        private void CalculateMaxPowerOutput(IResourceManager resMan)
+        {
+            // XXX todo. fill in the max we want.
+            maxPowerToSupply = Math.Max(maximumPower, 0);
+
+            if (hasOverheatEffects && !CheatOptions.IgnoreMaxTemperature)
+            {
+                averageOverheat.Enqueue(resMan.ResourceFillFraction(ResourceName.WasteHeat));
+                if (averageOverheat.Count > 10)
+                    averageOverheat.Dequeue();
+
+                double scaledOverheating = Math.Pow(Math.Max(resMan.ResourceFillFraction(ResourceName.WasteHeat) - overheatTreshHold, 0) * overheatMultiplier, overheatExponent);
+
+                overheatModifier = Math.Min(Math.Max(1 - scaledOverheating, minOverheatModifier), 1);
+            }
+            else
+                overheatModifier = 1;
+
+            currentFuelVariantsSorted = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply * geeForceModifier * overheatModifier, fuelUsePerMJMult);
+            currentFuelVariant = currentFuelVariantsSorted.FirstOrDefault();
+
+            fuel_mode_variant = currentFuelVariant?.Name;
+
+            stored_fuel_ratio = CheatOptions.InfinitePropellant ? 1 : currentFuelVariant != null ? Math.Min(currentFuelVariant.FuelRatio, 1) : 0;
+
+            LookForAlternativeFuelTypes();
+
+            var trueVariant = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult, false).FirstOrDefault();
+            fuel_ratio = CheatOptions.InfinitePropellant ? 1 : trueVariant != null ? Math.Min(trueVariant.FuelRatio, 1) : 0;
+
+            if (fuel_ratio < 0.99999)
+            {
+                if (!messagedRanOutOfFuel)
+                {
+                    messagedRanOutOfFuel = true;
+                    var message = Localizer.Format("#LOC_KSPIE_Reactor_ranOutOfFuelFor") + " " + CurrentFuelMode.ModeGUIName;
+                    Debug.Log("[KSPI]: " + message);
+                    ScreenMessages.PostScreenMessage(message, 20.0f, ScreenMessageStyle.UPPER_CENTER);
+                }
+            }
+            else
+                messagedRanOutOfFuel = false;
+
+            thermalThrottleRatio = connectedEngines.Any(m => m.RequiresThermalHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresThermalHeat).Sum(e => e.CurrentThrottle)) : 0;
+            plasmaThrottleRatio = connectedEngines.Any(m => m.RequiresPlasmaHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresPlasmaHeat).Sum(e => e.CurrentThrottle)) : 0;
+            chargedThrottleRatio = connectedEngines.Any(m => m.RequiresChargedPower) ? Math.Min(1, connectedEngines.Where(m => m.RequiresChargedPower).Max(e => e.CurrentThrottle)) : 0;
+
+            var thermalPropulsionRatio = ThermalPropulsionEfficiency * thermalThrottleRatio;
+            var plasmaPropulsionRatio = PlasmaPropulsionEfficiency * plasmaThrottleRatio;
+            var chargedPropulsionRatio = ChargedParticlePropulsionEfficiency * chargedThrottleRatio;
+
+            var thermalGeneratorRatio = thermalEnergyEfficiency * storedGeneratorThermalEnergyRequestRatio;
+            var plasmaGeneratorRatio = plasmaEnergyEfficiency * storedGeneratorPlasmaEnergyRequestRatio;
+            var chargedGeneratorRatio = chargedParticleEnergyEfficiency * storedGeneratorChargedEnergyRequestRatio;
+
+            _propulsionRequestRatioSum = Math.Min(1, thermalPropulsionRatio + plasmaPropulsionRatio + chargedPropulsionRatio);
+
+            maximum_thermal_request_ratio = Math.Min(thermalPropulsionRatio + plasmaPropulsionRatio + thermalGeneratorRatio + plasmaGeneratorRatio, 1);
+            maximum_charged_request_ratio = Math.Min(chargedPropulsionRatio + chargedGeneratorRatio, 1);
+
+            maximum_reactor_request_ratio = Math.Max(maximum_thermal_request_ratio, maximum_charged_request_ratio);
+
+            var powerAccessModifier = Math.Max(
+                Math.Max(
+                    connectedEngines.Any(m => !m.RequiresChargedPower) ? 1 : 0,
+                    connectedEngines.Any(m => m.RequiresChargedPower) ? 1 : 0),
+               Math.Max(
+                    Math.Max(storedIsThermalEnergyGeneratorEfficiency > 0 ? 1 : 0, storedIsPlasmaEnergyGeneratorEfficiency > 0 ? 1 : 0),
+                    storedIsChargedEnergyGeneratorEfficiency > 0 ? 1 : 0
+               ));
+
+            maximumChargedPower = MaximumChargedPower;
+            maximumThermalPower = MaximumThermalPower;
+
+            var maxStoredGeneratorEnergyRequestedRatio = Math.Max(Math.Max(storedGeneratorThermalEnergyRequestRatio, storedGeneratorPlasmaEnergyRequestRatio), storedGeneratorChargedEnergyRequestRatio);
+            var maxThrottleRatio = Math.Max(Math.Max(thermalThrottleRatio, plasmaThrottleRatio), chargedThrottleRatio);
+
+            power_request_ratio = Math.Max(maxThrottleRatio, maxStoredGeneratorEnergyRequestedRatio);
+
+            maxChargedToSupplyPerSecond = maximumChargedPower * stored_fuel_ratio * geeForceModifier * overheatModifier * powerAccessModifier;
+            requestedChargedToSupplyPerSecond = maxChargedToSupplyPerSecond * power_request_ratio * maximum_charged_request_ratio;
+
+            /*
+            
+            var chargedParticlesManager = getManagerForVessel(ResourceSettings.Config.ChargedParticleInMegawatt);
+            var thermalHeatManager = getManagerForVessel(ResourceSettings.Config.ThermalPowerInMegawatt);
+
+            minThrottle = stored_fuel_ratio > 0 ? MinimumThrottle / stored_fuel_ratio : 1;
+            var neededChargedPowerPerSecond = getNeededPowerSupplyPerSecondWithMinimumRatio(maxChargedToSupplyPerSecond, minThrottle, ResourceSettings.Config.ChargedParticleInMegawatt, chargedParticlesManager);
+            charged_power_ratio = Math.Min(maximum_charged_request_ratio, maximumChargedPower > 0 ? neededChargedPowerPerSecond / maximumChargedPower : 0);
+
+            maxThermalToSupplyPerSecond = maximumThermalPower * stored_fuel_ratio * geeForceModifier * overheatModifier * powerAccessModifier;
+            requestedThermalToSupplyPerSecond = maxThermalToSupplyPerSecond * power_request_ratio * maximum_thermal_request_ratio;
+
+            var neededThermalPowerPerSecond = getNeededPowerSupplyPerSecondWithMinimumRatio(maxThermalToSupplyPerSecond, minThrottle, ResourceSettings.Config.ThermalPowerInMegawatt, thermalHeatManager);
+            requested_thermal_power_ratio = maximumThermalPower > 0 ? neededThermalPowerPerSecond / maximumThermalPower : 0;
+            thermal_power_ratio = Math.Min(maximum_thermal_request_ratio, requested_thermal_power_ratio);
+
+            reactor_power_ratio = Math.Min(overheatModifier * maximum_reactor_request_ratio, PowerRatio);
+
+            ongoing_charged_power_generated = managedProvidedPowerSupplyPerSecondMinimumRatio(requestedChargedToSupplyPerSecond, maxChargedToSupplyPerSecond, reactor_power_ratio, ResourceSettings.Config.ChargedParticleInMegawatt, chargedParticlesManager);
+            ongoing_thermal_power_generated = managedProvidedPowerSupplyPerSecondMinimumRatio(requestedThermalToSupplyPerSecond, maxThermalToSupplyPerSecond, reactor_power_ratio, ResourceSettings.Config.ThermalPowerInMegawatt, thermalHeatManager);
+            ongoing_total_power_generated = ongoing_thermal_power_generated + ongoing_charged_power_generated;
+
+            var totalPowerReceivedFixed = ongoing_total_power_generated * timeWarpFixedDeltaTime;
+
+            UpdateEmbrittlement(Math.Max(thermalThrottleRatio, plasmaThrottleRatio), timeWarpFixedDeltaTime);
+
+
+
+            ongoing_consumption_rate = maximumPower > 0 ? ongoing_total_power_generated / maximumPower : 0;
+            PluginHelper.SetAnimationRatio((float)Math.Pow(ongoing_consumption_rate, animExponent), pulseAnimation);
+            powerPcnt = 100 * ongoing_consumption_rate;
+
+            // produce wasteheat
+            if (!CheatOptions.IgnoreMaxTemperature)
+            {
+                // skip first frame of wasteheat production
+                var delayedWasteheatRate = ongoing_consumption_rate > ongoing_wasteheat_rate ? Math.Min(ongoing_wasteheat_rate, ongoing_consumption_rate) : ongoing_consumption_rate;
+
+                supplyFNResourcePerSecondWithMax(delayedWasteheatRate * maximumPower, StableMaximumReactorPower, ResourceSettings.Config.WasteHeatInMegawatt);
+
+                ongoing_wasteheat_rate = ongoing_consumption_rate;
+            }
+
+            // consume fuel
+            if (!CheatOptions.InfinitePropellant)
+            {
+                _consumedFuelTotalFixed = 0;
+
+                foreach (var reactorFuel in currentFuelVariant.ReactorFuels)
+                {
+                    _consumedFuelTotalFixed += ConsumeReactorFuel(reactorFuel, totalPowerReceivedFixed / geeForceModifier);
+                }
+
+                // refresh production list
+                reactorProduction.Clear();
+
+                // produce reactor products
+                foreach (var product in currentFuelVariant.ReactorProducts)
+                {
+                    var massProduced = ProduceReactorProduct(product, totalPowerReceivedFixed / geeForceModifier);
+                    if (product.IsPropellant)
+                        reactorProduction.Add(new ReactorProduction() { fuelmode = product, mass = massProduced });
+                }
+            }
+
+            // TODO FIX ME. BreedTritium(resMan, ongoing_thermal_power_generated);
             */
+
         }
 
         public string KITPartName() => $"{part.partInfo.title}{(fuelModes.Count > 1 ? " (" + fuelModeStr + ")" : "")}";
@@ -2902,6 +2935,21 @@ namespace KIT.Reactors
                 return result;
             else
                 return 0;
+        }
+
+        private ResourceName[] resourcesProvided = new ResourceName[] { ResourceName.ElectricCharge };
+        // What resources can this reactor provide, either as intended, or by side effect.
+        // an example might be that we can generate ThermalPower when generating ElectricCharge.
+        public ResourceName[] ResourcesProvided() => resourcesProvided;
+
+        public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
+        {
+            if (resource == ResourceName.ElectricCharge) electricChargeBeingRequestedThisUpdate += requestedAmount;
+            // reduce fuel
+            // resMan.ProduceResource(ResourceName.ElectricCharge, requestedAmount / 2);
+            if (resource == ResourceName.ElectricCharge) electricChargeBeingSuppliedThisUpdate += (requestedAmount / 2);
+
+            return true;
         }
 
         // string IKITMod.KITPartName() => part.partInfo.title;

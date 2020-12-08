@@ -897,10 +897,10 @@ namespace KIT
             }
             else
             {
-                currentHabitatVolumeField.guiActive = false;
-                currentHabitatVolumeField.guiActiveEditor = false;
-                currentHabitatSurfaceField.guiActive = false;
-                currentHabitatSurfaceField.guiActiveEditor = false;
+                if(currentHabitatVolumeField != null) currentHabitatVolumeField.guiActive = false;
+                if(currentHabitatVolumeField != null) currentHabitatVolumeField.guiActiveEditor = false;
+                if(currentHabitatSurfaceField != null) currentHabitatSurfaceField.guiActive = false;
+                if(currentHabitatSurfaceField != null) currentHabitatSurfaceField.guiActiveEditor = false;
             }
         }
 

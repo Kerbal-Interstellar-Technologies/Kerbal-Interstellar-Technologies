@@ -156,7 +156,7 @@ namespace KIT
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class PluginHelper : MonoBehaviour
     {
-        public const string WARP_PLUGIN_SETTINGS_FILEPATH = "WarpPlugin/WarpPluginSettings/WarpPluginSettings";
+        public const string KIT_PLUGIN_SETTINGS_FILEPATH = "Kerbal-Interstellar-Technologies/KITPluginSettings/KITPluginSettings";
 
         public static bool usingToolbar;
         protected static bool resourcesConfigured;
@@ -245,7 +245,7 @@ namespace KIT
 
         public static bool TechnologyIsInUse => (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX);
 
-        public static ConfigNode PluginSettingsConfig => GameDatabase.Instance.GetConfigNode(WARP_PLUGIN_SETTINGS_FILEPATH);
+        public static ConfigNode PluginSettingsConfig => GameDatabase.Instance.GetConfigNode(KIT_PLUGIN_SETTINGS_FILEPATH);
 
         public static string PluginSaveFilePath => KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/WarpPlugin.cfg";
 
@@ -761,7 +761,7 @@ namespace KIT
             if (resourcesConfigured) return;
 
             // read WarpPluginSettings.cfg
-            var pluginSettings = GameDatabase.Instance.GetConfigNode(WARP_PLUGIN_SETTINGS_FILEPATH);
+            var pluginSettings = GameDatabase.Instance.GetConfigNode(KIT_PLUGIN_SETTINGS_FILEPATH);
 
             if (pluginSettings == null)
             {
