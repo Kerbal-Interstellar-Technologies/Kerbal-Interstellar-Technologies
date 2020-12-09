@@ -1135,25 +1135,6 @@ namespace KIT.Reactors
             IsEnabled = !IsEnabled;
         }
 
-        private bool CanPartUpgradeAlternative()
-        {
-            if (PluginHelper.PartTechUpgrades == null)
-            {
-                Debug.Log("[KSPI]: PartTechUpgrades is not initialized");
-                return false;
-            }
-
-            if (!PluginHelper.PartTechUpgrades.TryGetValue(part.name, out var upgradeTechName))
-            {
-                Debug.Log("[KSPI]: PartTechUpgrade entry is not found for part '" + part.name + "'");
-                return false;
-            }
-
-            Debug.Log("[KSPI]: Found matching Interstellar upgradeTech for part '" + part.name + "' with techNode " + upgradeTechName);
-
-            return PluginHelper.UpgradeAvailable(upgradeTechName);
-        }
-
         public void DeterminePowerOutput()
         {
             massDifference = part.mass / partMass;
@@ -2662,7 +2643,7 @@ namespace KIT.Reactors
 
         /// <summary>
         /// electricChargeGeneratedLastUpdate indicates how much ElectricCharge was generated in the since the previous FixedUpdate()
-        /// call. 
+        /// call.
         /// </summary>
         private double electricChargeGeneratedLastUpdate;
 
@@ -2719,11 +2700,11 @@ namespace KIT.Reactors
             StoreGeneratorRequests();
             decay_ongoing = false;
 
-            if (!IsEnabled && IsNuclear && MaximumPower > 0 && (Planetarium.GetUniversalTime() - last_active_time <= 3 * PluginHelper.SecondsInDay))
+            if (!IsEnabled && IsNuclear && MaximumPower > 0 && (Planetarium.GetUniversalTime() - last_active_time <= 3 * PluginSettings.Config.SecondsInDay))
             {
                 reactor_power_ratio = 0;
                 PluginHelper.SetAnimationRatio(0, pulseAnimation);
-                var powerFraction = 0.1 * Math.Exp(-(Planetarium.GetUniversalTime() - last_active_time) / PluginHelper.SecondsInDay / 24.0 * 9.0);
+                var powerFraction = 0.1 * Math.Exp(-(Planetarium.GetUniversalTime() - last_active_time) / PluginSettings.Config.SecondsInDay / 24.0 * 9.0);
                 var powerToSupply = Math.Max(MaximumPower * powerFraction, 0);
                 ongoing_thermal_power_generated = powerToSupply;
                 resMan.ProduceResource(ResourceName.ThermalPower, powerToSupply);
@@ -2740,8 +2721,7 @@ namespace KIT.Reactors
             last_active_time = Planetarium.GetUniversalTime();
 
             // throw new IndexOutOfRangeException("InterstellarReactor.KITFixedUpdate need to work out how to do this ");
-            
-            
+
             maximumPower = MaximumPower;
             UpdateGeeforceModifier();
 
@@ -2750,7 +2730,6 @@ namespace KIT.Reactors
             UpdatePlayedSound();
 
             _previousReactorPowerRatio = reactor_power_ratio;
-            
         }
 
         private void CalculateMaxPowerOutput(IResourceManager resMan)

@@ -403,11 +403,11 @@ namespace KIT
                     Debug.LogError("[KSPI]: ScienceModule 4 " + e.Message);
                 }
 
-                double currentpowertmp = electrical_power_ratio * PluginHelper.BasePowerConsumption * powerReqMult;
+                double currentpowertmp = electrical_power_ratio * PluginSettings.Config.BasePowerConsumption * powerReqMult;
 
                 try
                 {
-                    powerStr = currentpowertmp.ToString("0.0000") + "MW / " + (powerReqMult * PluginHelper.BasePowerConsumption).ToString("0.0000") + "MW";
+                    powerStr = currentpowertmp.ToString("0.0000") + "MW / " + (powerReqMult * PluginSettings.Config.BasePowerConsumption).ToString("0.0000") + "MW";
                 }
                 catch (Exception e)
                 {
@@ -441,12 +441,12 @@ namespace KIT
                 {
                     try
                     {
-                        currentpowertmp = electrical_power_ratio * PluginHelper.BaseAMFPowerConsumption * powerReqMult;
+                        currentpowertmp = electrical_power_ratio * PluginSettings.Config.BaseAMFPowerConsumption * powerReqMult;
                         Fields["antimatterRate"].guiActive = true;
                         Fields["antimatterProductionEfficiency"].guiActive = true;
-                        powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginHelper.BaseAMFPowerConsumption).ToString("0.00") + "MW";
+                        powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption).ToString("0.00") + "MW";
                         antimatterProductionEfficiency = (antimatterGenerator.Efficiency * 100).ToString("0.0000") + "%";
-                        double antimatter_rate_per_day = antimatter_rate_f * PluginHelper.SecondsInDay;
+                        double antimatter_rate_per_day = antimatter_rate_f * PluginSettings.Config.SecondsInDay;
 
                         if (antimatter_rate_per_day > 0.1)
                             antimatterRate = (antimatter_rate_per_day).ToString("0.0000") + " mg/day";
@@ -465,17 +465,17 @@ namespace KIT
                 }
                 else if (active_mode == 3) // Electrolysis
                 {
-                    currentpowertmp = electrical_power_ratio * PluginHelper.BaseELCPowerConsumption * powerReqMult;
+                    currentpowertmp = electrical_power_ratio * PluginSettings.Config.BaseELCPowerConsumption * powerReqMult;
                     Fields["electrolysisRate"].guiActive = true;
-                    double electrolysisratetmp = -electrolysis_rate_f * PluginHelper.SecondsInDay;
+                    double electrolysisratetmp = -electrolysis_rate_f * PluginSettings.Config.SecondsInDay;
                     electrolysisRate = electrolysisratetmp.ToString("0.0") + "mT/day";
-                    powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginHelper.BaseELCPowerConsumption).ToString("0.00") + "MW";
+                    powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginSettings.Config.BaseELCPowerConsumption).ToString("0.00") + "MW";
                 }
                 else if (active_mode == 4) // Centrifuge
                 {
-                    currentpowertmp = electrical_power_ratio * PluginHelper.BaseCentriPowerConsumption * powerReqMult;
+                    currentpowertmp = electrical_power_ratio * PluginSettings.Config.BaseCentriPowerConsumption * powerReqMult;
                     Fields["centrifugeRate"].guiActive = true;
-                    powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginHelper.BaseCentriPowerConsumption).ToString("0.00") + "MW";
+                    powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginSettings.Config.BaseCentriPowerConsumption).ToString("0.00") + "MW";
                     double deut_per_hour = deut_rate_f * 3600;
                     centrifugeRate = Localizer.Format("#LOC_KSPIE_ScienceModule_Centrifuge", deut_per_hour.ToString("0.00"));// + " Kg Deuterium/Hour"
                 }
@@ -590,11 +590,11 @@ namespace KIT
             */
             if (active_mode == 1) // Fuel Reprocessing
             {
-                var powerRequest = powerReqMult * PluginHelper.BasePowerConsumption;
+                var powerRequest = powerReqMult * PluginSettings.Config.BasePowerConsumption;
 
                 double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
 
-                electrical_power_ratio = electrical_power_provided /  PluginHelper.BasePowerConsumption / powerReqMult;
+                electrical_power_ratio = electrical_power_provided / PluginSettings.Config.BasePowerConsumption / powerReqMult;
 
                 var productionModifier = global_rate_multipliers;
                 global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;
@@ -607,10 +607,10 @@ namespace KIT
             }
             else if (active_mode == 2) //Antimatter
             {
-                var powerRequestInMegajoules = powerReqMult * PluginHelper.BaseAMFPowerConsumption *  GameConstants.ecPerMJ;
+                var powerRequestInMegajoules = powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption *  GameConstants.ecPerMJ;
 
                 var energy_provided_in_megajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequestInMegajoules);
-                
+
                 electrical_power_ratio = powerRequestInMegajoules > 0 ? energy_provided_in_megajoules / powerRequestInMegajoules : 0;
                 antimatterGenerator.Produce(energy_provided_in_megajoules * global_rate_multipliers);
                 antimatter_rate_f = antimatterGenerator.ProductionRate;
@@ -623,11 +623,11 @@ namespace KIT
             {
                 if (vessel.Splashed)
                 {
-                    var powerRequest = powerReqMult * PluginHelper.BaseCentriPowerConsumption;
+                    var powerRequest = powerReqMult * PluginSettings.Config.BaseCentriPowerConsumption;
 
                     double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
 
-                    electrical_power_ratio = electrical_power_provided  / PluginHelper.BaseCentriPowerConsumption / powerReqMult;
+                    electrical_power_ratio = electrical_power_provided  / PluginSettings.Config.BaseCentriPowerConsumption / powerReqMult;
                     global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;
                     double deut_produced = global_rate_multipliers * GameConstants.deuterium_timescale * GameConstants.deuterium_abudance * 1000.0f;
                     deut_rate_f = -part.RequestResource(ResourceSettings.Config.DeuteriumLqd, -deut_produced);

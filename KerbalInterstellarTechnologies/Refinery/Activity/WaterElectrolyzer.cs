@@ -15,8 +15,8 @@ namespace KIT.Refinery.Activity
         {
             ActivityName = "Water Electrolysis";
             Formula = "H<size=7>2</size>O => H<size=7>2</size> + O<size=7>2</size>";
-            PowerRequirements = PluginHelper.BaseELCPowerConsumption;
-            EnergyPerTon = PluginHelper.ElectrolysisEnergyPerTon;
+            PowerRequirements = PluginSettings.Config.BaseELCPowerConsumption;
+            EnergyPerTon = PluginSettings.Config.ElectrolysisEnergyPerTon;
         }
 
         private const double ProtiumAtomicMass = 1.00782503207;

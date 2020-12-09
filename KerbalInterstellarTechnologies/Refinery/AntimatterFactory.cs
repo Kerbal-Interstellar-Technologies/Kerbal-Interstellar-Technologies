@@ -57,7 +57,7 @@ namespace KIT.Refinery
                 return;
             }
 
-            double antimatterRatePerDay = productionRate * PluginHelper.SecondsInDay;
+            double antimatterRatePerDay = productionRate * PluginSettings.Config.SecondsInDay;
 
             if (antimatterRatePerDay > 0.1)
             {

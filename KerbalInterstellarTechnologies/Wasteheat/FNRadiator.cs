@@ -951,7 +951,7 @@ namespace KIT.Wasteheat
                 {
                     clarifyFunction = true;
 
-                    if (MeshRadiatorSize(out var size) == true)
+                    if (MeshRadiatorSize(out var size))
                         radiatorArea = Math.Round(size);
 
                     // The Liquid Metal Cooled Reactor shows a tiny surface space, so this should not be an else statement
@@ -969,7 +969,7 @@ namespace KIT.Wasteheat
             }
         }
 
-        public double EffectiveRadiatorArea => BaseRadiatorArea * areaMultiplier * PluginHelper.RadiatorAreaMultiplier;
+        public double EffectiveRadiatorArea => BaseRadiatorArea * areaMultiplier * PluginSettings.Config.RadiatorAreaMultiplier;
 
         private void DetermineGenerationType()
         {
@@ -1555,7 +1555,7 @@ namespace KIT.Wasteheat
 
         public void FixedUpdate() // FixedUpdate is also called when not activated
         {
-      
+
         }
 
         protected virtual bool CanConvect()

@@ -535,7 +535,7 @@ namespace KIT.Propulsion
             //this.resources_to_supply = resources_to_supply;
             base.OnStart(state);
 
-            engineSpeedOfLight = GameConstants.speedOfLight * PluginHelper.SpeedOfLightMult;
+            engineSpeedOfLight = PluginSettings.Config.SpeedOfLight;
 
             UpdateFuelFactors();
 

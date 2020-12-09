@@ -509,9 +509,9 @@ namespace KIT.Propulsion
             _initializationCountdown = 10;
             _ispFloatCurve = new FloatCurve();
             _ispFloatCurve.Add(0, (float)baseISP);
-            _effectiveSpeedOfLight = GameConstants.speedOfLight * PluginHelper.SpeedOfLightMult;
+            _effectiveSpeedOfLight =  PluginSettings.Config.SpeedOfLight;
             _hasGearTechnology = string.IsNullOrEmpty(gearsTechReq) || PluginHelper.UpgradeAvailable(gearsTechReq);
-            _modifiedEngineBaseIsp = baseISP * PluginHelper.ElectricEngineIspMult;
+            _modifiedEngineBaseIsp = baseISP * PluginSettings.Config.ElectricEngineIspMult;
             _hasRequiredUpgrade = this.HasTechsRequiredToUpgrade();
 
             if (_hasRequiredUpgrade && (isupgraded || state == StartState.Editor))
@@ -891,12 +891,12 @@ namespace KIT.Propulsion
 
         private double GetPowerThrustModifier()
         {
-            return GameConstants.BaseThrustPowerMultiplier * PluginHelper.GlobalElectricEnginePowerMaxThrustMult * this.powerThrustMultiplier;
+            return GameConstants.BaseThrustPowerMultiplier * PluginSettings.Config.GlobalElectricEnginePowerMaxThrustMult * powerThrustMultiplier;
         }
 
         private double GetAtmosphericDensityModifier()
         {
-            return Math.Max(1.0 - (part.vessel.atmDensity * PluginHelper.ElectricEngineAtmosphericDensityThrustLimiter), 0.0);
+            return Math.Max(1.0 - (part.vessel.atmDensity * PluginSettings.Config.ElectricEngineAtmosphericDensityThrustLimiter), 0.0);
         }
 
         private static List<ElectricEnginePropellant> GetAllPropellants()

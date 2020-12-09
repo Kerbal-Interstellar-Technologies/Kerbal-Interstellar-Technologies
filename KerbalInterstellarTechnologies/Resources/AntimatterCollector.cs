@@ -34,7 +34,7 @@ namespace KIT.Resources
         private CelestialBody _homeworld;
 
         private double _effectiveFlux;
-        
+
         public override void OnStart(PartModule.StartState state)
         {
             _antimatterDef = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.AntiProtium);
@@ -59,7 +59,7 @@ namespace KIT.Resources
             celestrialBodyFieldStrengthMod = MagneticFieldDefinitionsHandler.GetMagneticFieldDefinitionForBody(vessel.mainBody).StrengthMult;
             flux = collectionMultiplier * vessel.mainBody.GetBeltAntiparticles(_homeworld, vessel.altitude, lat);
             ParticleFlux = flux.ToString("E");
-            collectionRate = _effectiveFlux * PluginHelper.SecondsInHour;
+            collectionRate = _effectiveFlux * PluginSettings.Config.SecondsInHour;
             canCollect = _moduleAnimateGeneric == null ? true :  _moduleAnimateGeneric.GetScalar == 1;
         }
 

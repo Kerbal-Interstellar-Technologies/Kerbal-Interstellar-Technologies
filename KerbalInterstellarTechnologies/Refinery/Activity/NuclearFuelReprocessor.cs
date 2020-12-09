@@ -14,7 +14,7 @@ namespace KIT.Refinery.Activity
         public NuclearFuelReprocessor()
         {
             ActivityName = "Nuclear Fuel Reprocessing";
-            PowerRequirements = PluginHelper.BasePowerConsumption;
+            PowerRequirements = PluginSettings.Config.BasePowerConsumption;
             EnergyPerTon = 1 / GameConstants.baseReprocessingRate;
         }
 
@@ -43,7 +43,7 @@ namespace KIT.Refinery.Activity
             _current_power = PowerRequirements * rateMultiplier;
 
             var nuclearReactors = _vessel.FindPartModulesImplementing<INuclearFuelReprocessable>();
-            double remainingCapacityToReprocess = GameConstants.baseReprocessingRate / PluginHelper.SecondsInDay * rateMultiplier;
+            double remainingCapacityToReprocess = GameConstants.baseReprocessingRate / PluginSettings.Config.SecondsInDay * rateMultiplier;
             double enumActinidesChange = 0;
 
             foreach (INuclearFuelReprocessable nuclearReactor in nuclearReactors)

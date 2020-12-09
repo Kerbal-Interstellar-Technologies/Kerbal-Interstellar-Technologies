@@ -580,7 +580,7 @@ namespace KIT.Resources
         /// <param name="deltaTime">Double, signifies the amount of time since last Fixed Update (Unity).</param>
         private void MineResources(IResourceManager resMan)
         {
-            double wantedPower = PluginHelper.PowerConsumptionMultiplier * mwRequirements;
+            double wantedPower = PluginSettings.Config.PowerConsumptionMultiplier * mwRequirements;
             double percentPower = resMan.ConsumeResource(ResourceName.ElectricCharge, wantedPower) / wantedPower;
 
             if (percentPower < minimumPowerNeeded)
