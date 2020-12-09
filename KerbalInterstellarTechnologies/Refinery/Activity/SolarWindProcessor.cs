@@ -14,8 +14,8 @@ namespace KIT.Refinery.Activity
         public SolarWindProcessor()
         {
             ActivityName = "Solar Wind Process";
-            PowerRequirements = PluginHelper.BaseELCPowerConsumption;
-            EnergyPerTon = PluginHelper.ElectrolysisEnergyPerTon;
+            PowerRequirements = PluginSettings.Config.BaseELCPowerConsumption;
+            EnergyPerTon = PluginSettings.Config.ElectrolysisEnergyPerTon;
         }
 
         private double _fixedConsumptionRate;

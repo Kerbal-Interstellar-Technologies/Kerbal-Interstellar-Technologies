@@ -274,7 +274,7 @@ namespace KIT.Resources
             if (dLastPowerRatio < 0.01) return;
 
             // verify altitude is not too low
-            if (vessel.altitude < (PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody)))
+            if (vessel.altitude < (PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody)))
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SolarwindCollector_PostMsg1"), 10, ScreenMessageStyle.LOWER_CENTER);//"Solar Wind Collection Error, vessel in atmosphere"
                 return;
@@ -335,7 +335,7 @@ namespace KIT.Resources
 
             fSolarWindConcentrationPerSquareMeter = (float)solarWindMolesPerSquareMeterPerSecond;
             fInterstellarIonsPerCubicMeter = (float)interstellarDustMolesPerCubicMeter;
-            magnetoSphereStrengthRatio = GetMagnetosphereRatio(vessel.altitude, PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody));
+            magnetoSphereStrengthRatio = GetMagnetosphereRatio(vessel.altitude, PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody));
             strMagnetoStrength = UpdateMagnetoStrengthInGui();
 
             Events[nameof(ActivateCollector)].active = !bIsEnabled; // will activate the event (i.e. show the gui button) if the process is not enabled
@@ -391,7 +391,7 @@ namespace KIT.Resources
         // checks if the vessel is not in atmosphere and if it can therefore collect solar wind. Could incorporate other checks if needed.
         private bool IsCollectLegal()
         {
-            if (vessel.altitude < (PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody)) / 2) // won't collect in atmosphere
+            if (vessel.altitude < (PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody)) / 2) // won't collect in atmosphere
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SolarwindCollector_PostMsg2"), 10, ScreenMessageStyle.LOWER_CENTER);//"Solar wind collection not possible in low atmosphere"
                 fSolarWindConcentrationPerSquareMeter = 0;
@@ -611,7 +611,7 @@ namespace KIT.Resources
 
         private string UpdateMagnetoStrengthInGui()
         {
-            return (GetMagnetosphereRatio(vessel.altitude, PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody)) * 100).ToString("F1");
+            return (GetMagnetosphereRatio(vessel.altitude, PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody)) * 100).ToString("F1");
         }
 
         // the main collecting function
@@ -623,11 +623,11 @@ namespace KIT.Resources
             var magneticSuperconductorPowerReqCost = mwRequirements * superConductingRatio;
 
             var magneticPowerCost = (magneticPulsatingPowerCost + magneticSuperconductorPowerReqCost) * Math.Pow(powerPercentage * 0.01, 2);
-            var dPowerRequirementsMw = powerReqMult * PluginHelper.PowerConsumptionMultiplier * (magneticPowerCost + ionizationPowerCost); // change the mwRequirements number in part config to change the power consumption
-            var dWasteheatProductionMw = powerReqMult * PluginHelper.PowerConsumptionMultiplier * (magneticPulsatingPowerCost + magneticSuperconductorPowerReqCost * 0.05 + ionizationPowerCost * 0.3);
+            var dPowerRequirementsMw = powerReqMult * PluginSettings.Config.PowerConsumptionMultiplier * (magneticPowerCost + ionizationPowerCost); // change the mwRequirements number in part config to change the power consumption
+            var dWasteheatProductionMw = powerReqMult * PluginSettings.Config.PowerConsumptionMultiplier * (magneticPulsatingPowerCost + magneticSuperconductorPowerReqCost * 0.05 + ionizationPowerCost * 0.3);
 
             // checks for free space in solar wind 'tanks'
-            _dSolarWindSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.SolarWind); 
+            _dSolarWindSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.SolarWind);
             _dHydrogenSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.HydrogenLqd);
 
             if (solarWindMolesPerSquareMeterPerSecond > 0 || hydrogenMolarMassPerSquareMeterPerSecond > 0 || interstellarDustMolesPerCubicMeter > 0)
@@ -666,7 +666,7 @@ namespace KIT.Resources
                 PluginHelper.getFormattedPowerString(dPowerRequirementsMw);
 
             // get the shielding effect provided by the magnetosphere
-            magnetoSphereStrengthRatio = GetMagnetosphereRatio(vessel.altitude, PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody));
+            magnetoSphereStrengthRatio = GetMagnetosphereRatio(vessel.altitude, PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody));
 
             // if online collecting, get the old values instead (simplification for the time being)
             if (offlineCollecting)
@@ -861,7 +861,7 @@ namespace KIT.Resources
             CollectSolarWind(resMan, TimeWarp.fixedDeltaTime, false);
 
             // store current strength of the magnetic field in case vessel is unloaded
-            dLastMagnetoStrength = GetMagnetosphereRatio(vessel.altitude, PluginHelper.getMaxAtmosphericAltitude(vessel.mainBody));
+            dLastMagnetoStrength = GetMagnetosphereRatio(vessel.altitude, PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody));
         }
 
         public string KITPartName() => part.partInfo.title;

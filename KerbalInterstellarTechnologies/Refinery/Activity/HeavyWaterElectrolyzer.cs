@@ -15,8 +15,8 @@ namespace KIT.Refinery.Activity
         {
             ActivityName = "Heavy Water Electrolysis";
             Formula = "D<size=7>2</size>O => D<size=7>2</size> + O<size=7>2</size>";
-            PowerRequirements = PluginHelper.BaseELCPowerConsumption;
-            EnergyPerTon = PluginHelper.ElectrolysisEnergyPerTon;
+            PowerRequirements = PluginSettings.Config.BaseELCPowerConsumption;
+            EnergyPerTon = PluginSettings.Config.ElectrolysisEnergyPerTon;
         }
 
         private const double DeuteriumAtomicMass = 2.01410178;

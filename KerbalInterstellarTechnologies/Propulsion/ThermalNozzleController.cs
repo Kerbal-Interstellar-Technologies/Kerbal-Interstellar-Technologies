@@ -445,7 +445,7 @@ namespace KIT.Propulsion
 
         public string UpgradeTechnology => upgradeTechReq;
 
-        public double EffectiveCoreTempIspMult => (ispCoreTempMult == 0 ? PluginHelper.IspCoreTempMult : ispCoreTempMult) + IspTempMultOffset;
+        public double EffectiveCoreTempIspMult => (ispCoreTempMult == 0 ? PluginSettings.Config.IspCoreTempMult : ispCoreTempMult) + IspTempMultOffset;
 
         public bool UsePlasmaPower => isPlasmaNozzle || canUsePlasmaPower && (AttachedReactor != null && AttachedReactor.PlasmaPropulsionEfficiency > 0);
 
@@ -623,7 +623,7 @@ namespace KIT.Propulsion
 
             // use default when not configured
             if (maxThermalNozzleIsp == 0)
-                maxThermalNozzleIsp = PluginHelper.MaxThermalNozzleIsp;
+                maxThermalNozzleIsp = (float)PluginSettings.Config.MaxThermalNozzleIsp;
             if (maxJetModeBaseIsp == 0)
                 maxJetModeBaseIsp = maxThermalNozzleIsp;
             if (maxLfoModeBaseIsp == 0)
@@ -740,11 +740,11 @@ namespace KIT.Propulsion
                 fuelConfigNodes = GetPropellants(isJet);
             }
 
-            hasJetUpgradeTech1 = PluginHelper.HasTechRequirementOrEmpty(PluginHelper.JetUpgradeTech1);
-            hasJetUpgradeTech2 = PluginHelper.HasTechRequirementOrEmpty(PluginHelper.JetUpgradeTech2);
-            hasJetUpgradeTech3 = PluginHelper.HasTechRequirementOrEmpty(PluginHelper.JetUpgradeTech3);
-            hasJetUpgradeTech4 = PluginHelper.HasTechRequirementOrEmpty(PluginHelper.JetUpgradeTech4);
-            hasJetUpgradeTech5 = PluginHelper.HasTechRequirementOrEmpty(PluginHelper.JetUpgradeTech5);
+            hasJetUpgradeTech1 = PluginHelper.HasTechRequirementOrEmpty(PluginSettings.Config.JetUpgradeTech1);
+            hasJetUpgradeTech2 = PluginHelper.HasTechRequirementOrEmpty(PluginSettings.Config.JetUpgradeTech2);
+            hasJetUpgradeTech3 = PluginHelper.HasTechRequirementOrEmpty(PluginSettings.Config.JetUpgradeTech3);
+            hasJetUpgradeTech4 = PluginHelper.HasTechRequirementOrEmpty(PluginSettings.Config.JetUpgradeTech4);
+            hasJetUpgradeTech5 = PluginHelper.HasTechRequirementOrEmpty(PluginSettings.Config.JetUpgradeTech5);
 
             _jetTechBonus = 1 + Convert.ToInt32(hasJetUpgradeTech1) * 1.2f + 1.44f * Convert.ToInt32(hasJetUpgradeTech2) + 1.728f * Convert.ToInt32(hasJetUpgradeTech3) + 2.0736f * Convert.ToInt32(hasJetUpgradeTech4) + 2.48832f * Convert.ToInt32(hasJetUpgradeTech5);
             _jetTechBonusCurveChange = _jetTechBonus / 9.92992f;
@@ -1785,7 +1785,7 @@ namespace KIT.Propulsion
 
                 spaceHeatProduction = heatProductionMultiplier * reactorHeatModifier * AttachedReactor.EngineHeatProductionMult * _ispPropellantMultiplier * ispHeatModifier * radiusHeatModifier * powerToMass / _fuelCoolingFactor;
                 engineHeatProduction = _currentPropellantIsJet
-                    ? jetHeatProduction * (1 + airflowHeatModifier * PluginHelper.AirflowHeatMult)
+                    ? jetHeatProduction * (1 + airflowHeatModifier * PluginSettings.Config.AirflowHeatMult)
                     : spaceHeatProduction;
 
                 myAttachedEngine.heatProduction = (float)(engineHeatProduction * Math.Max(0, startupHeatReductionRatio));
@@ -1997,21 +1997,21 @@ namespace KIT.Propulsion
 
         private double GetHeatThrustModifier()
         {
-            var thrustCoreTempThreshold = PluginHelper.ThrustCoreTempThreshold;
-            var lowCoreTempBaseThrust = PluginHelper.LowCoreTempBaseThrust;
+            var thrustCoreTempThreshold = PluginSettings.Config.ThrustCoreTempThreshold;
+            var lowCoreTempBaseThrust = PluginSettings.Config.LowCoreTempBaseThrust;
 
             return thrustCoreTempThreshold <= 0
                 ? 1.0
                 : AttachedReactor.MaxCoreTemperature < thrustCoreTempThreshold
                     ? (AttachedReactor.CoreTemperature + lowCoreTempBaseThrust) / (thrustCoreTempThreshold + lowCoreTempBaseThrust)
-                    : 1.0 + PluginHelper.HighCoreTempThrustMult * Math.Max(Math.Log10(AttachedReactor.CoreTemperature / thrustCoreTempThreshold), 0);
+                    : 1.0 + PluginSettings.Config.HighCoreTempThrustMult * Math.Max(Math.Log10(AttachedReactor.CoreTemperature / thrustCoreTempThreshold), 0);
         }
 
         private float CurrentPowerThrustMultiplier => _currentPropellantIsJet ? powerTrustMultiplierJet : powerTrustMultiplier;
 
         private double GetPowerThrustModifier()
         {
-            return GameConstants.BaseThrustPowerMultiplier * PluginHelper.GlobalThermalNozzlePowerMaxThrustMult * CurrentPowerThrustMultiplier;
+            return GameConstants.BaseThrustPowerMultiplier * PluginSettings.Config.GlobalThermalNozzlePowerMaxThrustMult * CurrentPowerThrustMultiplier;
         }
 
         private void UpdateRadiusModifier()

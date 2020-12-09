@@ -16,8 +16,8 @@ namespace KIT.Refinery.Activity
         public RegolithProcessor()
         {
             ActivityName = "Regolith Process";
-            PowerRequirements = PluginHelper.BaseELCPowerConsumption;
-            EnergyPerTon = PluginHelper.ElectrolysisEnergyPerTon;
+            PowerRequirements = PluginSettings.Config.BaseELCPowerConsumption;
+            EnergyPerTon = PluginSettings.Config.ElectrolysisEnergyPerTon;
         }
 
         private double _dFixedDeltaTime;
