@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace KIT.Powermanagement
 {
-    
     public static class ResourceManagerFactory
     {
         // Create the appropriate instance
@@ -150,7 +149,7 @@ namespace KIT.Powermanagement
             ResourceFillFraction = 0.0;
         }
 
-        protected virtual double AdjustSupplyComplete(double timeWarpDT, double powerToExtract)
+        protected virtual double AdjustSupplyComplete(double timeWarpDeltaTime, double powerToExtract)
         {
             return powerToExtract;
         }
@@ -671,7 +670,7 @@ namespace KIT.Powermanagement
                     stableDistributed[priority] += stableSupplied;
                 }
 
-                // TODO this was removed. 
+                // TODO this was removed.
                 // notify of supply
                 //resourceSuppliable.receiveFNResource(powerSupplied, resourceName);
             }
@@ -725,5 +724,5 @@ namespace KIT.Powermanagement
         }
     }
 
-    
+
 }
