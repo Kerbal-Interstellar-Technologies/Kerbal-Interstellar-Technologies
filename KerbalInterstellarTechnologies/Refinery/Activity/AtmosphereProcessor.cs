@@ -198,28 +198,28 @@ namespace KIT.Refinery.Activity
             }
 
             // get the name of all relevant resources
-            _atmosphereResourceName = ResourceSettings.Config.IntakeAtmosphere;
+            _atmosphereResourceName = KITResourceSettings.IntakeAtmosphere;
 
-            _ammoniaResourceName = ResourceSettings.Config.AmmoniaLqd;
-            _argonResourceName = ResourceSettings.Config.ArgonLqd;
-            _chlorineResourceName = ResourceSettings.Config.ChlorineGas;
-            _dioxideResourceName = ResourceSettings.Config.CarbonDioxideLqd;
-            _monoxideResourceName = ResourceSettings.Config.CarbonDioxideLqd;
-            _helium3ResourceName = ResourceSettings.Config.Helium3Lqd;
-            _helium4ResourceName = ResourceSettings.Config.Helium4Lqd;
-            _hydrogenResourceName = ResourceSettings.Config.HydrogenLqd;
-            _methaneResourceName = ResourceSettings.Config.MethaneLqd;
-            _neonResourceName = ResourceSettings.Config.NeonLqd;
-            _nitrogenResourceName = ResourceSettings.Config.NitrogenLqd;
-            _nitrogen15ResourceName = ResourceSettings.Config.Nitrogen15Lqd;
-            _oxygenResourceName = ResourceSettings.Config.OxygenLqd;
-            _waterResourceName = ResourceSettings.Config.WaterPure;
-            _heavyWaterResourceName = ResourceSettings.Config.WaterHeavy;
-            _xenonResourceName = ResourceSettings.Config.XenonLqd;
-            _deuteriumResourceName = ResourceSettings.Config.DeuteriumLqd;
-            _kryptonResourceName = ResourceSettings.Config.KryptonLqd;
+            _ammoniaResourceName = KITResourceSettings.AmmoniaLqd;
+            _argonResourceName = KITResourceSettings.ArgonLqd;
+            _chlorineResourceName = KITResourceSettings.ChlorineGas;
+            _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _monoxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _helium3ResourceName = KITResourceSettings.Helium3Lqd;
+            _helium4ResourceName = KITResourceSettings.Helium4Lqd;
+            _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
+            _methaneResourceName = KITResourceSettings.MethaneLqd;
+            _neonResourceName = KITResourceSettings.NeonLqd;
+            _nitrogenResourceName = KITResourceSettings.NitrogenLqd;
+            _nitrogen15ResourceName = KITResourceSettings.Nitrogen15Lqd;
+            _oxygenResourceName = KITResourceSettings.OxygenLqd;
+            _waterResourceName = KITResourceSettings.WaterPure;
+            _heavyWaterResourceName = KITResourceSettings.WaterHeavy;
+            _xenonResourceName = KITResourceSettings.XenonLqd;
+            _deuteriumResourceName = KITResourceSettings.DeuteriumLqd;
+            _kryptonResourceName = KITResourceSettings.KryptonLqd;
 
-            _sodiumResourceName = ResourceSettings.Config.Sodium;
+            _sodiumResourceName = KITResourceSettings.Sodium;
 
             // get the densities of all relevant resources
             _atmosphere = PartResourceLibrary.Instance.GetDefinition(_atmosphereResourceName);
@@ -685,7 +685,7 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_AtmosphericExtractor_PostMsg") + " " + ResourceSettings.Config.IntakeAtmosphere, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_AtmosphericExtractor_PostMsg") + " " + KITResourceSettings.IntakeAtmosphere, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
 
         public void Update()

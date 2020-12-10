@@ -70,10 +70,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _carbonDioxideResourceName = ResourceSettings.Config.CarbonDioxideGas;
-            _hydrogenResourceName = ResourceSettings.Config.HydrogenGas;
-            _methaneResourceName = ResourceSettings.Config.MethaneGas;
-            _oxygenResourceName = ResourceSettings.Config.OxygenGas;
+            _carbonDioxideResourceName = KITResourceSettings.CarbonDioxideGas;
+            _hydrogenResourceName = KITResourceSettings.HydrogenGas;
+            _methaneResourceName = KITResourceSettings.MethaneGas;
+            _oxygenResourceName = KITResourceSettings.OxygenGas;
 
             _carbonDioxideDensity = PartResourceLibrary.Instance.GetDefinition(_carbonDioxideResourceName).density;
             _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(_hydrogenResourceName).density;

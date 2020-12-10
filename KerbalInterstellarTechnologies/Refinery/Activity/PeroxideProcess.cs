@@ -68,10 +68,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _ammoniaResourceName = ResourceSettings.Config.AmmoniaLqd;
-            _hydrazineResourceName = ResourceSettings.Config.Hydrazine;
-            _waterResourceName = ResourceSettings.Config.WaterPure;
-            _hydrogenPeroxideName = ResourceSettings.Config.HydrogenPeroxide;
+            _ammoniaResourceName = KITResourceSettings.AmmoniaLqd;
+            _hydrazineResourceName = KITResourceSettings.Hydrazine;
+            _waterResourceName = KITResourceSettings.WaterPure;
+            _hydrogenPeroxideName = KITResourceSettings.HydrogenPeroxide;
 
             _ammoniaDensity = PartResourceLibrary.Instance.GetDefinition(_ammoniaResourceName).density;
             _waterDensity = PartResourceLibrary.Instance.GetDefinition(_waterResourceName).density;
@@ -234,10 +234,10 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            if (!_part.GetConnectedResources(ResourceSettings.Config.HydrogenPeroxide).Any(rs => rs.amount > 0))
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_PeroxideProcess_Postmsg1", ResourceSettings.Config.HydrogenPeroxide), 3.0f, ScreenMessageStyle.UPPER_CENTER);//"Missing " +  + " (Hydrogen Peroxide)"
-            if (!_part.GetConnectedResources(ResourceSettings.Config.AmmoniaLqd).Any(rs => rs.amount > 0))
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_PeroxideProcess_Postmsg2", ResourceSettings.Config.AmmoniaLqd), 3.0f, ScreenMessageStyle.UPPER_CENTER);//"Missing " +
+            if (!_part.GetConnectedResources(KITResourceSettings.HydrogenPeroxide).Any(rs => rs.amount > 0))
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_PeroxideProcess_Postmsg1", KITResourceSettings.HydrogenPeroxide), 3.0f, ScreenMessageStyle.UPPER_CENTER);//"Missing " +  + " (Hydrogen Peroxide)"
+            if (!_part.GetConnectedResources(KITResourceSettings.AmmoniaLqd).Any(rs => rs.amount > 0))
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_PeroxideProcess_Postmsg2", KITResourceSettings.AmmoniaLqd), 3.0f, ScreenMessageStyle.UPPER_CENTER);//"Missing " +
         }
     }
 }

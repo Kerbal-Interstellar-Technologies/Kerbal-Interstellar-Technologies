@@ -66,10 +66,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _waterResourceName = ResourceSettings.Config.WaterPure;
-            _monoxideResourceName = ResourceSettings.Config.CarbonMonoxideGas;
-            _dioxideResourceName = ResourceSettings.Config.CarbonDioxideLqd;
-            _hydrogenResourceName = ResourceSettings.Config.HydrogenLqd;
+            _waterResourceName = KITResourceSettings.WaterPure;
+            _monoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
+            _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
 
             _waterDensity = PartResourceLibrary.Instance.GetDefinition(_waterResourceName).density;
             _dioxideDensity = PartResourceLibrary.Instance.GetDefinition(_dioxideResourceName).density;
@@ -225,10 +225,10 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            if (!_part.GetConnectedResources(ResourceSettings.Config.WaterPure).Any(rs => rs.amount > 0))
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_WaterGasShift_Postmsg") +" " + ResourceSettings.Config.WaterPure, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
-            if (!_part.GetConnectedResources(ResourceSettings.Config.CarbonMonoxideGas).Any(rs => rs.amount > 0))
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_WaterGasShift_Postmsg") + " " + ResourceSettings.Config.CarbonMonoxideGas, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            if (!_part.GetConnectedResources(KITResourceSettings.WaterPure).Any(rs => rs.amount > 0))
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_WaterGasShift_Postmsg") +" " + KITResourceSettings.WaterPure, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            if (!_part.GetConnectedResources(KITResourceSettings.CarbonMonoxideGas).Any(rs => rs.amount > 0))
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_WaterGasShift_Postmsg") + " " + KITResourceSettings.CarbonMonoxideGas, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

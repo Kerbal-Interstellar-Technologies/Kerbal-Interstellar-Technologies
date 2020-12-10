@@ -116,7 +116,7 @@ namespace KIT
         [KSPField]
         public double chargeNeeded = 100;
         [KSPField]
-        public string resourceName = ResourceSettings.Config.AntiProtium;
+        public string resourceName = KITResourceSettings.AntiProtium;
         [KSPField]
         public double massTemperatureDivider = 12000;
         [KSPField]

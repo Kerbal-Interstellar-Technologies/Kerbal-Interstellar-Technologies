@@ -59,10 +59,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
 
             _vessel = localPart.vessel;
-            _pureWater = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.WaterPure);
-            _lqdWater = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.WaterRaw);
-            _oxygen = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.OxygenGas);
-            _hydrogen = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.HydrogenGas);
+            _pureWater = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterPure);
+            _lqdWater = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterRaw);
+            _oxygen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.OxygenGas);
+            _hydrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenGas);
         }
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow,  bool isStartup = false)
@@ -121,12 +121,12 @@ namespace KIT.Refinery.Activity
                 var oxygenRateTemp = _waterConsumptionRate * OxygenMassByFraction;
 
                 var hydrogenProductionAmount = -_part.RequestResource(
-                    resourceName: ResourceSettings.Config.HydrogenLqd,
+                    resourceName: KITResourceSettings.HydrogenLqd,
                     demand: -hydrogenRateTemp / _hydrogen.density,
                     flowMode: ResourceFlowMode.ALL_VESSEL);
 
                 var oxygenProductionAmount = -_part.RequestResource(
-                    resourceName: ResourceSettings.Config.OxygenGas,
+                    resourceName: KITResourceSettings.OxygenGas,
                     demand: -oxygenRateTemp  / _oxygen.density,
                     flowMode: ResourceFlowMode.ALL_VESSEL);
 

@@ -105,7 +105,7 @@ namespace KIT
                 part.force_activate();
             }
 
-            string[] resourcesToSupply = { ResourceSettings.Config.ElectricPowerInMegawatt };
+            // string[] resourcesToSupply = { ResourceSettings.Config.ElectricPowerInMegawatt };
             //this.resources_to_supply = resourcesToSupply;
             base.OnStart(state);
 

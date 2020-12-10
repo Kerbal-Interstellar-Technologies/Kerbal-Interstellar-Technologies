@@ -31,7 +31,7 @@ namespace KIT.Wasteheat
 
         public override void OnFixedUpdate() // OnFixedUpdate is only called when (force) activated
         {
-            var wasteheatResource = part.Resources[ResourceSettings.Config.WasteHeatInMegawatt];
+            var wasteheatResource = part.Resources[KITResourceSettings.WasteHeat];
 
             if (!CheatOptions.IgnoreMaxTemperature && wasteheatResource != null && wasteheatResource.amount >= wasteheatResource.maxAmount * explodeRatio)
             {

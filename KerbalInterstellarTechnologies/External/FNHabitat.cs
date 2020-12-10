@@ -585,7 +585,7 @@ namespace KIT
                 foodPartResource.amount = ratio * foodPartResource.maxAmount;
             }
 
-            var waterPartResource = part.Resources[ResourceSettings.Config.WaterPure];
+            var waterPartResource = part.Resources[KITResourceSettings.WaterPure];
             if (waterPartResource != null && water >= 0)
             {
                 var ratio = waterPartResource.amount / waterPartResource.maxAmount;
@@ -593,7 +593,7 @@ namespace KIT
                 waterPartResource.amount = water * waterPartResource.maxAmount;
             }
 
-            var oxygenPartResource = part.Resources[ResourceSettings.Config.OxygenGas];
+            var oxygenPartResource = part.Resources[KITResourceSettings.OxygenGas];
             if (oxygenPartResource != null && oxygen >= 0)
             {
                 var ratio = oxygenPartResource.amount / oxygenPartResource.maxAmount;

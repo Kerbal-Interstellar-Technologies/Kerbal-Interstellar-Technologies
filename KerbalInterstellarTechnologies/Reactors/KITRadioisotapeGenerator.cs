@@ -15,16 +15,13 @@ namespace KIT.Reactors
         public const string GROUP_NAME = "KITRadioisotopeGenerator";
 
         [KSPField(isPersistant = true)] public double peltierEfficency;
-        [KSPField(isPersistant = true)] public double energyGenerated;
+        [KSPField(isPersistant = true)] public double wattsPerGram;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " EC/s")] public double currentPowerOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " EC/s", guiFormat = "F2")] public double currentPowerOutput;
 
-        private int rtg_resource_index = -1;
-        public override void OnAwake()
-        {
-            base.OnAwake();
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "Waste Heat Output", guiUnits = " KW/s", guiFormat = "F2")] public double wasteHeatOutput;
 
-        }
+        private int rtgResourceIndex = -1;
 
         /*
          * Per AntaresMC, The typical RTG has a mass ratio of about 1.1 and a peltier of about 10% efficiency.
@@ -57,45 +54,60 @@ namespace KIT.Reactors
          * FissionProducts seems worse than Plutonium-238 
          */
 
-        PartResourceDefinition resourceDefinition;
-
         private void FindResourceIndex()
         {
-            for (rtg_resource_index = 0; rtg_resource_index < part.Resources.Count; rtg_resource_index++)
+            for (rtgResourceIndex = 0; rtgResourceIndex < part.Resources.Count; rtgResourceIndex++)
             {
-                if (part.Resources[rtg_resource_index].resourceName == "WasteHeat") continue;
+                if (part.Resources[rtgResourceIndex].resourceName == "WasteHeat") continue;
                 break;
             }
-            if (rtg_resource_index == part.Resources.Count) rtg_resource_index = -1;
+            if (rtgResourceIndex == part.Resources.Count)
+            {
+                rtgResourceIndex = -1;
+                return;
+            }
 
-            resourceDefinition = PartResourceLibrary.Instance.GetDefinition(part.Resources[rtg_resource_index].resourceName);
+            var resourceDefinition = PartResourceLibrary.Instance.GetDefinition(part.Resources[rtgResourceIndex].resourceName);
             if (resourceDefinition == null)
             {
-                Debug.Log($"[KITRadioisotopeGenerator.FindResourceIndex] unable to GetDefinition({part.Resources[rtg_resource_index].resourceName})");
-                rtg_resource_index = -2;
+                Debug.Log($"[KITRadioisotopeGenerator.FindResourceIndex] unable to GetDefinition({part.Resources[rtgResourceIndex].resourceName})");
+                rtgResourceIndex = -2;
                 return;
             }
 
         }
 
+        private void PowerGeneratedPerSecond(out double electricalCurrentInKW, out double wasteHeatInKW)
+        {
+            // convert tonnes to grams
+            var heatInWatts = (part.Resources[rtgResourceIndex].amount * 1e+6) * wattsPerGram;
+            var powerInWatts = heatInWatts * peltierEfficency;
+
+            var heatGeneratedInKW = heatInWatts / (1e+3);
+            electricalCurrentInKW = powerInWatts / (1e+3);
+            wasteHeatInKW = heatGeneratedInKW - electricalCurrentInKW;
+        }
+
         public void Update()
         {
-            if (rtg_resource_index == -1 || part.Resources[rtg_resource_index].resourceName == "WasteHeat") FindResourceIndex();
-            if (rtg_resource_index < 0) return;
+            if (rtgResourceIndex == -1 || part.Resources[rtgResourceIndex].resourceName == "WasteHeat") FindResourceIndex();
+            if (rtgResourceIndex < 0) return;
 
-            currentPowerOutput = part.Resources[rtg_resource_index].amount * energyGenerated * peltierEfficency;
+            PowerGeneratedPerSecond(out currentPowerOutput, out wasteHeatOutput);
         }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (!HighLogic.LoadedSceneIsFlight) return;
 
-            if (rtg_resource_index < 0) return;
-            var totalHeat = part.Resources[rtg_resource_index].amount * energyGenerated;
-            var energyExtracted = totalHeat * peltierEfficency;
+            if (rtgResourceIndex < 0) return;
 
-            resMan.ProduceResource(ResourceName.ElectricCharge, energyExtracted);
-            resMan.ProduceResource(ResourceName.WasteHeat, totalHeat - energyExtracted);
+            double energyExtractedInKW, wasteHeatInKW;
+
+            PowerGeneratedPerSecond(out energyExtractedInKW, out wasteHeatInKW);
+
+            resMan.ProduceResource(ResourceName.ElectricCharge, energyExtractedInKW);
+            resMan.ProduceResource(ResourceName.WasteHeat, wasteHeatInKW);
         }
 
         public string KITPartName() => "#LOC_KIT_RTG_PartName";

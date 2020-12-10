@@ -953,23 +953,7 @@ namespace KIT
         private BandwidthConverter activeBandwidthConfiguration;
 
         private List<BandwidthConverter> _bandwidthConverters;
-        public  List<BandwidthConverter> BandwidthConverters
-        {
-            get
-            {
-                if (_bandwidthConverters != null)
-                    return _bandwidthConverters;
-
-                var availableBandwithConverters = part.FindModulesImplementing<BandwidthConverter>().Where(m => PluginHelper.HasTechRequirementOrEmpty(m.techRequirement0));
-
-                _bandwidthConverters = availableBandwithConverters.OrderByDescending(m => m.TargetWavelength).ToList();
-
-                // initialize maximum tech level
-                _bandwidthConverters.ForEach(b => b.Initialize());
-
-                return _bandwidthConverters;
-            }
-        }
+        public List<BandwidthConverter> BandwidthConverters => _bandwidthConverters;
 
         public static double PhotonicLaserMomentum(double Lambda, uint Time, ulong Wattage)//Lamdba= Wavelength in nanometers, Time in seconds, Wattage in normal Watts, returns momentum of whole laser
         {
@@ -999,10 +983,28 @@ namespace KIT
 
         public override void OnStart(PartModule.StartState state)
         {
-            string[] resources_to_supply = new [] {ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt};
+            //string[] resources_to_supply = new [] {ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt};
 
             // this.resources_to_supply = resources_to_supply;
-            base.OnStart(state);
+
+            if (BandwidthConverters == null)
+            {
+                var rootNode = GameDatabase.Instance.GetConfigNodes("KIT_BandwidthConverters");
+                if (rootNode == null || rootNode.Count() == 0)
+                {
+                    Debug.Log($"[KIT] Beamed Power Receiver OnStart, {(rootNode == null ? "can't find KIT_BandwidthConverters" : "it's empty")}");
+                    return;
+                }
+
+                var partNode = rootNode[0].GetNode(part.partInfo.name);
+                if (partNode == null)
+                {
+                    Debug.Log($"[KIT] Beamed Power Receiver OnStart, can't find KIT_BandwidthConverters.{part.partInfo.name}");
+                    return;
+                }
+
+                OnLoad(partNode);
+            }
 
             DetermineTechLevel();
             DetermineCoreTemperature();
@@ -1020,7 +1022,7 @@ namespace KIT
 
             InitializeThermalModeSwitcher();
 
-            InitializeBrandwitdhSelector();
+            InitializeBandwidthSelector();
 
             instanceId = GetInstanceID();
 
@@ -1257,10 +1259,41 @@ namespace KIT
             }
         }
 
+        public override void OnSave(ConfigNode node)
+        {
+            foreach(var converter in BandwidthConverters)
+            {
+                converter.Save(node);
+            }
+        }
+
         public override void OnLoad(ConfigNode node)
         {
+            Debug.Log($"[KSPI Beam Power Receiver] Load()ing");
+            base.OnLoad(node);
+
             part.temperature = storedTemp;
             part.skinTemperature = storedTemp;
+
+            var _bandwidthConverterNodes = node.GetNodes("BandwidthConverter");
+
+            if(_bandwidthConverterNodes.Count() == 0)
+            {
+                Debug.Log("[KSP] BeamedPowerReceiever: something is wrong, no inline BandwidthConverters present");
+                return;
+            }
+
+            var _inlineBandwidthConverters = new List<BandwidthConverter>();
+
+            foreach(var converterNode in _bandwidthConverterNodes)
+            {
+                var converter = new BandwidthConverter(converterNode, part.partInfo.title);
+                if (converter.isValid)
+                    _inlineBandwidthConverters.Add(converter);
+                else Debug.Log($"[KSPI] OnLoad unable to parse BandwidthConverter, and it's not valid");
+            }
+
+            _bandwidthConverters = _inlineBandwidthConverters.OrderByDescending(m => m.minimumWavelength).ToList();
         }
 
         private void InitializeThermalModeSwitcher()
@@ -1277,7 +1310,7 @@ namespace KIT
             isInThermalModeField.guiActiveEditor = isThermalReceiver && isEnergyReceiver;
         }
 
-        private void InitializeBrandwitdhSelector()
+        private void InitializeBandwidthSelector()
         {
             Debug.Log("[KSPI]: Setup Receiver BandWidth Configurations for " + part.partInfo.title);
 
@@ -2025,7 +2058,8 @@ namespace KIT
             if (stockModuleGenerator == null)
                 return;
 
-            outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == ResourceSettings.Config.ElectricPowerInKilowatt);
+            // TODO outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == ResourceSettings.Config.ElectricPowerInKilowatt);
+            outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == KITResourceSettings.ElectricCharge);
 
             if (outputModuleResource != null)
             {

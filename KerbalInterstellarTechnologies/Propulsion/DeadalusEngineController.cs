@@ -531,7 +531,7 @@ namespace KIT.Propulsion
 
         public override void OnStart(StartState state)
         {
-            string[] resources_to_supply = { ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt };
+            // string[] resources_to_supply = { ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt };
             //this.resources_to_supply = resources_to_supply;
             base.OnStart(state);
 

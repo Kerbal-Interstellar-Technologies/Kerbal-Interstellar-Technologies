@@ -2,12 +2,8 @@
 
 namespace KIT.Microwave
 {
-    [KSPModule("Rectenna Bandwidth Converter")]//#LOC_KSPIE_RectennaBandwidthConverter
-    class RectennaConverter : BandwidthConverter {}
-
-
     [KSPModule("Beamed Power Bandwidth Converter")]//#LOC_KSPIE_BeamedPowerBandwidthConverter
-    class BandwidthConverter : PartModule
+    class BandwidthConverter
     {
         [KSPField(groupName = BeamedPowerReceiver.GROUP, groupDisplayName = BeamedPowerReceiver.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = false)]
         public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthCoverter_missing");//"missing"
@@ -20,7 +16,7 @@ namespace KIT.Microwave
         public double maximumWavelength = 1;
 
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
-        public int AvailableTechLevel;
+        public int AvailableTechLevel = -1;
 
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage0 = 45;
@@ -58,8 +54,97 @@ namespace KIT.Microwave
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false)]
         public string techRequirement3 = "";
 
+        public bool isValid;
+
+        public BandwidthConverter() { }
+
+        public BandwidthConverter(ConfigNode node, string partTitle)
+        {
+            node.TryGetValue(nameof(bandwidthName), ref this.bandwidthName);
+            node.TryGetValue(nameof(targetWavelength), ref this.targetWavelength);
+            node.TryGetValue(nameof(minimumWavelength), ref this.minimumWavelength);
+            node.TryGetValue(nameof(maximumWavelength), ref this.maximumWavelength);
+            node.TryGetValue(nameof(AvailableTechLevel), ref this.AvailableTechLevel);
+
+            node.TryGetValue(nameof(efficiencyPercentage0), ref this.efficiencyPercentage0);
+            node.TryGetValue(nameof(electricEfficiencyPercentage0), ref this.electricEfficiencyPercentage0);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage0), ref this.thermalEfficiencyPercentage0);
+            node.TryGetValue(nameof(techRequirement0), ref this.techRequirement0);
+
+            node.TryGetValue(nameof(efficiencyPercentage1), ref this.efficiencyPercentage1);
+            node.TryGetValue(nameof(electricEfficiencyPercentage1), ref this.electricEfficiencyPercentage1);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage1), ref this.thermalEfficiencyPercentage1);
+            node.TryGetValue(nameof(techRequirement1), ref this.techRequirement1);
+
+            node.TryGetValue(nameof(efficiencyPercentage2), ref this.efficiencyPercentage2);
+            node.TryGetValue(nameof(electricEfficiencyPercentage2), ref this.electricEfficiencyPercentage2);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage2), ref this.thermalEfficiencyPercentage2);
+            node.TryGetValue(nameof(techRequirement2), ref this.techRequirement2);
+
+            node.TryGetValue(nameof(efficiencyPercentage3), ref this.efficiencyPercentage3);
+            node.TryGetValue(nameof(electricEfficiencyPercentage3), ref this.electricEfficiencyPercentage3);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage3), ref this.thermalEfficiencyPercentage3);
+            node.TryGetValue(nameof(techRequirement3), ref this.techRequirement3);
+
+            Initialize();
+            
+            switch(AvailableTechLevel)
+            {
+                case -1:
+                case -2:
+                    return;
+                case 0:
+                    techRequirement3 = techRequirement2 = techRequirement1 = string.Empty;
+                    break;
+                case 1:
+                    techRequirement3 = techRequirement2 = string.Empty;
+                    break;
+                case 2:
+                    techRequirement3 = string.Empty;
+                    break;
+            }
+
+            if (bandwidthName != string.Empty) isValid = true;
+        }
+
+        public void Save(ConfigNode node)
+        {
+            ConfigNode myself = new ConfigNode("BandwidthConverter");
+
+            node.AddValue(nameof(bandwidthName), this.bandwidthName);
+            node.AddValue(nameof(targetWavelength), this.targetWavelength);
+            node.AddValue(nameof(minimumWavelength), this.minimumWavelength);
+            node.AddValue(nameof(maximumWavelength), this.maximumWavelength);
+            node.AddValue(nameof(AvailableTechLevel), this.AvailableTechLevel);
+
+            node.AddValue(nameof(efficiencyPercentage0), this.efficiencyPercentage0);
+            node.AddValue(nameof(electricEfficiencyPercentage0), this.electricEfficiencyPercentage0);
+            node.AddValue(nameof(thermalEfficiencyPercentage0), this.thermalEfficiencyPercentage0);
+            node.AddValue(nameof(techRequirement0), this.techRequirement0);
+
+            node.AddValue(nameof(efficiencyPercentage1), this.efficiencyPercentage1);
+            node.AddValue(nameof(electricEfficiencyPercentage1), this.electricEfficiencyPercentage1);
+            node.AddValue(nameof(thermalEfficiencyPercentage1), this.thermalEfficiencyPercentage1);
+            node.AddValue(nameof(techRequirement1), this.techRequirement1);
+
+            node.AddValue(nameof(efficiencyPercentage2), this.efficiencyPercentage2);
+            node.AddValue(nameof(electricEfficiencyPercentage2), this.electricEfficiencyPercentage2);
+            node.AddValue(nameof(thermalEfficiencyPercentage2), this.thermalEfficiencyPercentage2);
+            node.AddValue(nameof(techRequirement2), this.techRequirement2);
+
+            node.AddValue(nameof(efficiencyPercentage3), this.efficiencyPercentage3);
+            node.AddValue(nameof(electricEfficiencyPercentage3), this.electricEfficiencyPercentage3);
+            node.AddValue(nameof(thermalEfficiencyPercentage3), this.thermalEfficiencyPercentage3);
+            node.AddValue(nameof(techRequirement3), this.techRequirement3);
+
+            node.AddNode(myself);
+        }
+
         public void Initialize()
         {
+            if (AvailableTechLevel > 0) return;
+            AvailableTechLevel = -2;
+
             if (PluginHelper.HasTechRequirementAndNotEmpty(techRequirement3))
                 AvailableTechLevel = 3;
             else if (PluginHelper.HasTechRequirementAndNotEmpty(techRequirement2))
@@ -132,7 +217,7 @@ namespace KIT.Microwave
             }
         }
 
-        public override string GetInfo()
+        public /* override */ string GetInfo()
         {
             var info = StringBuilderCache.Acquire();
 

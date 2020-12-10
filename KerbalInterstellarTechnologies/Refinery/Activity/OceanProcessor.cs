@@ -43,7 +43,7 @@ namespace KIT.Refinery.Activity
             _vessel = localPart.vessel;
 
             // get the definition of the 'generic' input resource
-            _intakeLiquidDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.IntakeLiquid);
+            _intakeLiquidDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeLiquid);
         }
 
         List<OceanicResource> _localResources = new List<OceanicResource>(); // create a list for keeping track of localResources
@@ -278,7 +278,7 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SeawaterExtract_Postmsg2") + " " + ResourceSettings.Config.IntakeLiquid, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SeawaterExtract_Postmsg2") + " " + KITResourceSettings.IntakeLiquid, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

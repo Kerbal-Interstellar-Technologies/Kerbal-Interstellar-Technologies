@@ -349,7 +349,7 @@ namespace KIT.Propulsion
 
             // TODO fix the stable resource supply thing.
 
-            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selected_factor]) > getStableResourceSupply(ResourceSettings.Config.ElectricPowerInMegawatt))
+            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selected_factor]) > getStableResourceSupply(KITResourceSettings.ElectricPowerInMegawatt))
             /*
             if (false)
             {
@@ -795,7 +795,7 @@ namespace KIT.Propulsion
 
             moduleReactionWheel = part.FindModuleImplementing<ModuleReactionWheel>();
 
-            exoticResourceDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.ExoticMatter);
+            exoticResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.ExoticMatter);
 
             InstanceID = GetInstanceID();
 
@@ -1303,7 +1303,7 @@ namespace KIT.Propulsion
                 else
                 {
                     // TODO fix me 
-                    // stablePowerSupply = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                    // stablePowerSupply = getAvailableStableSupply(KITResourceSettings.ElectricPowerInMegawatt);
                     stablePowerSupply = 10000;
 
                     // fix me, should not use fdt here
@@ -1341,7 +1341,7 @@ namespace KIT.Propulsion
                 ProduceWasteheat(resMan, exoticMatterProduced);
             }
 
-            part.RequestResource(ResourceSettings.Config.ExoticMatter, -exoticMatterProduced * 0.001 * TimeWarp.fixedDeltaTime / powerRequirementMultiplier);
+            part.RequestResource(KITResourceSettings.ExoticMatter, -exoticMatterProduced * 0.001 * TimeWarp.fixedDeltaTime / powerRequirementMultiplier);
         }
 
         private void GenerateAntiGravity(IResourceManager resMan)
@@ -1368,7 +1368,7 @@ namespace KIT.Propulsion
             verticalSpeed = vessel.verticalSpeed;
 
             // TODO fixme
-            // stablePowerSupply = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+            // stablePowerSupply = getAvailableStableSupply(KITResourceSettings.ElectricPowerInMegawatt);
             stablePowerSupply = 10000; 
 
             if (holdAltitude)
@@ -1407,7 +1407,7 @@ namespace KIT.Propulsion
              * TODO fixme
             availablePower = CheatOptions.InfiniteElectricity
                 ? currentPowerRequirementForWarp
-                : getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                : getAvailableStableSupply(KITResourceSettings.ElectricPowerInMegawatt);
             */
 
             availablePower = 10000;
