@@ -79,7 +79,6 @@ namespace KIT.Powermanagement
         [KSPField] public string upgradeTechReq = "";
         [KSPField] public float upgradeCost = 1;
         [KSPField] public double wasteHeatMultiplier = 1;
-        [KSPField] public bool maintainsMegaWattPowerBuffer = true;
         [KSPField] public bool fullPowerBuffer = false;
         [KSPField] public bool showSpecialisedUI = true;
         [KSPField] public bool showDetailedInfo = true;
@@ -92,7 +91,6 @@ namespace KIT.Powermanagement
         [KSPField] public double targetMass;
         [KSPField] public double initialMass;
         [KSPField] public double megajouleBarRatio;
-        [KSPField] public double megajoulePecentage;
         [KSPField] public double rawThermalPower;
         [KSPField] public double rawChargedPower;
         [KSPField] public double rawReactorPower;
@@ -139,7 +137,6 @@ namespace KIT.Powermanagement
 
         // Debug
         [KSPField] public double stableMaximumReactorPower;
-        [KSPField] public double megawattBufferAmount;
         [KSPField] public double heat_exchanger_thrust_divisor;
         [KSPField] public double requested_power_per_second;
         [KSPField] public double received_power_per_second;
@@ -150,7 +147,6 @@ namespace KIT.Powermanagement
         [KSPField] public double effectiveInputPowerPerSecond;
         [KSPField] public double postEffectiveInputPowerPerSecond;
         [KSPField] public double powerBufferBonus;
-        [KSPField] public double minimumBufferSize = 0;
         [KSPField] public double stablePowerForBuffer;
         [KSPField] public double maxStableMegaWattPower;
         [KSPField] public bool applies_balance;
@@ -200,13 +196,6 @@ namespace KIT.Powermanagement
 
         private Animation anim;
         private Queue<double> averageRadiatorTemperatureQueue = new Queue<double>();
-
-        private ModuleGenerator stockModuleGenerator;
-        private ModuleResource mockInputResource;
-        private ModuleResource outputModuleResource;
-        private BaseEvent moduleGeneratorShutdownBaseEvent;
-        private BaseEvent moduleGeneratorActivateBaseEvent;
-        private BaseField moduleGeneratorEfficienctBaseField;
 
         public String UpgradeTechnology { get { return upgradeTechReq; } }
 
@@ -346,8 +335,6 @@ namespace KIT.Powermanagement
 
         public override void OnStart(PartModule.StartState state)
         {
-            ConnectToModuleGenerator();
-
             // String[] resources_to_supply = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt };
             // this.resources_to_supply = resources_to_supply;
 
@@ -439,59 +426,6 @@ namespace KIT.Powermanagement
             FindAndAttachToPowerSource();
 
             UpdateHeatExchangedThrustDivisor();
-        }
-
-        private void ConnectToModuleGenerator()
-        {
-            if (maintainsMegaWattPowerBuffer == false)
-                return;
-
-            stockModuleGenerator = part.FindModuleImplementing<ModuleGenerator>();
-
-            if (stockModuleGenerator != null)
-            {
-                //TODO verify
-                outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == KITResourceSettings.ElectricCharge);
-
-                if (outputModuleResource != null)
-                {
-                    moduleGeneratorShutdownBaseEvent = stockModuleGenerator.Events[nameof(ModuleGenerator.Shutdown)];
-                    if (moduleGeneratorShutdownBaseEvent != null)
-                    {
-                        moduleGeneratorShutdownBaseEvent.guiActive = false;
-                        moduleGeneratorShutdownBaseEvent.guiActiveEditor = false;
-                    }
-
-                    moduleGeneratorActivateBaseEvent = stockModuleGenerator.Events[nameof(ModuleGenerator.Activate)];
-                    if (moduleGeneratorActivateBaseEvent != null)
-                    {
-                        moduleGeneratorActivateBaseEvent.guiActive = false;
-                        moduleGeneratorActivateBaseEvent.guiActiveEditor = false;
-                    }
-
-                    moduleGeneratorEfficienctBaseField = stockModuleGenerator.Fields[nameof(ModuleGenerator.efficiency)];
-                    if (moduleGeneratorEfficienctBaseField != null)
-                    {
-                        moduleGeneratorEfficienctBaseField.guiActive = false;
-                        moduleGeneratorEfficienctBaseField.guiActiveEditor = false;
-                    }
-
-                    initialGeneratorPowerEC = outputModuleResource.rate;
-
-                    if (maximumGeneratorPowerEC > 0)
-                        outputModuleResource.rate = maximumGeneratorPowerEC;
-
-                    maximumGeneratorPowerEC = outputModuleResource.rate;
-                    maximumGeneratorPowerMJ = maximumGeneratorPowerEC / GameConstants.ecPerMJ;
-
-                    mockInputResource = new ModuleResource
-                    {
-                        name = outputModuleResource.name, id = outputModuleResource.name.GetHashCode()
-                    };
-
-                    stockModuleGenerator.resHandler.inputResources.Add(mockInputResource);
-                }
-            }
         }
 
         private void InitializeEfficiency()
@@ -635,7 +569,7 @@ namespace KIT.Powermanagement
 
         private void UpdateModuleGeneratorOutput()
         {
-            if (attachedPowerSource == null || outputModuleResource == null)
+            if (attachedPowerSource == null)
                 return;
 
             var maximumPower = isLimitedByMinThrottle ? attachedPowerSource.MinimumPower : attachedPowerSource.MaximumPower;
@@ -645,7 +579,6 @@ namespace KIT.Powermanagement
             else
                 maximumGeneratorPowerMJ = maximumPower * maxEfficiency * 0.6;
 
-            outputModuleResource.rate = maximumGeneratorPowerMJ * GameConstants.ecPerMJ;
         }
 
         private PowerSourceSearchResult FindThermalPowerSource()
@@ -793,12 +726,6 @@ namespace KIT.Powermanagement
             }
             else
                 OutputPower = Localizer.Format("#LOC_KSPIE_Generator_Offline");//"Generator Offline"
-
-            if (moduleGeneratorEfficienctBaseField != null)
-            {
-                moduleGeneratorEfficienctBaseField.guiActive = false;
-                moduleGeneratorEfficienctBaseField.guiActiveEditor = false;
-            }
         }
 
         public double MaxStableMegaWattPower
@@ -957,24 +884,6 @@ namespace KIT.Powermanagement
         }
         */
 
-        private void UpdateBuffers()
-        {
-            if (!maintainsMegaWattPowerBuffer)
-                return;
-
-            if (maxStableMegaWattPower > 0)
-            {
-                _powerState = PowerStates.PowerOnline;
-
-                stablePowerForBuffer = chargedParticleMode
-                       ? attachedPowerSource.ChargedPowerRatio * maxStableMegaWattPower
-                       : applies_balance ? (1 - attachedPowerSource.ChargedPowerRatio) * maxStableMegaWattPower : maxStableMegaWattPower;
-
-                powerBufferBonus = attachedPowerSource.PowerBufferBonus;
-
-                megawattBufferAmount = (minimumBufferSize * 50) + (powerBufferBonus + 1) * stablePowerForBuffer;
-            }
-        }
         private double CalculateElectricalPowerCurrentlyNeeded()
         {
             throw new Exception("implement CalculateElectricalPowerCurrentlyNeeded");
@@ -1006,12 +915,6 @@ namespace KIT.Powermanagement
 
                 if (powerDownFraction <= 0)
                     _powerState = PowerStates.PowerOffline;
-
-                megawattBufferAmount = (minimumBufferSize * 50) + (attachedPowerSource.PowerBufferBonus + 1) * maxStableMegaWattPower * powerDownFraction;
-            }
-            else
-            {
-                megawattBufferAmount = (minimumBufferSize * 50);
             }
         }
 
@@ -1083,8 +986,6 @@ namespace KIT.Powermanagement
                 // check if MaxStableMegaWattPower is changed
                 maxStableMegaWattPower = MaxStableMegaWattPower;
 
-                UpdateBuffers();
-
                 generatorInit = true;
 
                 // don't produce any power when our reactor has stopped
@@ -1096,9 +997,6 @@ namespace KIT.Powermanagement
 
                     return;
                 }
-
-                if (stockModuleGenerator != null)
-                    stockModuleGenerator.generatorIsActive = maxStableMegaWattPower > 0;
 
                 powerDownFraction = 1;
 
@@ -1217,7 +1115,7 @@ namespace KIT.Powermanagement
                 received_power_per_second = thermalPowerReceived + chargedPowerReceived;
                 effectiveInputPowerPerSecond = received_power_per_second * _totalEff;
 
-                resMan.ConsumeResource(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
+                resMan.ProduceResource(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
 
                 if (!chargedParticleMode)
                 {
@@ -1231,20 +1129,23 @@ namespace KIT.Powermanagement
                     maxElectricdtps = overheatingModifier * maxChargedPowerForChargedGenerator * _totalEff;
                 }
 
+                resMan.ProduceResource(ResourceName.ElectricCharge, electricdtps, maxElectricdtps);
+
+                /*
                 if (outputModuleResource != null)
                 {
                     currentPowerForGeneratorMJ = Math.Min(maximumGeneratorPowerMJ, electricdtps);
                     outputModuleResource.rate = currentPowerForGeneratorMJ * GameConstants.ecPerMJ;
                     mockInputResource.rate = outputModuleResource.rate;
                 }
-
+                */
                 // TODO: fix this.
                 /*
                 outputPower = isLimitedByMinThrotle
                     ? -supplyManagedFNResourcePerSecond(electricdtps, ResourceSettings.Config.ElectricPowerInMegawatt)
                     : -supplyFNResourcePerSecondWithMaxAndEfficiency(electricdtps, maxElectricdtps, hotColdBathRatio, ResourceSettings.Config.ElectricPowerInMegawatt);
                 */
-                throw new Exception("fix outputPower");
+                //throw new Exception("fix outputPower");
             }
             else
             {
@@ -1252,9 +1153,6 @@ namespace KIT.Powermanagement
                 maxElectricdtps = 0;
                 generatorInit = true;
                 resMan.ProduceResource(ResourceName.ElectricCharge, 0);
-
-                if (stockModuleGenerator != null && stockModuleGenerator.generatorIsActive == true)
-                    stockModuleGenerator.Shutdown();
 
                 if (IsEnabled && !vessel.packed)
                 {

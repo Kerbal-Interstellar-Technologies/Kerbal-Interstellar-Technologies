@@ -280,8 +280,6 @@ namespace KIT
         public int connectParentdepth = 2;
         [KSPField]
         public int connectSurfacedepth = 2;
-        [KSPField]
-        public bool maintainResourceBuffers = true;
 
         //GUI
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_CoreTemperature")]//Core Temperature
@@ -382,13 +380,6 @@ namespace KIT
         protected BaseEvent _unlinkReceiverBaseEvent;
         protected BaseEvent _activateReceiverBaseEvent;
         protected BaseEvent _disableReceiverBaseEvent;
-
-        private ModuleGenerator stockModuleGenerator;
-        private ModuleResource mockInputResource;
-        private ModuleResource outputModuleResource;
-        private BaseEvent moduleGeneratorShutdownBaseEvent;
-        private BaseEvent moduleGeneratorActivateBaseEvent;
-        private BaseField moduleGeneratorEfficienctBaseField;
 
         protected ModuleDeployableSolarPanel deployableSolarPanel;
         protected ModuleDeployableRadiator deployableRadiator;
@@ -1005,7 +996,6 @@ namespace KIT
 
             DetermineTechLevel();
             DetermineCoreTemperature();
-            ConnectToModuleGenerator();
 
             maximumThermalPowerScaled = maximumThermalPower * powerMult;
             maximumElectricPowerScaled = maximumElectricPower * powerMult;
@@ -1933,15 +1923,6 @@ namespace KIT
 
             resMan.ProduceResource(ResourceName.ElectricCharge, alternatorPower * GameConstants.ecPerMJ);
             resMan.ProduceResource(ResourceName.WasteHeat, alternatorWasteheat * GameConstants.ecPerMJ);
-
-            if (stockModuleGenerator != null)
-                stockModuleGenerator.generatorIsActive = alternatorPower > 0;
-
-            if (outputModuleResource != null)
-            {
-                outputModuleResource.rate = alternatorPower * GameConstants.ecPerMJ;
-                mockInputResource.rate = alternatorPower * -GameConstants.ecPerMJ;
-            }
         }
 
         public double MaxStableMegaWattPower => isThermalReceiver ? 0 : powerInputMegajoules;
@@ -2040,50 +2021,6 @@ namespace KIT
                 return spotsize.ToString("0.00") + " m";
             else
                 return (spotsize * 1.0e+3).ToString("0") + " mm";
-        }
-
-        private void ConnectToModuleGenerator()
-        {
-            stockModuleGenerator = part.FindModuleImplementing<ModuleGenerator>();
-
-            if (stockModuleGenerator == null)
-                return;
-
-            // TODO outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == ResourceSettings.Config.ElectricPowerInKilowatt);
-            outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == KITResourceSettings.ElectricCharge);
-
-            if (outputModuleResource != null)
-            {
-                moduleGeneratorShutdownBaseEvent = stockModuleGenerator.Events["Shutdown"];
-                if (moduleGeneratorShutdownBaseEvent != null)
-                {
-                    moduleGeneratorShutdownBaseEvent.guiActive = false;
-                    moduleGeneratorShutdownBaseEvent.guiActiveEditor = false;
-                }
-
-                moduleGeneratorActivateBaseEvent = stockModuleGenerator.Events["Activate"];
-                if (moduleGeneratorActivateBaseEvent != null)
-                {
-                    moduleGeneratorActivateBaseEvent.guiActive = false;
-                    moduleGeneratorActivateBaseEvent.guiActiveEditor = false;
-                }
-
-                moduleGeneratorEfficienctBaseField = stockModuleGenerator.Fields["efficiency"];
-                if (moduleGeneratorEfficienctBaseField != null)
-                {
-                    moduleGeneratorEfficienctBaseField.guiActive = false;
-                    moduleGeneratorEfficienctBaseField.guiActiveEditor = false;
-                }
-
-                initialGeneratorPowerEC = outputModuleResource.rate;
-
-                mockInputResource = new ModuleResource
-                {
-                    name = outputModuleResource.name, id = outputModuleResource.name.GetHashCode()
-                };
-
-                stockModuleGenerator.resHandler.inputResources.Add(mockInputResource);
-            }
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
@@ -2275,9 +2212,6 @@ namespace KIT
                     ThermalPower = 0;
 
                     PowerDown();
-
-                    if (stockModuleGenerator != null)
-                        stockModuleGenerator.generatorIsActive = false;
 
                     if (animT == null) return;
 
