@@ -334,11 +334,10 @@ namespace KIT
             else
                 return power.ToString("0.00") + suffix;
         }
-
+        
         public ApplicationLauncherButton InitializeApplicationButton()
         {
-            appIcon = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/Category/WarpPlugin", false);
-
+            _appIcon = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/Category/WarpPlugin", false);
             if (_appIcon == null) return null;
 
             var appButton = ApplicationLauncher.Instance.AddModApplication(
@@ -428,7 +427,7 @@ namespace KIT
         {
             if (_warningDisplayed) return;
 
-            var errorMessage =Localizer.Format("#LOC_KSPIE_PluginHelper_Installerror");// "KSP Interstellar is unable to detect files required for proper functioning.  Please make sure that this mod has been installed to [Base KSP directory]/GameData/WarpPlugin."
+            var errorMessage =Localizer.Format("#LOC_KSPIE_PluginHelper_Installerror");// "KSP Interstellar is unable to detect files required for proper functioning.  Please make sure that this mod has been installed to [Base KSP directory]/GameData/Kerbal-Interstellar-Technologies."
             PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "KSPI Error", "KSP Interstellar Installation Error", errorMessage, "OK", false, HighLogic.UISkin);
 
             _warningDisplayed = true;
