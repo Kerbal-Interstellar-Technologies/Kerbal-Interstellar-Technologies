@@ -186,7 +186,6 @@
     <Compile Include="Storage\FNModuleAnimater.cs" />
     <Compile Include="Storage\FNRadioActiveStorage.cs" />
     <Compile Include="Storage\KerbalismHabitatController.cs" />
-    <Compile Include="Toolbar\FlightUIStarter.cs" />
     <Compile Include="Science\FNImpactorModule.cs" />
     <Compile Include="Science\FNLCMassSpectrometer.cs" />
     <Compile Include="Science\FNMassSpectrometer.cs" />

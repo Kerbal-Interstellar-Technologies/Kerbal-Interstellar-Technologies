@@ -8,6 +8,7 @@ namespace KIT.Resources
         private static ResourceSettings _config;
 
         // Chemical resources
+        /*
         public string Actinides { get; private set; } = "Actinides";
         public string Alumina { get; private set; } = "Alumina";
         public string Aluminium { get; private set; } = "Aluminium";
@@ -66,18 +67,21 @@ namespace KIT.Resources
         public string IntakeOxygenAir { get; private set; } = "IntakeAir";
         public string IntakeLiquid { get; private set; } = "IntakeLqd";
         public string IntakeAtmosphere { get; private set; } = "IntakeAtm";
-
+        /*
         // Pseudo resources
+        /*
         public string ElectricPowerInKilowatt { get; private set; } = "ElectricCharge";
         public string ElectricPowerInMegawatt { get; private set; } = "Megajoules";
         public string ChargedParticleInMegawatt { get; private set; } = "ChargedParticles";
         public string ThermalPowerInMegawatt { get; private set; } = "ThermalPower";
         public string WasteHeatInMegawatt { get; private set; } = "WasteHeat";
+        */
 
+        /*
         public string AntiProtium { get; private set; } = "Antimatter";
         public string VacuumPlasma { get; private set; } = "VacuumPlasma";
         public string ExoticMatter { get; private set; } = "ExoticMatter";
-
+        */
 
         private void UpdatePropertyWithConfigNode(ConfigNode pluginSettings, string resourceName, Action<string> property)
         {

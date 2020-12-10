@@ -150,27 +150,7 @@ namespace KIT.Microwave
 
         private IList<BeamConfiguration> _inlineConfigurations;
 
-        private IList<BeamConfiguration> _beamConfigurations;
-
-        public IList<BeamConfiguration> BeamConfigurations 
-        {
-            get
-            {
-                if (_beamConfigurations != null) 
-                    return _beamConfigurations;
-
-                // ToDo: remove once inline beam configuration is fully implemented
-                var moduleConfigurations = part.FindModulesImplementing<BeamConfiguration>();
-
-                _beamConfigurations = moduleConfigurations
-                    .Where(m => PluginHelper.HasTechRequirementOrEmpty(m.techRequirement0))
-                    .OrderByDescending(m => m.wavelength).ToList();
-
-                Debug.Log("[KSPI]: Found " + _beamConfigurations.Count + " BeamConfigurations");
-                return _beamConfigurations;
-            }
-        }
-
+        public IList<BeamConfiguration> BeamConfigurations => _inlineConfigurations;
         public IEnumerable<BeamGenerator> FindBeamGenerators(Part origin)
         {
             var attachedParts = part.attachNodes.Where(m => m.attachedPart != null && m.attachedPart != origin);
@@ -220,6 +200,25 @@ namespace KIT.Microwave
                 initialMass = (double)(decimal)part.prefabMass;
             if (targetMass == 0)
                 targetMass = (double)(decimal)part.prefabMass;
+
+            if(BeamConfigurations == null)
+            {
+                var rootNode = GameDatabase.Instance.GetConfigNodes("KIT_BeamConfiguration");
+                if (rootNode == null || rootNode.Count() == 0)
+                {
+                    Debug.Log($"[KIT] Beamed Power Receiver OnStart, {(rootNode == null ? "can't find KIT_BandwidthConverters" : "it's empty")}");
+                    return;
+                }
+
+                var partNode = rootNode[0].GetNode(part.partInfo.name);
+                if (partNode == null)
+                {
+                    Debug.Log($"[KIT] Beamed Power Receiver OnStart, can't find KIT_BandwidthConverters.{part.partInfo.name}");
+                    return;
+                }
+
+                OnLoad(partNode);
+            }
 
             InitializeWavelengthSelector();
             DetermineTechLevel();
@@ -421,51 +420,44 @@ namespace KIT.Microwave
         }
 
         public override void OnLoad(ConfigNode node)
+        // public new void Load(ConfigNode node)
         {
-            beamConfigurationNodes =  node.GetNodes("BeamConfiguration");
+            Debug.Log($"[KSPI Beam Generator] Load()ing");
+           
+            beamConfigurationNodes = node.GetNodes("BeamConfiguration");
 
-            if (beamConfigurationNodes.Any())
+            if (beamConfigurationNodes.Count() == 0)
             {
-                Debug.Log("[KSPI]: OnLoad Found " + beamConfigurationNodes.Count() + " BeamConfigurations");
+                Debug.Log("[KSPI]: OnLoad Found no BeamConfigurations - something is broken.");
+                return;
             }
 
             var inlineConfigurations = new  List<BeamConfiguration>();
-
             foreach (var beamConfigurationNode in beamConfigurationNodes)
             {
-                var beamConfiguration = new BeamConfiguration
-                {
-                    beamWaveName = beamConfigurationNode.GetValue("beamWaveName"),
-                    wavelength =  ReadDouble(beamConfigurationNode, "wavelength", 1),
-                    atmosphericAbsorptionPercentage = ReadDouble(beamConfigurationNode, "atmosphericAbsorptionPercentage", 100),
-                    waterAbsorptionPercentage =  ReadDouble(beamConfigurationNode, "waterAbsorptionPercentage", 100),
-
-                    techRequirement0 = beamConfigurationNode.HasValue("techRequirement0")? beamConfigurationNode.GetValue("techRequirement0"): null,
-                    techRequirement1 = beamConfigurationNode.HasValue("techRequirement1")? beamConfigurationNode.GetValue("techRequirement1"): null,
-                    techRequirement2 = beamConfigurationNode.HasValue("techRequirement2")? beamConfigurationNode.GetValue("techRequirement2"): null,
-                    techRequirement3 = beamConfigurationNode.HasValue("techRequirement3")? beamConfigurationNode.GetValue("techRequirement3"): null,
-                    efficiencyPercentage0 = beamConfigurationNode.HasValue("efficiencyPercentage0")? double.Parse(beamConfigurationNode.GetValue("efficiencyPercentage0")): 0,
-                    efficiencyPercentage1 = beamConfigurationNode.HasValue("efficiencyPercentage1")? double.Parse(beamConfigurationNode.GetValue("efficiencyPercentage1")): 0,
-                    efficiencyPercentage2 = beamConfigurationNode.HasValue("efficiencyPercentage2")? double.Parse(beamConfigurationNode.GetValue("efficiencyPercentage2")): 0,
-                    efficiencyPercentage3 = beamConfigurationNode.HasValue("efficiencyPercentage3")? double.Parse(beamConfigurationNode.GetValue("efficiencyPercentage3")): 0
-                };
-
-                inlineConfigurations.Add(beamConfiguration);
+                var beamConfiguration = new BeamConfiguration(beamConfigurationNode, part.partInfo.title);
+                if (beamConfiguration.isValid)
+                    inlineConfigurations.Add(beamConfiguration);
+                else
+                    Debug.Log($"[KSPI]: OnLoad discarding BeamConfiguration of {beamConfiguration.beamWaveName} / {beamConfiguration.techLevel}, it is not valid.");
             }
 
             _inlineConfigurations = inlineConfigurations.OrderByDescending(m => m.wavelength).ToList();
         }
 
-        private double ReadDouble(ConfigNode node, string fieldname, double defaultvalue = 0)
+        public override void OnSave(ConfigNode node)
         {
-            if (node.HasValue(fieldname))
-                return Double.Parse(node.GetValue(fieldname));
-            else
-                return defaultvalue;
+            foreach(var beamConfiguration in _inlineConfigurations)
+            {
+                beamConfiguration.Save(node);
+            }
         }
 
         public override string GetInfo()
         {
+
+            return ""; 
+            /*
             var sb = StringBuilderCache.Acquire();
 
             sb.Append(Localizer.Format("#LOC_KSPIE_BeamGenerator_Type")).Append(": ").AppendLine(beamTypeName);//Type
@@ -525,6 +517,7 @@ namespace KIT.Microwave
             sb.Append("</size>");
 
             return sb.ToStringAndRelease();
+            */
         }
 
         private string ExtendWithSpace(string input, int targetlength)

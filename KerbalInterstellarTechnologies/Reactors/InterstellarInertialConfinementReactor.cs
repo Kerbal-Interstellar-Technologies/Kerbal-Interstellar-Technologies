@@ -25,13 +25,7 @@ namespace KIT.Reactors
     class InterstellarInertialConfinementReactor : InterstellarFusionReactor
     {
         // Configs
-        [KSPField] public string primaryInputResource = ResourceSettings.Config.ElectricPowerInMegawatt;
-        [KSPField] public string secondaryInputResource = ResourceSettings.Config.ElectricPowerInKilowatt;
-        [KSPField] public double primaryInputMultiplier = 1;
-        [KSPField] public double secondaryInputMultiplier = 1000;
         [KSPField] public bool canJumpstart = true;
-        [KSPField] public bool usePowerManagerForPrimaryInputPower = true;
-        [KSPField] public bool usePowerManagerForSecondaryInputPower = true;
         [KSPField] public bool canChargeJumpstart = true;
         [KSPField] public float startupPowerMultiplier = 1;
         [KSPField] public float startupCostGravityMultiplier = 0;
@@ -100,14 +94,6 @@ namespace KIT.Reactors
 
                 UnityEngine.Debug.LogWarning("[KSPI]: InterstellarInertialConfinementReactor.OnStart allowJumpStart");
             }
-
-            primaryInputResourceDefinition = !string.IsNullOrEmpty(primaryInputResource)
-                ? PartResourceLibrary.Instance.GetDefinition(primaryInputResource)
-                : null;
-
-            secondaryInputResourceDefinition = !string.IsNullOrEmpty(secondaryInputResource)
-                ? PartResourceLibrary.Instance.GetDefinition(secondaryInputResource)
-                : null;
         }
 
         public override void StartReactor()
@@ -144,7 +130,7 @@ namespace KIT.Reactors
                 if (geeForceMaintenancePowerMultiplier > 0)
                     currentLaserPowerRequirements += Math.Abs(currentLaserPowerRequirements * geeForceMaintenancePowerMultiplier * part.vessel.geeForce);
 
-                return currentLaserPowerRequirements * primaryInputMultiplier;
+                return currentLaserPowerRequirements;
             }
         }
 
@@ -224,10 +210,7 @@ namespace KIT.Reactors
 
         public new void KITFixedUpdate(IResourceManager resMan)
         {
-            throw new Exception("Please fix me");
-            /*
-            double timeWarpFixedDeltaTime = TimeWarp.fixedDeltaTime;
-            base.OnFixedUpdate();
+            base.KITFixedUpdate(resMan);
 
             UpdateLoopingAnimation(ongoing_consumption_rate * powerPercentage / 100);
 
@@ -255,9 +238,7 @@ namespace KIT.Reactors
             double primaryPowerReceived;
             if (!CheatOptions.InfiniteElectricity && powerRequested > 0)
             {
-                primaryPowerReceived = usePowerManagerForPrimaryInputPower
-                    ? consumeFNResourcePerSecondBuffered(powerRequested, primaryInputResource, 0.1)
-                    : part.RequestResource(primaryInputResourceDefinition.id, powerRequested * timeWarpFixedDeltaTime, ResourceFlowMode.STAGE_PRIORITY_FLOW) / timeWarpFixedDeltaTime;
+                primaryPowerReceived = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequested);
             }
             else
                 primaryPowerReceived = powerRequested;
@@ -269,45 +250,11 @@ namespace KIT.Reactors
             var powerReceived = primaryPowerReceived;
             var powerRequirementMetRatio = powerRequested > 0 ? powerReceived / powerRequested : 1;
 
-            // retrieve any shortage from secondary buffer
-            if (secondaryInputMultiplier > 0 && secondaryInputResourceDefinition != null && !CheatOptions.InfiniteElectricity && IsEnabled && powerReceived < powerRequested)
-            {
-                double currentSecondaryRatio;
-                double currentSecondaryCapacity;
-                double currentSecondaryAmount;
-
-                if (usePowerManagerForSecondaryInputPower)
-                {
-                    currentSecondaryRatio = getResourceBarRatio(secondaryInputResource);
-                    currentSecondaryCapacity = getTotalResourceCapacity(secondaryInputResource);
-                    currentSecondaryAmount = currentSecondaryCapacity * currentSecondaryRatio;
-                }
-                else
-                {
-                    part.GetConnectedResourceTotals(secondaryInputResourceDefinition.id, out currentSecondaryAmount, out currentSecondaryCapacity);
-                    currentSecondaryRatio = currentSecondaryCapacity > 0 ? currentSecondaryAmount / currentSecondaryCapacity : 0;
-                }
-
-                var secondaryPowerMaxRatio = ((double)(decimal)maxSecondaryPowerUsage) / 100d;
-
-                // only use buffer if we have sufficient in storage
-                if (currentSecondaryRatio > secondaryPowerMaxRatio)
-                {
-                    // retrieve megawatt ratio
-                    var powerShortage = (1 - powerRequirementMetRatio) * powerRequested;
-                    var maxSecondaryConsumption = currentSecondaryAmount - (secondaryPowerMaxRatio * currentSecondaryCapacity);
-                    var requestedSecondaryPower = Math.Min(maxSecondaryConsumption, powerShortage * secondaryInputMultiplier * timeWarpFixedDeltaTime);
-                    var secondaryPowerReceived = part.RequestResource(secondaryInputResource, requestedSecondaryPower);
-                    powerReceived += secondaryPowerReceived / secondaryInputMultiplier / timeWarpFixedDeltaTime;
-                    powerRequirementMetRatio = powerRequested > 0 ? powerReceived / powerRequested : 1;
-                }
-            }
-
             // adjust power to optimal power
             _powerConsumed = LaserPowerRequirements * powerRequirementMetRatio;
 
             // verify if we need startup with accumulated power
-            if (canJumpstart && timeWarpFixedDeltaTime <= 0.1 && accumulatedElectricChargeInMW > 0 && _powerConsumed < StartupPower && (accumulatedElectricChargeInMW + _powerConsumed) >= StartupPower)
+            if (canJumpstart && accumulatedElectricChargeInMW > 0 && _powerConsumed < StartupPower && (accumulatedElectricChargeInMW + _powerConsumed) >= StartupPower)
             {
                 var shortage = StartupPower - _powerConsumed;
                 if (shortage <= accumulatedElectricChargeInMW)
@@ -359,7 +306,6 @@ namespace KIT.Reactors
                     plasma_ratio = 1;
                 }
             }
-            */
         }
 
         private void UpdateLoopingAnimation(double ratio)

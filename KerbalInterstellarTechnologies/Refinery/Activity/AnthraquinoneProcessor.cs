@@ -60,9 +60,9 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _oxygenResourceName = ResourceSettings.Config.OxygenGas;
-            _hydrogenResourceName = ResourceSettings.Config.HydrogenGas;
-            _hydrogenPeroxideResourceName = ResourceSettings.Config.HydrogenPeroxide;
+            _oxygenResourceName = KITResourceSettings.OxygenGas;
+            _hydrogenResourceName = KITResourceSettings.HydrogenGas;
+            _hydrogenPeroxideResourceName = KITResourceSettings.HydrogenPeroxide;
 
             _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(_hydrogenResourceName).density;
             _oxygenDensity = PartResourceLibrary.Instance.GetDefinition(_oxygenResourceName).density;

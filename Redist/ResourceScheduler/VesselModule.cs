@@ -24,7 +24,7 @@ namespace KIT.ResourceScheduler
 
         [KSPField] double lastExecuted;
         [KSPField] bool catchUpNeeded;
-        ResourceManager resourceManager;
+        public ResourceManager resourceManager;
         IResourceScheduler resourceScheduler;
 
         private bool needsRefresh

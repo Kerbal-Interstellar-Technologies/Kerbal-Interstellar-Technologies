@@ -32,10 +32,10 @@ namespace KIT.Powermanagement
             }
         }
 
-        public MegajoulesResourceManager(Guid overmanagerId, PartModule pm) : base(overmanagerId, pm, ResourceSettings.Config.ElectricPowerInMegawatt, FNRESOURCE_FLOWTYPE_SMALLEST_FIRST)
+        public MegajoulesResourceManager(Guid overmanagerId, PartModule pm) : base(overmanagerId, pm, KITResourceSettings.ElectricCharge, FNRESOURCE_FLOWTYPE_SMALLEST_FIRST)
         {
             WindowPosition = new Rect(50, 50, LABEL_WIDTH + VALUE_WIDTH + PRIORITY_WIDTH, 50);
-            electricResourceDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.ElectricPowerInKilowatt);
+            electricResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.ElectricCharge);
             lastECNeeded = 0.0;
             lastMJConverted = 0.0;
             mjConverted = 0.0;

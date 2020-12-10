@@ -251,10 +251,10 @@ namespace KIT.Resources
             if (state == StartState.Editor) return; // collecting won't work in editor
 
             _heliumRequirementTonPerSecond = heliumRequirement * 1e-6 / GameConstants.SECONDS_IN_HOUR ;
-            _helium4GasResourceDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.Helium4Gas);
-            _lqdHelium4ResourceDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.Helium4Lqd);
-            _solarWindResourceDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.SolarWind);
-            _hydrogenResourceDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.HydrogenLqd);
+            _helium4GasResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Helium4Gas);
+            _lqdHelium4ResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Helium4Lqd);
+            _solarWindResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.SolarWind);
+            _hydrogenResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenLqd);
 
             _localStar = KopernicusHelper.GetLocalStar(vessel.mainBody);
             _homeWorld = FlightGlobals.GetHomeBody();

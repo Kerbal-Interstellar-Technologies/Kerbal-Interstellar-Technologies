@@ -141,7 +141,7 @@ namespace KIT
         // Public Overrides
         public override void OnStart(StartState state)
         {
-            string[] resourcesToSupply = { ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
+            // string[] resourcesToSupply = { ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
             // this.resources_to_supply = resourcesToSupply;
 
             _isEnabledField = Fields[nameof(IsEnabled)];
@@ -328,7 +328,7 @@ namespace KIT
                 science_to_add = 0;
             }
 
-            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, _effectivePowerRequirement * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, _effectivePowerRequirement);
 
             electrical_power_ratio = powerReturned / _effectivePowerRequirement;
             IsPowered = electrical_power_ratio > 0.99;
@@ -348,7 +348,8 @@ namespace KIT
                     }
                 }
 
-                part.RequestResource(ResourceSettings.Config.ElectricPowerInMegawatt, -powerReturned * TimeWarp.fixedDeltaTime);
+                //part.RequestResource(KITResourceSettings.ElectricCharge, -powerReturned * TimeWarp.fixedDeltaTime);
+                resMan.ProduceResource(ResourceName.ElectricCharge, powerReturned);
                 return;
             }
             

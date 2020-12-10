@@ -107,8 +107,8 @@ namespace KIT.Resources
             var jetTech = Convert.ToInt32(hasJetUpgradeTech1) * 1.2f + 1.44f * Convert.ToInt32(hasJetUpgradeTech2) + 1.728f * Convert.ToInt32(hasJetUpgradeTech3) + 2.0736f * Convert.ToInt32(hasJetUpgradeTech4) + 2.48832f * Convert.ToInt32(hasJetUpgradeTech5);
             jetTechBonus = 5 * (1 + (jetTech / 9.92992f));
 
-            _moduleResourceIntake = this.part.FindModulesImplementing<ModuleResourceIntake>().FirstOrDefault(m => m.resourceName == ResourceSettings.Config.IntakeOxygenAir);
-            _resourceAtmosphereDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.IntakeAtmosphere);
+            _moduleResourceIntake = this.part.FindModulesImplementing<ModuleResourceIntake>().FirstOrDefault(m => m.resourceName == KITResourceSettings.IntakeOxygenAir);
+            _resourceAtmosphereDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeAtmosphere);
 
             if (_moduleResourceIntake == null)
                 Debug.LogWarning("[KSPI]: ModuleResourceIntake with IntakeAir is missing on " + part.partInfo.title);
@@ -226,7 +226,7 @@ namespace KIT.Resources
         {
             if (!storesResource)
             {
-                var _intake_atmosphere_resource = part.Resources[ResourceSettings.Config.IntakeAtmosphere];
+                var _intake_atmosphere_resource = part.Resources[KITResourceSettings.IntakeAtmosphere];
                 if (_intake_atmosphere_resource == null)
                     return;
 

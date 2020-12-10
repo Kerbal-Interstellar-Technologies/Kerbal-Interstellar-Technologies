@@ -56,9 +56,9 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _dioxideResourceName = ResourceSettings.Config.CarbonDioxideGas;
-            _oxygenResourceName = ResourceSettings.Config.OxygenGas;
-            _monoxideResourceName = ResourceSettings.Config.CarbonMonoxideGas;
+            _dioxideResourceName = KITResourceSettings.CarbonDioxideGas;
+            _oxygenResourceName = KITResourceSettings.OxygenGas;
+            _monoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
 
             _dioxideDensity = PartResourceLibrary.Instance.GetDefinition(_dioxideResourceName).density;
             _oxygenDensity = PartResourceLibrary.Instance.GetDefinition(_oxygenResourceName).density;

@@ -19,9 +19,22 @@ namespace KIT.Resources
 
         // We will track vessel wide stats between ElectricCharge and WasteHeat. Do not change this ordering
         // unless you have consulted ResourceManager.cs and resourceProductionStats, as otherwise you might be in for a surprise.
+
+        /// <summary>
+        /// ElectricCharge by default is measured in Megajoules
+        /// </summary>
         ElectricCharge,
+        /// <summary>
+        /// ThermalPower by default is measured in Megajoules
+        /// </summary>
         ThermalPower,
+        /// <summary>
+        /// ChargedParticle by default is measured in Megajoules
+        /// </summary>
         ChargedParticle,
+        /// <summary>
+        /// WasteHeat by default is measured in Megajoules
+        /// </summary>
         WasteHeat,
         // End vessel wide tracking. The below order is not important.
 
@@ -180,7 +193,13 @@ namespace KIT.Resources
         public static string AntiProtium { get; private set; } = "Antimatter";
         public static string VacuumPlasma { get; private set; } = "VacuumPlasma";
         public static string ExoticMatter { get; private set; } = "ExoticMatter";
+        /// <summary>
+        /// ChargedParticle is measured in Megajoules
+        /// </summary>
         public static string ChargedParticle { get; private set; } = "ChargedParticles";
+        /// <summary>
+        /// ThermalPower is measured in Megajoules
+        /// </summary>
         public static string ThermalPower { get; private set; } = "ThermalPower";
 
         #endregion
@@ -271,6 +290,11 @@ namespace KIT.Resources
 
         private static Dictionary<string, ResourceName> nameToResourceMap;
 
+        /// <summary>
+        /// Converts a string to a given ResourceName identifer.
+        /// </summary>
+        /// <param name="name">Resource name to convert</param>
+        /// <returns>Corresponding ResourceName identifier if found, otherwise Unknown.</returns>
         public static ResourceName NameToResource(string name)
         {
             if (nameToResourceMap == null)

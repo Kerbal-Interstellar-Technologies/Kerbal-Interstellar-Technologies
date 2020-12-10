@@ -76,16 +76,16 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _strRegolithResourceName = ResourceSettings.Config.Regolith;
-            _strHydrogenResourceName = ResourceSettings.Config.HydrogenLqd;
-            _stDeuteriumResourceName = ResourceSettings.Config.DeuteriumGas;
-            _strLiquidHelium3ResourceName = ResourceSettings.Config.Helium3Gas;
-            _strLiquidHelium4ResourceName = ResourceSettings.Config.Helium4Gas;
-            _strMonoxideResourceName = ResourceSettings.Config.CarbonMonoxideGas;
-            _strDioxideResourceName = ResourceSettings.Config.CarbonDioxideLqd;
-            _strMethaneResourceName = ResourceSettings.Config.MethaneLqd;
-            _strNitrogenResourceName = ResourceSettings.Config.NitrogenLqd;
-            _strWaterResourceName = ResourceSettings.Config.WaterPure;
+            _strRegolithResourceName = KITResourceSettings.Regolith;
+            _strHydrogenResourceName = KITResourceSettings.HydrogenLqd;
+            _stDeuteriumResourceName = KITResourceSettings.DeuteriumGas;
+            _strLiquidHelium3ResourceName = KITResourceSettings.Helium3Gas;
+            _strLiquidHelium4ResourceName = KITResourceSettings.Helium4Gas;
+            _strMonoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
+            _strDioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _strMethaneResourceName = KITResourceSettings.MethaneLqd;
+            _strNitrogenResourceName = KITResourceSettings.NitrogenLqd;
+            _strWaterResourceName = KITResourceSettings.WaterPure;
 
             // should add Nitrogen15 and Argon
 
@@ -357,7 +357,7 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_RegolithProcessor_Postmsg") +" " + ResourceSettings.Config.Regolith, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_RegolithProcessor_Postmsg") +" " + KITResourceSettings.Regolith, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

@@ -243,28 +243,28 @@ namespace KIT.Resources
         {
             try
             {
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.WaterPure, "LqdWater", "H2O", "Water", "Water");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.WaterHeavy, "DeuteriumWater", "D2O", "HeavyWater", "HeavyWater");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.WaterPure, "LqdNitrogen", "NitrogenGas", "Nitrogen", "Nitrogen");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.OxygenGas, "LqdOxygen", "OxygenGas", "Oxygen", "Oxygen");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.CarbonDioxideLqd, "LqdCO2", "CO2", "CarbonDioxide", "CarbonDioxide");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.CarbonMonoxideGas, "LqdCO", "CO", "CarbonMonoxide", "CarbonMonoxide");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.MethaneLqd, "LqdMethane", "MethaneGas", "Methane", "Methane");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.ArgonLqd, "LqdArgon", "ArgonGas", "Argon", "Argon");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.DeuteriumLqd, "LqdDeuterium", "DeuteriumGas", "Deuterium", "Deuterium");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.NeonLqd, "LqdNeon", "NeonGas", "Neon", "Neon");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.XenonGas, "LqdXenon", "XenonGas", "Xenon", "Xenon");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.KryptonGas, "LqdKrypton", "KryptonGas", "Krypton", "Krypton");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.Sodium, "LqdSodium", "SodiumGas", "Sodium", "Sodium");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.UraniumNitride, "UraniumNitride", "UN", "UraniumNitride", "UraniumNitride");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.UraniumTetraflouride, "UraniumTetrafluoride", "UraniumTerraFloride", "UF4", "UF");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.Lithium6, "Lithium", "Lithium6", "Lithium-6", "LI");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.Lithium7, "Lithium7", "Lithium-7", "LI7", "Li7");
-                AddResource(refBody, bodyCrustalComposition, ResourceSettings.Config.Plutonium238, "Plutionium", "Blutonium", "PU", "PU238");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.WaterPure, "LqdWater", "H2O", "Water", "Water");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.WaterHeavy, "DeuteriumWater", "D2O", "HeavyWater", "HeavyWater");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.WaterPure, "LqdNitrogen", "NitrogenGas", "Nitrogen", "Nitrogen");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.OxygenGas, "LqdOxygen", "OxygenGas", "Oxygen", "Oxygen");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.CarbonDioxideLqd, "LqdCO2", "CO2", "CarbonDioxide", "CarbonDioxide");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.CarbonMonoxideGas, "LqdCO", "CO", "CarbonMonoxide", "CarbonMonoxide");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.MethaneLqd, "LqdMethane", "MethaneGas", "Methane", "Methane");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.ArgonLqd, "LqdArgon", "ArgonGas", "Argon", "Argon");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.DeuteriumLqd, "LqdDeuterium", "DeuteriumGas", "Deuterium", "Deuterium");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.NeonLqd, "LqdNeon", "NeonGas", "Neon", "Neon");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.XenonGas, "LqdXenon", "XenonGas", "Xenon", "Xenon");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.KryptonGas, "LqdKrypton", "KryptonGas", "Krypton", "Krypton");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.Sodium, "LqdSodium", "SodiumGas", "Sodium", "Sodium");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.UraniumNitride, "UraniumNitride", "UN", "UraniumNitride", "UraniumNitride");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.UraniumTetraflouride, "UraniumTetrafluoride", "UraniumTerraFloride", "UF4", "UF");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.Lithium6, "Lithium", "Lithium6", "Lithium-6", "LI");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.Lithium7, "Lithium7", "Lithium-7", "LI7", "Li7");
+                AddResource(refBody, bodyCrustalComposition, KITResourceSettings.Plutonium238, "Plutionium", "Blutonium", "PU", "PU238");
 
-                AddResource(ResourceSettings.Config.Helium4Lqd, "Helium-4", refBody, bodyCrustalComposition, new[] { "LqdHe4", "Helium4Gas", "Helium4", "Helium-4", "He4Gas", "He4", "LqdHelium", "Helium", "HeliumGas" });
-                AddResource(ResourceSettings.Config.Helium3Lqd, "Helium-3", refBody, bodyCrustalComposition, new[] { "LqdHe3", "Helium3Gas", "Helium3", "Helium-3", "He3Gas", "He3" });
-                AddResource(ResourceSettings.Config.HydrogenLqd, "Hydrogen", refBody, bodyCrustalComposition, new[] { "LqdHydrogen", "HydrogenGas", "Hydrogen", "H2", "Protium" });
+                AddResource(KITResourceSettings.Helium4Lqd, "Helium-4", refBody, bodyCrustalComposition, new[] { "LqdHe4", "Helium4Gas", "Helium4", "Helium-4", "He4Gas", "He4", "LqdHelium", "Helium", "HeliumGas" });
+                AddResource(KITResourceSettings.Helium3Lqd, "Helium-3", refBody, bodyCrustalComposition, new[] { "LqdHe3", "Helium3Gas", "Helium3", "Helium-3", "He3Gas", "He3" });
+                AddResource(KITResourceSettings.HydrogenLqd, "Hydrogen", refBody, bodyCrustalComposition, new[] { "LqdHydrogen", "HydrogenGas", "Hydrogen", "H2", "Protium" });
             }
             catch (Exception ex)
             {
@@ -290,7 +290,7 @@ namespace KIT.Resources
 
         private static void AddMissingResource(string resourname, int refBody, List<CrustalResource> bodyCrustalComposition)
         {
-            if (resourname == ResourceSettings.Config.Regolith)
+            if (resourname == KITResourceSettings.Regolith)
             {
                 Debug.Log("[KSPI]: AddMissingResource : Ignored Regolith");
                 return;
@@ -363,11 +363,11 @@ namespace KIT.Resources
         private static void AddRaresAndIsotopesToCrustComposition(List<CrustalResource> bodyCrustalComposition)
         {
             // add heavywater based on water abundance in crust
-            if (!bodyCrustalComposition.Any(m => m.ResourceName == ResourceSettings.Config.WaterHeavy) && bodyCrustalComposition.Any(m => m.ResourceName == ResourceSettings.Config.WaterPure))
+            if (!bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterHeavy) && bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterPure))
             {
-                var water = bodyCrustalComposition.FirstOrDefault(m => m.ResourceName == ResourceSettings.Config.WaterPure);
+                var water = bodyCrustalComposition.FirstOrDefault(m => m.ResourceName == KITResourceSettings.WaterPure);
                 var heavywaterAbundance = water.ResourceAbundance / 6420;
-                bodyCrustalComposition.Add(new CrustalResource(ResourceSettings.Config.WaterHeavy, heavywaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
+                bodyCrustalComposition.Add(new CrustalResource(KITResourceSettings.WaterHeavy, heavywaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
             }
         }
 

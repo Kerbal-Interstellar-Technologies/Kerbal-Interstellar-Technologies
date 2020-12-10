@@ -29,7 +29,7 @@ namespace KIT.Refinery.Activity
 
         public RefineryType RefineryType => RefineryType.Electrolysis;
 
-        public bool HasActivityRequirements() { return _part.GetConnectedResources(ResourceSettings.Config.AmmoniaLqd).Any(rs => rs.amount > 0);  }
+        public bool HasActivityRequirements() { return _part.GetConnectedResources(KITResourceSettings.AmmoniaLqd).Any(rs => rs.amount > 0);  }
 
         public string Status => string.Copy(_status);
 
@@ -37,9 +37,9 @@ namespace KIT.Refinery.Activity
         {
             _part = localPart;
             _vessel = localPart.vessel;
-            _ammoniaDensity = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.AmmoniaLqd).density;
-            _nitrogenDensity = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.NitrogenLqd).density;
-            _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.HydrogenLqd).density;
+            _ammoniaDensity = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.AmmoniaLqd).density;
+            _nitrogenDensity = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.NitrogenLqd).density;
+            _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenLqd).density;
         }
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
@@ -98,7 +98,7 @@ namespace KIT.Refinery.Activity
             GUILayout.Label((_nitrogenProductionMassRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000") + " mT/" + Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
 
-            part.GetConnectedResourceTotals(ResourceSettings.Config.NitrogenLqd.GetHashCode(), out var amount, out var maxAmount);
+            part.GetConnectedResourceTotals(KITResourceSettings.NitrogenLqd.GetHashCode(), out var amount, out var maxAmount);
             var spareCapacityNitrogen = maxAmount - amount;
 
             GUILayout.BeginHorizontal();
@@ -123,7 +123,7 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_Postmsg") +" " + ResourceSettings.Config.AmmoniaLqd, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_Postmsg") +" " + KITResourceSettings.AmmoniaLqd, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

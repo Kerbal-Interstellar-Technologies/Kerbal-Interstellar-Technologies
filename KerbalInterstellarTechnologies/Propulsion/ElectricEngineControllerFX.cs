@@ -499,7 +499,7 @@ namespace KIT.Propulsion
             ScaleParameters();
 
             // initialise resources
-            //resources_to_supply = new [] { ResourceSettings.Config.WasteHeatInMegawatt };
+            //resources_to_supply = new [] { KITResourceSettings.WasteHeatInMegawatt };
             base.OnStart(state);
 
             AttachToEngine();
@@ -828,7 +828,7 @@ namespace KIT.Propulsion
             {
                 vacplasmaadded = true;
                 var node = new ConfigNode("RESOURCE");
-                node.AddValue("name", ResourceSettings.Config.VacuumPlasma);
+                node.AddValue("name", KITResourceSettings.VacuumPlasma);
                 node.AddValue("maxAmount", scaledMaxPower * 0.0000001);
                 node.AddValue("amount", scaledMaxPower * 0.0000001);
                 part.AddResource(node);
@@ -983,15 +983,15 @@ namespace KIT.Propulsion
 
             throw new Exception("need to implement the below");
             /*
-            totalPowerSupplied = getTotalPowerSupplied(ResourceSettings.Config.ElectricPowerInMegawatt);
-            megaJoulesBarRatio = getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt);
+            totalPowerSupplied = getTotalPowerSupplied(KITResourceSettings.ElectricPowerInMegawatt);
+            megaJoulesBarRatio = getResourceBarRatio(KITResourceSettings.ElectricPowerInMegawatt);
 
             effectiveResourceThrotling = megaJoulesBarRatio > 0.1 ? 1 : megaJoulesBarRatio * 10;
 
-            availableMaximumPower = getAvailablePrioritisedStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+            availableMaximumPower = getAvailablePrioritisedStableSupply(KITResourceSettings.ElectricPowerInMegawatt);
             availableCurrentPower = CheatOptions.InfiniteElectricity
                 ? availableMaximumPower
-                : getAvailablePrioritisedCurrentSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                : getAvailablePrioritisedCurrentSupply(KITResourceSettings.ElectricPowerInMegawatt);
 
             maximumAvailablePowerForEngine = availableMaximumPower * _electricalShareF;
             currentAvailablePowerForEngine = availableCurrentPower * _electricalShareF;
@@ -1132,13 +1132,13 @@ namespace KIT.Propulsion
                 effectPower = currentEffectPower * (1 - maxEffectPowerRatio) + maximumEffectPower * maxEffectPowerRatio;
             }
 
-            var vacuumPlasmaResource = part.Resources[ResourceSettings.Config.VacuumPlasma];
+            var vacuumPlasmaResource = part.Resources[KITResourceSettings.VacuumPlasma];
             if (isupgraded && vacuumPlasmaResource != null)
             {
                 var calculatedConsumptionInTon = vessel.packed ? 0 : simulatedThrustInSpace / engineIsp / GameConstants.STANDARD_GRAVITY;
                 var vacuumPlasmaResourceAmount = calculatedConsumptionInTon * 2000 * TimeWarp.fixedDeltaTime;
                 vacuumPlasmaResource.maxAmount = vacuumPlasmaResourceAmount;
-                part.RequestResource(ResourceSettings.Config.VacuumPlasma, -vacuumPlasmaResource.maxAmount);
+                part.RequestResource(KITResourceSettings.VacuumPlasma, -vacuumPlasmaResource.maxAmount);
             }
             */
         }

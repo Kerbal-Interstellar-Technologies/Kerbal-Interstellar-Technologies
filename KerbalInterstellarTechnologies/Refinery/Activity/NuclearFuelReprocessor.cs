@@ -27,7 +27,7 @@ namespace KIT.Refinery.Activity
 
         public bool HasActivityRequirements()
         {
-            return _part.GetConnectedResources(ResourceSettings.Config.Actinides).Any(rs => rs.amount < rs.maxAmount);
+            return _part.GetConnectedResources(KITResourceSettings.Actinides).Any(rs => rs.amount < rs.maxAmount);
         }
 
         public string Status => string.Copy(_status);
@@ -92,7 +92,7 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_NuclearFuelReprocessor_Postmsg") + " " + ResourceSettings.Config.Actinides, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_NuclearFuelReprocessor_Postmsg") + " " + KITResourceSettings.Actinides, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

@@ -311,7 +311,7 @@ namespace KIT.Wasteheat
             processUpgrades();
 
             var intakeLqdDefinition = PartResourceLibrary.Instance.GetDefinition("IntakeLqd");
-            var intakeAirDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.IntakeOxygenAir);
+            var intakeAirDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeOxygenAir);
             var intakeAtmDefinition = PartResourceLibrary.Instance.GetDefinition("IntakeAtm");
 
             if (intakeLqdDefinition == null || intakeAirDefinition == null || intakeAtmDefinition == null)
@@ -1225,7 +1225,7 @@ namespace KIT.Wasteheat
 
         public override void OnStart(StartState state)
         {
-            string[] resourcesToSupply = { ResourceSettings.Config.WasteHeatInMegawatt };
+            // string[] resourcesToSupply = { KITResourceSettings.WasteHeatInMegawatt };
             // this.resources_to_supply = resourcesToSupply;
 
             base.OnStart(state);
@@ -1333,9 +1333,9 @@ namespace KIT.Wasteheat
                     _moduleActiveRadiator.Shutdown();
             }
 
-            var intakeLqdDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.IntakeLiquid);
-            var intakeAirDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.IntakeOxygenAir);
-            var intakeAtmDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.IntakeAtmosphere);
+            var intakeLqdDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeLiquid);
+            var intakeAirDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeOxygenAir);
+            var intakeAtmDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeAtmosphere);
 
             if (intakeLqdDefinition != null && intakeAirDefinition != null && intakeAtmDefinition != null)
             {

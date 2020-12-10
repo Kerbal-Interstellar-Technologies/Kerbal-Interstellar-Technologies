@@ -52,19 +52,19 @@ namespace KIT.Reactors
 
         public override bool IsNuclear => true;
 
-        public double WasteToReprocess => part.Resources.Contains(ResourceSettings.Config.Actinides) ? part.Resources[ResourceSettings.Config.Actinides].amount : 0;
+        public double WasteToReprocess => part.Resources.Contains(KITResourceSettings.Actinides) ? part.Resources[KITResourceSettings.Actinides].amount : 0;
 
         [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_Dump_Actinides", guiActiveEditor = false, guiActive = true)]
         public void DumpActinides()
         {
-            var actinides = part.Resources[ResourceSettings.Config.Actinides];
+            var actinides = part.Resources[KITResourceSettings.Actinides];
             if (actinides == null)
             {
                 Debug.LogError("[KSPI]: actinides not found on " + part.partInfo.title);
                 return;
             }
 
-            var uranium233 = part.Resources[ResourceSettings.Config.Uranium233];
+            var uranium233 = part.Resources[KITResourceSettings.Uranium233];
             if (uranium233 == null)
             {
                 Debug.LogError("[KSPI]: uranium-233 not found on " + part.partInfo.title);
@@ -82,7 +82,7 @@ namespace KIT.Reactors
         [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_SwapFuel", externalToEVAOnly = true, guiActiveUnfocused = true, guiActive = false, unfocusedRange = 3.5f)]//Swap Fuel
         public void SwapFuelMode()
         {
-            if (!part.Resources.Contains(ResourceSettings.Config.Actinides) || part.Resources[ResourceSettings.Config.Actinides].amount > 0.01) return;
+            if (!part.Resources.Contains(KITResourceSettings.Actinides) || part.Resources[KITResourceSettings.Actinides].amount > 0.01) return;
             DefuelCurrentFuel();
             if (IsCurrentFuelDepleted())
             {
@@ -133,7 +133,7 @@ namespace KIT.Reactors
             Events["SwitchMode"].guiActiveEditor = Events["SwitchMode"].guiActive = Events["SwitchMode"].guiActiveUnfocused = modesAvailable > 1;
         }
 
-        protected double GetLocalResourceRatio(ReactorFuel fuel)
+        protected new double GetLocalResourceRatio(ReactorFuel fuel)
         {
             if (part.Resources.Contains(fuel.ResourceName))
                 return part.Resources[fuel.ResourceName].amount / part.Resources[fuel.ResourceName].maxAmount;
@@ -161,10 +161,10 @@ namespace KIT.Reactors
             foreach (ReactorFuel fuel in CurrentFuelMode.Variants.First().ReactorFuels)
             {
                 // avoid exceptions, just in case
-                if (!part.Resources.Contains(fuel.ResourceName) || !part.Resources.Contains(ResourceSettings.Config.Actinides)) return;
+                if (!part.Resources.Contains(fuel.ResourceName) || !part.Resources.Contains(KITResourceSettings.Actinides)) return;
 
                 var fuelReactor = part.Resources[fuel.ResourceName];
-                var actinidesReactor = part.Resources[ResourceSettings.Config.Actinides];
+                var actinidesReactor = part.Resources[KITResourceSettings.Actinides];
                 var fuelResources = part.vessel.parts.SelectMany(p => p.Resources.Where(r => r.resourceName == fuel.ResourceName && r != fuelReactor)).ToList();
 
                 double spareCapacityForFuel = fuelReactor.maxAmount - actinidesReactor.amount - fuelReactor.amount;
@@ -192,7 +192,7 @@ namespace KIT.Reactors
                     return base.MaximumThermalPower;
                 }
 
-                var actinidesResource = part.Resources[ResourceSettings.Config.Actinides];
+                var actinidesResource = part.Resources[KITResourceSettings.Actinides];
 
                 if (actinidesResource != null)
                 {
@@ -271,10 +271,10 @@ namespace KIT.Reactors
 
             fuelModeStr = CurrentFuelMode.ModeGUIName;
 
-            oxygenGasDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.OxygenGas);
-            fluorineGasDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.FluorineGas);
-            depletedFuelDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.DepletedFuel);
-            enrichedUraniumDefinition = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.EnrichedUranium);
+            oxygenGasDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.OxygenGas);
+            fluorineGasDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.FluorineGas);
+            depletedFuelDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.DepletedFuel);
+            enrichedUraniumDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.EnrichedUranium);
 
             depletedToEnrichVolumeMultplier = enrichedUraniumDefinition.density / depletedFuelDefinition.density;
             fluorineDepletedFuelVolumeMultiplier = ((19 * 4) / 232d) * (depletedFuelDefinition.density / fluorineGasDefinition.density);
@@ -305,11 +305,11 @@ namespace KIT.Reactors
         public override void OnFixedUpdate()
         {
             // if reactor is overloaded with actinides, stop functioning
-            if (IsEnabled && part.Resources.Contains(ResourceSettings.Config.Actinides))
+            if (IsEnabled && part.Resources.Contains(KITResourceSettings.Actinides))
             {
-                if (part.Resources[ResourceSettings.Config.Actinides].amount >= part.Resources[ResourceSettings.Config.Actinides].maxAmount)
+                if (part.Resources[KITResourceSettings.Actinides].amount >= part.Resources[KITResourceSettings.Actinides].maxAmount)
                 {
-                    part.Resources[ResourceSettings.Config.Actinides].amount = part.Resources[ResourceSettings.Config.Actinides].maxAmount;
+                    part.Resources[KITResourceSettings.Actinides].amount = part.Resources[KITResourceSettings.Actinides].maxAmount;
                     IsEnabled = false;
                 }
             }
@@ -323,9 +323,9 @@ namespace KIT.Reactors
 
         public double ReprocessFuel(double rate)
         {
-            if (part.Resources.Contains(ResourceSettings.Config.Actinides))
+            if (part.Resources.Contains(KITResourceSettings.Actinides))
             {
-                var actinides = part.Resources[ResourceSettings.Config.Actinides];
+                var actinides = part.Resources[KITResourceSettings.Actinides];
                 var newActinidesAmount = Math.Max(actinides.amount - rate, 0);
                 var actinidesChange = actinides.amount - newActinidesAmount;
                 actinides.amount = newActinidesAmount;

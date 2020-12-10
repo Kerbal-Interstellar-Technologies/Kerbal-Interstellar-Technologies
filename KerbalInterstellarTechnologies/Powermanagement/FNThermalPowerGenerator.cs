@@ -50,8 +50,6 @@ namespace KIT.Powermanagement
 
         public override void OnStart(PartModule.StartState state)
         {
-            String[] resources = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
-            //this.resources_to_supply = resources;
             base.OnStart(state);
 
             if (state == StartState.Editor)

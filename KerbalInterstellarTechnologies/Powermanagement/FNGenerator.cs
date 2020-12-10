@@ -450,7 +450,8 @@ namespace KIT.Powermanagement
 
             if (stockModuleGenerator != null)
             {
-                outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == ResourceSettings.Config.ElectricPowerInKilowatt);
+                //TODO verify
+                outputModuleResource = stockModuleGenerator.resHandler.outputResources.FirstOrDefault(m => m.name == KITResourceSettings.ElectricCharge);
 
                 if (outputModuleResource != null)
                 {

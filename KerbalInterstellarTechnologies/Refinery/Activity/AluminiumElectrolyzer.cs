@@ -43,9 +43,9 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _aluminaResourceName = ResourceSettings.Config.Alumina;
-            _aluminiumResourceName = ResourceSettings.Config.Aluminium;
-            _oxygenResourceName = ResourceSettings.Config.OxygenGas;
+            _aluminaResourceName = KITResourceSettings.Alumina;
+            _aluminiumResourceName = KITResourceSettings.Aluminium;
+            _oxygenResourceName = KITResourceSettings.OxygenGas;
 
             _aluminaDensity = PartResourceLibrary.Instance.GetDefinition(_aluminaResourceName).density;
             _aluminiumDensity = PartResourceLibrary.Instance.GetDefinition(_aluminiumResourceName).density;

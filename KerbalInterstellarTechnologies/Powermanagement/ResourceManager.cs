@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace KIT.Powermanagement
 {
+    
     public static class ResourceManagerFactory
     {
         // Create the appropriate instance
@@ -15,13 +16,13 @@ namespace KIT.Powermanagement
         {
             ResourceManager result;
 
-            if (resourceName == ResourceSettings.Config.ElectricPowerInMegawatt)
+            if (resourceName == KITResourceSettings.ElectricCharge)
                 result = new MegajoulesResourceManager(id, pm);
-            else if (resourceName == ResourceSettings.Config.WasteHeatInMegawatt)
+            else if (resourceName == KITResourceSettings.WasteHeat)
                 result = new WasteHeatResourceManager(id, pm);
-            else if(resourceName == ResourceSettings.Config.ChargedParticleInMegawatt)
+            else if(resourceName == KITResourceSettings.ChargedParticle)
                 result = new CPResourceManager(id, pm);
-            else if(resourceName == ResourceSettings.Config.ThermalPowerInMegawatt)
+            else if(resourceName == KITResourceSettings.ThermalPower)
                 result = new TPResourceManager(id, pm);
             else
                 result = new DefaultResourceManager(id, pm, resourceName);
@@ -182,7 +183,7 @@ namespace KIT.Powermanagement
             {
                 green_label = new GUIStyle(GUI.skin.label)
                 {
-                    normal = { textColor = resourceName == ResourceSettings.Config.WasteHeatInMegawatt ? Color.red : Color.green },
+                    normal = { textColor = resourceName == KITResourceSettings.WasteHeat ? Color.red : Color.green },
                     font = PluginHelper.MainFont,
                     alignment = TextAnchor.MiddleRight
                 };
@@ -192,7 +193,7 @@ namespace KIT.Powermanagement
             {
                 red_label = new GUIStyle(GUI.skin.label)
                 {
-                    normal = { textColor = resourceName == ResourceSettings.Config.WasteHeatInMegawatt ? Color.green : Color.red },
+                    normal = { textColor = resourceName == KITResourceSettings.WasteHeat ? Color.green : Color.red },
                     font = PluginHelper.MainFont,
                     alignment = TextAnchor.MiddleRight
                 };
@@ -241,7 +242,7 @@ namespace KIT.Powermanagement
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            string new_power_label = (resourceName == ResourceSettings.Config.WasteHeatInMegawatt) ? Localizer.Format("#LOC_KSPIE_ResourceManager_NetChange") : Localizer.Format("#LOC_KSPIE_ResourceManager_NetPower");//"Net Change""Net Power"
+            string new_power_label = (resourceName == KITResourceSettings.WasteHeat) ? Localizer.Format("#LOC_KSPIE_ResourceManager_NetChange") : Localizer.Format("#LOC_KSPIE_ResourceManager_NetPower");//"Net Change""Net Power"
             GUILayout.Label(new_power_label, left_bold_label, GUILayout.ExpandWidth(true));
 
             GUIStyle net_poer_style = netChange < -0.001 ? red_label : green_label;
@@ -249,7 +250,7 @@ namespace KIT.Powermanagement
             GUILayout.Label(PluginHelper.getFormattedPowerString(netChange), net_poer_style, GUILayout.ExpandWidth(false), GUILayout.MinWidth(OVERVIEW_WIDTH));
             GUILayout.EndHorizontal();
 
-            if (!netUtilization.IsInfinityOrNaN() && (resourceName != ResourceSettings.Config.ElectricPowerInMegawatt || netUtilization < 2.0 || ResourceSupply >= last.Demand))
+            if (!netUtilization.IsInfinityOrNaN() && (resourceName != KITResourceSettings.ElectricCharge || netUtilization < 2.0 || ResourceSupply >= last.Demand))
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(Localizer.Format("#LOC_KSPIE_ResourceManager_Utilisation"), left_bold_label, GUILayout.ExpandWidth(true));//"Utilisation"
@@ -329,7 +330,7 @@ namespace KIT.Powermanagement
                     int count = group.Count();
                     if (count > 1)
                         name = count + " * " + name;
-                    if (sumRequest > 0.0 && resourceName == ResourceSettings.Config.ElectricPowerInMegawatt && utilization < 0.995)
+                    if (sumRequest > 0.0 && resourceName == KITResourceSettings.ElectricCharge && utilization < 0.995)
                         name = name + " " + utilization.ToString("P0");
 
                     summaryList.Add(new PowerConsumption(name, priority, sumRequest));
@@ -642,7 +643,7 @@ namespace KIT.Powermanagement
                 }
 
                 // Efficiency throttling - prefer starving low priority consumers if supply efficiency is very low
-                if (supplyEfficiencyRatio < minRatio && resourceName == ResourceSettings.Config.ElectricPowerInMegawatt)
+                if (supplyEfficiencyRatio < minRatio && resourceName == KITResourceSettings.ElectricCharge)
                     maxRequest *= Math.Max(0.0, supplyEfficiencyRatio) / minRatio;
 
                 if (!maxRequest.IsInfinityOrNaNorZero())
@@ -723,4 +724,6 @@ namespace KIT.Powermanagement
             }
         }
     }
+
+    
 }

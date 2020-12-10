@@ -337,7 +337,7 @@ namespace KIT
 
         public ApplicationLauncherButton InitializeApplicationButton()
         {
-            _appIcon = GameDatabase.Instance.GetTexture("WarpPlugin/Category/WarpPlugin", false);
+            appIcon = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/Category/WarpPlugin", false);
 
             if (_appIcon == null) return null;
 
@@ -361,22 +361,22 @@ namespace KIT
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                FlightUIStarter.hide_button = false;
-                FlightUIStarter.show_window = true;
+                ResourceManagerFlightUI.hide_button = false;
+                ResourceManagerFlightUI.show_window = true;
                 VABThermalUI.renderWindow = false;
             }
             else
             {
-                FlightUIStarter.hide_button = false;
-                FlightUIStarter.show_window = false;
+                ResourceManagerFlightUI.hide_button = false;
+                ResourceManagerFlightUI.show_window = false;
                 VABThermalUI.renderWindow = true;
             }
         }
 
         void OnAppLauncherDeactivate()
         {
-            FlightUIStarter.hide_button = true;
-            FlightUIStarter.show_window = false;
+            ResourceManagerFlightUI.hide_button = true;
+            ResourceManagerFlightUI.show_window = false;
             VABThermalUI.renderWindow = false;
         }
 

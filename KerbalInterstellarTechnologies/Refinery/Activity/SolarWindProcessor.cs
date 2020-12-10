@@ -91,22 +91,22 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _solarWindResourceName = ResourceSettings.Config.SolarWind;
+            _solarWindResourceName = KITResourceSettings.SolarWind;
 
-            _hydrogenLiquidResourceName = ResourceSettings.Config.HydrogenLqd;
-            _hydrogenGasResourceName = ResourceSettings.Config.HydrogenGas;
-            _deuteriumLiquidResourceName = ResourceSettings.Config.DeuteriumLqd;
-            _deuteriumGasResourceName = ResourceSettings.Config.DeuteriumGas;
-            _helium3LiquidResourceName = ResourceSettings.Config.Helium3Lqd;
-            _helium3GasResourceName = ResourceSettings.Config.Helium3Gas;
-            _helium4LiquidResourceName = ResourceSettings.Config.Helium4Lqd;
-            _helium4GasResourceName = ResourceSettings.Config.Helium4Gas;
-            _monoxideLiquidResourceName = ResourceSettings.Config.CarbonMonoxideLqd;
-            _monoxideGasResourceName = ResourceSettings.Config.CarbonMonoxideGas;
-            _nitrogenLiquidResourceName = ResourceSettings.Config.NitrogenLqd;
-            _nitrogenGasResourceName = ResourceSettings.Config.NitrogenGas;
-            _neonLiquidResourceName = ResourceSettings.Config.NeonLqd;
-            _neonGasResourceName = ResourceSettings.Config.NeonGas;
+            _hydrogenLiquidResourceName = KITResourceSettings.HydrogenLqd;
+            _hydrogenGasResourceName = KITResourceSettings.HydrogenGas;
+            _deuteriumLiquidResourceName = KITResourceSettings.DeuteriumLqd;
+            _deuteriumGasResourceName = KITResourceSettings.DeuteriumGas;
+            _helium3LiquidResourceName = KITResourceSettings.Helium3Lqd;
+            _helium3GasResourceName = KITResourceSettings.Helium3Gas;
+            _helium4LiquidResourceName = KITResourceSettings.Helium4Lqd;
+            _helium4GasResourceName = KITResourceSettings.Helium4Gas;
+            _monoxideLiquidResourceName = KITResourceSettings.CarbonMonoxideLqd;
+            _monoxideGasResourceName = KITResourceSettings.CarbonMonoxideGas;
+            _nitrogenLiquidResourceName = KITResourceSettings.NitrogenLqd;
+            _nitrogenGasResourceName = KITResourceSettings.NitrogenGas;
+            _neonLiquidResourceName = KITResourceSettings.NeonLqd;
+            _neonGasResourceName = KITResourceSettings.NeonGas;
 
             _solarWindDensity = PartResourceLibrary.Instance.GetDefinition(_solarWindResourceName).density;
 
@@ -430,7 +430,7 @@ namespace KIT.Refinery.Activity
 
         public void PrintMissingResources()
         {
-            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SolarWindProcessor_Postmsg") +" " + ResourceSettings.Config.SolarWind, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+            ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_SolarWindProcessor_Postmsg") +" " + KITResourceSettings.SolarWind, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

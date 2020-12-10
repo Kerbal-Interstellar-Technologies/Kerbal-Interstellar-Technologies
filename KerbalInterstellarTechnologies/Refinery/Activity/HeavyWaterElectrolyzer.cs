@@ -48,7 +48,7 @@ namespace KIT.Refinery.Activity
 
         public RefineryType RefineryType => RefineryType.Electrolysis;
 
-        public bool HasActivityRequirements() {  return _part.GetConnectedResources(ResourceSettings.Config.WaterHeavy).Any(rs => rs.amount > 0);   }
+        public bool HasActivityRequirements() {  return _part.GetConnectedResources(KITResourceSettings.WaterHeavy).Any(rs => rs.amount > 0);   }
 
         public string Status => string.Copy(_status);
 
@@ -56,9 +56,9 @@ namespace KIT.Refinery.Activity
         {
             _part = localPart;
 
-            _waterHeavyResourceName = ResourceSettings.Config.WaterHeavy;
-            _oxygenResourceName = ResourceSettings.Config.OxygenGas;
-            _deuteriumResourceName = ResourceSettings.Config.DeuteriumGas;
+            _waterHeavyResourceName = KITResourceSettings.WaterHeavy;
+            _oxygenResourceName = KITResourceSettings.OxygenGas;
+            _deuteriumResourceName = KITResourceSettings.DeuteriumGas;
 
             _vessel = localPart.vessel;
             _heavyWaterDensity = PartResourceLibrary.Instance.GetDefinition(_waterHeavyResourceName).density;

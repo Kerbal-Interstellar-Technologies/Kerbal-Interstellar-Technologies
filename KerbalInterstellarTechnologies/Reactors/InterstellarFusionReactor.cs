@@ -218,11 +218,10 @@ namespace KIT.Reactors
             PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_FissionPB_CurrentMaxMaintenance"), electricPowerMaintenance, boldStyle, textStyle);//"Current/Max Fusion Maintenance"
         }
 
-        public override void OnFixedUpdate()
+        public new void KITFixedUpdate(IResourceManager resMan)
         {
             lithium_modifier = LithiumModifier;
-
-            base.OnFixedUpdate();
+            base.KITFixedUpdate(resMan);
 
             // determine amount of power needed
             required_reactor_ratio = Math.Max(minReactorRatio, reactor_power_ratio >= reactorRatioThreshold ? reactor_power_ratio : 0);

@@ -30,7 +30,10 @@ namespace KIT.ResourceScheduler
         public bool PreviousDataSupplied() => _previouslySupplied != 0 && _previouslyRequested != 0;
     }
 
-    /// <summary>
+    public struct PerPartResourceInformation
+    {
+        public double amount, maxAmount;
+    }
 
     public class ResourceManager : IResourceManager, IResourceScheduler
     {
@@ -48,26 +51,30 @@ namespace KIT.ResourceScheduler
 
         public bool UseThisToHelpWithTesting;
 
+        public Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>> ModConsumption;
+        public Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>> ModProduction;
 
         public ResourceManager(IVesselResources vesselResources, ICheatOptions cheatOptions)
         {
             this.vesselResources = vesselResources;
             this.myCheatOptions = cheatOptions;
 
-            resourceFlow = new List<KeyValuePair<IKITMod, double>>[(int)ResourceName.EndResource];
-            for (int i = 0; i < (int) ResourceName.EndResource; i++)
-            {
-                resourceFlow[i] = new List<KeyValuePair<IKITMod, double>>(64);
-            }
-
             resourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat - ResourceName.ElectricCharge)];
+
+            ModProduction = new Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>>();
+            ModConsumption = new Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>>();
+            for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
+            {
+                ModProduction[i] = new Dictionary<IKITMod, PerPartResourceInformation>();
+                ModConsumption[i] = new Dictionary<IKITMod, PerPartResourceInformation>();
+            }
         }
 
         #region IResourceManager implementation
         ICheatOptions IResourceManager.CheatOptions() => myCheatOptions;
         private bool inExecuteKITModules;
 
-        public List<KeyValuePair<IKITMod, double>>[] resourceFlow;
+        // public List<KeyValuePair<IKITMod, double>>[] resourceFlow;
 
         /// <summary>
         /// Called by the IKITMod to consume resources present on a vessel. It automatically converts the wanted amount by the appropriate value to
@@ -80,18 +87,33 @@ namespace KIT.ResourceScheduler
         {
             KITResourceSettings.ValidateResource(resource);
 
-            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
-                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlyRequested += wanted;
-            
+            PerPartResourceInformation tmpPPRI;
             if (!inExecuteKITModules)
             {
                 Debug.Log("[KITResourceManager.ConsumeResource] don't do this.");
                 return 0;
             }
+            tmpPPRI.amount = tmpPPRI.maxAmount = 0;
+
+            var lastMod = modsCurrentlyRunning.Last();
+
+            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
+            {
+                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlyRequested += wanted;
+
+                if (!ModConsumption[resource].ContainsKey(lastMod))
+                {
+                    ModConsumption[resource][lastMod] = new PerPartResourceInformation();
+                }
+                tmpPPRI = ModConsumption[resource][lastMod];
+                tmpPPRI.maxAmount += wanted;
+            }
+            
 
             if (myCheatOptions.InfiniteElectricity && resource == ResourceName.ElectricCharge)
             {
-                resourceFlow[(int)ResourceName.ElectricCharge].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
+                tmpPPRI.amount += wanted;
+                ModConsumption[resource][lastMod] = tmpPPRI;
                 return wanted;
             }
 
@@ -112,7 +134,11 @@ namespace KIT.ResourceScheduler
 
             if (obtainedAmount >= modifiedAmount)
             {
-                resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
+                // resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
+
+                tmpPPRI.amount += wanted;
+                ModConsumption[resource][lastMod] = tmpPPRI;
+
                 return wanted;
             }
 
@@ -128,7 +154,10 @@ namespace KIT.ResourceScheduler
 
             // is it close enough to being fully requested? (accounting for precision issues)
             var result = (modifiedAmount * fudgeFactor <= obtainedAmount) ? wanted : wanted * (obtainedAmount / modifiedAmount);
-            resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -result));
+
+            tmpPPRI.amount += result;
+            ModConsumption[resource][lastMod] = tmpPPRI;
+
             return result;
         }
 
@@ -149,18 +178,34 @@ namespace KIT.ResourceScheduler
         {
             KITResourceSettings.ValidateResource(resource);
 
-            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
-                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlySupplied += amount;
-
-            //Debug.Log($"ProduceResource {resource} - {amount}");
-
             if (!inExecuteKITModules)
             {
                 Debug.Log("[KITResourceManager.ProduceResource] don't do this.");
                 return;
             }
 
-            resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), amount));
+            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
+            {
+                resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlySupplied += amount;
+
+                var lastMod = modsCurrentlyRunning.Last();
+
+                if(ModProduction[resource].ContainsKey(lastMod) == false)
+                {
+                    var tmpPPRI = new PerPartResourceInformation();
+                    tmpPPRI.amount = amount;
+                    tmpPPRI.maxAmount = (max == -1) ? 0 : max;
+                    ModProduction[resource][lastMod] = tmpPPRI;
+                }
+                else
+                {
+                    var tmpPPRI = ModProduction[resource][lastMod];
+                    tmpPPRI.amount += amount;
+                    tmpPPRI.maxAmount += (max == -1) ? 0 : max;
+                    ModProduction[resource][lastMod] = tmpPPRI;
+                }
+            }
+
 
             if (resource == ResourceName.WasteHeat && myCheatOptions.IgnoreMaxTemperature) return;
 
@@ -181,6 +226,8 @@ namespace KIT.ResourceScheduler
 
         private bool complainedToWaiterAboutOrder;
 
+        public ulong  KITSteps;
+
         /// <summary>
         /// ExecuteKITModules() does the heavy work of executing all the IKITMod FixedUpdate() equiv. It needs to be careful to ensure
         /// it is using the most recent list of modules, hence the odd looping code. In the case of no part updates are needed, it's
@@ -191,6 +238,8 @@ namespace KIT.ResourceScheduler
         void IResourceScheduler.ExecuteKITModules(double deltaTime, ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
         {
             int index = 0;
+
+            KITSteps++;
 
             currentResources = resourceAmounts;
             currentMaxResources = resourceMaxAmounts;
@@ -204,6 +253,12 @@ namespace KIT.ResourceScheduler
                 resourceProductionStats[i]._currentlyRequested = resourceProductionStats[i]._currentlySupplied =
                     resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._previouslySupplied = 
                     0;
+            }
+
+            for(var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
+            {
+                ModConsumption[i].Clear();
+                ModProduction[i].Clear();
             }
 
             tappedOutMods.Clear();

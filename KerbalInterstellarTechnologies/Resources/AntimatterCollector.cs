@@ -37,7 +37,7 @@ namespace KIT.Resources
 
         public override void OnStart(PartModule.StartState state)
         {
-            _antimatterDef = PartResourceLibrary.Instance.GetDefinition(ResourceSettings.Config.AntiProtium);
+            _antimatterDef = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.AntiProtium);
 
             _moduleAnimateGeneric = part.FindModuleImplementing<ModuleAnimateGeneric>();
 

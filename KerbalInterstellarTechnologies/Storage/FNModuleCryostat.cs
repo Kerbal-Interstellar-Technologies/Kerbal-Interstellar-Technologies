@@ -98,13 +98,9 @@ namespace KIT
             part.skinTemperature = storedTemp;
 
             // if electricCharge buffer is missing, add it.
-            if (!part.Resources.Contains(ResourceSettings.Config.ElectricPowerInKilowatt))
+            if (!part.Resources.Contains(KITResourceSettings.ElectricCharge))
             {
-                var node = new ConfigNode("RESOURCE");
-                node.AddValue("name", ResourceSettings.Config.ElectricPowerInKilowatt);
-                node.AddValue("maxAmount", requiresPower ? powerReqKW / 50 : 1);
-                node.AddValue("amount", requiresPower ? powerReqKW / 50 : 1);
-                part.AddResource(node);
+                Debug.Log($"{part.ClassName} with {this.moduleName} is missing an Electric Charge Resource. Please fix.");
             }
         }
 
