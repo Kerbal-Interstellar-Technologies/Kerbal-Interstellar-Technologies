@@ -16,15 +16,15 @@ namespace KIT
         public static bool usingToolbar;
         protected static bool resourcesConfigured;
 
-        private static Dictionary<string, RDTech> rdTechByName;
+        private static Dictionary<string, RDTech> _rdTechByName;
 
         public static Dictionary<string, RDTech> RDTechByName
         {
             get
             {
-                if (rdTechByName != null) return rdTechByName;
+                if (_rdTechByName != null) return _rdTechByName;
 
-                rdTechByName = new Dictionary<string, RDTech>();
+                _rdTechByName = new Dictionary<string, RDTech>();
 
                 // catalog part upgrades
                 ConfigNode[] techTreeConfigs = GameDatabase.Instance.GetConfigNodes("TechTree");
@@ -41,16 +41,16 @@ namespace KIT
 
                         var tech = new RDTech {techID = techNode.GetValue("id"), title = techNode.GetValue("title")};
 
-                        if (rdTechByName.ContainsKey(tech.techID))
+                        if (_rdTechByName.ContainsKey(tech.techID))
                             Debug.LogError("[KSPI]: Duplicate error: skipped technode id: " + tech.techID + " title: " + tech.title);
                         else
                         {
                             Debug.Log("[KSPI]: PluginHelper technode id: " + tech.techID + " title: " + tech.title);
-                            rdTechByName.Add(tech.techID, tech);
+                            _rdTechByName.Add(tech.techID, tech);
                         }
                     }
                 }
-                return rdTechByName;
+                return _rdTechByName;
             }
         }
 
@@ -197,9 +197,9 @@ namespace KIT
 
             string persistentFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
 
-            ConfigNode config = ConfigNode.Load(persistentFile);
-            ConfigNode gameConfig = config.GetNode("GAME");
-            ConfigNode[] scenarios = gameConfig.GetNodes("SCENARIO");
+            var config = ConfigNode.Load(persistentFile);
+            var gameConfig = config.GetNode("GAME");
+            var scenarios = gameConfig.GetNodes("SCENARIO");
 
             foreach (ConfigNode scenario in scenarios)
             {
@@ -266,7 +266,7 @@ namespace KIT
 
         public static ConfigNode GetPluginSaveFile()
         {
-            ConfigNode config = ConfigNode.Load(PluginSaveFilePath);
+            var config = ConfigNode.Load(PluginSaveFilePath);
             if (config != null) return config;
             config = new ConfigNode();
             config.AddValue("writtenat", DateTime.Now.ToString(CultureInfo.InvariantCulture));
@@ -459,15 +459,15 @@ namespace KIT
             }
         }
 
-        private static Font mainFont;
+        private static Font _mainFont;
         public static Font MainFont
         {
             get
             {
-                if (mainFont == null)
-                    mainFont = Font.CreateDynamicFontFromOSFont("Arial", 11);
+                if (_mainFont == null)
+                    _mainFont = Font.CreateDynamicFontFromOSFont("Arial", 11);
 
-                return mainFont;
+                return _mainFont;
             }
         }
 
