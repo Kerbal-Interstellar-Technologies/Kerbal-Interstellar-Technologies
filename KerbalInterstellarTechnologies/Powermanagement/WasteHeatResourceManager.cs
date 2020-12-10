@@ -20,17 +20,17 @@ namespace KIT.Powermanagement
             RadiatorEfficiency = 0.0;
         }
 
-        protected override double AdjustSupplyComplete(double timeWarpDT, double powerToExtract)
+        protected override double AdjustSupplyComplete(double timeWarpDeltaTime, double powerToExtract)
         {
             // passive dissip of waste heat - a little bit of this
-            double vessel_mass = Vessel.totalMass;
-            powerToExtract += 2.0 * PASSIVE_TEMP_P4 * GameConstants.stefan_const * vessel_mass * timeWarpDT;
+            double vesselMass = Vessel.totalMass;
+            powerToExtract += 2.0 * PASSIVE_TEMP_P4 * GameConstants.stefan_const * vesselMass * timeWarpDeltaTime;
 
             if (Vessel.altitude <= PluginHelper.GetMaxAtmosphericAltitude(Vessel.mainBody))
             {
                 // passive convection - a lot of this
                 double pressure = FlightGlobals.getStaticPressure(Vessel.transform.position) / GameConstants.EarthAtmospherePressureAtSeaLevel;
-                powerToExtract += 40.0e-6 * GameConstants.rad_const_h * pressure * vessel_mass * timeWarpDT;
+                powerToExtract += 40.0e-6 * GameConstants.rad_const_h * pressure * vesselMass * timeWarpDeltaTime;
             }
             return powerToExtract;
         }

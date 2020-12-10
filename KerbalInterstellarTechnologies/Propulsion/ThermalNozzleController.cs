@@ -93,7 +93,7 @@ namespace KIT.Propulsion
         public float maxFuelFlowOnEngine;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowMultplier", guiFormat = "F5")]//Fuelflow Multiplier on engine
         public double fuelflowMultplier;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelflowThrotlemodifier", guiFormat = "F5")]//Fuelflow Throtle modifier
+        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelflowThrotlemodifier", guiFormat = "F5")]//Fuelflow Throttle modifier
         public double fuelFlowThrottleModifier = 1;
 
         [KSPField] public double fuelflowThrottleMaxValue = 100;
@@ -392,7 +392,7 @@ namespace KIT.Propulsion
         private float _jetTechBonusPercentage;
         private float _jetTechBonusCurveChange;
 
-        private int _windowID;
+        private int _windowId;
         private int _switches;
 
         private bool _fuelRequiresUpgrade;
@@ -487,7 +487,7 @@ namespace KIT.Propulsion
             // update simulation
             EstimateEditorPerformance();
             UpdateRadiusModifier();
-           
+
             UpdateIspEngineParams(tzrmi);
         }
 
@@ -548,6 +548,19 @@ namespace KIT.Propulsion
             }
         }
 
+        public double ReactorWasteheatModifier
+        {
+            get
+            {
+                var baseWasteheatEfficiency = isPlasmaNozzle ? wasteheatEfficiencyHighTemperature : wasteheatEfficiencyLowTemperature;
+                var reactorWasteheatModifier = AttachedReactor == null ? 1 : isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMult : AttachedReactor.EngineWasteheatProductionMult;
+                var wasteheatEfficiencyModifier = (1 - baseWasteheatEfficiency) * reactorWasteheatModifier;
+                if (_fuelCoolingFactor > 0)
+                    wasteheatEfficiencyModifier /= _fuelCoolingFactor;
+                return wasteheatEfficiencyModifier;
+            }
+        }
+
         public bool PropellantAbsorbsNeutrons => _isNeutronAbsorber;
 
         public bool RequiresPlasmaHeat => UsePlasmaPower;
@@ -582,11 +595,10 @@ namespace KIT.Propulsion
             {
                 var symThermalNozzle = symPart.FindModuleImplementing<ThermalEngineController>();
 
-                if (symThermalNozzle != null)
-                {
-                    Debug.Log("[KSPI]: called DetachWithReactor on symmetryCounterpart");
-                    symThermalNozzle.DetachWithReactor();
-                }
+                if (symThermalNozzle == null) continue;
+
+                Debug.Log("[KSPI]: called DetachWithReactor on symmetryCounterpart");
+                symThermalNozzle.DetachWithReactor();
             }
 
             DetachWithReactor();
@@ -613,10 +625,10 @@ namespace KIT.Propulsion
 
             tzrmi = new TECZeroResourceManagerInterface();
 
-            _windowID = new System.Random(part.GetInstanceID()).Next(int.MaxValue);
+            _windowId = new System.Random(part.GetInstanceID()).Next(int.MaxValue);
             windowPosition = new Rect(windowPositionX, windowPositionY, windowWidth, 10);
 
-            _windowID = new System.Random(part.GetInstanceID()).Next(int.MaxValue);
+            _windowId = new System.Random(part.GetInstanceID()).Next(int.MaxValue);
             windowPosition = new Rect(windowPositionX, windowPositionY, windowWidth, 10);
 
             _flameoutText = Localizer.Format("#autoLOC_219016");
@@ -858,7 +870,7 @@ namespace KIT.Propulsion
             UpdateRadiusModifier();
 
             UpdateIspEngineParams(tzrmi);
-            
+
         }
 
         // Note: does not seem to be called while in vab mode
@@ -1295,7 +1307,7 @@ namespace KIT.Propulsion
 
                 _atmosphereCurve.Add(0, effectiveIsp, 0, 0);
 
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat); 
+                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
                 var wasteheatModifier = wasteheatRatioDecelerationMult > 0 ? Math.Max((1 - wasteheatRatio) * wasteheatRatioDecelerationMult, 1) : 1;
 
                 if (AttachedReactor != null)
@@ -1563,14 +1575,16 @@ namespace KIT.Propulsion
 
         private void GenerateThrustFromReactorHeat(IResourceManager resMan)
         {
-            GetMaximumIspAndThrustMultiplier(resMan);
+            // shutdown engine when connected heatSource cannot produce power
+            if (!AttachedReactor.CanProducePower)
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ThermalNozzleController_PostMsg5"), 0.02f, ScreenMessageStyle.UPPER_CENTER);//"no power produced by thermal source!"
 
             // consume power when plasma nozzle
             if (requiredMegajouleRatio > 0)
             {
-                var requested_megajoules = (availableThermalPower + availableChargedPower) * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
-                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requested_megajoules * GameConstants.ecPerMJ);
-                receivedMegajoulesRatio = requested_megajoules > 0 ? availablePower / requested_megajoules : 0;
+                var requestedMegajoules = (availableThermalPower + availableChargedPower) * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
+                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedMegajoules * GameConstants.ecPerMJ);
+                receivedMegajoulesRatio = requestedMegajoules > 0 ? availablePower / requestedMegajoules : 0;
 
                 requestedElectricPowerMegajoules = availablePower * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
                 //var receivedMegajoules = consumeFNResourcePerSecond(requestedElectricPowerMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
@@ -2092,7 +2106,7 @@ namespace KIT.Propulsion
         public void OnGUI()
         {
             if (vessel == FlightGlobals.ActiveVessel && render_window)
-                windowPosition = GUILayout.Window(_windowID, windowPosition, Window, part.partInfo.title);
+                windowPosition = GUILayout.Window(_windowId, windowPosition, Window, part.partInfo.title);
         }
 
         private void Window(int windowId)
@@ -2209,7 +2223,7 @@ namespace KIT.Propulsion
 
             // TODO verify if this is correct..
             effectiveThermalSupply = effectiveChargedSupply = 0;
-            
+
             if (! UseChargedPowerOnly)
             {
                 var results = resMan.ResourceProductionStats(ResourceName.ThermalPower);
@@ -2218,7 +2232,7 @@ namespace KIT.Propulsion
                     effectiveThermalSupply = results.PreviousDataSupplied() ? results.PreviouslySupplied() : results.CurrentSupplied();
                 }
             }
-            
+
             if(canUseChargedPower)
             {
                 var results = resMan.ResourceProductionStats(ResourceName.ChargedParticle);
@@ -2381,7 +2395,7 @@ namespace KIT.Propulsion
 
         }
 
-        // TODO de-duplicate this entry 
+        // TODO de-duplicate this entry
         public string KITPartName() => $"{part.partInfo.title} {Localizer.Format("#LOC_KSPIE_ThermalNozzleController_nozzle")}";
     }
 }
