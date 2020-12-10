@@ -102,7 +102,7 @@ namespace KIT.Resources
         IntakeOxygenAir,
         IntakeLiquid,
         IntakeAtmosphere,
-        
+
         EndResource,
     }
 
@@ -187,7 +187,7 @@ namespace KIT.Resources
         public static string WaterRaw { get; private set; } = "LqdWater";
         public static string XenonGas { get; private set; } = "XenonGas";
         public static string XenonLqd { get; private set; } = "LqdXenon";
-#endregion
+        #endregion
 
         #region Pseudo resources
         public static string AntiProtium { get; private set; } = "Antimatter";
@@ -326,6 +326,106 @@ namespace KIT.Resources
                 throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
         }
 
-     
+
+        private static void UpdatePropertyWithConfigNode(ConfigNode pluginSettings, string resourceName, Action<string> property)
+        {
+            if (!pluginSettings.HasValue(resourceName + "ResourceName")) return;
+
+            var value = pluginSettings.GetValue(resourceName + "ResourceName");
+            property(value);
+            Debug.Log("[KIT]: " + resourceName + " resource name set to " + property);
+        }
+
+        private static bool _warningDisplayed;
+
+        static KITResourceSettings()
+        {
+            var configRoot = GameDatabase.Instance.GetConfigNodes("KIT_PLUGIN_SETTINGS");
+            if (configRoot == null || configRoot.Count() == 0)
+            {
+                if (_warningDisplayed) return;
+                // Localizer.Format() does not work during game initialization, as Unity is not ready for it to call some functions that it does.
+                var errorMessage = "KSP Interstellar is unable to detect files required for proper functioning.  Please make sure that this mod has been installed to [Base KSP directory]/GameData/Kerbal-Interstellar-Technologies.";
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "KIT Error", "Kerbal Interstellar Technologies Installation Error", errorMessage, "OK", false, HighLogic.UISkin);
+
+                _warningDisplayed = true;
+
+            }
+
+            var pluginSettings = configRoot[0];
+
+            // chemical resources
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Actinides), value => Actinides = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Aluminium), value => Aluminium = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Alumina), value => Alumina = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(AmmoniaLqd), value => AmmoniaLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ArgonLqd), value => ArgonLqd = value);
+
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(CarbonDioxideGas), value => CarbonDioxideGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(CarbonDioxideLqd), value => CarbonDioxideLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(CarbonMonoxideGas), value => CarbonMonoxideGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(CarbonMonoxideLqd), value => CarbonMonoxideLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ChlorineGas), value => ChlorineGas = value);
+
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(DeuteriumGas), value => DeuteriumGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(DeuteriumLqd), value => DeuteriumLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(FluorineGas), value => FluorineGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Helium4Gas), value => Helium4Gas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Helium4Lqd), value => Helium4Lqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Helium3Gas), value => Helium3Gas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Helium3Lqd), value => Helium3Lqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(HydrogenGas), value => HydrogenGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(HydrogenLqd), value => HydrogenLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(HydrogenPeroxide), value => HydrogenPeroxide = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Hydrazine), value => Hydrazine = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(KryptonGas), value => KryptonGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(KryptonLqd), value => KryptonLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Lithium6), value => Lithium6 = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Lithium7), value => Lithium7 = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(MethaneGas), value => MethaneGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(MethaneLqd), value => MethaneLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(NeonGas), value => NeonGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(NeonLqd), value => NeonLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(NitrogenGas), value => NitrogenGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(NitrogenLqd), value => NitrogenLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Nitrogen15Lqd), value => Nitrogen15Lqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(OxygenGas), value => OxygenGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(OxygenLqd), value => OxygenLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Regolith), value => Regolith = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Sodium), value => Sodium = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(SolarWind), value => SolarWind = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(WaterPure), value => WaterPure = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(WaterRaw), value => WaterRaw = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(WaterHeavy), value => WaterHeavy = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(TritiumGas), value => TritiumGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(TritiumLqd), value => TritiumLqd = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(XenonGas), value => XenonGas = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(XenonLqd), value => XenonLqd = value);
+
+            // abstract resources
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(IntakeAtmosphere), value => IntakeAtmosphere = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(IntakeOxygenAir), value => IntakeOxygenAir = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(IntakeLiquid), value => IntakeOxygenAir = value);
+
+            // nuclear resources
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(DepletedFuel), value => DepletedFuel = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(EnrichedUranium), value => EnrichedUranium = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Plutonium238), value => Plutonium238 = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ThoriumTetraflouride), value => ThoriumTetraflouride = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(Uranium233), value => Uranium233 = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(UraniumNitride), value => UraniumNitride = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(UraniumTetraflouride), value => UraniumTetraflouride = value);
+
+            // pseudo resources
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ElectricCharge), value => ElectricCharge = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ChargedParticle), value => ChargedParticle = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ThermalPower), value => ThermalPower = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(WasteHeat), value => WasteHeat = value);
+
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(AntiProtium), value => AntiProtium = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(ExoticMatter), value => ExoticMatter = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(VacuumPlasma), value => VacuumPlasma = value);
+        }
+
     }
 }
