@@ -102,7 +102,7 @@ namespace KIT.Resources
         IntakeOxygenAir,
         IntakeLiquid,
         IntakeAtmosphere,
-        
+
         EndResource,
     }
 
@@ -326,6 +326,6 @@ namespace KIT.Resources
                 throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
         }
 
-     
+
     }
 }

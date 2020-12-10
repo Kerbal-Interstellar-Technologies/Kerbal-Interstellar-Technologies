@@ -24,36 +24,21 @@ namespace KIT
         public double storedTemp = 0;
 
         // Confiration
-        [KSPField]
-        public string resourceName = "";
-        [KSPField]
-        public string resourceGUIName = "";
-        [KSPField]
-        public double boilOffRate = 0;
-        [KSPField]
-        public double powerReqKW = 0;
-        [KSPField]
-        public double powerReqMult = 1;
-        [KSPField]
-        public double boilOffMultiplier = 0;
-        [KSPField]
-        public double boilOffBase = 10000;
-        [KSPField]
-        public double boilOffAddition = 0;
-        [KSPField]
-        public double boilOffTemp = 20.271;
-        [KSPField]
-        public double convectionMod = 1;
-        [KSPField]
-        public bool showPower = true;
-        [KSPField]
-        public bool showBoiloff = true;
-        [KSPField]
-        public bool showTemp = true;
-        [KSPField]
-        public bool warningShown;
-        [KSPField]
-        public int initializationCountdown = 10;
+        [KSPField] public string resourceName = "";
+        [KSPField] public string resourceGUIName = "";
+        [KSPField] public double boilOffRate = 0;
+        [KSPField] public double powerReqKW = 0;
+        [KSPField] public double powerReqMult = 1;
+        [KSPField] public double boilOffMultiplier = 0;
+        [KSPField] public double boilOffBase = 10000;
+        [KSPField] public double boilOffAddition = 0;
+        [KSPField] public double boilOffTemp = 20.271;
+        [KSPField] public double convectionMod = 1;
+        [KSPField] public bool showPower = true;
+        [KSPField] public bool showBoiloff = true;
+        [KSPField] public bool showTemp = true;
+        [KSPField] public bool warningShown;
+        [KSPField] public int initializationCountdown = 10;
 
         //GUI
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Power")]//Power

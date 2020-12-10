@@ -181,12 +181,11 @@ namespace KIT.Resources
         CelestialBody _localStar;
         CelestialBody _homeWorld;
 
-        
         PartResourceDefinition _helium4GasResourceDefinition;
         PartResourceDefinition _lqdHelium4ResourceDefinition;
         PartResourceDefinition _hydrogenResourceDefinition;
         PartResourceDefinition _solarWindResourceDefinition;
-        
+
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_activateCollector", active = true)]
         public void ActivateCollector()
         {

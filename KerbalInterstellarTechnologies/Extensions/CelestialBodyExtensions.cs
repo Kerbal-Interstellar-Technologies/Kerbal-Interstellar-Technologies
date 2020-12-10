@@ -20,7 +20,7 @@ namespace KIT.Extensions
 
         public static double GetBeltAntiparticles(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
         {
-            if (body.flightGlobalsIndex != 0 && altitude <= PluginHelper.GetMaxAtmosphericAltitude(body))  
+            if (body.flightGlobalsIndex != 0 && altitude <= PluginHelper.GetMaxAtmosphericAltitude(body))
                 return 0;
 
             BeltData beltdata;
@@ -30,19 +30,19 @@ namespace KIT.Extensions
                 double relrp = body.Radius / homeworld.Radius;
                 double relrt = body.rotationPeriod / homeworld.rotationPeriod;
 
-                beltdata = new BeltData() 
+                beltdata = new BeltData()
                 {
                     density = body.Mass / homeworld.Mass * relrp / relrt * 50,
-                    ampere = 1.5 * homeworld.Radius * relrp / sqrt2, 
+                    ampere = 1.5 * homeworld.Radius * relrp / sqrt2,
                 };
 
                 BeltDataCache.Add(body.name, beltdata);
             }
 
             double beltparticles = beltdata.density
-                * sqrt2divPi 
+                * sqrt2divPi
                 * Math.Pow(altitude, 2)
-                * Math.Exp(-Math.Pow(altitude, 2) / (2 * Math.Pow(beltdata.ampere, 2))) 
+                * Math.Exp(-Math.Pow(altitude, 2) / (2 * Math.Pow(beltdata.ampere, 2)))
                 / (Math.Pow(beltdata.ampere, 3));
 
             if (KopernicusHelper.GetLuminocity(body) > 0)
@@ -130,7 +130,7 @@ namespace KIT.Extensions
 
         public static double specialMagneticFieldScaling(this CelestialBody body)
         {
-            return MagneticFieldDefinitionsHandler.GetMagneticFieldDefinitionForBody(body.name).StrengthMult; 
+            return MagneticFieldDefinitionsHandler.GetMagneticFieldDefinitionForBody(body.name).StrengthMult;
         }
 
         public static double GetBeltMagneticFieldMagnitude(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
@@ -177,7 +177,7 @@ namespace KIT.Extensions
             return Bmag;
         }
 
-        public static double getBeltMagneticFieldAzimuthal(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
+        public static double GetBeltMagneticFieldAzimuthal(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
         {
             double mlat = lat / 180 * Math.PI + Math.PI / 2;
 

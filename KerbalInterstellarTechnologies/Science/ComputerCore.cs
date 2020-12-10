@@ -76,34 +76,22 @@ namespace KIT
         public double electrical_power_ratio;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_Datastored", guiActive = true, guiActiveEditor = false)]//Data stored
         public double science_to_add;
-        [KSPField(isPersistant = true)]
-        public bool coreInit = false;
-        [KSPField]
-        public string upgradeTechReq = null;
-        [KSPField]
-        public string upgradedName = "";
-        [KSPField]
-        public string originalName = "";
-        [KSPField]
-        public float upgradeCost = 100;
-        [KSPField]
-        public float megajouleRate = 1;
-        [KSPField]
-        public float upgradedMegajouleRate = 10;
-        [KSPField]
-        public double powerReqMult = 1;
-        [KSPField]
-        public double activeAIControlDistance = 1.0e+13; // Distance from the Large Multi Bandwidth Dish Transciever
-        [KSPField]
-        public double inactiveAIControlDistance = 100000;
+
+        [KSPField(isPersistant = true)] public bool coreInit = false;
+        [KSPField] public string upgradeTechReq = null;
+        [KSPField] public string upgradedName = "";
+        [KSPField] public string originalName = "";
+        [KSPField] public float upgradeCost = 100;
+        [KSPField] public float megajouleRate = 1;
+        [KSPField] public float upgradedMegajouleRate = 10;
+        [KSPField] public double powerReqMult = 1;
+        [KSPField] public double activeAIControlDistance = 1.0e+13; // Distance from the Large Multi Bandwidth Dish Transciever
+        [KSPField] public double inactiveAIControlDistance = 100000;
 
         //Gui
-        [KSPField]
-        const double baseScienceRate = 0.3;
-        [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Type")]//Type
-        public string computercoreType;
-        [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Upgrade")]//Upgrade
-        public string upgradeCostStr;
+        [KSPField] const double baseScienceRate = 0.3;
+        [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Type")] public string computercoreType;
+        [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Upgrade")] public string upgradeCostStr;
 
         // Privates
         double _scienceRateF;
@@ -352,7 +340,7 @@ namespace KIT
                 resMan.ProduceResource(ResourceName.ElectricCharge, powerReturned);
                 return;
             }
-            
+
             part.isControlSource = Vessel.ControlLevel.FULL;
 
             if (vessel != null && vessel.connection != null)
