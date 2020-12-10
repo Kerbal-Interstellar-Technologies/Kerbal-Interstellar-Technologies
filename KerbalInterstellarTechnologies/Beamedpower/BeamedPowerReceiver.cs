@@ -468,69 +468,69 @@ namespace KIT
             // do nothing
         }
 
-        public double FuelRato { get { return 1; } }
+        public double FuelRato => 1;
 
-        public double MagneticNozzlePowerMult { get { return 1; } }
+        public double MagneticNozzlePowerMult => 1;
 
-        public bool MayExhaustInAtmosphereHomeworld { get { return true; } }
+        public bool MayExhaustInAtmosphereHomeworld => true;
 
-        public bool MayExhaustInLowSpaceHomeworld { get { return true; } }
+        public bool MayExhaustInLowSpaceHomeworld => true;
 
-        public double MinThermalNozzleTempRequired { get { return 0; } }
+        public double MinThermalNozzleTempRequired => 0;
 
-        public double CurrentMeVPerChargedProduct { get { return 0; } }
+        public double CurrentMeVPerChargedProduct => 0;
 
-        public bool UsePropellantBaseIsp { get { return false; } }
+        public bool UsePropellantBaseIsp => false;
 
-        public bool CanUseAllPowerForPlasma { get { return false; } }
+        public bool CanUseAllPowerForPlasma => false;
 
-        public bool CanProducePower { get { return ProducedThermalHeat > 0; } }
+        public bool CanProducePower => ProducedThermalHeat > 0;
 
-        public double MinCoolingFactor { get { return minCoolingFactor; } }
+        public double MinCoolingFactor => minCoolingFactor;
 
-        public double EngineHeatProductionMult { get { return engineHeatProductionMult; } }
+        public double EngineHeatProductionMult => engineHeatProductionMult;
 
-        public double PlasmaHeatProductionMult { get { return plasmaHeatProductionMult; } }
+        public double PlasmaHeatProductionMult => plasmaHeatProductionMult;
 
-        public double EngineWasteheatProductionMult { get { return engineWasteheatProductionMult; } }
+        public double EngineWasteheatProductionMult => engineWasteheatProductionMult;
 
-        public double PlasmaWasteheatProductionMult { get { return plasmaWasteheatProductionMult; } }
+        public double PlasmaWasteheatProductionMult => plasmaWasteheatProductionMult;
 
-        public int ReceiverType { get { return receiverType; } }
+        public int ReceiverType => receiverType;
 
-        public double Diameter { get { return diameter; } }
+        public double Diameter => diameter;
 
-        public double ApertureMultiplier { get { return apertureMultiplier; } }
+        public double ApertureMultiplier => apertureMultiplier;
 
-        public double MaximumWavelength { get { return maximumWavelength; } }
+        public double MaximumWavelength => maximumWavelength;
 
-        public double MinimumWavelength { get { return minimumWavelength; } }
+        public double MinimumWavelength => minimumWavelength;
 
-        public double HighSpeedAtmosphereFactor { get { return highSpeedAtmosphereFactor; } }
+        public double HighSpeedAtmosphereFactor => highSpeedAtmosphereFactor;
 
-        public double FacingThreshold { get { return facingThreshold; } }
+        public double FacingThreshold => facingThreshold;
 
-        public double FacingSurfaceExponent { get { return facingSurfaceExponent; } }
+        public double FacingSurfaceExponent => facingSurfaceExponent;
 
-        public double FacingEfficiencyExponent { get { return facingEfficiencyExponent; } }
+        public double FacingEfficiencyExponent => facingEfficiencyExponent;
 
-        public double SpotsizeNormalizationExponent { get { return spotsizeNormalizationExponent; } }
+        public double SpotsizeNormalizationExponent => spotsizeNormalizationExponent;
 
-        public Part Part { get { return this.part; } }
+        public Part Part => this.part;
 
         public Vessel Vessel { get { return this.vessel; } }
 
-        public int ProviderPowerPriority { get { return 1; } }
+        public int ProviderPowerPriority => 1;
 
-        public double ConsumedFuelFixed { get { return 0; } }
+        public double ConsumedFuelFixed => 0;
 
-        public double ProducedThermalHeat { get { return powerInputMegajoules; } }
+        public double ProducedThermalHeat => powerInputMegajoules;
 
-        public double ProducedChargedPower { get { return 0; } }
+        public double ProducedChargedPower => 0;
 
-        public double PowerRatio { get { return maximumConsumptionPercentage / 100d; } }
+        public double PowerRatio => maximumConsumptionPercentage / 100d;
 
-        public double ProducedPower { get { return ProducedThermalHeat; } }
+        public double ProducedPower => ProducedThermalHeat;
 
         public double PowerCapacityEfficiency
         {
@@ -661,21 +661,21 @@ namespace KIT
                 connectedEngines.Remove(fnEngine);
         }
 
-        public int SupportedPropellantAtoms { get { return supportedPropellantAtoms; } }
+        public int SupportedPropellantAtoms => supportedPropellantAtoms;
 
-        public int SupportedPropellantTypes { get { return supportedPropellantTypes; } }
+        public int SupportedPropellantTypes => supportedPropellantTypes;
 
-        public bool FullPowerForNonNeutronAbsorbants { get { return true; } }
+        public bool FullPowerForNonNeutronAbsorbants => true;
 
-        public double ReactorSpeedMult { get { return 1; } }
+        public double ReactorSpeedMult => 1;
 
-        public double ThermalProcessingModifier { get { return thermalProcessingModifier; } }
+        public double ThermalProcessingModifier => thermalProcessingModifier;
 
-        public double ThermalPropulsionWasteheatModifier { get { return 1; } }
+        public double ThermalPropulsionWasteheatModifier => 1;
 
-        public double EfficencyConnectedThermalEnergyGenerator { get { return storedIsThermalEnergyGeneratorEfficiency; } }
+        public double EfficencyConnectedThermalEnergyGenerator => storedIsThermalEnergyGeneratorEfficiency;
 
-        public double EfficencyConnectedChargedEnergyGenerator { get { return 0; } }
+        public double EfficencyConnectedChargedEnergyGenerator => 0;
 
         public IElectricPowerGeneratorSource ConnectedThermalElectricGenerator { get; set; }
 
@@ -696,14 +696,11 @@ namespace KIT
 
         public void NotifyActiveChargedEnergyGenerator(double efficency, double power_ratio, double mass) { }
 
-        public bool IsThermalSource
-        {
-            get { return this.isThermalReceiver; }
-        }
+        public bool IsThermalSource => this.isThermalReceiver;
 
-        public double RawMaximumPowerForPowerGeneration { get { return powerInputMegajoulesMax; } }
+        public double RawMaximumPowerForPowerGeneration => powerInputMegajoulesMax;
 
-        public double RawMaximumPower { get { return MaximumRecievePower; } }
+        public double RawMaximumPower => MaximumRecievePower;
 
         public bool ShouldApplyBalance(ElectricGeneratorType generatorType) { return false; }
 
@@ -767,31 +764,31 @@ namespace KIT
         public double PlasmaEnergyEfficiency { get { return 0; } }
         public double ChargedParticleEnergyEfficiency { get { return 0; } }
 
-        public bool IsSelfContained { get { return false; } }
+        public bool IsSelfContained => false;
 
-        public double CoreTemperature { get { return hothBathTemperature; } }
+        public double CoreTemperature => hothBathTemperature;
 
-        public double MaxCoreTemperature { get { return hothBathTemperature; } }
+        public double MaxCoreTemperature => hothBathTemperature;
 
-        public double HotBathTemperature { get { return hothBathTemperature; } }
+        public double HotBathTemperature => hothBathTemperature;
 
-        public double StableMaximumReactorPower { get { return RawMaximumPower; } }
+        public double StableMaximumReactorPower => RawMaximumPower;
 
-        public double MaximumPower { get { return MaximumThermalPower; } }
+        public double MaximumPower => MaximumThermalPower;
 
-        public double MaximumThermalPower { get { return HighLogic.LoadedSceneIsEditor ? maximumThermalPower * powerMult : ThermalPower; } }
+        public double MaximumThermalPower => HighLogic.LoadedSceneIsEditor ? maximumThermalPower * powerMult : ThermalPower;
 
-        public double NormalisedMaximumPower { get { return ThermalPower; } }
+        public double NormalisedMaximumPower => ThermalPower;
 
-        public double MaximumChargedPower { get { return 0; } }
+        public double MaximumChargedPower => 0;
 
-        public double MinimumPower { get { return 0; } }
+        public double MinimumPower => 0;
 
-        public bool IsVolatileSource { get { return true; } }
+        public bool IsVolatileSource => true;
 
-        public bool IsActive { get { return receiverIsEnabled; } }
+        public bool IsActive => receiverIsEnabled;
 
-        public bool IsNuclear { get { return false; } }
+        public bool IsNuclear => false;
 
         [KSPAction("Toggle Receiver Interface")]
         public void ToggleWindow()
@@ -1769,7 +1766,7 @@ namespace KIT
                         : beamedPowerData.TransmitPower;
 
                     // calculate maximum power avialable from beamed power network
-                    beamedPowerData.PowerUsageOthers = getEnumeratedPowerFromSatelliteForAllLoadedVessels(beamedPowerData.Transmitter);
+                    beamedPowerData.PowerUsageOthers = GetEnumeratedPowerFromSatelliteForAllLoadedVessels(beamedPowerData.Transmitter);
 
                     // add to available network power
                     beamedPowerData.NetworkPower = beamedPowerData.NetworkCapacity;
@@ -1947,10 +1944,7 @@ namespace KIT
             }
         }
 
-        public double MaxStableMegaWattPower
-        {
-            get { return isThermalReceiver ? 0 : powerInputMegajoules; }
-        }
+        public double MaxStableMegaWattPower => isThermalReceiver ? 0 : powerInputMegajoules;
 
         public virtual double GetCoreTempAtRadiatorTemp(double radTemp)
         {
@@ -1962,10 +1956,7 @@ namespace KIT
             return ThermalPower;
         }
 
-        public double Radius
-        {
-            get { return radius; }
-        }
+        public double Radius => radius;
 
         public bool isActive()
         {
@@ -1999,18 +1990,18 @@ namespace KIT
             return 0;
         }
 
-        public static double getEnumeratedPowerFromSatelliteForAllLoadedVessels(VesselMicrowavePersistence vmp)
+        public static double GetEnumeratedPowerFromSatelliteForAllLoadedVessels(VesselMicrowavePersistence vmp)
         {
-            double enumerated_power = 0;
-            foreach (Vessel vess in FlightGlobals.Vessels)
+            double enumeratedPower = 0;
+            foreach (Vessel vessel in FlightGlobals.Vessels)
             {
-                var receivers = vess.FindPartModulesImplementing<BeamedPowerReceiver>();
+                var receivers = vessel.FindPartModulesImplementing<BeamedPowerReceiver>();
                 foreach (BeamedPowerReceiver receiver in receivers)
                 {
-                    enumerated_power += receiver.GetCurrentReceiverdPower(vmp);
+                    enumeratedPower += receiver.GetCurrentReceiverdPower(vmp);
                 }
             }
-            return enumerated_power;
+            return enumeratedPower;
         }
 
         private string WavelengthToText(double wavelength)
@@ -2086,9 +2077,10 @@ namespace KIT
 
                 initialGeneratorPowerEC = outputModuleResource.rate;
 
-                mockInputResource = new ModuleResource();
-                mockInputResource.name = outputModuleResource.name;
-                mockInputResource.id = outputModuleResource.name.GetHashCode();
+                mockInputResource = new ModuleResource
+                {
+                    name = outputModuleResource.name, id = outputModuleResource.name.GetHashCode()
+                };
 
                 stockModuleGenerator.resHandler.inputResources.Add(mockInputResource);
             }
@@ -2189,7 +2181,7 @@ namespace KIT
 
                             resMan.ProduceResource(ResourceName.ThermalPower, total_thermal_power_provided);
                             var powerGeneratedResult = total_thermal_power_provided;
-                            
+
                             if (!CheatOptions.IgnoreMaxTemperature)
                             {
                                 // TODO fix me.
@@ -2236,23 +2228,23 @@ namespace KIT
                         effectiveSolarThermalElectricEfficiency = wasteheatElectricConversionEfficiency * solarElectricEfficiency;
                         effectiveBeamedPowerElectricEfficiency = wasteheatElectricConversionEfficiency * electricMaxEfficiency;
 
-                        var total_beamed_electric_power_available = thermalSolarInputMegajoules * effectiveSolarThermalElectricEfficiency + total_beamed_power * effectiveBeamedPowerElectricEfficiency;
-                        var total_beamed_electric_power_provided = Math.Min(MaximumRecievePower, total_beamed_electric_power_available);
+                        var totalBeamedElectricPowerAvailable = thermalSolarInputMegajoules * effectiveSolarThermalElectricEfficiency + total_beamed_power * effectiveBeamedPowerElectricEfficiency;
+                        var totalBeamedElectricPowerProvided = Math.Min(MaximumRecievePower, totalBeamedElectricPowerAvailable);
 
-                        if (!(total_beamed_electric_power_provided > 0)) return;
+                        if (!(totalBeamedElectricPowerProvided > 0)) return;
 
                         var minimumRequestedPower = MaximumRecievePower * (minimumConsumptionPercentage / 100d);
-                        var calculatedMinimumRatio = Math.Min(1, minimumRequestedPower / total_beamed_electric_power_provided);
+                        var calculatedMinimumRatio = Math.Min(1, minimumRequestedPower / totalBeamedElectricPowerProvided);
 
                         // TODO what
                         // var powerGeneratedResult = managedPowerSupplyPerSecondMinimumRatio(total_beamed_electric_power_provided, total_beamed_electric_power_provided, calculatedMinimumRatio, ResourceSettings.Config.ElectricPowerInMegawatt);
                         // var supply_ratio = powerGeneratedResult.CurrentProvided / total_beamed_electric_power_provided;
 
-                        var powerGeneratedResult = total_beamed_electric_power_provided;
+                        var powerGeneratedResult = totalBeamedElectricPowerProvided;
                         var supply_ratio = 1;
-                        resMan.ProduceResource(ResourceName.ElectricCharge, total_beamed_electric_power_provided);
+                        resMan.ProduceResource(ResourceName.ElectricCharge, totalBeamedElectricPowerProvided);
 
-                        // only generate wasteheat from beamed power when actualy using the energy
+                        // only generate wasteheat from beamed power when actually using the energy
                         if (!CheatOptions.IgnoreMaxTemperature)
                         {
                             var solarWasteheat = thermalSolarInputMegajoules * (1 - effectiveSolarThermalElectricEfficiency);

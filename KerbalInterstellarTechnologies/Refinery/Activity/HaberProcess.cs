@@ -1,5 +1,4 @@
 ﻿using KIT.Constants;
-using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
