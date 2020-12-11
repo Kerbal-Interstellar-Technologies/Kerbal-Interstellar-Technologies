@@ -886,8 +886,8 @@ namespace KIT.Powermanagement
 
         private double CalculateElectricalPowerCurrentlyNeeded(IResourceManager resMan)
         {
-            if (isLimitedByMinThrotle)
-                return attachedPowerSource.MinimumPower;
+            //if (isLimitedByMinThrotle)
+            //    return attachedPowerSource.MinimumPower;
 
             var powerStats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
             return Math.Min(maximumElectricPower, powerStats.PreviousDataSupplied() ? powerStats.PreviouslyRequested() : powerStats.CurrentlyRequested());

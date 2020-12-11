@@ -16,12 +16,14 @@ namespace KIT.Reactors
 
         [KSPField(isPersistant = true)] public double peltierEfficency;
         [KSPField(isPersistant = true)] public double wattsPerGram;
+        [KSPField(isPersistant = true, guiName = "Mass Remaining", guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massInKilograms = 1;
+        [KSPField(isPersistant = true)] public double halfLifeInSeconds;
+        [KSPField(isPersistant = true, guiName = "Radioactive Isotope", guiActive = true, guiActiveEditor = true, guiUnits = " kg")])] public string radioisotopeFuel;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " EC/s", guiFormat = "F2")] public double currentPowerOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW/s", guiFormat = "F4")] public double currentPowerOutput;
 
         [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "Waste Heat Output", guiUnits = " KW/s", guiFormat = "F2")] public double wasteHeatOutput;
 
-        private int rtgResourceIndex = -1;
 
         /*
          * Per AntaresMC, The typical RTG has a mass ratio of about 1.1 and a peltier of about 10% efficiency.
@@ -54,33 +56,11 @@ namespace KIT.Reactors
          * FissionProducts seems worse than Plutonium-238 
          */
 
-        private void FindResourceIndex()
-        {
-            for (rtgResourceIndex = 0; rtgResourceIndex < part.Resources.Count; rtgResourceIndex++)
-            {
-                if (part.Resources[rtgResourceIndex].resourceName == "WasteHeat") continue;
-                break;
-            }
-            if (rtgResourceIndex == part.Resources.Count)
-            {
-                rtgResourceIndex = -1;
-                return;
-            }
-
-            var resourceDefinition = PartResourceLibrary.Instance.GetDefinition(part.Resources[rtgResourceIndex].resourceName);
-            if (resourceDefinition == null)
-            {
-                Debug.Log($"[KITRadioisotopeGenerator.FindResourceIndex] unable to GetDefinition({part.Resources[rtgResourceIndex].resourceName})");
-                rtgResourceIndex = -2;
-                return;
-            }
-
-        }
 
         private void PowerGeneratedPerSecond(out double electricalCurrentInKW, out double wasteHeatInKW)
         {
             // convert tonnes to grams
-            var heatInWatts = (part.Resources[rtgResourceIndex].amount * 1e+6) * wattsPerGram;
+            var heatInWatts = (massInKilograms * 1000) * wattsPerGram;
             var powerInWatts = heatInWatts * peltierEfficency;
 
             var heatGeneratedInKW = heatInWatts / (1e+3);
@@ -88,11 +68,17 @@ namespace KIT.Reactors
             wasteHeatInKW = heatGeneratedInKW - electricalCurrentInKW;
         }
 
+        private void DecayFuel(IResourceManager resMan)
+        {
+            double perSecondDecayConstant = 1 / halfLifeInSeconds;
+            double originalMassInKilograms = massInKilograms;
+            massInKilograms = originalMassInKilograms * Math.Exp(-perSecondDecayConstant * resMan.FixedDeltaTime());
+            
+            // decay products being generated.
+        }
+
         public void Update()
         {
-            if (rtgResourceIndex == -1 || part.Resources[rtgResourceIndex].resourceName == "WasteHeat") FindResourceIndex();
-            if (rtgResourceIndex < 0) return;
-
             PowerGeneratedPerSecond(out currentPowerOutput, out wasteHeatOutput);
         }
 
@@ -100,14 +86,13 @@ namespace KIT.Reactors
         {
             if (!HighLogic.LoadedSceneIsFlight) return;
 
-            if (rtgResourceIndex < 0) return;
-
             double energyExtractedInKW, wasteHeatInKW;
 
             PowerGeneratedPerSecond(out energyExtractedInKW, out wasteHeatInKW);
-
             resMan.ProduceResource(ResourceName.ElectricCharge, energyExtractedInKW);
             resMan.ProduceResource(ResourceName.WasteHeat, wasteHeatInKW);
+            
+            DecayFuel(resMan);
         }
 
         public string KITPartName() => "#LOC_KIT_RTG_PartName";

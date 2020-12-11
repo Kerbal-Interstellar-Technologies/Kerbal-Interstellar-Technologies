@@ -962,9 +962,9 @@ namespace KIT.Beamedpower
                     var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
                     var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
 
-                    var effectiveResourceThrotling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
+                    var effectiveResourceThrottling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
 
-                    requestedPower = Math.Min(Math.Min(power_capacity, availablePower) * powerTransmissionRatio, effectiveResourceThrotling * availablePower);
+                    requestedPower = Math.Min(Math.Min(power_capacity, availablePower) * powerTransmissionRatio, effectiveResourceThrottling * availablePower);
                 }
 
                 double receivedPower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
