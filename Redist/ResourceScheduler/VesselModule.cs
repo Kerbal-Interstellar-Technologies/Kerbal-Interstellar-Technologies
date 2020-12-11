@@ -48,6 +48,7 @@ namespace KIT.ResourceScheduler
             if (resourceDecayConfiguration == null)
                 resourceDecayConfiguration = ResourceDecayConfiguration.Instance();
 
+            refreshEventOccurred = true;
         }
 
         private SortedDictionary<ResourceName, SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>> variableSupplierModules = new SortedDictionary<ResourceName, SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>>();
@@ -140,11 +141,11 @@ namespace KIT.ResourceScheduler
 
                     if (prepend)
                     {
-                        sortedModules[priority].Prepend(mod);
+                        sortedModules[priority].Insert(0, mod);
                     }
                     else
                     {
-                        sortedModules[priority].Append(mod);
+                        sortedModules[priority].Add(mod);
                     }
 
                     // Now handle the variable consumption side of things
@@ -167,11 +168,11 @@ namespace KIT.ResourceScheduler
 
                         if (prepend)
                         {
-                            modules[priority].Prepend(supmod);
+                            modules[priority].Insert(0, supmod);
                         }
                         else
                         {
-                            modules[priority].Append(supmod);
+                            modules[priority].Add(supmod);
                         }
 
                     }
@@ -190,8 +191,6 @@ namespace KIT.ResourceScheduler
                 // Use an KITDecayResource() module, and look for those above. then add any resources to the decay list.
                 #endregion
             }
-
-
 
             if (sortedModules.Count() == 0)
             {
@@ -417,5 +416,6 @@ namespace KIT.ResourceScheduler
             // nothing worth writing home about.
         }
         #endregion
+
     }
 }

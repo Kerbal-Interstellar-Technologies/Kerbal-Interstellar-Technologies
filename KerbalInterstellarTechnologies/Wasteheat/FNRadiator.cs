@@ -1790,9 +1790,7 @@ namespace KIT.Wasteheat
                     else
                         _explodeCounter = 0;
 
-                    Debug.Log($"[FNRadiator.KITFixedUpdate] radiator efficiency levels need to be done");
-                    // _thermalPowerDissipationPerSecond = wasteheatManager.RadiatorEfficiency * deltaTempToPowerFour * _stefanArea;
-                    _thermalPowerDissipationPerSecond = 1 * deltaTempToPowerFour * _stefanArea;
+                    _thermalPowerDissipationPerSecond = resMan.ResourceFillFraction(ResourceName.WasteHeat) * deltaTempToPowerFour * _stefanArea;
 
                     if (double.IsNaN(_thermalPowerDissipationPerSecond))
                         Debug.LogWarning("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in _thermalPowerDissipationPerSecond");
@@ -1811,9 +1809,7 @@ namespace KIT.Wasteheat
                 }
                 else
                 {
-                    Debug.Log($"[FNRadiator.KITFixedUpdate] radiator efficiency levels need to be done");
-                    //_thermalPowerDissipationPerSecond = wasteheatManager.RadiatorEfficiency * deltaTempToPowerFour * _stefanArea * 0.5;
-                    _thermalPowerDissipationPerSecond = 1 * deltaTempToPowerFour * _stefanArea * 0.5;
+                    _thermalPowerDissipationPerSecond = resMan.ResourceFillFraction(ResourceName.WasteHeat) * deltaTempToPowerFour * _stefanArea * 0.5;
 
                     _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
 
@@ -1838,9 +1834,7 @@ namespace KIT.Wasteheat
 
                     var heatTransferCoefficient = (part.submergedPortion > 0) ? lqdHeatTransferCoefficient : airHeatTransferCoefficient;
 
-                    Debug.Log($"[FNRadiator.KITFixedUpdate] radiator efficiency levels need to be done CanConvect");
-                    //var convPowerDissipation = wasteheatManager.RadiatorEfficiency * atmosphere_modifier * temperatureDifference * effectiveRadiatorArea * heatTransferCoefficient;
-                    var convPowerDissipation = 1 * atmosphere_modifier * temperatureDifference * effectiveRadiatorArea * heatTransferCoefficient;
+                    var convPowerDissipation = resMan.ResourceFillFraction(ResourceName.WasteHeat) * atmosphere_modifier * temperatureDifference * effectiveRadiatorArea * heatTransferCoefficient;
 
                     if (!radiatorIsEnabled)
                         convPowerDissipation *= 0.25;

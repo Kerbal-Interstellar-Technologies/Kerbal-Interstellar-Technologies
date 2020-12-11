@@ -22,9 +22,9 @@ namespace KIT.ResourceScheduler
             if (!initialized && HighLogic.LoadedSceneIsGame | HighLogic.LoadedSceneIsFlight)
             {
                 GameEvents.onVesselGoOnRails.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
+                GameEvents.onVesselGoOffRails.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
                 GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
                 GameEvents.onVesselPartCountChanged.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
-                GameEvents.onVesselGoOffRails.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
                 GameEvents.onVesselLoaded.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
                 GameEvents.onPartDestroyed.Add(new EventData<Part>.OnEvent(refreshActiveParts));
                 GameEvents.onPartPriorityChanged.Add(new EventData<Part>.OnEvent(refreshActiveParts));
