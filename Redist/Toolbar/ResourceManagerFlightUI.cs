@@ -162,7 +162,7 @@ namespace KIT
             dialog.Add(new DialogGUIHorizontalLayout(consumers.ToArray()));
             dialog.Add(new DialogGUIButton("Close", () => { }, 140f, 30f, true));
 
-            Rect pos = new Rect(0.5f, 0.5f, 50, 50);
+            Rect pos = new Rect(0.5f, 0.5f, 550, 550);
             PopupDialog.SpawnPopupDialog(/*new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), */new MultiOptionDialog(
                 "ThisIsMyName",
                 "Quick summary, are we good?",
@@ -213,8 +213,11 @@ namespace KIT
 
             previousStepCount = stepCount;
 
-            if(stepCount++ % 25 == 0)
-                Debug.Log($"{resourceName}, current Supply: {currentSupply}, current Demand: {currentDemand}\nProducers:\n{String.Join("\n", resourceProducers)}\nConsumers:\n{String.Join("\n", resourceConsumers)}\n");
+            //if(stepCount++ % 25 == 0)
+            //    Debug.Log($"{resourceName}, current Supply: {currentSupply}, current Demand: {currentDemand}\nProducers:\n{String.Join("\n", resourceProducers)}\nConsumers:\n{String.Join("\n", resourceConsumers)}\n");
+
+            DoWindow();
+
         }
 
     }
