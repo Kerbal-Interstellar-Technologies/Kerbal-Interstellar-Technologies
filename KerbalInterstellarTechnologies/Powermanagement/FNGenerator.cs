@@ -884,25 +884,13 @@ namespace KIT.Powermanagement
         }
         */
 
-        private double CalculateElectricalPowerCurrentlyNeeded()
+        private double CalculateElectricalPowerCurrentlyNeeded(IResourceManager resMan)
         {
-            throw new Exception("implement CalculateElectricalPowerCurrentlyNeeded");
-            /*
-            megajouleBarRatio = getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt);
-            megajoulePecentage = megajouleBarRatio * 100;
-
             if (isLimitedByMinThrotle)
                 return attachedPowerSource.MinimumPower;
 
-            currentUnfilledResourceDemand = Math.Max(0, GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt));
-
-            spareResourceCapacity = getSpareResourceCapacity(ResourceSettings.Config.ElectricPowerInMegawatt);
-            maxStableMegaWattPower = MaxStableMegaWattPower;
-
-            possibleSpareResourceCapacityFilling = Math.Min(spareResourceCapacity, maxStableMegaWattPower);
-
-            return Math.Min(maximumElectricPower, currentUnfilledResourceDemand + possibleSpareResourceCapacityFilling);
-            */
+            var powerStats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+            return Math.Min(maximumElectricPower, powerStats.PreviousDataSupplied() ? powerStats.PreviouslyRequested() : powerStats.CurrentlyRequested());
         }
         
 
@@ -1018,8 +1006,7 @@ namespace KIT.Powermanagement
                         return;
                     }
 
-                    // TODO fix this.
-                    electrical_power_currently_needed = CalculateElectricalPowerCurrentlyNeeded();
+                    electrical_power_currently_needed = CalculateElectricalPowerCurrentlyNeeded(resMan);
 
                     effectiveThermalPowerNeededForElectricity = electrical_power_currently_needed / _totalEff;
 
@@ -1098,7 +1085,7 @@ namespace KIT.Powermanagement
 
                     if (_totalEff <= 0) return;
 
-                    electrical_power_currently_needed = CalculateElectricalPowerCurrentlyNeeded();
+                    electrical_power_currently_needed = CalculateElectricalPowerCurrentlyNeeded(resMan);
 
                     requestedChargedPower = overheatingModifier * Math.Max(0, Math.Min(maxAllowedChargedPower, electrical_power_currently_needed / _totalEff));
                     requestedPostChargedPower = overheatingModifier * Math.Max(0, (attachedPowerSource.MinimumPower * chargedPowerRatio) - requestedChargedPower);
@@ -1130,22 +1117,6 @@ namespace KIT.Powermanagement
                 }
 
                 resMan.ProduceResource(ResourceName.ElectricCharge, electricdtps, maxElectricdtps);
-
-                /*
-                if (outputModuleResource != null)
-                {
-                    currentPowerForGeneratorMJ = Math.Min(maximumGeneratorPowerMJ, electricdtps);
-                    outputModuleResource.rate = currentPowerForGeneratorMJ * GameConstants.ecPerMJ;
-                    mockInputResource.rate = outputModuleResource.rate;
-                }
-                */
-                // TODO: fix this.
-                /*
-                outputPower = isLimitedByMinThrotle
-                    ? -supplyManagedFNResourcePerSecond(electricdtps, ResourceSettings.Config.ElectricPowerInMegawatt)
-                    : -supplyFNResourcePerSecondWithMaxAndEfficiency(electricdtps, maxElectricdtps, hotColdBathRatio, ResourceSettings.Config.ElectricPowerInMegawatt);
-                */
-                //throw new Exception("fix outputPower");
             }
             else
             {

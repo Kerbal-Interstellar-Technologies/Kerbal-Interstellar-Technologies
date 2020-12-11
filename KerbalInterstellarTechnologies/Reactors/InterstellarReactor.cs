@@ -2721,11 +2721,11 @@ namespace KIT.Reactors
 
             last_active_time = Planetarium.GetUniversalTime();
 
-            // throw new IndexOutOfRangeException("InterstellarReactor.KITFixedUpdate need to work out how to do this ");
-
-
             maximumPower = MaximumPower;
+
             UpdateGeeforceModifier();
+
+            Debug.Log($"[reactor] maximumPower is {maximumPower}, and geeForceModifier is {geeForceModifier}");
 
             if (IsEnabled && maximumPower > 0) CalculateMaxPowerOutput(resMan);
 
@@ -2759,6 +2759,8 @@ namespace KIT.Reactors
 
             stored_fuel_ratio = CheatOptions.InfinitePropellant ? 1 : currentFuelVariant != null ? Math.Min(currentFuelVariant.FuelRatio, 1) : 0;
 
+            Debug.Log($"[reactor] overheatModifier is {overheatModifier}, fuel_mode_variant is {fuel_mode_variant}, and stored_fuel_ratio is {stored_fuel_ratio}");
+
             LookForAlternativeFuelTypes();
 
             var trueVariant = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult, false).FirstOrDefault();
@@ -2780,6 +2782,8 @@ namespace KIT.Reactors
             thermalThrottleRatio = connectedEngines.Any(m => m.RequiresThermalHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresThermalHeat).Sum(e => e.CurrentThrottle)) : 0;
             plasmaThrottleRatio = connectedEngines.Any(m => m.RequiresPlasmaHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresPlasmaHeat).Sum(e => e.CurrentThrottle)) : 0;
             chargedThrottleRatio = connectedEngines.Any(m => m.RequiresChargedPower) ? Math.Min(1, connectedEngines.Where(m => m.RequiresChargedPower).Max(e => e.CurrentThrottle)) : 0;
+
+            Debug.Log($"[reactor] stored_fuel_ratio is {stored_fuel_ratio}, thermalThrottleRatio is {thermalThrottleRatio}, plasmaThrottleRatio is {plasmaThrottleRatio}, and chargedThrottleRatio is {chargedThrottleRatio}");
 
             var thermalPropulsionRatio = ThermalPropulsionEfficiency * thermalThrottleRatio;
             var plasmaPropulsionRatio = PlasmaPropulsionEfficiency * plasmaThrottleRatio;
@@ -2819,13 +2823,15 @@ namespace KIT.Reactors
             maxThermalToSupplyPerSecond = maximumThermalPower * stored_fuel_ratio * geeForceModifier * overheatModifier * powerAccessModifier;
             requestedThermalToSupplyPerSecond = maxThermalToSupplyPerSecond * power_request_ratio * maximum_thermal_request_ratio;
 
+            Debug.Log($"[reactor] maxThermalToSupplyPerSecond is {maxThermalToSupplyPerSecond}, maxChargedToSupplyPerSecond is {maxChargedToSupplyPerSecond}, power_request_ratio is {power_request_ratio}, maxStoredGeneratorEnergyRequestedRatio is {maxStoredGeneratorEnergyRequestedRatio}, ");
+
             // XXX todo. fill in the max we want.
             // maxPowerToSupply = Math.Max(maximumPower, );
 
             // TODO we should pre-emptively generate required power based on previous update information, modified
             // by the vessel excess / demand
 
-            if(maxChargedToSupplyPerSecond > 0) resMan.ProduceResource(ResourceName.ChargedParticle, 0, maxChargedToSupplyPerSecond);
+            if (maxChargedToSupplyPerSecond > 0) resMan.ProduceResource(ResourceName.ChargedParticle, 0, maxChargedToSupplyPerSecond);
             if(maxThermalToSupplyPerSecond > 0) resMan.ProduceResource(ResourceName.ThermalPower, 0, maxThermalToSupplyPerSecond);
             if(maximumPower > 0) resMan.ProduceResource(ResourceName.ElectricCharge, 0, maximumPower);
 
@@ -2864,13 +2870,18 @@ namespace KIT.Reactors
                 return 0;
         }
 
-        private ResourceName[] resourcesProvided = new ResourceName[] { ResourceName.ElectricCharge };
+        private ResourceName[] resourcesProvided = new ResourceName[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
         // What resources can this reactor provide, either as intended, or by side effect.
         // an example might be that we can generate ThermalPower when generating ElectricCharge.
         public ResourceName[] ResourcesProvided() => resourcesProvided;
 
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {
+            if(resMan.CheatOptions().InfinitePropellant)
+            {
+                resMan.ProduceResource(resource, requestedAmount);
+                return true;
+            }
             /*
             minThrottle = stored_fuel_ratio > 0 ? MinimumThrottle / stored_fuel_ratio : 1;
             var neededChargedPowerPerSecond = getNeededPowerSupplyPerSecondWithMinimumRatio(maxChargedToSupplyPerSecond, minThrottle, ResourceSettings.Config.ChargedParticleInMegawatt, chargedParticlesManager);
@@ -2923,6 +2934,8 @@ namespace KIT.Reactors
 
                 _consumedFuelTotalFixed += tmp;
             }
+
+            resMan.ProduceResource(resource, powerGenerated);
 
             // XXX. what 
 

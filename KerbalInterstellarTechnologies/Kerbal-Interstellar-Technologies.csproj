@@ -155,7 +155,6 @@
     <Compile Include="Refinery\Activity\AtmosphereProcessor.cs" />
     <Compile Include="Refinery\RefineryActivity.cs" />
     <Compile Include="Refinery\Activity\PartialMethaneOxidation.cs" />
-    <Compile Include="Powermanagement\InterstellarPowerSupply.cs" />
     <Compile Include="Refinery\Activity\RegolithProcessor.cs" />
     <Compile Include="Refinery\Activity\OceanProcessor.cs" />
     <Compile Include="Refinery\Activity\SolarWindProcessor.cs" />
@@ -252,4 +251,11 @@
     <Folder Include="Collectors\" />
     <Folder Include="ResourceScheduler\" />
   </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y $(TargetDir)*KerbalInterstellar* $(SolutionDir)..\GameData\Kerbal-Interstellar-Technologies\Plugins</PostBuildEvent>
+  </PropertyGroup>
 </Project>

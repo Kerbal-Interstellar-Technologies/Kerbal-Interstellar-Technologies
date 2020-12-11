@@ -59,7 +59,7 @@ namespace KIT.ResourceScheduler
             this.vesselResources = vesselResources;
             this.myCheatOptions = cheatOptions;
 
-            resourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat - ResourceName.ElectricCharge)];
+            resourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat - ResourceName.ElectricCharge) + 1];
 
             ModProduction = new Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>>();
             ModConsumption = new Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>>();
@@ -83,7 +83,7 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource to consume</param>
         /// <param name="wanted">How much you want</param>
         /// <returns>How much you got</returns>
-        double IResourceManager.ConsumeResource(ResourceName resource, double wanted)
+        public double ConsumeResource(ResourceName resource, double wanted)
         {
             KITResourceSettings.ValidateResource(resource);
 
@@ -97,7 +97,9 @@ namespace KIT.ResourceScheduler
 
             var lastMod = modsCurrentlyRunning.Last();
 
-            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
+            bool trackResourceUsage = resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat;
+
+            if (trackResourceUsage)
             {
                 resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlyRequested += wanted;
 
@@ -108,7 +110,7 @@ namespace KIT.ResourceScheduler
                 tmpPPRI = ModConsumption[resource][lastMod];
                 tmpPPRI.maxAmount += wanted;
             }
-            
+
 
             if (myCheatOptions.InfiniteElectricity && resource == ResourceName.ElectricCharge)
             {
@@ -137,7 +139,7 @@ namespace KIT.ResourceScheduler
                 // resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
 
                 tmpPPRI.amount += wanted;
-                ModConsumption[resource][lastMod] = tmpPPRI;
+                if(trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
 
                 return wanted;
             }
@@ -147,7 +149,7 @@ namespace KIT.ResourceScheduler
 
             // Convert to seconds
             obtainedAmount = wanted * (obtainedAmount / modifiedAmount);
-            obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted);
+            obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted, currentMaxResources[resource]); ;
 
             // We do not need to account for _currentlySupplied here, as the modules called above will call
             // ProduceResource which credits the _currentlySupplied field here.
@@ -156,12 +158,12 @@ namespace KIT.ResourceScheduler
             var result = (modifiedAmount * fudgeFactor <= obtainedAmount) ? wanted : wanted * (obtainedAmount / modifiedAmount);
 
             tmpPPRI.amount += result;
-            ModConsumption[resource][lastMod] = tmpPPRI;
+            if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
 
             return result;
         }
 
-        double IResourceManager.FixedDeltaTime() => fixedDeltaTime;
+        public double FixedDeltaTime() => fixedDeltaTime;
 
         void RefreshActiveModules()
         {
@@ -174,7 +176,7 @@ namespace KIT.ResourceScheduler
         /// </summary>
         /// <param name="resource">Resource to produce</param>
         /// <param name="amount">Amount you are providing</param>
-        void IResourceManager.ProduceResource(ResourceName resource, double amount, double max = -1)
+        public void ProduceResource(ResourceName resource, double amount, double max = -1)
         {
             KITResourceSettings.ValidateResource(resource);
 
@@ -190,7 +192,7 @@ namespace KIT.ResourceScheduler
 
                 var lastMod = modsCurrentlyRunning.Last();
 
-                if(ModProduction[resource].ContainsKey(lastMod) == false)
+                if (ModProduction[resource].ContainsKey(lastMod) == false)
                 {
                     var tmpPPRI = new PerPartResourceInformation();
                     tmpPPRI.amount = amount;
@@ -225,8 +227,9 @@ namespace KIT.ResourceScheduler
         private Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules = new Dictionary<ResourceName, List<IKITVariableSupplier>>();
 
         private bool complainedToWaiterAboutOrder;
+        private bool firstRun = true;
 
-        public ulong  KITSteps;
+        public ulong KITSteps;
 
         /// <summary>
         /// ExecuteKITModules() does the heavy work of executing all the IKITMod FixedUpdate() equiv. It needs to be careful to ensure
@@ -235,7 +238,7 @@ namespace KIT.ResourceScheduler
         /// </summary>
         /// <param name="deltaTime">the amount of delta time that each module should use</param>
         /// <param name="resourceAmounts">What resources are available for this call.</param>
-        void IResourceScheduler.ExecuteKITModules(double deltaTime, ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
+        public void ExecuteKITModules(double deltaTime, ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
         {
             int index = 0;
 
@@ -245,17 +248,17 @@ namespace KIT.ResourceScheduler
             currentMaxResources = resourceMaxAmounts;
 
             // Cycle the resource tracking data over.
-            for(int i = 0; i < (int)(ResourceName.WasteHeat - ResourceName.ElectricCharge); i++)
+            for (int i = 0; i < (int)(ResourceName.WasteHeat - ResourceName.ElectricCharge); i++)
             {
                 resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._currentlyRequested;
                 resourceProductionStats[i]._previouslySupplied = resourceProductionStats[i]._currentlySupplied;
 
                 resourceProductionStats[i]._currentlyRequested = resourceProductionStats[i]._currentlySupplied =
-                    resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._previouslySupplied = 
+                    resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._previouslySupplied =
                     0;
             }
 
-            for(var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
+            for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
             {
                 ModConsumption[i].Clear();
                 ModProduction[i].Clear();
@@ -266,7 +269,7 @@ namespace KIT.ResourceScheduler
 
             if (modsCurrentlyRunning.Count > 0)
             {
-                if(complainedToWaiterAboutOrder == false)
+                if (complainedToWaiterAboutOrder == false)
                     Debug.Log($"[ResourceManager.ExecuteKITModules] URGENT modsCurrentlyRunning.Count != 0. there may be resource production / consumption issues.");
                 else
                     complainedToWaiterAboutOrder = true;
@@ -277,7 +280,12 @@ namespace KIT.ResourceScheduler
             if (vesselResources.VesselModified())
             {
                 RefreshActiveModules();
-                if (activeKITModules.Count == 0) return;
+                if (activeKITModules.Count == 0)
+                {
+                    Debug.Log($"No KIT Modules found");
+                    return;
+                }
+                Debug.Log("[resource manager] got {activeKITModules.Count} modules and also {variableSupplierModules.Count} variable modules");
             }
 
             inExecuteKITModules = true;
@@ -325,7 +333,7 @@ namespace KIT.ResourceScheduler
                     RefreshActiveModules();
                 }
 
-                if(modsCurrentlyRunning.Last() != mod)
+                if (modsCurrentlyRunning.Last() != mod)
                 {
                     // there is an ordering problem in the above mod.KITFixedUpdate(), and we did not correctly track which module is
                     // currently running.
@@ -351,7 +359,7 @@ namespace KIT.ResourceScheduler
 
         HashSet<IKITVariableSupplier> tappedOutMods = new HashSet<IKITVariableSupplier>(128);
 
-        private double CallVariableSuppliers(ResourceName resource, double obtainedAmount, double originalAmount)
+        private double CallVariableSuppliers(ResourceName resource, double obtainedAmount, double originalAmount, double resourceFiller = 0)
         {
             if (variableSupplierModules.ContainsKey(resource) == false) return 0;
 
@@ -382,7 +390,7 @@ namespace KIT.ResourceScheduler
                     {
                         UnityEngine.Profiling.Profiler.EndSample();
                     }
-                    
+
                 }
 
                 double perSecondAmount = originalAmount * (1 - (obtainedAmount / originalAmount));
@@ -391,7 +399,7 @@ namespace KIT.ResourceScheduler
                 {
                     UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{KITMod.KITPartName()}");
 
-                    var canContinue = mod.ProvideResource(this, resource, perSecondAmount);
+                    var canContinue = mod.ProvideResource(this, resource, perSecondAmount + resourceFiller);
                     if (!canContinue) tappedOutMods.Add(mod);
                 }
                 catch (Exception ex)
@@ -416,17 +424,17 @@ namespace KIT.ResourceScheduler
             return obtainedAmount;
         }
 
-        double IResourceManager.ResourceSpareCapacity(ResourceName resourceIdentifier)
+        public double ResourceSpareCapacity(ResourceName resourceIdentifier)
         {
             return currentMaxResources[resourceIdentifier] - currentResources[resourceIdentifier];
         }
 
-        double IResourceManager.ResourceCurrentCapacity(ResourceName resourceIdentifier)
+        public double ResourceCurrentCapacity(ResourceName resourceIdentifier)
         {
             return currentResources[resourceIdentifier];
         }
 
-        double IResourceManager.ResourceFillFraction(ResourceName resourceIdentifier)
+        public double ResourceFillFraction(ResourceName resourceIdentifier)
         {
             return currentResources[resourceIdentifier] / currentMaxResources[resourceIdentifier];
         }

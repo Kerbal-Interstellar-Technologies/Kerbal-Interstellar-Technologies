@@ -940,15 +940,18 @@ namespace KIT.Beamedpower
             base.OnFixedUpdate();
 
 
-            throw new Exception("what is a stable supply of power?");
-            /*
+            // throw new Exception("what is a stable supply of power?");
+            
             if (activeBeamGenerator != null && IsEnabled && !relay)
             {
                 double powerTransmissionRatio = (double)(decimal)transmitPower / 100d;
                 double transmissionWasteRatio = (100 - activeBeamGenerator.efficiencyPercentage) / 100d;
                 double transmissionEfficiencyRatio = activeBeamGenerator.efficiencyPercentage / 100d;
 
-                availablePower = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                // availablePower = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+
+                var powerStats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+                var availablePower = powerStats.PreviousDataSupplied() ? powerStats.PreviouslySupplied() : powerStats.CurrentSupplied();
 
                 if (CheatOptions.InfiniteElectricity)
                 {
@@ -983,7 +986,7 @@ namespace KIT.Beamedpower
 
             if (double.IsInfinity(solar_power) || double.IsNaN(solar_power) || solar_power < 0)
                 solar_power = 0;
-            */
+            
         }
 
         public string KITPartName() => part.partInfo.title;
