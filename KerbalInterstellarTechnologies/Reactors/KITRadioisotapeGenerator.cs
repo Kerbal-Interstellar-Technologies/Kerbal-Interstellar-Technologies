@@ -18,7 +18,7 @@ namespace KIT.Reactors
         [KSPField(isPersistant = true)] public double wattsPerGram;
         [KSPField(isPersistant = true, guiName = "Mass Remaining", guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massInKilograms = 1;
         [KSPField(isPersistant = true)] public double halfLifeInSeconds;
-        [KSPField(isPersistant = true, guiName = "Radioactive Isotope", guiActive = true, guiActiveEditor = true, guiUnits = " kg")])] public string radioisotopeFuel;
+        [KSPField(isPersistant = true, guiName = "Radioactive Isotope", guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public string radioisotopeFuel;
 
         [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW/s", guiFormat = "F4")] public double currentPowerOutput;
 

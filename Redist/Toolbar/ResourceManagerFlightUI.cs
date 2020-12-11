@@ -49,7 +49,7 @@ namespace KIT
             resourceName = resource_name;
             renderWindow = false;
 
-            windowTitle = resourceName + " " + Localizer.Format("#LOC_KSPIE_ResourceManager_title");//Management Display
+            windowTitle = $"{resourceName} {Localizer.Format("#LOC_KSPIE_ResourceManager_title")}"; //Management Display
             WindowPosition = new Rect(x, y, LABEL_WIDTH + VALUE_WIDTH + PRIORITY_WIDTH, 50);
             this.windowID = windowID;
 
@@ -163,7 +163,7 @@ namespace KIT
             dialog.Add(new DialogGUIButton("Close", () => { }, 140f, 30f, true));
 
             Rect pos = new Rect(0.5f, 0.5f, 50, 50);
-            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog(
+            PopupDialog.SpawnPopupDialog(/*new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), */new MultiOptionDialog(
                 "ThisIsMyName",
                 "Quick summary, are we good?",
                 $"{resourceName} Resource Manager",
