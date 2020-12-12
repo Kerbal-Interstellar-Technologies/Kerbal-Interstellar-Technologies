@@ -204,7 +204,7 @@ namespace KIT.Refinery.Activity
             _argonResourceName = KITResourceSettings.ArgonLqd;
             _chlorineResourceName = KITResourceSettings.ChlorineGas;
             _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
-            _monoxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _monoxideResourceName = KITResourceSettings.CarbonMonoxideLqd;
             _helium3ResourceName = KITResourceSettings.Helium3Lqd;
             _helium4ResourceName = KITResourceSettings.Helium4Lqd;
             _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
