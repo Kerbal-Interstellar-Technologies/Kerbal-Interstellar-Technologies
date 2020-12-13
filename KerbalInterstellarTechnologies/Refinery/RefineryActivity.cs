@@ -1,4 +1,6 @@
 ﻿using KIT.Constants;
+using KIT.Resources;
+using KIT.ResourceScheduler;
 using UnityEngine;
 
 namespace KIT.Refinery
@@ -53,6 +55,15 @@ namespace KIT.Refinery
         public override string ToString()
         {
             return ActivityName;
+        }
+
+        public void GetResourceMass(IResourceManager resMan, ResourceName resource, PartResourceDefinition prd, ref double spareMassAmount, ref double totalMassAmount)
+        {
+            var spare = resMan.ResourceSpareCapacity(resource);
+            var current = resMan.ResourceCurrentCapacity(resource);
+
+            spareMassAmount += spare * prd.density;
+            totalMassAmount += (spare + current) * prd.density;
         }
 
         public override string GetInfo()

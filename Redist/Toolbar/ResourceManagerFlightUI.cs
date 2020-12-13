@@ -46,10 +46,11 @@ namespace KIT
 
         public ResourceUI(string resource_name, int windowID, float x, float y)
         {
+            
             resourceName = resource_name;
             renderWindow = false;
 
-            windowTitle = resourceName + " " + Localizer.Format("#LOC_KSPIE_ResourceManager_title");//Management Display
+            windowTitle = $"{resourceName} {Localizer.Format("#LOC_KSPIE_ResourceManager_title")}"; //Management Display
             WindowPosition = new Rect(x, y, LABEL_WIDTH + VALUE_WIDTH + PRIORITY_WIDTH, 50);
             this.windowID = windowID;
 
@@ -131,14 +132,6 @@ namespace KIT
                 return power.ToString("0.00") + suffix;
         }
 
-        public void HideWindow()
-        {
-            renderWindow = false;
-        }
-        public void ShowWindow()
-        {
-            renderWindow = true;
-        }
 
         protected void DoWindow()
         {
@@ -162,8 +155,8 @@ namespace KIT
             dialog.Add(new DialogGUIHorizontalLayout(consumers.ToArray()));
             dialog.Add(new DialogGUIButton("Close", () => { }, 140f, 30f, true));
 
-            Rect pos = new Rect(0.5f, 0.5f, 50, 50);
-            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog(
+            Rect pos = new Rect(0.5f, 0.5f, 550, 550);
+            PopupDialog.SpawnPopupDialog(/*new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), */new MultiOptionDialog(
                 "ThisIsMyName",
                 "Quick summary, are we good?",
                 $"{resourceName} Resource Manager",
@@ -213,8 +206,78 @@ namespace KIT
 
             previousStepCount = stepCount;
 
-            if(stepCount++ % 25 == 0)
-                Debug.Log($"{resourceName}, current Supply: {currentSupply}, current Demand: {currentDemand}\nProducers:\n{String.Join("\n", resourceProducers)}\nConsumers:\n{String.Join("\n", resourceConsumers)}\n");
+            //if(stepCount++ % 25 == 0)
+            //    Debug.Log($"{resourceName}, current Supply: {currentSupply}, current Demand: {currentDemand}\nProducers:\n{String.Join("\n", resourceProducers)}\nConsumers:\n{String.Join("\n", resourceConsumers)}\n");
+
+
+        }
+
+        public static PopupDialog Create(string vesselName, KITResourceVesselModule vesselResourceManager)
+        {
+            List<DialogGUIBase> ecProducers = new List<DialogGUIBase>(32);
+            ecProducers.Add(new DialogGUILabel($"{KITResourceSettings.ElectricCharge} Producers", true, true));
+            ecProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> ecConsumers = new List<DialogGUIBase>(32);
+            ecProducers.Add(new DialogGUILabel($"{KITResourceSettings.ElectricCharge} Consumers", true, true));
+            ecProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> tpProducers = new List<DialogGUIBase>(32);
+            tpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ThermalPower} Producers", true, true));
+            tpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> tpConsumers = new List<DialogGUIBase>(32);
+            tpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ThermalPower} Consumers", true, true));
+            tpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> cpProducers = new List<DialogGUIBase>(32);
+            cpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ChargedParticle} Producers", true, true));
+            cpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> cpConsumers = new List<DialogGUIBase>(32);
+            cpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ChargedParticle} Consumers", true, true));
+            cpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> whProducers = new List<DialogGUIBase>(32);
+            whProducers.Add(new DialogGUILabel($"{KITResourceSettings.WasteHeat} Producers", true, true));
+            whProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> whConsumers = new List<DialogGUIBase>(32);
+            whProducers.Add(new DialogGUILabel($"{KITResourceSettings.WasteHeat} Consumers", true, true));
+            whProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+
+            List<DialogGUIBase> leftDialog = new List<DialogGUIBase>();
+            leftDialog.Add(new DialogGUIVerticalLayout(ecProducers.ToArray()));
+            leftDialog.Add(new DialogGUIVerticalLayout(ecConsumers.ToArray()));
+            leftDialog.Add(new DialogGUIVerticalLayout(tpProducers.ToArray()));
+            leftDialog.Add(new DialogGUIVerticalLayout(tpConsumers.ToArray()));
+
+            List<DialogGUIBase> rightDialog = new List<DialogGUIBase>();
+            rightDialog.Add(new DialogGUIVerticalLayout(cpProducers.ToArray()));
+            rightDialog.Add(new DialogGUIVerticalLayout(cpConsumers.ToArray()));
+            rightDialog.Add(new DialogGUIVerticalLayout(whProducers.ToArray()));
+            rightDialog.Add(new DialogGUIVerticalLayout(whConsumers.ToArray()));
+
+            //List<DialogGUIBase> virtDialog = new List<DialogGUIBase>();
+            //virtDialog.Add(new DialogGUIVerticalLayout(leftDialog.ToArray()));
+            //virtDialog.Add(new DialogGUIVerticalLayout(rightDialog.ToArray()));
+            // Horizontal
+
+            List<DialogGUIBase> dialog = new List<DialogGUIBase>();
+
+            //dialog.Add(new DialogGUIHorizontalLayout(virtDialog.ToArray()));
+            dialog.Add(new DialogGUIHorizontalLayout(leftDialog.ToArray()));
+            dialog.Add(new DialogGUIHorizontalLayout(rightDialog.ToArray()));
+            dialog.Add(new DialogGUIButton("Close", () => { }, 140f, 30f, true));
+
+            Rect pos = new Rect(0.5f, 0.5f, 750, 750);
+            return PopupDialog.SpawnPopupDialog(/*new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), */new MultiOptionDialog(
+                "ThisIsMyName",
+                "Quick summary, are we good?",
+                $"{vesselName} Resource Manager",
+                UISkinManager.defaultSkin,
+                pos,
+                dialog.ToArray()), false, UISkinManager.defaultSkin);
         }
 
     }
@@ -222,46 +285,51 @@ namespace KIT
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class ResourceManagerFlightUI : MonoBehaviour
     {
-        public static bool hide_button = false;
+        public static bool close_window = false;
         public static bool show_window = false;
 
-        ResourceUI electricChargeUI, thermalPowerUI, chargedParticleUI, wasteHeatUI;
+        ResourceUI resourceUI;
 
-        bool hasSetup;
-        void Setup()
-        {
-            // the resources we display should be configurable..
-            var rng = new System.Random();
-
-            electricChargeUI = new ResourceUI(KITResourceSettings.ElectricCharge, rng.Next(), 50, 50);
-            chargedParticleUI = new ResourceUI(KITResourceSettings.ChargedParticle, rng.Next(), 50, 600);
-            thermalPowerUI = new ResourceUI(KITResourceSettings.ThermalPower, rng.Next(), 600, 50);
-            wasteHeatUI = new ResourceUI(KITResourceSettings.WasteHeat, rng.Next(), 600, 600);
-
-            Debug.Log($"[ResourceManagerFlightUI] performed.");
-
-            hasSetup = true;
-        }
+        PopupDialog dialog;
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F2))
-            {
-                hide_button = !hide_button;
+            Vessel vessel = FlightGlobals.ActiveVessel;
+            if (vessel == null || vessel.vesselModules == null || (show_window == false && close_window == false)) {
+                // is this needed? show_window = close_window = false;
+                return;
             }
+
+            if (show_window)
+            {
+                if(dialog == null)
+                {
+                    var vrm = FindVesselResourceManager(vessel);
+                    dialog = ResourceUI.Create(vessel.vesselName, vrm);
+                    dialog.OnDismiss = dismissDialog;
+                }
+                show_window = false;
+                return;
+            }
+
+            // otherwise, close_window is true
+
+            dismissDialog();
+            close_window = false;
+            return;
         }
 
-        protected void OnGUI()
+        private void dismissDialog()
         {
-            Vessel vessel = FlightGlobals.ActiveVessel;
+            if (dialog == null) return;
+
+            dialog.Dismiss();
+            dialog = null;
+        }
+
+        private KITResourceVesselModule FindVesselResourceManager(Vessel vessel)
+        {
             KITResourceVesselModule vesselResourceManager = null;
-
-            if (!hasSetup) Setup();
-
-            // Debug.Log($"[ResourceManagerFlightUI] OnGUI after setup.");
-
-            if (vessel == null || vessel.vesselModules == null) return;
-            if (hide_button) return;
 
             for (int i = 0; i < vessel.vesselModules.Count; i++)
             {
@@ -270,88 +338,7 @@ namespace KIT
 
                 if (vesselResourceManager != null) break;
             }
-            if (vesselResourceManager == null || vesselResourceManager.resourceManager == null) return;
-
-            bool tmp = hide_button;
-            if (show_window)
-                electricChargeUI.ShowWindow();
-
-            /*
-             * Are there dragons lurking here, waiting to race?
-             */
-
-            electricChargeUI.DisplayData(
-                vesselResourceManager.resourceManager.KITSteps,
-                vesselResourceManager.resourceManager.ModConsumption[ResourceName.ElectricCharge], vesselResourceManager.resourceManager.ModProduction[ResourceName.ElectricCharge],
-                vesselResourceManager.resourceManager.ResourceProductionStats(ResourceName.ElectricCharge)
-            );
-
-            // throw new System.Exception("fix this");
-            /*
-
-            var megajoules_overmanager = ResourceOvermanager.getResourceOvermanagerForResource(ResourceSettings.Config.ElectricPowerInMegawatt);
-            if (megajoules_overmanager.hasManagerForVessel(vessel) && !hide_button)
-            {
-                ResourceManager mega_manager = megajoules_overmanager.getManagerForVessel(vessel);
-                if (mega_manager != null && mega_manager.PartModule != null)
-                {
-                    // activate rendering
-                    if (show_window)
-                        mega_manager.ShowWindow();
-
-                    // show window
-                    mega_manager.OnGUI();
-                }
-            }
-
-            var thermalpower_overmanager = ResourceOvermanager.getResourceOvermanagerForResource(ResourceSettings.Config.ThermalPowerInMegawatt);
-            if (thermalpower_overmanager.hasManagerForVessel(vessel) && !hide_button)
-            {
-                ResourceManager thermal_manager = thermalpower_overmanager.getManagerForVessel(vessel);
-                if (thermal_manager != null && thermal_manager.PartModule != null)
-                {
-                    // activate rendering
-                    if (show_window)
-                        thermal_manager.ShowWindow();
-
-                    // show window
-                    thermal_manager.OnGUI();
-                }
-            }
-
-            var charged_overmanager = ResourceOvermanager.getResourceOvermanagerForResource(ResourceSettings.Config.ChargedParticleInMegawatt);
-            if (charged_overmanager.hasManagerForVessel(vessel) && !hide_button)
-            {
-                ResourceManager charged_manager = charged_overmanager.getManagerForVessel(vessel);
-                if (charged_manager != null && charged_manager.PartModule != null)
-                {
-                    // activate rendering
-                    if (show_window)
-                        charged_manager.ShowWindow();
-
-                    // show window
-                    charged_manager.OnGUI();
-                }
-            }
-
-            var wasteheat_overmanager = ResourceOvermanager.getResourceOvermanagerForResource(ResourceSettings.Config.WasteHeatInMegawatt);
-            if (wasteheat_overmanager.hasManagerForVessel(vessel) && !hide_button)
-            {
-                ResourceManager waste_manager = wasteheat_overmanager.getManagerForVessel(vessel);
-                if (waste_manager != null && waste_manager.PartModule != null)
-                {
-                    // activate rendering
-                    if (show_window)
-                        waste_manager.ShowWindow();
-
-                    // show window
-                    waste_manager.OnGUI();
-                }
-            }
-
-            show_window = false;
-
-            */
+            return vesselResourceManager == null ? null : vesselResourceManager.resourceManager == null ? null : vesselResourceManager;
         }
     }
 }
