@@ -91,7 +91,6 @@
     <Compile Include="Interfaces\IPowerSource.cs" />
     <Compile Include="Interfaces\IThermalSource.cs" />
     <Compile Include="Interfaces\INuclearFuelReprocessable.cs" />
-    <Compile Include="Interfaces\IPowerSupply.cs" />
     <Compile Include="Beamedpower\BeamedPowerSources.cs" />
     <Compile Include="Beamedpower\MicrowaveRoute.cs" />
     <Compile Include="Extensions\Numbers.cs" />

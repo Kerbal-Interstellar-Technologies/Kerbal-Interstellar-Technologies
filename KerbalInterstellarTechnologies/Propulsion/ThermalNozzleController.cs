@@ -1785,7 +1785,7 @@ namespace KIT.Propulsion
             if (UseChargedPowerOnly && _listOfPropellants.Count == 1)
             {
                 var resource = PartResourceLibrary.Instance.GetDefinition(_listOfPropellants.First().name);
-                AttachedReactor.UseProductForPropulsion(1, currentMassFlow, resource);
+                AttachedReactor.UseProductForPropulsion(resMan, 1, currentMassFlow, resource);
             }
 
             if (controlHeatProduction)

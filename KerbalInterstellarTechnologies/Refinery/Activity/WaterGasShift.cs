@@ -32,15 +32,10 @@ namespace KIT.Refinery.Activity
         private double _hydrogenProductionRate;
         private double _dioxideProductionRate;
 
-        private string _waterResourceName;
-        private string _monoxideResourceName;
-        private string _dioxideResourceName;
-        private string _hydrogenResourceName;
-
-        private double _waterDensity;
-        private double _dioxideDensity;
-        private double _hydrogenDensity;
-        private double _monoxideDensity;
+        private PartResourceDefinition _water;
+        private PartResourceDefinition _dioxide;
+        private PartResourceDefinition _hydrogen;
+        private PartResourceDefinition _monoxide;
 
         private double _availableWaterMass;
         private double _availableMonoxideMass;
@@ -56,7 +51,7 @@ namespace KIT.Refinery.Activity
 
         public bool HasActivityRequirements()
         {
-            return _part.GetConnectedResources(_waterResourceName).Any(rs => rs.amount > 0) && _part.GetConnectedResources(_monoxideResourceName).Any(rs => rs.amount > 0);
+            return _part.GetConnectedResources(KITResourceSettings.WaterPure).Any(rs => rs.amount > 0) && _part.GetConnectedResources(KITResourceSettings.CarbonMonoxideGas).Any(rs => rs.amount > 0);
         }
 
         public string Status => string.Copy(_status);
@@ -66,15 +61,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _waterResourceName = KITResourceSettings.WaterPure;
-            _monoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
-            _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
-            _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
-
-            _waterDensity = PartResourceLibrary.Instance.GetDefinition(_waterResourceName).density;
-            _dioxideDensity = PartResourceLibrary.Instance.GetDefinition(_dioxideResourceName).density;
-            _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(_hydrogenResourceName).density;
-            _monoxideDensity = PartResourceLibrary.Instance.GetDefinition(_monoxideResourceName).density;
+            _water = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterPure);
+            _dioxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonDioxideLqd);
+            _hydrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenLqd);
+            _monoxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonMonoxideGas);
         }
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
@@ -85,20 +75,10 @@ namespace KIT.Refinery.Activity
             _current_power = PowerRequirements * rateMultiplier;
             _current_rate = CurrentPower / EnergyPerTon;
 
-            var partsThatContainWater = _part.GetConnectedResources(_waterResourceName).ToList();
-            var partsThatContainMonoxide = _part.GetConnectedResources(_monoxideResourceName).ToList();
-            var partsThatContainHydrogen = _part.GetConnectedResources(_hydrogenResourceName).ToList();
-            var partsThatContainDioxide = _part.GetConnectedResources(_dioxideResourceName).ToList();
-
-            _maxCapacityWaterMass = partsThatContainWater.Sum(p => p.maxAmount) * _waterDensity;
-            _maxCapacityDioxideMass = partsThatContainDioxide.Sum(p => p.maxAmount) * _dioxideDensity;
-            _maxCapacityHydrogenMass = partsThatContainHydrogen.Sum(p => p.maxAmount) * _hydrogenDensity;
-            _maxCapacityMonoxideMass = partsThatContainMonoxide.Sum(p => p.maxAmount) * _monoxideDensity;
-
-            _availableWaterMass = partsThatContainWater.Sum(r => r.amount) * _waterDensity;
-            _availableMonoxideMass = partsThatContainMonoxide.Sum(r => r.amount) * _monoxideDensity;
-            _spareRoomDioxideMass = partsThatContainDioxide.Sum(r => r.maxAmount - r.amount) * _dioxideDensity;
-            _spareRoomHydrogenMass = partsThatContainHydrogen.Sum(r => r.maxAmount - r.amount) * _hydrogenDensity;
+            GetResourceMass(resMan, ResourceName.CarbonDioxideLqd, _dioxide, ref _spareRoomDioxideMass, ref _maxCapacityDioxideMass);
+            GetResourceMass(resMan, ResourceName.CarbonMonoxideGas, _dioxide, ref _availableMonoxideMass, ref _maxCapacityMonoxideMass);
+            GetResourceMass(resMan, ResourceName.WaterPure, _dioxide, ref _availableWaterMass, ref _maxCapacityWaterMass);
+            GetResourceMass(resMan, ResourceName.HydrogenLqd, _dioxide, ref _spareRoomHydrogenMass, ref _maxCapacityHydrogenMass);
 
             // determine how much carbon dioxide we can consume
             var fixedMaxWaterConsumptionRate = _current_rate * WaterMassByFraction;
@@ -121,15 +101,18 @@ namespace KIT.Refinery.Activity
                 _consumptionStorageRatio = Math.Min(fixedMaxPossibleHydrogenRate / fixedMaxHydrogenRate, fixedMaxPossibleDioxideRate / fixedMaxDioxideRate);
 
                 // now we do the real electrolysis
-                _waterConsumptionRate = _part.RequestResource(_waterResourceName, WaterMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _waterDensity, ResourceFlowMode.ALL_VESSEL) / _waterDensity;
-                _monoxideConsumptionRate = _part.RequestResource(_monoxideResourceName, MonoxideMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _monoxideDensity, ResourceFlowMode.ALL_VESSEL) / _monoxideDensity;
+                _waterConsumptionRate = resMan.ConsumeResource(ResourceName.WaterPure, WaterMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _water.density) / _water.density;
+                _monoxideConsumptionRate = resMan.ConsumeResource(ResourceName.CarbonMonoxideGas, MonoxideMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _monoxide.density) / _monoxide.density;
                 var combinedConsumptionRate = _waterConsumptionRate + _monoxideConsumptionRate;
 
                 var hydrogenRateTemp = combinedConsumptionRate * HydrogenMassByFraction;
                 var dioxideRateTemp = combinedConsumptionRate * DioxideMassByFraction;
 
-                _hydrogenProductionRate = -_part.RequestResource(_hydrogenResourceName, -hydrogenRateTemp  / _hydrogenDensity) /  _hydrogenDensity;
-                _dioxideProductionRate = -_part.RequestResource(_dioxideResourceName, -dioxideRateTemp/ _dioxideDensity) / _dioxideDensity;
+                resMan.ProduceResource(ResourceName.HydrogenLqd, hydrogenRateTemp / _hydrogen.density);
+                resMan.ProduceResource(ResourceName.CarbonDioxideLqd, dioxideRateTemp / _dioxide.density);
+
+                _hydrogenProductionRate = hydrogenRateTemp;
+                _dioxideProductionRate = dioxideRateTemp;
             }
             else
             {
@@ -214,9 +197,9 @@ namespace KIT.Refinery.Activity
                     _status = Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg3");//"Out of CarbonMonoxide"
             }
             else if (_hydrogenProductionRate > 0)
-                _status = _allowOverflow ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4") : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5", _dioxideResourceName);//"Overflowing ""Insufficient " +  + " Storage"
+                _status = _allowOverflow ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4") : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5", KITResourceSettings.CarbonDioxideLqd);//"Overflowing ""Insufficient " +  + " Storage"
             else if (_dioxideProductionRate > 0)
-                _status = _allowOverflow ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4") : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5", _hydrogenResourceName);//"Overflowing ""Insufficient " +  + " Storage"
+                _status = _allowOverflow ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4") : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5", KITResourceSettings.HydrogenLqd);//"Overflowing ""Insufficient " +  + " Storage"
             else if (CurrentPower <= 0.01 * PowerRequirements)
                 _status = Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg6");//"Insufficient Power"
             else

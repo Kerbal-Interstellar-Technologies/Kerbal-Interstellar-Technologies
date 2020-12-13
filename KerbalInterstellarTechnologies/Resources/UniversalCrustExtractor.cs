@@ -564,11 +564,9 @@ namespace KIT.Resources
             {
                 return part.RequestResource(resourceName, -amount, ResourceFlowMode.ALL_VESSEL);
             }
-            else
-            {
-                resMan.ProduceResource(resID, amount);
-                return amount;
-            }
+
+            resMan.ProduceResource(resID, amount * resMan.FixedDeltaTime());
+            return amount;
         }
 
         // *** The important function controlling the mining ***

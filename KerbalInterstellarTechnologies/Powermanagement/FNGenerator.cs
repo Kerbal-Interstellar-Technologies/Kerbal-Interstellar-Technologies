@@ -17,22 +17,22 @@ namespace KIT.Powermanagement
     enum PowerStates { PowerOnline, PowerOffline };
 
     [KSPModule("Thermal Electric Effect Generator")]
-    class ThermalElectricEffectGenerator : FNGenerator {}
+    class ThermalElectricEffectGenerator : FNGenerator { }
 
     [KSPModule("Integrated Thermal Electric Power Generator")]
     class IntegratedThermalElectricPowerGenerator : FNGenerator { }
 
     [KSPModule("Thermal Electric Power Generator")]
-    class ThermalElectricPowerGenerator : FNGenerator {}
+    class ThermalElectricPowerGenerator : FNGenerator { }
 
     [KSPModule("Integrated Charged Particles Power Generator")]
-    class IntegratedChargedParticlesPowerGenerator : FNGenerator {}
+    class IntegratedChargedParticlesPowerGenerator : FNGenerator { }
 
     [KSPModule("Charged Particles Power Generator")]
-    class ChargedParticlesPowerGenerator : FNGenerator {}
+    class ChargedParticlesPowerGenerator : FNGenerator { }
 
     [KSPModule(" Generator")]
-    class FNGenerator : PartModule, IKITMod, IUpgradeableModule, IElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
+    class FNGenerator : PartModule, IKITMod, IKITVariableSupplier, IUpgradeableModule, IElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
     {
         public const string GROUP = "FNGenerator";
         public const string GROUP_TITLE = "#LOC_KSPIE_Generator_groupName";
@@ -359,7 +359,7 @@ namespace KIT.Powermanagement
             powerCapacityFloatRange.minValue = powerCapacityMinValue;
             powerCapacityFloatRange.stepIncrement = powerCapacityStepIncrement;
 
-            if (state  == StartState.Editor)
+            if (state == StartState.Editor)
             {
                 powerCapacity = Math.Max(powerCapacityMinValue, powerCapacity);
                 powerCapacity = Math.Min(powerCapacityMaxValue, powerCapacity);
@@ -651,7 +651,8 @@ namespace KIT.Powermanagement
 
         public double CapacityRatio
         {
-            get {
+            get
+            {
                 capacityRatio = (double)(decimal)powerCapacity / 100;
                 return capacityRatio;
             }
@@ -659,7 +660,8 @@ namespace KIT.Powermanagement
 
         public double PowerRatio
         {
-            get {
+            get
+            {
                 powerRatio = (double)(decimal)powerPercentage / 100;
                 return powerRatio;
             }
@@ -820,7 +822,7 @@ namespace KIT.Powermanagement
             maxAllowedChargedPower = rawChargedPower * (chargedParticleMode ? attachedPowerSource.ChargedParticleEnergyEfficiency : 1);
 
             maxThermalPower = attachedPowerSourceMaximumThermalPowerUsageRatio * Math.Min(rawReactorPower, potentialThermalPower);
-            maxChargedPowerForThermalGenerator = attachedPowerSourceMaximumThermalPowerUsageRatio    * Math.Min(rawChargedPower, (1 / attachedPowerSourceRatio) * maxAllowedChargedPower);
+            maxChargedPowerForThermalGenerator = attachedPowerSourceMaximumThermalPowerUsageRatio * Math.Min(rawChargedPower, (1 / attachedPowerSourceRatio) * maxAllowedChargedPower);
             maxChargedPowerForChargedGenerator = attachedPowerSource.ChargedParticleEnergyEfficiency * Math.Min(rawChargedPower, (1 / attachedPowerSourceRatio) * maxAllowedChargedPower);
             maxReactorPower = chargedParticleMode ? maxChargedPowerForChargedGenerator : maxThermalPower;
         }
@@ -837,62 +839,6 @@ namespace KIT.Powermanagement
 
             Fields[nameof(targetMass)].guiActive = attachedPowerSource != null && attachedPowerSource.Part != this.part;
         }
-
-        /*
-         * This code is not called anymore, and doesn't fit in nicely with the KIT stuff so far.
-        public override void OnPostResourceSuppliable(double fixedDeltaTime)
-        {
-            double totalPowerReceived;
-
-            postThermalPowerReceived = 0;
-            postChargedPowerReceived = 0;
-
-            if (!chargedParticleMode) // thermal mode
-            {
-                if (attachedPowerSource.ChargedPowerRatio != 1)
-                {
-                    postThermalPowerReceived += consumeFNResourcePerSecond(requestedPostThermalPower, ResourceSettings.Config.ThermalPowerInMegawatt);
-                }
-
-                totalPowerReceived = thermalPowerReceived + chargedPowerReceived + postThermalPowerReceived;
-
-                // Collect charged power when needed
-                if (attachedPowerSource.ChargedPowerRatio == 1)
-                {
-                    postChargedPowerReceived += consumeFNResourcePerSecond(requestedPostReactorPower, ResourceSettings.Config.ChargedParticleInMegawatt);
-                }
-                else if (shouldUseChargedPower && totalPowerReceived < reactorPowerRequested)
-                {
-                    var postPowerRequest = Math.Min(Math.Min(requestedPostReactorPower - totalPowerReceived, maxChargedPowerForThermalGenerator), Math.Max(0, maxReactorPower - totalPowerReceived));
-
-                    postChargedPowerReceived += consumeFNResourcePerSecond(postPowerRequest, ResourceSettings.Config.ChargedParticleInMegawatt);
-                }
-            }
-            else // charged power mode
-            {
-                postChargedPowerReceived += consumeFNResourcePerSecond(requestedPostChargedPower, ResourceSettings.Config.ChargedParticleInMegawatt);
-            }
-
-            post_received_power_per_second = postThermalPowerReceived + postChargedPowerReceived;
-
-            postEffectiveInputPowerPerSecond = Math.Max(0, Math.Min(post_received_power_per_second * _totalEff, maximumElectricPower - electricdtps));
-
-            if (!CheatOptions.IgnoreMaxTemperature)
-                consumeFNResourcePerSecond(postEffectiveInputPowerPerSecond, ResourceSettings.Config.WasteHeatInMegawatt);
-
-            supplyManagedFNResourcePerSecond(postEffectiveInputPowerPerSecond, ResourceSettings.Config.ElectricPowerInMegawatt);
-        }
-        */
-
-        private double CalculateElectricalPowerCurrentlyNeeded(IResourceManager resMan)
-        {
-            //if (isLimitedByMinThrotle)
-            //    return attachedPowerSource.MinimumPower;
-
-            var powerStats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
-            return Math.Min(maximumElectricPower, powerStats.PreviousDataSupplied() ? powerStats.PreviouslyRequested() : powerStats.CurrentlyRequested());
-        }
-        
 
         private void PowerDown()
         {
@@ -956,169 +902,19 @@ namespace KIT.Powermanagement
         public ResourcePriorityValue ResourceProcessPriority()
         {
             if (isLimitedByMinThrottle)
-                return (ResourcePriorityValue) 1;
+                return (ResourcePriorityValue)1;
 
             if (attachedPowerSource == null)
                 return ResourcePriorityValue.Third;
 
             return (ResourcePriorityValue)attachedPowerSource.ProviderPowerPriority;
         }
+
+        double thermalPowerRatio, chargedPowerRatio;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (IsEnabled && attachedPowerSource != null && FNRadiator.HasRadiatorsForVessel(vessel))
-            {
-                applies_balance = attachedPowerSource.ShouldApplyBalance(chargedParticleMode ? ElectricGeneratorType.charged_particle : ElectricGeneratorType.thermal);
-
-                UpdateGeneratorPower();
-
-                // check if MaxStableMegaWattPower is changed
-                maxStableMegaWattPower = MaxStableMegaWattPower;
-
-                generatorInit = true;
-
-                // don't produce any power when our reactor has stopped
-                if (maxStableMegaWattPower <= 0)
-                {
-                    electricdtps = 0;
-                    maxElectricdtps = 0;
-                    PowerDown();
-
-                    return;
-                }
-
-                powerDownFraction = 1;
-
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
-                overheatingModifier = wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10;
-
-                var thermalPowerRatio = 1 - attachedPowerSource.ChargedPowerRatio;
-                var chargedPowerRatio = attachedPowerSource.ChargedPowerRatio;
-
-                if (!chargedParticleMode) // thermal mode
-                {
-                    hotColdBathRatio = Math.Max(Math.Min(1 - coldBathTemp / hotBathTemp, 1), 0);
-
-                    _totalEff = Math.Min(maxEfficiency, hotColdBathRatio * maxEfficiency);
-
-                    if (hotColdBathRatio <= 0.01 || coldBathTemp <= 0 || hotBathTemp <= 0 || maxThermalPower <= 0)
-                    {
-                        requested_power_per_second = 0;
-                        return;
-                    }
-
-                    electrical_power_currently_needed = CalculateElectricalPowerCurrentlyNeeded(resMan);
-
-                    effectiveThermalPowerNeededForElectricity = electrical_power_currently_needed / _totalEff;
-
-                    reactorPowerRequested = Math.Max(0, Math.Min(maxReactorPower, effectiveThermalPowerNeededForElectricity));
-                    requestedPostReactorPower = Math.Max(0, attachedPowerSource.MinimumPower - reactorPowerRequested);
-
-                    thermalPowerRequested = Math.Max(0, Math.Min(maxThermalPower, effectiveThermalPowerNeededForElectricity));
-                    thermalPowerRequested *= applies_balance && chargedPowerRatio != 1 ? thermalPowerRatio : 1;
-                    requestedPostThermalPower = Math.Max(0, (attachedPowerSource.MinimumPower * thermalPowerRatio) - thermalPowerRequested);
-
-                    requested_power_per_second = thermalPowerRequested;
-
-                    if (chargedPowerRatio != 1)
-                    {
-                        requestedThermalPower = Math.Min(thermalPowerRequested, effectiveMaximumThermalPower);
-
-                        if (isMHD)
-                        {
-                            initialThermalPowerReceived = resMan.ConsumeResource(ResourceName.ThermalPower, requestedThermalPower * thermalPowerRatio);
-                            initialChargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedThermalPower * chargedPowerRatio);
-                        }
-                        else
-                            initialThermalPowerReceived = resMan.ConsumeResource(ResourceName.ThermalPower, requestedThermalPower);
-
-                        thermalPowerRequestRatio = Math.Min(1, effectiveMaximumThermalPower > 0 ? requestedThermalPower / attachedPowerSource.MaximumThermalPower : 0);
-                        attachedPowerSource.NotifyActiveThermalEnergyGenerator(_totalEff, thermalPowerRequestRatio, isMHD, isLimitedByMinThrottle ? part.mass * 0.05 : part.mass);
-                    }
-                    else
-                        initialThermalPowerReceived = 0;
-
-                    thermalPowerReceived = initialThermalPowerReceived + initialChargedPowerReceived;
-                    totalPowerReceived = thermalPowerReceived;
-
-                    shouldUseChargedPower = chargedPowerRatio > 0;
-
-                    // Collect charged power when needed
-                    if (chargedPowerRatio == 1)
-                    {
-                        requestedChargedPower = reactorPowerRequested;
-
-                        chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
-
-                        var maximumChargedPower = attachedPowerSource.MaximumChargedPower * powerUsageEfficiency * CapacityRatio;
-                        var chargedPowerRequestRatio = Math.Min(1, maximumChargedPower > 0 ? thermalPowerRequested / maximumChargedPower : 0);
-
-                        attachedPowerSource.NotifyActiveThermalEnergyGenerator(_totalEff, chargedPowerRequestRatio, isMHD, isLimitedByMinThrottle ? part.mass * 0.05 : part.mass);
-                    }
-                    else if (shouldUseChargedPower && thermalPowerReceived < reactorPowerRequested)
-                    {
-                        requestedChargedPower = Math.Min(Math.Min(reactorPowerRequested - thermalPowerReceived, maxChargedPowerForThermalGenerator), Math.Max(0, maxReactorPower - thermalPowerReceived));
-                        //chargedPowerReceived = consumeFNResourcePerSecond(requestedChargedPower, ResourceSettings.Config.ChargedParticleInMegawatt);
-                        chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
-                    }
-                    else
-                    {
-                        //consumeFNResourcePerSecond(0, ResourceSettings.Config.ChargedParticleInMegawatt);
-                        resMan.ConsumeResource(ResourceName.ChargedParticle, 0);
-                        chargedPowerReceived = 0;
-                        requestedChargedPower = 0;
-                    }
-
-                    totalPowerReceived += chargedPowerReceived;
-
-                    // any shortage should be consumed again from remaining thermalpower
-                    if (shouldUseChargedPower && chargedPowerRatio != 1 && totalPowerReceived < reactorPowerRequested)
-                    {
-                        finalRequest = Math.Max(0, reactorPowerRequested - totalPowerReceived);
-                        thermalPowerReceived += resMan.ConsumeResource(ResourceName.ThermalPower, finalRequest);
-                    }
-                }
-                else // charged particle mode
-                {
-                    hotColdBathRatio = 1;
-
-                    _totalEff = maxEfficiency;
-
-                    if (_totalEff <= 0) return;
-
-                    electrical_power_currently_needed = CalculateElectricalPowerCurrentlyNeeded(resMan);
-
-                    requestedChargedPower = overheatingModifier * Math.Max(0, Math.Min(maxAllowedChargedPower, electrical_power_currently_needed / _totalEff));
-                    requestedPostChargedPower = overheatingModifier * Math.Max(0, (attachedPowerSource.MinimumPower * chargedPowerRatio) - requestedChargedPower);
-
-                    requested_power_per_second = requestedChargedPower;
-
-                    var maximumChargedPower = attachedPowerSource.MaximumChargedPower * attachedPowerSource.ChargedParticleEnergyEfficiency;
-                    var chargedPowerRequestRatio = Math.Min(1, maximumChargedPower > 0 ? requestedChargedPower / maximumChargedPower : 0);
-                    attachedPowerSource.NotifyActiveChargedEnergyGenerator(_totalEff, chargedPowerRequestRatio, part.mass);
-
-                    chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
-                }
-
-                received_power_per_second = thermalPowerReceived + chargedPowerReceived;
-                effectiveInputPowerPerSecond = received_power_per_second * _totalEff;
-
-                resMan.ProduceResource(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
-
-                if (!chargedParticleMode)
-                {
-                    electricdtps = Math.Max(effectiveInputPowerPerSecond * powerOutputMultiplier, 0);
-                    effectiveMaxThermalPowerRatio = applies_balance ? thermalPowerRatio : 1;
-                    maxElectricdtps = effectiveMaxThermalPowerRatio * attachedPowerSource.StableMaximumReactorPower * attachedPowerSource.PowerRatio * powerUsageEfficiency * _totalEff * CapacityRatio;
-                }
-                else
-                {
-                    electricdtps = Math.Max(effectiveInputPowerPerSecond * powerOutputMultiplier, 0);
-                    maxElectricdtps = overheatingModifier * maxChargedPowerForChargedGenerator * _totalEff;
-                }
-
-                resMan.ProduceResource(ResourceName.ElectricCharge, electricdtps, maxElectricdtps);
-            }
-            else
+            if (!IsEnabled || attachedPowerSource == null || !FNRadiator.HasRadiatorsForVessel(vessel))
             {
                 electricdtps = 0;
                 maxElectricdtps = 0;
@@ -1148,6 +944,53 @@ namespace KIT.Powermanagement
                 {
                     PowerDown();
                 }
+
+                return;
+            }
+
+            applies_balance = attachedPowerSource.ShouldApplyBalance(chargedParticleMode ? ElectricGeneratorType.charged_particle : ElectricGeneratorType.thermal);
+
+            UpdateGeneratorPower();
+
+            // check if MaxStableMegaWattPower is changed
+            maxStableMegaWattPower = MaxStableMegaWattPower;
+
+            generatorInit = true;
+
+            // don't produce any power when our reactor has stopped
+            if (maxStableMegaWattPower <= 0)
+            {
+                electricdtps = 0;
+                maxElectricdtps = 0;
+                PowerDown();
+
+                return;
+            }
+
+            powerDownFraction = 1;
+
+            var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+            overheatingModifier = wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10;
+
+            thermalPowerRatio = 1 - attachedPowerSource.ChargedPowerRatio;
+            chargedPowerRatio = attachedPowerSource.ChargedPowerRatio;
+
+            if (!chargedParticleMode) // thermal mode
+            {
+                hotColdBathRatio = Math.Max(Math.Min(1 - coldBathTemp / hotBathTemp, 1), 0);
+
+                _totalEff = Math.Min(maxEfficiency, hotColdBathRatio * maxEfficiency);
+
+                if (hotColdBathRatio <= 0.01 || coldBathTemp <= 0 || hotBathTemp <= 0 || maxThermalPower <= 0)
+                {
+                    requested_power_per_second = 0;
+                    return;
+                }
+            }
+            else
+            {
+                hotColdBathRatio = 1;
+                _totalEff = maxEfficiency;
             }
 
         }
@@ -1172,6 +1015,124 @@ namespace KIT.Powermanagement
 
             return displayName;
         }
+
+        private ResourceName[] resourcesProvided = new ResourceName[] { ResourceName.ElectricCharge };
+        public ResourceName[] ResourcesProvided() => resourcesProvided;
+
+        // todo - max power output limit
+        public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
+        {
+            if (!chargedParticleMode)
+            {
+                electrical_power_currently_needed = requestedAmount;
+
+                effectiveThermalPowerNeededForElectricity = electrical_power_currently_needed / _totalEff;
+
+                reactorPowerRequested = Math.Max(0, Math.Min(maxReactorPower, effectiveThermalPowerNeededForElectricity));
+                requestedPostReactorPower = Math.Max(0, attachedPowerSource.MinimumPower - reactorPowerRequested);
+
+                thermalPowerRequested = Math.Max(0, Math.Min(maxThermalPower, effectiveThermalPowerNeededForElectricity));
+                thermalPowerRequested *= applies_balance && chargedPowerRatio != 1 ? thermalPowerRatio : 1;
+                requestedPostThermalPower = Math.Max(0, (attachedPowerSource.MinimumPower * thermalPowerRatio) - thermalPowerRequested);
+
+                requested_power_per_second = thermalPowerRequested;
+
+                if (chargedPowerRatio != 1)
+                {
+                    requestedThermalPower = Math.Min(thermalPowerRequested, effectiveMaximumThermalPower);
+
+                    if (isMHD)
+                    {
+                        initialThermalPowerReceived = resMan.ConsumeResource(ResourceName.ThermalPower, requestedThermalPower * thermalPowerRatio);
+                        initialChargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedThermalPower * chargedPowerRatio);
+                    }
+                    else
+                        initialThermalPowerReceived = resMan.ConsumeResource(ResourceName.ThermalPower, requestedThermalPower);
+
+                    thermalPowerRequestRatio = Math.Min(1, effectiveMaximumThermalPower > 0 ? requestedThermalPower / attachedPowerSource.MaximumThermalPower : 0);
+                    attachedPowerSource.NotifyActiveThermalEnergyGenerator(_totalEff, thermalPowerRequestRatio, isMHD, isLimitedByMinThrottle ? part.mass * 0.05 : part.mass);
+                }
+                else
+                    initialThermalPowerReceived = 0;
+
+                thermalPowerReceived = initialThermalPowerReceived + initialChargedPowerReceived;
+                totalPowerReceived = thermalPowerReceived;
+
+                shouldUseChargedPower = chargedPowerRatio > 0;
+
+                // Collect charged power when needed
+                if (chargedPowerRatio == 1)
+                {
+                    requestedChargedPower = reactorPowerRequested;
+
+                    chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
+
+                    var maximumChargedPower = attachedPowerSource.MaximumChargedPower * powerUsageEfficiency * CapacityRatio;
+                    var chargedPowerRequestRatio = Math.Min(1, maximumChargedPower > 0 ? thermalPowerRequested / maximumChargedPower : 0);
+
+                    attachedPowerSource.NotifyActiveThermalEnergyGenerator(_totalEff, chargedPowerRequestRatio, isMHD, isLimitedByMinThrottle ? part.mass * 0.05 : part.mass);
+                }
+                else if (shouldUseChargedPower && thermalPowerReceived < reactorPowerRequested)
+                {
+                    requestedChargedPower = Math.Min(Math.Min(reactorPowerRequested - thermalPowerReceived, maxChargedPowerForThermalGenerator), Math.Max(0, maxReactorPower - thermalPowerReceived));
+                    //chargedPowerReceived = consumeFNResourcePerSecond(requestedChargedPower, ResourceSettings.Config.ChargedParticleInMegawatt);
+                    chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
+                }
+                else
+                {
+                    //consumeFNResourcePerSecond(0, ResourceSettings.Config.ChargedParticleInMegawatt);
+                    resMan.ConsumeResource(ResourceName.ChargedParticle, 0);
+                    chargedPowerReceived = 0;
+                    requestedChargedPower = 0;
+                }
+
+                totalPowerReceived += chargedPowerReceived;
+
+                // any shortage should be consumed again from remaining thermalpower
+                if (shouldUseChargedPower && chargedPowerRatio != 1 && totalPowerReceived < reactorPowerRequested)
+                {
+                    finalRequest = Math.Max(0, reactorPowerRequested - totalPowerReceived);
+                    thermalPowerReceived += resMan.ConsumeResource(ResourceName.ThermalPower, finalRequest);
+                }
+            }
+            else
+            {
+                electrical_power_currently_needed = requestedAmount;
+
+                requestedChargedPower = overheatingModifier * Math.Max(0, Math.Min(maxAllowedChargedPower, electrical_power_currently_needed / _totalEff));
+                requestedPostChargedPower = overheatingModifier * Math.Max(0, (attachedPowerSource.MinimumPower * chargedPowerRatio) - requestedChargedPower);
+
+                requested_power_per_second = requestedChargedPower;
+
+                var maximumChargedPower = attachedPowerSource.MaximumChargedPower * attachedPowerSource.ChargedParticleEnergyEfficiency;
+                var chargedPowerRequestRatio = Math.Min(1, maximumChargedPower > 0 ? requestedChargedPower / maximumChargedPower : 0);
+                attachedPowerSource.NotifyActiveChargedEnergyGenerator(_totalEff, chargedPowerRequestRatio, part.mass);
+
+                chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
+            }
+
+            received_power_per_second = thermalPowerReceived + chargedPowerReceived;
+            effectiveInputPowerPerSecond = received_power_per_second * _totalEff;
+
+            resMan.ProduceResource(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
+
+            if (!chargedParticleMode)
+            {
+                electricdtps = Math.Max(effectiveInputPowerPerSecond * powerOutputMultiplier, 0);
+                effectiveMaxThermalPowerRatio = applies_balance ? thermalPowerRatio : 1;
+                maxElectricdtps = effectiveMaxThermalPowerRatio * attachedPowerSource.StableMaximumReactorPower * attachedPowerSource.PowerRatio * powerUsageEfficiency * _totalEff * CapacityRatio;
+            }
+            else
+            {
+                electricdtps = Math.Max(effectiveInputPowerPerSecond * powerOutputMultiplier, 0);
+                maxElectricdtps = overheatingModifier * maxChargedPowerForChargedGenerator * _totalEff;
+            }
+
+            resMan.ProduceResource(ResourceName.ElectricCharge, electricdtps, maxElectricdtps);
+
+            return true;
+        }
     }
 }
+
 

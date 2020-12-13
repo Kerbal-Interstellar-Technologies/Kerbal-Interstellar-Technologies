@@ -48,7 +48,6 @@ namespace KIT.Refinery
         public double consumedPowerMW;
 
         protected IRefineryActivity _current_activity = null;
-        protected IPowerSupply powerSupply;
 
         private List<IRefineryActivity> availableRefineries;
         private Rect _window_position = new Rect(50, 50, RefineryActivity.labelWidth * 4, 150);
@@ -119,11 +118,6 @@ namespace KIT.Refinery
 
         public override void OnStart(StartState state)
         {
-            powerSupply = part.FindModuleImplementing<IPowerSupply>();
-
-            if (powerSupply != null)
-                powerSupply.DisplayName = Localizer.Format("#LOC_KSPIE_Refinery_started"); //"started"
-
             if (state == StartState.Editor) return;
 
             // load stored overflow setting
@@ -184,21 +178,6 @@ namespace KIT.Refinery
                 list.Add(refinery);
         }
 
-        public void Update()
-        {
-            if (HighLogic.LoadedSceneIsEditor)
-                return;
-
-            if (_current_activity == null)
-            {
-                powerSupply.DisplayName = part.partInfo.title;
-            }
-            else
-            {
-                powerSupply.DisplayName = part.partInfo.title + " (" + _current_activity.ActivityName + ")";
-            }
-        }
-
         public override void OnUpdate()
         {
             if (_current_activity == null)
@@ -209,11 +188,6 @@ namespace KIT.Refinery
             {
                 status_str = _current_activity.Status;
             }
-        }
-
-        public void FixedUpdate()
-        {
-
         }
 
         public override string GetInfo()
@@ -315,10 +289,7 @@ namespace KIT.Refinery
 
         }
 
-        public ResourcePriorityValue ResourceProcessPriority()
-        {
-            throw new NotImplementedException();
-        }
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -336,13 +307,7 @@ namespace KIT.Refinery
 
             consumedPowerMW = CheatOptions.InfiniteElectricity
                 ? powerRequest
-                : powerSupply.ConsumeMegajoulesPerSecond(powerRequest);
-
-            var shortage = Math.Max(currentPowerReq - consumedPowerMW, 0);
-
-            var receivedElectricCharge = resMan.ConsumeResource(ResourceName.ElectricCharge, shortage * GameConstants.ecPerMJ);
-
-            consumedPowerMW += receivedElectricCharge / GameConstants.ecPerMJ;
+                : resMan.ConsumeResource(ResourceName.ElectricCharge, consumedPowerMW * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
 
             var power_ratio = currentPowerReq > 0 ? consumedPowerMW / currentPowerReq : 0;
 
