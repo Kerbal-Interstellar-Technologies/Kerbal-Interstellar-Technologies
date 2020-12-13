@@ -77,8 +77,13 @@ namespace KIT
     [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName17")]//Beamed Power Receiver
     class BeamedPowerReceiver : PartModule, IKITMod, IFNPowerSource, IElectricPowerGeneratorSource, IBeamedPowerReceiver // tweakscales with exponent 2.5
     {
-        public const string GROUP = "BeamedPowerReceiver";
-        public const string GROUP_TITLE = "#LOC_KSPIE_BeamPowerReceiver_groupName";
+        const string GROUP = "BeamedPowerReceiver";
+        const string GROUP_TITLE = "#LOC_KSPIE_BeamPowerReceiver_groupName";
+        const int labelWidth = 200;
+        const int wideLabelWidth = 250;
+        const int valueWidthWide = 100;
+        const int ValueWidthNormal = 65;
+        const int ValueWidthShort = 30;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_Bandwidth")]//Bandwidth
         [UI_ChooseOption(affectSymCounterparts = UI_Scene.None, scene = UI_Scene.All, suppressEditorShipModified = true)]
@@ -240,14 +245,12 @@ namespace KIT
         public double maximumThermalPower = 0;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_MaximumThermalPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F3")]//Maximum Thermal Power
         public double maximumThermalPowerScaled;
-
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_Dissipation", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F3")]//Dissipation
         public double dissipationInMegaJoules;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_SolarFacingFactor", guiFormat = "F4")]//Sun Facing Factor
         public double solarFacingFactor;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_SolarFlux", guiFormat = "F4")]//Solar Flux
         public double solarFlux;
-
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_Generator_InitialGeneratorPowerEC", guiUnits = " kW")]//Offscreen Power Generation
         public double initialGeneratorPowerEC;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_PowerMode"), UI_Toggle(disabledText = "#LOC_KSPIE_BeamPowerReceiver_ElectricMode", enabledText = "#LOC_KSPIE_BeamPowerReceiver_ThermalMode")]//Power Mode--Electric--Thermal
@@ -325,12 +328,6 @@ namespace KIT
         protected GUIStyle bold_black_style;
         protected GUIStyle text_black_style;
 
-        private const int labelWidth = 200;
-        private const int wideLabelWidth = 250;
-        private const int valueWidthWide = 100;
-        private const int ValueWidthNormal = 65;
-        private const int ValueWidthShort = 30;
-
         // GUI elements declaration
         private Rect windowPosition;
         private int windowID;
@@ -370,68 +367,47 @@ namespace KIT
         }
 
         public double FuelRato => 1;
-
         public double MagneticNozzlePowerMult => 1;
-
         public bool MayExhaustInAtmosphereHomeworld => true;
-
         public bool MayExhaustInLowSpaceHomeworld => true;
-
         public double MinThermalNozzleTempRequired => 0;
-
         public double CurrentMeVPerChargedProduct => 0;
-
         public bool UsePropellantBaseIsp => false;
-
         public bool CanUseAllPowerForPlasma => false;
-
         public bool CanProducePower => ProducedThermalHeat > 0;
-
         public double MinCoolingFactor => minCoolingFactor;
-
         public double EngineHeatProductionMult => engineHeatProductionMult;
-
         public double PlasmaHeatProductionMult => plasmaHeatProductionMult;
-
         public double EngineWasteheatProductionMult => engineWasteheatProductionMult;
-
         public double PlasmaWasteheatProductionMult => plasmaWasteheatProductionMult;
-
         public int ReceiverType => receiverType;
-
         public double Diameter => diameter;
-
         public double ApertureMultiplier => apertureMultiplier;
-
         public double MaximumWavelength => maximumWavelength;
-
         public double MinimumWavelength => minimumWavelength;
-
         public double HighSpeedAtmosphereFactor => highSpeedAtmosphereFactor;
-
         public double FacingThreshold => facingThreshold;
-
         public double FacingSurfaceExponent => facingSurfaceExponent;
-
         public double FacingEfficiencyExponent => facingEfficiencyExponent;
-
         public double SpotsizeNormalizationExponent => spotsizeNormalizationExponent;
-
-        public Part Part => this.part;
-
-        public Vessel Vessel => this.vessel;
-
+        public Part Part => part;
+        public Vessel Vessel => vessel;
         public int ProviderPowerPriority => 1;
-
         public double ConsumedFuelFixed => 0;
-
         public double ProducedThermalHeat => powerInputMegajoules;
-
         public double ProducedChargedPower => 0;
-
         public double PowerRatio => maximumConsumptionPercentage / 100d;
-
         public double ProducedPower => ProducedThermalHeat;
+        public bool SupportMHD => false;
+        public double MinimumThrottle => 0;
+        public int SupportedPropellantAtoms => supportedPropellantAtoms;
+        public int SupportedPropellantTypes => supportedPropellantTypes;
+        public bool FullPowerForNonNeutronAbsorbants => true;
+        public double ReactorSpeedMult => 1;
+        public double ThermalProcessingModifier => thermalProcessingModifier;
+        public double ThermalPropulsionWasteheatModifier => 1;
+        public double EfficencyConnectedThermalEnergyGenerator => storedIsThermalEnergyGeneratorEfficiency;
+        public double EfficencyConnectedChargedEnergyGenerator => 0;
 
         public double PowerCapacityEfficiency
         {
@@ -457,40 +433,23 @@ namespace KIT
         private void DetermineTechLevel()
         {
             hothBathtechLevel = 1;
-            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk2))
-                hothBathtechLevel++;
-            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk3))
-                hothBathtechLevel++;
-            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk4))
-                hothBathtechLevel++;
-            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk5))
-                hothBathtechLevel++;
-            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk6))
-                hothBathtechLevel++;
+            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk2)) hothBathtechLevel++;
+            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk3)) hothBathtechLevel++;
+            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk4)) hothBathtechLevel++;
+            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk5)) hothBathtechLevel++;
+            if (PluginHelper.UpgradeAvailable(upgradeTechReqMk6)) hothBathtechLevel++;
         }
 
         private void DetermineCoreTemperature()
         {
             switch (hothBathtechLevel)
             {
-                case 1:
-                    hothBathTemperature = hothBathTemperatureMk1;
-                    break;
-                case 2:
-                    hothBathTemperature = hothBathTemperatureMk2;
-                    break;
-                case 3:
-                    hothBathTemperature = hothBathTemperatureMk3;
-                    break;
-                case 4:
-                    hothBathTemperature = hothBathTemperatureMk4;
-                    break;
-                case 5:
-                    hothBathTemperature = hothBathTemperatureMk5;
-                    break;
-                case 6:
-                    hothBathTemperature = hothBathTemperatureMk6;
-                    break;
+                case 1: hothBathTemperature = hothBathTemperatureMk1; break;
+                case 2: hothBathTemperature = hothBathTemperatureMk2; break;
+                case 3: hothBathTemperature = hothBathTemperatureMk3; break;
+                case 4: hothBathTemperature = hothBathTemperatureMk4; break;
+                case 5: hothBathTemperature = hothBathTemperatureMk5; break;
+                case 6: hothBathTemperature = hothBathTemperatureMk6; break;
                 default:
                     break;
             }
@@ -538,10 +497,6 @@ namespace KIT
             thermalReceiverSlaves.Add(receiver);
         }
 
-        public bool SupportMHD { get { return false; } }
-
-        public double MinimumThrottle { get { return 0; } }
-
         public void ConnectWithEngine(IEngineNoozle engine)
         {
             var fnEngine = engine as IFNEngineNoozle;
@@ -561,22 +516,6 @@ namespace KIT
             if (connectedEngines.Contains(fnEngine))
                 connectedEngines.Remove(fnEngine);
         }
-
-        public int SupportedPropellantAtoms => supportedPropellantAtoms;
-
-        public int SupportedPropellantTypes => supportedPropellantTypes;
-
-        public bool FullPowerForNonNeutronAbsorbants => true;
-
-        public double ReactorSpeedMult => 1;
-
-        public double ThermalProcessingModifier => thermalProcessingModifier;
-
-        public double ThermalPropulsionWasteheatModifier => 1;
-
-        public double EfficencyConnectedThermalEnergyGenerator => storedIsThermalEnergyGeneratorEfficiency;
-
-        public double EfficencyConnectedChargedEnergyGenerator => 0;
 
         public IElectricPowerGeneratorSource ConnectedThermalElectricGenerator { get; set; }
 
@@ -641,54 +580,35 @@ namespace KIT
 
         protected CelestialBody localStar;
 
-        protected int connectedsatsi = 0;
-        protected int connectedrelaysi = 0;
-        protected int networkDepth = 0;
-        protected int activeSatsIncr = 0;
-        protected long deactivate_timer = 0;
+        protected int connectedsatsi;
+        protected int connectedrelaysi;
+        protected int networkDepth;
+        protected int activeSatsIncr;
+        protected long deactivate_timer;
+        protected bool has_transmitter;
 
-        protected bool has_transmitter = false;
-
-        public double RawTotalPowerProduced { get { return ThermalPower * TimeWarp.fixedDeltaTime; } }
-
-        public double ChargedPowerRatio { get { return 0; } }
-
-        public double PowerBufferBonus { get { return 0; } }
-
-        public double ThermalTransportationEfficiency { get { return heatTransportationEfficiency; } }
-
-        public double ThermalPropulsionEfficiency { get { return thermalPropulsionEfficiency; } }
-        public double PlasmaPropulsionEfficiency { get { return 0; } }
-        public double ChargedParticlePropulsionEfficiency { get { return 0; } }
-
-        public double ThermalEnergyEfficiency { get { return thermalEnergyEfficiency; } }
-        public double PlasmaEnergyEfficiency { get { return 0; } }
-        public double ChargedParticleEnergyEfficiency { get { return 0; } }
-
+        public double RawTotalPowerProduced => ThermalPower * TimeWarp.fixedDeltaTime;
+        public double ChargedPowerRatio => 0;
+        public double PowerBufferBonus => 0;
+        public double ThermalTransportationEfficiency => heatTransportationEfficiency;
+        public double ThermalPropulsionEfficiency => thermalPropulsionEfficiency;
+        public double PlasmaPropulsionEfficiency => 0;
+        public double ChargedParticlePropulsionEfficiency => 0;
+        public double ThermalEnergyEfficiency => thermalEnergyEfficiency;
+        public double PlasmaEnergyEfficiency => 0;
+        public double ChargedParticleEnergyEfficiency => 0;
         public bool IsSelfContained => false;
-
         public double CoreTemperature => hothBathTemperature;
-
         public double MaxCoreTemperature => hothBathTemperature;
-
         public double HotBathTemperature => hothBathTemperature;
-
         public double StableMaximumReactorPower => RawMaximumPower;
-
         public double MaximumPower => MaximumThermalPower;
-
         public double MaximumThermalPower => HighLogic.LoadedSceneIsEditor ? maximumThermalPower * powerMult : ThermalPower;
-
         public double NormalisedMaximumPower => ThermalPower;
-
         public double MaximumChargedPower => 0;
-
         public double MinimumPower => 0;
-
         public bool IsVolatileSource => true;
-
         public bool IsActive => receiverIsEnabled;
-
         public bool IsNuclear => false;
 
         [KSPAction("Toggle Receiver Interface")]
@@ -714,24 +634,16 @@ namespace KIT
             Debug.Log("[KSPI]: MicrowaveReceiver ShowDeployAnimation is called ");
 
             if (deployableAntenna != null)
-            {
                 deployableAntenna.Extend();
-            }
 
             if (deployableSolarPanel != null)
-            {
                 deployableSolarPanel.Extend();
-            }
 
             if (deployableRadiator != null)
-            {
                 deployableRadiator.Extend();
-            }
 
             if (genericAnimation != null && genericAnimation.GetScalar < 1)
-            {
                 genericAnimation.Toggle();
-            }
 
             if (fnRadiator != null && fnRadiator.ModuleActiveRadiator != null)
                 fnRadiator.ModuleActiveRadiator.Activate();
@@ -748,24 +660,16 @@ namespace KIT
         private void ShowUndeployAnimation(bool forced)
         {
             if (deployableAntenna != null)
-            {
                 deployableAntenna.Retract();
-            }
 
             if (deployableSolarPanel != null)
-            {
                 deployableSolarPanel.Retract();
-            }
 
             if (deployableRadiator != null)
-            {
                 deployableRadiator.Retract();
-            }
 
             if (genericAnimation != null && genericAnimation.GetScalar > 0 )
-            {
                 genericAnimation.Toggle();
-            }
 
             if (fnRadiator != null && fnRadiator.ModuleActiveRadiator != null)
                 fnRadiator.ModuleActiveRadiator.Shutdown();
@@ -824,28 +728,26 @@ namespace KIT
         {
             var foundBandwidthConfiguration = BandwidthConverters.FirstOrDefault(m => m.minimumWavelength < targetwavelength && m.maximumWavelength > targetwavelength);
 
-            if (foundBandwidthConfiguration != null)
-            {
-                isLoaded = true;
-                Debug.Log("[KSPI]: BeamedPowerReceiver - found " + foundBandwidthConfiguration.bandwidthName);
-                activeBandwidthConfiguration = foundBandwidthConfiguration;
-                UpdateProperties();
-                selectedBandwidthConfiguration = BandwidthConverters.IndexOf(activeBandwidthConfiguration);
-                UpdatePartActionWindow();
-            }
+            if (foundBandwidthConfiguration == null) return;
+
+            isLoaded = true;
+            Debug.Log("[KSPI]: BeamedPowerReceiver - found " + foundBandwidthConfiguration.bandwidthName);
+            activeBandwidthConfiguration = foundBandwidthConfiguration;
+            UpdateProperties();
+            selectedBandwidthConfiguration = BandwidthConverters.IndexOf(activeBandwidthConfiguration);
+            UpdatePartActionWindow();
         }
 
         private void UpdatePartActionWindow()
         {
             var window = FindObjectsOfType<UIPartActionWindow>().FirstOrDefault(w => w.part == part);
-            if (window != null)
+            if (window == null) return;
+
+            foreach (UIPartActionWindow actionwindow in FindObjectsOfType<UIPartActionWindow>())
             {
-                foreach (UIPartActionWindow actionwindow in FindObjectsOfType<UIPartActionWindow>())
-                {
-                    if (window.part != part) continue;
-                    actionwindow.ClearList();
-                    actionwindow.displayDirty = true;
-                }
+                if (window.part != part) continue;
+                actionwindow.ClearList();
+                actionwindow.displayDirty = true;
             }
         }
 
@@ -1044,22 +946,11 @@ namespace KIT
                 // look for any transmitter partModule
                 part_transmitter = part.FindModuleImplementing<BeamedPowerTransmitter>();
                 if (part_transmitter != null)
-                {
                     has_transmitter = true;
-                }
 
                 deployableRadiator = part.FindModuleImplementing<ModuleDeployableRadiator>();
                 if (deployableRadiator != null)
-                {
-                    try
-                    {
-                        deployableRadiator.Events["Extend"].guiActive = false;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("[KSPI]: Error while disabling radiator button " + e.Message + " at " + e.StackTrace);
-                    }
-                }
+                    deployableRadiator.Events[nameof(ModuleDeployableRadiator.Extend)].guiActive = false;
 
                 if (!string.IsNullOrEmpty(animTName))
                 {
