@@ -360,13 +360,13 @@ namespace KIT
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                ResourceManagerFlightUI.hide_button = false;
+                ResourceManagerFlightUI.close_window = false;
                 ResourceManagerFlightUI.show_window = true;
                 VABThermalUI.renderWindow = false;
             }
             else
             {
-                ResourceManagerFlightUI.hide_button = false;
+                ResourceManagerFlightUI.close_window = false;
                 ResourceManagerFlightUI.show_window = false;
                 VABThermalUI.renderWindow = true;
             }
@@ -374,7 +374,7 @@ namespace KIT
 
         void OnAppLauncherDeactivate()
         {
-            ResourceManagerFlightUI.hide_button = true;
+            ResourceManagerFlightUI.close_window = true;
             ResourceManagerFlightUI.show_window = false;
             VABThermalUI.renderWindow = false;
         }
