@@ -658,14 +658,16 @@ namespace KIT.Reactors
             return ModifierChangeWhen.STAGED;
         }
 
-        public void UseProductForPropulsion(double ratio, double propellantMassPerSecond)
+        public void UseProductForPropulsion(IResourceManager resMan, double ratio, double propellantMassPerSecond)
         {
-            UseProductForPropulsion(ratio, propellantMassPerSecond, hydrogenDefinition);
+            UseProductForPropulsion(resMan, ratio, propellantMassPerSecond, hydrogenDefinition);
         }
 
-        public void UseProductForPropulsion(double ratio, double propellantMassPerSecond, PartResourceDefinition resource)
+        public void UseProductForPropulsion(IResourceManager resMan, double ratio, double propellantMassPerSecond, PartResourceDefinition resource)
         {
             if (ratio <= 0) return;
+
+            ResourceName resID;
 
             foreach (var product in reactorProduction)
             {
@@ -677,10 +679,26 @@ namespace KIT.Reactors
                 var fuelAmount = product.fuelmode.DensityInTon > 0 ? (effectiveMass / product.fuelmode.DensityInTon) : 0;
                 if (fuelAmount == 0) continue;
 
-                part.RequestResource(product.fuelmode.ResourceName, fuelAmount);
-            }
+                resID = KITResourceSettings.NameToResource(product.fuelmode.ResourceName);
+                if (resID == ResourceName.Unknown)
+                {
+                    part.RequestResource(product.fuelmode.ResourceName, fuelAmount * resMan.FixedDeltaTime());
+                }
+                else
+                {
+                    resMan.ConsumeResource(resID, fuelAmount);
+                }
 
-            part.RequestResource(resource.name, -propellantMassPerSecond * TimeWarp.fixedDeltaTime / resource.density, ResourceFlowMode.ALL_VESSEL);
+            }
+            resID = KITResourceSettings.NameToResource(resource.name);
+            if (resID == ResourceName.Unknown)
+            {
+                part.RequestResource(resource.name, -propellantMassPerSecond * TimeWarp.fixedDeltaTime / resource.density, ResourceFlowMode.ALL_VESSEL);
+            }
+            else
+            {
+                resMan.ProduceResource(resID, propellantMassPerSecond / resource.density);
+            }
         }
 
         public void ConnectWithEngine(IEngineNoozle engine)
@@ -2183,25 +2201,32 @@ namespace KIT.Reactors
             if (powerInMj.IsInfinityOrNaNorZero())
                 return 0;
 
+            var resID = KITResourceSettings.NameToResource(fuel.Definition.name);
+            if (resID == ResourceName.Unknown)
+            {
+                Debug.Log($"[InterstellarReactor] Reactor fuel {fuel.FuelName} / {fuel.Definition.name} is not known to KIT");
+                return 0;
+            }
+
             var consumeAmountInUnitOfStorage = FuelEfficiency > 0 ? powerInMj * fuel.AmountFuelUsePerMJ * fuelUsePerMJMult / FuelEfficiency : 0;
 
             if (fuel.ConsumeGlobal)
             {
-                var result = fuel.Simulate ? 0 : part.RequestResource(fuel.Definition.id, consumeAmountInUnitOfStorage, ResourceFlowMode.STAGE_PRIORITY_FLOW);
+                var result = fuel.Simulate ? 0 : resMan.ConsumeResource(resID, consumeAmountInUnitOfStorage);
                 return (fuel.Simulate ? consumeAmountInUnitOfStorage : result) * fuel.DensityInTon;
             }
 
             if (part.Resources.Contains(fuel.ResourceName))
             {
-                double reduction = Math.Min(consumeAmountInUnitOfStorage, part.Resources[fuel.ResourceName].amount);
+                double reduction = Math.Min(consumeAmountInUnitOfStorage, part.Resources[fuel.ResourceName].amount) * resMan.FixedDeltaTime();
                 part.Resources[fuel.ResourceName].amount -= reduction;
-                return reduction * fuel.DensityInTon;
+                return (reduction  / resMan.FixedDeltaTime()) * fuel.DensityInTon;
             }
             else
                 return 0;
         }
 
-        protected virtual double ProduceReactorProduct(ReactorProduct product, double powerInMj)
+        protected virtual double ProduceReactorProduct(IResourceManager resMan, ReactorProduct product, double powerInMj)
         {
             if (product == null)
             {
@@ -2237,7 +2262,7 @@ namespace KIT.Reactors
         protected double GetFuelAvailability(ReactorFuel fuel)
         {
             //throw new IndexOutOfRangeException("GetProductAvailability need to work out how to do this ");
-            
+
             if (fuel == null)
             {
                 Debug.LogError("[KSPI]: GetFuelAvailability fuel null");
@@ -2250,9 +2275,9 @@ namespace KIT.Reactors
             part.GetConnectedResourceTotals(fuel.Definition.GetHashCode(), out var amount, out _);
             return amount;
 
-           
+
             // TODO - do we need the loaded scene part? :| return HighLogic.LoadedSceneIsFlight ? part.GetResourceAvailable(fuel.Definition) : part.FindAmountOfAvailableFuel(fuel.ResourceName, 4);
-            
+
         }
 
         protected double GetLocalResourceRatio(ReactorFuel fuel)
@@ -2345,7 +2370,7 @@ namespace KIT.Reactors
             if (HighLogic.LoadedSceneIsFlight) {
                 //return part.GetResourceMaxAvailable(product.Definition);
                 ResourceName resID = KITResourceSettings.NameToResource(product.Definition.name);
-                if(resID == ResourceName.Unknown)
+                if (resID == ResourceName.Unknown)
                 {
                     Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] unknown resource {product.Definition.name}");
                     return 0;
@@ -2737,8 +2762,6 @@ namespace KIT.Reactors
 
         private void CalculateMaxPowerOutput(IResourceManager resMan)
         {
-
-
             if (hasOverheatEffects && !CheatOptions.IgnoreMaxTemperature)
             {
                 averageOverheat.Enqueue(resMan.ResourceFillFraction(ResourceName.WasteHeat));
@@ -2823,7 +2846,9 @@ namespace KIT.Reactors
             maxThermalToSupplyPerSecond = maximumThermalPower * stored_fuel_ratio * geeForceModifier * overheatModifier * powerAccessModifier;
             requestedThermalToSupplyPerSecond = maxThermalToSupplyPerSecond * power_request_ratio * maximum_thermal_request_ratio;
 
-            Debug.Log($"[reactor] maxThermalToSupplyPerSecond is {maxThermalToSupplyPerSecond}, maxChargedToSupplyPerSecond is {maxChargedToSupplyPerSecond}, power_request_ratio is {power_request_ratio}, maxStoredGeneratorEnergyRequestedRatio is {maxStoredGeneratorEnergyRequestedRatio}, ");
+            // Debug.Log($"[reactor] maxThermalToSupplyPerSecond is {maxThermalToSupplyPerSecond}, maxChargedToSupplyPerSecond is {maxChargedToSupplyPerSecond}, power_request_ratio is {power_request_ratio}, maxStoredGeneratorEnergyRequestedRatio is {maxStoredGeneratorEnergyRequestedRatio}, ");
+
+            maxThermalToSupplyPerSecondAvail = maxThermalToSupplyPerSecond;
 
             // XXX todo. fill in the max we want.
             // maxPowerToSupply = Math.Max(maximumPower, );
@@ -2832,11 +2857,13 @@ namespace KIT.Reactors
             // by the vessel excess / demand
 
             if (maxChargedToSupplyPerSecond > 0) resMan.ProduceResource(ResourceName.ChargedParticle, 0, maxChargedToSupplyPerSecond);
-            if(maxThermalToSupplyPerSecond > 0) resMan.ProduceResource(ResourceName.ThermalPower, 0, maxThermalToSupplyPerSecond);
-            if(maximumPower > 0) resMan.ProduceResource(ResourceName.ElectricCharge, 0, maximumPower);
+            if (maxThermalToSupplyPerSecond > 0) resMan.ProduceResource(ResourceName.ThermalPower, 0, maxThermalToSupplyPerSecond);
+            //if (maximumPower > 0) resMan.ProduceResource(ResourceName.ElectricCharge, 0, maximumPower);
 
-            
+
         }
+
+        double maxThermalToSupplyPerSecondAvail;
 
         public string KITPartName() => $"{part.partInfo.title}{(fuelModes.Count > 1 ? " (" + fuelModeStr + ")" : "")}";
         // TODO
@@ -2870,10 +2897,17 @@ namespace KIT.Reactors
                 return 0;
         }
 
-        private ResourceName[] resourcesProvided = new ResourceName[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
+        private ResourceName[] thermalResourcesProvided = new ResourceName[] { ResourceName.ThermalPower };
+        private ResourceName[] chargedResourcesProvided = new ResourceName[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
+        
         // What resources can this reactor provide, either as intended, or by side effect.
         // an example might be that we can generate ThermalPower when generating ElectricCharge.
-        public ResourceName[] ResourcesProvided() => resourcesProvided;
+        public ResourceName[] ResourcesProvided()
+        {
+            if (chargedParticleEnergyEfficiency > 0) return chargedResourcesProvided;
+            if (thermalEnergyEfficiency > 0) return thermalResourcesProvided;
+            return null;
+        }
 
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {
@@ -2922,14 +2956,17 @@ namespace KIT.Reactors
             }
             */
 
-            double totalPowerReceivedFixed = requestedAmount;
+            var tmp = Math.Min(requestedAmount, maxThermalToSupplyPerSecondAvail);
+            maxThermalToSupplyPerSecondAvail -= tmp;
+
+            double totalPowerReceivedFixed = tmp;
             double powerGenerated = 0;
 
             _consumedFuelTotalFixed = 0;
 
             foreach (var reactorFuel in currentFuelVariant.ReactorFuels)
             {
-                 var tmp = ConsumeReactorFuel(resMan, reactorFuel, totalPowerReceivedFixed / geeForceModifier);
+                tmp = ConsumeReactorFuel(resMan, reactorFuel, totalPowerReceivedFixed / geeForceModifier);
                 powerGenerated += reactorFuel.TonsFuelUsePerMJ * tmp;
 
                 _consumedFuelTotalFixed += tmp;
@@ -2945,7 +2982,7 @@ namespace KIT.Reactors
             // produce reactor products
             foreach (var product in currentFuelVariant.ReactorProducts)
             {
-                var massProduced = ProduceReactorProduct(product, totalPowerReceivedFixed / geeForceModifier);
+                var massProduced = ProduceReactorProduct(resMan, product, totalPowerReceivedFixed / geeForceModifier);
                 if (product.IsPropellant)
                     reactorProduction.Add(new ReactorProduction() { fuelmode = product, mass = massProduced });
             }

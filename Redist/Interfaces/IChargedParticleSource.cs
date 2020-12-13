@@ -1,10 +1,12 @@
-﻿namespace KIT.Redist
+﻿using KIT.ResourceScheduler;
+
+namespace KIT.Redist
 {
     public interface IChargedParticleSource : IPowerSource
     {
         double CurrentMeVPerChargedProduct { get; }
 
-        void UseProductForPropulsion(double ratio, double propellantMassPerSecond);
+        void UseProductForPropulsion(IResourceManager resMan, double ratio, double propellantMassPerSecond);
 
         double MaximumChargedIspMult { get; }
 

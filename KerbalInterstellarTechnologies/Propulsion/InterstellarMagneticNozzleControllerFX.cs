@@ -491,7 +491,7 @@ namespace KIT.Propulsion
 
                 // convert reactor product into propellants when possible and generate addition propellant from reactor fuel consumption
                 chargedParticleRatio = currentMaximumChargedPower > 0 ? _charged_particles_received / currentMaximumChargedPower : 0;
-                _attached_reactor.UseProductForPropulsion(chargedParticleRatio, calculatedConsumptionInTon);
+                _attached_reactor.UseProductForPropulsion(resMan, chargedParticleRatio, calculatedConsumptionInTon);
 
                 calculatedConsumptionPerSecond = calculatedConsumptionInTon * 1000;
 

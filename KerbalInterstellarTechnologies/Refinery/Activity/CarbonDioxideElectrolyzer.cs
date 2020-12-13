@@ -71,17 +71,9 @@ namespace KIT.Refinery.Activity
             _current_power = PowerRequirements * rateMultiplier;
             _current_rate = CurrentPower / EnergyPerTon;
 
-            var partsThatContainDioxide = _part.GetConnectedResources(_dioxideResourceName).ToList();
-            var partsThatContainOxygen = _part.GetConnectedResources(_oxygenResourceName).ToList();
-            var partsThatContainMonoxide = _part.GetConnectedResources(_monoxideResourceName).ToList();
-
-            _maxCapacityDioxideMass = partsThatContainDioxide.Sum(p => p.maxAmount) * _dioxideDensity;
-            _maxCapacityOxygenMass = partsThatContainOxygen.Sum(p => p.maxAmount) * _oxygenDensity;
-            _maxCapacityMonoxideMass = partsThatContainMonoxide.Sum(p => p.maxAmount) * _monoxideDensity;
-
-            _availableDioxideMass = partsThatContainDioxide.Sum(p => p.amount) * _dioxideDensity;
-            _spareRoomOxygenMass = partsThatContainOxygen.Sum(r => r.maxAmount - r.amount) * _oxygenDensity;
-            _spareRoomMonoxideMass = partsThatContainMonoxide.Sum(r => r.maxAmount - r.amount) * _monoxideDensity;
+            _availableDioxideMass = resMan.ResourceCurrentCapacity(ResourceName.CarbonDioxideLqd) * _dioxideDensity;
+            _spareRoomOxygenMass = resMan.ResourceSpareCapacity(ResourceName.OxygenGas) * _oxygenDensity;
+            _spareRoomMonoxideMass = resMan.ResourceSpareCapacity(ResourceName.CarbonMonoxideGas) * _monoxideDensity;
 
             // determine how much carbon dioxide we can consume
             _fixedMaxConsumptionDioxideRate = Math.Min(_current_rate, _availableDioxideMass);
@@ -100,13 +92,16 @@ namespace KIT.Refinery.Activity
                 _consumptionStorageRatio = Math.Min(fixedMaxPossibleMonoxideRatio, fixedMaxPossibleOxygenRatio);
 
                 // now we do the real electrolysis
-                _dioxideConsumptionRate = _part.RequestResource(_dioxideResourceName, _consumptionStorageRatio * _fixedMaxConsumptionDioxideRate / _dioxideDensity) / _dioxideDensity;
+                _dioxideConsumptionRate = resMan.ConsumeResource(ResourceName.CarbonDioxideLqd, _consumptionStorageRatio * _fixedMaxConsumptionDioxideRate / _dioxideDensity) /  _dioxideDensity;
+
 
                 var monoxideRateTemp = _dioxideConsumptionRate * CarbonMonoxideMassByFraction;
                 var oxygenRateTemp = _dioxideConsumptionRate * OxygenMassByFraction;
 
-                _monoxideProductionRate = -_part.RequestResource(_monoxideResourceName, -monoxideRateTemp  / _monoxideDensity, ResourceFlowMode.ALL_VESSEL) /  _monoxideDensity;
-                _oxygenProductionRate = -_part.RequestResource(_oxygenResourceName, -oxygenRateTemp / _oxygenDensity, ResourceFlowMode.ALL_VESSEL) /  _oxygenDensity;
+                resMan.ProduceResource(ResourceName.CarbonMonoxideGas, monoxideRateTemp / _monoxideDensity);
+                resMan.ProduceResource(ResourceName.OxygenGas, oxygenRateTemp / _oxygenDensity);
+                _monoxideProductionRate = monoxideRateTemp;
+                _oxygenProductionRate = oxygenRateTemp;
             }
             else
             {

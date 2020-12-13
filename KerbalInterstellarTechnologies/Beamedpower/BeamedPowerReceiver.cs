@@ -454,7 +454,7 @@ namespace KIT
             received_power.Clear();
         }
 
-        public void UseProductForPropulsion(double ratio, double propellantMassPerSecond, PartResourceDefinition resource)
+        public void UseProductForPropulsion(IResourceManager resMan, double ratio, double propellantMassPerSecond, PartResourceDefinition resource)
         {
             // do nothing
         }

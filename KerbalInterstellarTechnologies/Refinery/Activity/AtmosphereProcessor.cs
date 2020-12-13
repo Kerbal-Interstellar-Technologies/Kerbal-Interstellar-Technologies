@@ -132,29 +132,6 @@ namespace KIT.Refinery.Activity
         private double _kryptonProductionRate;
         private double _sodiumProductionRate;
 
-        private string _atmosphereResourceName;
-
-        private string _ammoniaResourceName;
-        private string _argonResourceName;
-        private string _chlorineResourceName;
-        private string _dioxideResourceName;
-        private string _helium3ResourceName;
-        private string _helium4ResourceName;
-        private string _hydrogenResourceName;
-        private string _methaneResourceName;
-        private string _monoxideResourceName;
-        private string _neonResourceName;
-        private string _nitrogenResourceName;
-        private string _nitrogen15ResourceName;
-        private string _oxygenResourceName;
-        private string _waterResourceName;
-        private string _heavyWaterResourceName;
-        private string _xenonResourceName;
-        private string _deuteriumResourceName;
-        private string _kryptonResourceName;
-        private string _sodiumResourceName;
-
-
         [KSPEvent(guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_AtmosphericExtractor_DeployScoop", active = true, guiActiveUncommand = true, guiActiveUnfocused = true)]//Deploy Scoop
         public void DeployScoop()
         {
@@ -197,51 +174,27 @@ namespace KIT.Refinery.Activity
                 }
             }
 
-            // get the name of all relevant resources
-            _atmosphereResourceName = KITResourceSettings.IntakeAtmosphere;
-
-            _ammoniaResourceName = KITResourceSettings.AmmoniaLqd;
-            _argonResourceName = KITResourceSettings.ArgonLqd;
-            _chlorineResourceName = KITResourceSettings.ChlorineGas;
-            _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
-            _monoxideResourceName = KITResourceSettings.CarbonDioxideLqd;
-            _helium3ResourceName = KITResourceSettings.Helium3Lqd;
-            _helium4ResourceName = KITResourceSettings.Helium4Lqd;
-            _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
-            _methaneResourceName = KITResourceSettings.MethaneLqd;
-            _neonResourceName = KITResourceSettings.NeonLqd;
-            _nitrogenResourceName = KITResourceSettings.NitrogenLqd;
-            _nitrogen15ResourceName = KITResourceSettings.Nitrogen15Lqd;
-            _oxygenResourceName = KITResourceSettings.OxygenLqd;
-            _waterResourceName = KITResourceSettings.WaterPure;
-            _heavyWaterResourceName = KITResourceSettings.WaterHeavy;
-            _xenonResourceName = KITResourceSettings.XenonLqd;
-            _deuteriumResourceName = KITResourceSettings.DeuteriumLqd;
-            _kryptonResourceName = KITResourceSettings.KryptonLqd;
-
-            _sodiumResourceName = KITResourceSettings.Sodium;
-
             // get the densities of all relevant resources
-            _atmosphere = PartResourceLibrary.Instance.GetDefinition(_atmosphereResourceName);
-            _ammonia = PartResourceLibrary.Instance.GetDefinition(_ammoniaResourceName);
-            _argon = PartResourceLibrary.Instance.GetDefinition(_argonResourceName);
-            _chlorine = PartResourceLibrary.Instance.GetDefinition(_chlorineResourceName);
-            _dioxide = PartResourceLibrary.Instance.GetDefinition(_dioxideResourceName);
-            _helium3 = PartResourceLibrary.Instance.GetDefinition(_helium3ResourceName);
-            _helium4 = PartResourceLibrary.Instance.GetDefinition(_helium4ResourceName);
-            _hydrogen = PartResourceLibrary.Instance.GetDefinition(_hydrogenResourceName);
-            _methane = PartResourceLibrary.Instance.GetDefinition(_methaneResourceName);
-            _monoxide = PartResourceLibrary.Instance.GetDefinition(_monoxideResourceName);
-            _neon = PartResourceLibrary.Instance.GetDefinition(_neonResourceName);
-            _nitrogen = PartResourceLibrary.Instance.GetDefinition(_nitrogenResourceName);
-            _nitrogen15 = PartResourceLibrary.Instance.GetDefinition(_nitrogen15ResourceName);
-            _oxygen = PartResourceLibrary.Instance.GetDefinition(_oxygenResourceName);
-            _water = PartResourceLibrary.Instance.GetDefinition(_waterResourceName);
-            _heavyWater = PartResourceLibrary.Instance.GetDefinition(_heavyWaterResourceName);
-            _xenon = PartResourceLibrary.Instance.GetDefinition(_xenonResourceName);
-            _deuterium = PartResourceLibrary.Instance.GetDefinition(_deuteriumResourceName);
-            _krypton = PartResourceLibrary.Instance.GetDefinition(_kryptonResourceName);
-            _sodium = PartResourceLibrary.Instance.GetDefinition(_sodiumResourceName);
+            _atmosphere = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeAtmosphere);
+            _ammonia = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.AmmoniaLqd);
+            _argon = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.ArgonLqd);
+            _chlorine = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.ChlorineGas);
+            _dioxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonDioxideLqd);
+            _helium3 = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Helium3Lqd);
+            _helium4 = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Helium4Lqd);
+            _hydrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenLqd);
+            _methane = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.MethaneLqd);
+            _monoxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonMonoxideLqd);
+            _neon = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.NeonLqd);
+            _nitrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.NitrogenLqd);
+            _nitrogen15 = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Nitrogen15Lqd);
+            _oxygen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.OxygenLqd);
+            _water = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterPure);
+            _heavyWater = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterHeavy);
+            _xenon = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.XenonLqd);
+            _deuterium = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.DeuteriumLqd);
+            _krypton = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.KryptonLqd);
+            _sodium = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Sodium);
         }
 
         double _maxCapacityAtmosphereMass;
@@ -323,26 +276,26 @@ namespace KIT.Refinery.Activity
             {
                 // determine the maximum amount of a resource the vessel can hold (ie. tank capacities combined)
                 // determine how much spare room there is in the vessel's resource tanks (for the resources this is going to produce)
-                _part.GetResourceMass(_atmosphere, out _spareRoomAtmosphereMass, out _maxCapacityAtmosphereMass);
-                _part.GetResourceMass(_ammonia, out _spareRoomAmmoniaMass, out _maxCapacityAmmoniaMass);
-                _part.GetResourceMass(_argon, out _spareRoomArgonMass, out _maxCapacityArgonMass);
-                _part.GetResourceMass(_chlorine, out _spareRoomChlorineMass, out _maxCapacityChlorineMass);
-                _part.GetResourceMass(_dioxide, out _spareRoomDioxideMass, out _maxCapacityDioxideMass);
-                _part.GetResourceMass(_helium3, out _spareRoomHelium3Mass, out _maxCapacityHelium3Mass);
-                _part.GetResourceMass(_helium4, out _spareRoomHelium4Mass, out _maxCapacityHelium4Mass);
-                _part.GetResourceMass(_hydrogen, out _spareRoomHydrogenMass, out _maxCapacityHydrogenMass);
-                _part.GetResourceMass(_methane, out _spareRoomMethaneMass, out _maxCapacityMethaneMass);
-                _part.GetResourceMass(_monoxide, out _spareRoomMonoxideMass, out _maxCapacityMonoxideMass);
-                _part.GetResourceMass(_neon, out _spareRoomNeonMass, out _maxCapacityNeonMass);
-                _part.GetResourceMass(_nitrogen, out _spareRoomNitrogenMass, out _maxCapacityNitrogenMass);
-                _part.GetResourceMass(_nitrogen15, out _spareRoomNitrogen15Mass, out _maxCapacityNitrogen15Mass);
-                _part.GetResourceMass(_oxygen, out _spareRoomOxygenMass, out _maxCapacityOxygenMass);
-                _part.GetResourceMass(_water, out _spareRoomWaterMass, out _maxCapacityWaterMass);
-                _part.GetResourceMass(_heavyWater, out _spareRoomHeavyWaterMass, out _maxCapacityHeavyWaterMass);
-                _part.GetResourceMass(_xenon, out _spareRoomXenonMass, out _maxCapacityXenonMass);
-                _part.GetResourceMass(_deuterium, out _spareRoomDeuteriumMass, out _maxCapacityDeuteriumMass);
-                _part.GetResourceMass(_krypton, out _spareRoomKryptonMass, out _maxCapacityKryptonMass);
-                _part.GetResourceMass(_sodium, out _spareRoomSodiumMass, out _maxCapacitySodiumMass);
+                GetResourceMass(resMan, ResourceName.IntakeAtmosphere, _atmosphere, ref _spareRoomAtmosphereMass, ref _maxCapacityAtmosphereMass);
+                GetResourceMass(resMan, ResourceName.AmmoniaLqd, _ammonia, ref _spareRoomAmmoniaMass, ref _maxCapacityAmmoniaMass);
+                GetResourceMass(resMan, ResourceName.ArgonLqd, _argon, ref _spareRoomArgonMass, ref _maxCapacityArgonMass);
+                GetResourceMass(resMan, ResourceName.ChlorineGas, _chlorine, ref _spareRoomChlorineMass, ref _maxCapacityChlorineMass);
+                GetResourceMass(resMan, ResourceName.CarbonDioxideLqd, _dioxide, ref _spareRoomDioxideMass, ref _maxCapacityDioxideMass);
+                GetResourceMass(resMan, ResourceName.Helium3Lqd, _helium3, ref _spareRoomHelium3Mass, ref _maxCapacityHelium3Mass);
+                GetResourceMass(resMan, ResourceName.Helium4Lqd, _helium4, ref _spareRoomHelium4Mass, ref _maxCapacityHelium4Mass);
+                GetResourceMass(resMan, ResourceName.HydrogenLqd, _hydrogen, ref _spareRoomHydrogenMass, ref _maxCapacityHydrogenMass);
+                GetResourceMass(resMan, ResourceName.MethaneLqd, _methane, ref _spareRoomMethaneMass, ref _maxCapacityMethaneMass);
+                GetResourceMass(resMan, ResourceName.CarbonMonoxideLqd, _monoxide, ref _spareRoomMonoxideMass, ref _maxCapacityMonoxideMass);
+                GetResourceMass(resMan, ResourceName.NeonLqd, _neon, ref _spareRoomNeonMass, ref _maxCapacityNeonMass);
+                GetResourceMass(resMan, ResourceName.NitrogenLqd, _nitrogen, ref _spareRoomNitrogenMass, ref _maxCapacityNitrogenMass);
+                GetResourceMass(resMan, ResourceName.Nitrogen15Lqd, _nitrogen15, ref _spareRoomNitrogen15Mass, ref _maxCapacityNitrogen15Mass);
+                GetResourceMass(resMan, ResourceName.OxygenLqd, _oxygen, ref _spareRoomOxygenMass, ref _maxCapacityOxygenMass);
+                GetResourceMass(resMan, ResourceName.WaterPure, _water, ref _spareRoomWaterMass, ref _maxCapacityWaterMass);
+                GetResourceMass(resMan, ResourceName.WaterHeavy, _heavyWater, ref _spareRoomHeavyWaterMass, ref _maxCapacityHeavyWaterMass);
+                GetResourceMass(resMan, ResourceName.XenonLqd, _xenon, ref _spareRoomXenonMass, ref _maxCapacityXenonMass);
+                GetResourceMass(resMan, ResourceName.DeuteriumLqd, _deuterium, ref _spareRoomDeuteriumMass, ref _maxCapacityDeuteriumMass);
+                GetResourceMass(resMan, ResourceName.KryptonLqd, _krypton, ref _spareRoomKryptonMass, ref _maxCapacityKryptonMass);
+                GetResourceMass(resMan, ResourceName.Sodium, _sodium, ref _spareRoomSodiumMass, ref _maxCapacitySodiumMass);
             }
             catch (Exception e)
             {
@@ -417,25 +370,25 @@ namespace KIT.Refinery.Activity
                         Debug.Log("[KSPI]: looking up Atmosphere contents for " + FlightGlobals.currentMainBody.name);
 
                         // remember, all these are persistent. Once we get them, we won't need to calculate them again until we change SOI
-                        _ammoniaPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _ammoniaResourceName);
-                        _argonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _argonResourceName);
-                        _chlorinePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _chlorineResourceName);
-                        _monoxidePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _monoxideResourceName);
-                        _dioxidePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _dioxideResourceName);
-                        _helium3Percentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _helium3ResourceName);
-                        _helium4Percentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _helium4ResourceName);
-                        _hydrogenPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _hydrogenResourceName);
-                        _methanePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _methaneResourceName);
-                        _neonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _neonResourceName);
-                        _nitrogenPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _nitrogenResourceName);
-                        _nitrogen15Percentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _nitrogen15ResourceName);
-                        _oxygenPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _oxygenResourceName);
-                        _waterPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _waterResourceName);
-                        _heavywaterPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _heavyWaterResourceName);
-                        _xenonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _xenonResourceName);
-                        _deuteriumPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _deuteriumResourceName);
-                        _kryptonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _kryptonResourceName);
-                        _sodiumPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, _sodiumResourceName);
+                        _ammoniaPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.AmmoniaLqd);
+                        _argonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.ArgonLqd);
+                        _chlorinePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.ChlorineGas);
+                        _monoxidePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.CarbonMonoxideLqd);
+                        _dioxidePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.CarbonDioxideLqd);
+                        _helium3Percentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.Helium3Lqd);
+                        _helium4Percentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.Helium4Lqd);
+                        _hydrogenPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.HydrogenLqd);
+                        _methanePercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.MethaneLqd);
+                        _neonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.NeonLqd);
+                        _nitrogenPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.NitrogenLqd);
+                        _nitrogen15Percentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.Nitrogen15Lqd);
+                        _oxygenPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.OxygenLqd);
+                        _waterPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.WaterPure);
+                        _heavywaterPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.WaterHeavy);
+                        _xenonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.XenonLqd);
+                        _deuteriumPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.DeuteriumLqd);
+                        _kryptonPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.KryptonLqd);
+                        _sodiumPercentage = AtmosphericResourceHandler.GetAtmosphericResourceContent(FlightGlobals.currentMainBody, KITResourceSettings.Sodium);
 
                         lastBodyID = FlightGlobals.currentMainBody.flightGlobalsIndex; // reassign the id of current body to the lastBodyID variable, ie. remember this planet, so that we skip this check next time!
                     }
@@ -521,29 +474,45 @@ namespace KIT.Refinery.Activity
                 var remainingConsumptionNeeded = Math.Max(0, buildInAirIntake - maxAtmosphericConsumptionRate);
 
                 // add the consumed atmosphere total atmospheric consumption rate
-                _atmosphereConsumptionRate += _part.RequestResource(_atmosphereResourceName, remainingConsumptionNeeded / _atmosphere.density) / _atmosphere.density;
-
+                _atmosphereConsumptionRate += resMan.ConsumeResource(ResourceName.IntakeAtmosphere, remainingConsumptionNeeded / _atmosphere.density) / _atmosphere.density;
 
                 // produce the resources
-                _ammoniaProductionRate = _ammoniaPercentage <= 0 ? 0 : -_part.RequestResource(_ammoniaResourceName, -_atmosphereConsumptionRate * _ammoniaPercentage / _atmosphere.density, ResourceFlowMode.ALL_VESSEL) /  _atmosphere.density;
-                _argonProductionRate = _argonPercentage <= 0 ? 0 : -_part.RequestResource(_argonResourceName, -_atmosphereConsumptionRate * _argonPercentage / _argon.density, ResourceFlowMode.ALL_VESSEL) /_argon.density;
-                _chlorineProductionRate = _chlorinePercentage <= 0 ? 0 : -_part.RequestResource(_chlorineResourceName, -_atmosphereConsumptionRate * _chlorinePercentage  / _chlorine.density, ResourceFlowMode.ALL_VESSEL) /  _chlorine.density;
-                _dioxideProductionRate = _dioxidePercentage <= 0 ? 0 : -_part.RequestResource(_dioxideResourceName, -_atmosphereConsumptionRate * _dioxidePercentage  / _dioxide.density, ResourceFlowMode.ALL_VESSEL) /  _dioxide.density;
-                _helium3ProductionRate = _helium3Percentage <= 0 ? 0 : -_part.RequestResource(_helium3ResourceName, -_atmosphereConsumptionRate * _helium3Percentage / _helium3.density, ResourceFlowMode.ALL_VESSEL) /_helium3.density;
-                _helium4ProductionRate = _helium4Percentage <= 0 ? 0 : -_part.RequestResource(_helium4ResourceName, -_atmosphereConsumptionRate * _helium4Percentage / _helium4.density, ResourceFlowMode.ALL_VESSEL) /  _helium4.density;
-                _hydrogenProductionRate = _hydrogenPercentage <= 0 ? 0 : -_part.RequestResource(_hydrogenResourceName, -_atmosphereConsumptionRate * _hydrogenPercentage / _hydrogen.density, ResourceFlowMode.ALL_VESSEL) / _hydrogen.density;
-                _methaneProductionRate = _methanePercentage <= 0 ? 0 : -_part.RequestResource(_methaneResourceName, -_atmosphereConsumptionRate * _methanePercentage / _methane.density, ResourceFlowMode.ALL_VESSEL) /  _methane.density;
-                _monoxideProductionRate = _monoxidePercentage <= 0 ? 0 : -_part.RequestResource(_monoxideResourceName, -_atmosphereConsumptionRate * _monoxidePercentage  / _monoxide.density, ResourceFlowMode.ALL_VESSEL) /  _monoxide.density;
-                _neonProductionRate = _neonPercentage <= 0 ? 0 : -_part.RequestResource(_neonResourceName, -_atmosphereConsumptionRate * _neonPercentage / _neon.density, ResourceFlowMode.ALL_VESSEL) / _neon.density;
-                _nitrogenProductionRate = _nitrogenPercentage <= 0 ? 0 : -_part.RequestResource(_nitrogenResourceName, -_atmosphereConsumptionRate * _nitrogenPercentage  / _nitrogen.density, ResourceFlowMode.ALL_VESSEL) / _nitrogen.density;
-                _nitrogen15ProductionRate = _nitrogen15Percentage <= 0 ? 0 : -_part.RequestResource(_nitrogen15ResourceName, -_atmosphereConsumptionRate * _nitrogen15Percentage / _nitrogen15.density, ResourceFlowMode.ALL_VESSEL) / _nitrogen15.density;
-                _oxygenProductionRate = _oxygenPercentage <= 0 ? 0 : -_part.RequestResource(_oxygenResourceName, -_atmosphereConsumptionRate * _oxygenPercentage / _oxygen.density, ResourceFlowMode.ALL_VESSEL) /  _oxygen.density;
-                _waterProductionRate = _waterPercentage <= 0 ? 0 : -_part.RequestResource(_waterResourceName, -_atmosphereConsumptionRate * _waterPercentage / _water.density, ResourceFlowMode.ALL_VESSEL) / _water.density;
-                _heavyWaterProductionRate = _heavywaterPercentage <= 0 ? 0 : -_part.RequestResource(_heavyWaterResourceName, -_atmosphereConsumptionRate * _heavywaterPercentage  / _heavyWater.density, ResourceFlowMode.ALL_VESSEL) / _heavyWater.density;
-                _xenonProductionRate = _xenonPercentage <= 0 ? 0 : -_part.RequestResource(_xenonResourceName, -_atmosphereConsumptionRate * _xenonPercentage  / _xenon.density, ResourceFlowMode.ALL_VESSEL) / _xenon.density;
-                _deuteriumProductionRate = _deuteriumPercentage <= 0 ? 0 : -_part.RequestResource(_deuteriumResourceName, -_atmosphereConsumptionRate * _deuteriumPercentage  / _deuterium.density, ResourceFlowMode.ALL_VESSEL) / _deuterium.density;
-                _kryptonProductionRate = _kryptonPercentage <= 0 ? 0 : -_part.RequestResource(_kryptonResourceName, -_atmosphereConsumptionRate * _kryptonPercentage  / _krypton.density, ResourceFlowMode.ALL_VESSEL) / _krypton.density;
-                _sodiumProductionRate = _sodiumPercentage <= 0 ? 0 : -_part.RequestResource(_sodiumResourceName, -_atmosphereConsumptionRate * _sodiumPercentage / _sodium.density, ResourceFlowMode.ALL_VESSEL) / _sodium.density;
+                _ammoniaProductionRate = _ammoniaPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _ammoniaPercentage;
+                _argonProductionRate = _argonPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _argonPercentage;
+                _chlorineProductionRate = _chlorinePercentage <= 0 ? 0 : _atmosphereConsumptionRate * _chlorinePercentage;
+                _dioxideProductionRate = _dioxidePercentage <= 0 ? 0 : _atmosphereConsumptionRate * _dioxidePercentage;
+                _helium3ProductionRate = _helium3Percentage <= 0 ? 0 : _atmosphereConsumptionRate * _helium3Percentage;
+                _helium4ProductionRate = _helium4Percentage <= 0 ? 0 : _atmosphereConsumptionRate * _helium4Percentage;
+                _hydrogenProductionRate = _hydrogenPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _hydrogenPercentage;
+                _methaneProductionRate = _methanePercentage <= 0 ? 0 : _atmosphereConsumptionRate * _methanePercentage;
+                _neonProductionRate = _neonPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _neonPercentage;
+                _nitrogenProductionRate = _nitrogenPercentage <= 0 ? 0 : -_atmosphereConsumptionRate * _nitrogenPercentage;
+                _nitrogen15ProductionRate = _nitrogen15Percentage <= 0 ? 0 : _atmosphereConsumptionRate * _nitrogen15Percentage;
+                _oxygenProductionRate = _oxygenPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _oxygenPercentage;
+                _waterProductionRate = _waterPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _waterPercentage;
+                _xenonProductionRate = _xenonPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _xenonPercentage;
+                _deuteriumProductionRate = _deuteriumPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _deuteriumPercentage;
+                _kryptonProductionRate = _kryptonPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _kryptonPercentage;
+                _sodiumProductionRate = _sodiumPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _sodiumPercentage;
+
+                resMan.ProduceResource(ResourceName.AmmoniaLqd, _ammoniaProductionRate / _ammonia.density);
+                resMan.ProduceResource(ResourceName.ArgonLqd, _argonPercentage / _argon.density);
+                resMan.ProduceResource(ResourceName.ChlorineGas, _chlorinePercentage / _chlorine.density);
+                resMan.ProduceResource(ResourceName.CarbonDioxideLqd, _dioxidePercentage / _dioxide.density);
+                resMan.ProduceResource(ResourceName.Helium3Lqd, _helium3Percentage / _helium3.density);
+                resMan.ProduceResource(ResourceName.Helium4Lqd, _helium4Percentage / _helium4.density);
+                resMan.ProduceResource(ResourceName.MethaneLqd, _methanePercentage / _methane.density);
+                resMan.ProduceResource(ResourceName.CarbonMonoxideLqd, _monoxidePercentage / _monoxide.density);
+                resMan.ProduceResource(ResourceName.NeonLqd, _neonPercentage / _neon.density);
+                resMan.ProduceResource(ResourceName.NitrogenLqd, _nitrogenPercentage / _nitrogen.density);
+                resMan.ProduceResource(ResourceName.Nitrogen15Lqd, _nitrogen15Percentage / _nitrogen15.density);
+                resMan.ProduceResource(ResourceName.OxygenLqd, _oxygenPercentage / _oxygen.density);
+                resMan.ProduceResource(ResourceName.WaterPure, _waterPercentage / _water.density);
+                resMan.ProduceResource(ResourceName.WaterHeavy, _heavywaterPercentage / _heavyWater.density);
+                resMan.ProduceResource(ResourceName.XenonLqd, _xenonPercentage / _xenon.density);
+                resMan.ProduceResource(ResourceName.DeuteriumLqd, _deuteriumPercentage / _deuterium.density);
+                resMan.ProduceResource(ResourceName.KryptonLqd, _kryptonPercentage / _krypton.density);
+                resMan.ProduceResource(ResourceName.Sodium, _sodiumPercentage / _sodium.density);
             }
             else
             {
