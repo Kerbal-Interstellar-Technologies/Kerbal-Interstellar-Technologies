@@ -938,44 +938,26 @@ namespace KIT.Beamedpower
             CollectBiomeData();
 
             base.OnFixedUpdate();
-
-
-            // throw new Exception("what is a stable supply of power?");
-            
+           
             if (activeBeamGenerator != null && IsEnabled && !relay)
             {
                 double powerTransmissionRatio = (double)(decimal)transmitPower / 100d;
                 double transmissionWasteRatio = (100 - activeBeamGenerator.efficiencyPercentage) / 100d;
                 double transmissionEfficiencyRatio = activeBeamGenerator.efficiencyPercentage / 100d;
 
-                // availablePower = getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
+                var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
+                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
 
-                var powerStats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
-                var availablePower = powerStats.PreviousDataSupplied() ? powerStats.PreviouslySupplied() : powerStats.CurrentSupplied();
+                var effectiveResourceThrottling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
 
-                if (CheatOptions.InfiniteElectricity)
-                {
-                    requestedPower = power_capacity;
-                }
-                else
-                {
-                    var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
-                    var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+                requestedPower = Math.Min(power_capacity * powerTransmissionRatio, effectiveResourceThrottling * /*availablePower*/ power_capacity);
+                availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
 
-                    var effectiveResourceThrottling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
-
-                    requestedPower = Math.Min(Math.Min(power_capacity, availablePower) * powerTransmissionRatio, effectiveResourceThrottling * availablePower);
-                }
-
-                double receivedPower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
-
-                nuclear_power += transmissionEfficiencyRatio * receivedPower;
-
+                nuclear_power += transmissionEfficiencyRatio * availablePower;
                 solar_power += transmissionEfficiencyRatio * solarCells.Sum(m => m.SolarPower);
 
                 // generate wasteheat for converting electric power to beamed power
-                if (!CheatOptions.IgnoreMaxTemperature)
-                    resMan.ProduceResource(ResourceName.WasteHeat, receivedPower * transmissionWasteRatio);
+                resMan.ProduceResource(ResourceName.WasteHeat, availablePower * transmissionWasteRatio);
             }
 
             // extract solar power from stable power
@@ -986,7 +968,6 @@ namespace KIT.Beamedpower
 
             if (double.IsInfinity(solar_power) || double.IsNaN(solar_power) || solar_power < 0)
                 solar_power = 0;
-            
         }
 
         public string KITPartName() => part.partInfo.title;

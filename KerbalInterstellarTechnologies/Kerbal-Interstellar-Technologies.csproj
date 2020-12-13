@@ -171,7 +171,6 @@
     <Compile Include="Refinery\Activity\WaterGasShift.cs" />
     <Compile Include="Refinery\Activity\CarbonDioxideElectrolyzer.cs" />
     <Compile Include="Science\FNSunModuleScienceExperiment.cs" />
-    <Compile Include="Science\InterstellarResourceScienceModule.cs" />
     <Compile Include="Refinery\Activity\HaberProcess.cs" />
     <Compile Include="Refinery\Activity\PeroxideProcess.cs" />
     <Compile Include="Reactors\InterstellarCatalysedFissionFusion.cs" />

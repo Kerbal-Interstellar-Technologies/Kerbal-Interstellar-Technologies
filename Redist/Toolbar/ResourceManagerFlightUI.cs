@@ -216,7 +216,8 @@ namespace KIT
             //if(stepCount++ % 25 == 0)
             //    Debug.Log($"{resourceName}, current Supply: {currentSupply}, current Demand: {currentDemand}\nProducers:\n{String.Join("\n", resourceProducers)}\nConsumers:\n{String.Join("\n", resourceConsumers)}\n");
 
-            DoWindow();
+            
+                DoWindow();
 
         }
 
@@ -276,14 +277,14 @@ namespace KIT
             if (vesselResourceManager == null || vesselResourceManager.resourceManager == null) return;
 
             bool tmp = hide_button;
-            if (show_window)
-                electricChargeUI.ShowWindow();
+            //if (show_window)
+            //    electricChargeUI.ShowWindow();
 
             /*
              * Are there dragons lurking here, waiting to race?
              */
-
-            electricChargeUI.DisplayData(
+            if (show_window)
+                electricChargeUI.DisplayData(
                 vesselResourceManager.resourceManager.KITSteps,
                 vesselResourceManager.resourceManager.ModConsumption[ResourceName.ElectricCharge], vesselResourceManager.resourceManager.ModProduction[ResourceName.ElectricCharge],
                 vesselResourceManager.resourceManager.ResourceProductionStats(ResourceName.ElectricCharge)

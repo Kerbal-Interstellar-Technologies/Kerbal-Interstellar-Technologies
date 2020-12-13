@@ -1,4 +1,5 @@
 ﻿using KIT.Redist;
+using KIT.ResourceScheduler;
 
 namespace KIT.Powermanagement
 {
@@ -36,7 +37,7 @@ namespace KIT.Powermanagement
 
         double MagneticNozzlePowerMult { get; }
 
-        void UseProductForPropulsion(double ratio, double propellantMassPerSecond, PartResourceDefinition resource);
+        void UseProductForPropulsion(IResourceManager resMan, double ratio, double propellantMassPerSecond, PartResourceDefinition resource);
 
         double RawMaximumPowerForPowerGeneration { get; }
 
