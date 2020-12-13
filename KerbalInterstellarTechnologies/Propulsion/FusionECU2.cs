@@ -4,6 +4,7 @@ using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
@@ -62,7 +63,7 @@ namespace KIT.Propulsion
         [KSPField]
         public int powerPriority = 4;
 
-        [KSPField(groupName = GROUP, guiName = "Wasteheat Mk1", guiActiveEditor = true, guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]
+        [KSPField(groupName = GROUP, guiName = "Max Wasteheat", guiActiveEditor = true, guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]
         public double fusionWasteHeatMax;
 
         [KSPField]
@@ -196,15 +197,15 @@ namespace KIT.Propulsion
             get
             {
                 if (EngineGenerationType == GenerationType.Mk1)
-                    return fusionWasteHeat * WasteheatMult();
+                    return wasteHeatMultiplier * fusionWasteHeat * FuelWasteheatMult();
                 else if (EngineGenerationType == GenerationType.Mk2)
-                    return fusionWasteHeatUpgraded1 * WasteheatMult();
+                    return wasteHeatMultiplier * fusionWasteHeatUpgraded1 * FuelWasteheatMult();
                 else if (EngineGenerationType == GenerationType.Mk3)
-                    return fusionWasteHeatUpgraded2 * WasteheatMult();
+                    return wasteHeatMultiplier * fusionWasteHeatUpgraded2 * FuelWasteheatMult();
                 else if (EngineGenerationType == GenerationType.Mk4)
-                    return fusionWasteHeatUpgraded3 * WasteheatMult();
+                    return wasteHeatMultiplier * fusionWasteHeatUpgraded3 * FuelWasteheatMult();
                 else
-                    return fusionWasteHeatUpgraded4 * WasteheatMult();
+                    return wasteHeatMultiplier * fusionWasteHeatUpgraded4 * FuelWasteheatMult();
             }
         }
 
@@ -296,7 +297,7 @@ namespace KIT.Propulsion
             return FuelConfigurations.Count <= 0 || CurrentActiveConfiguration.hasIspThrottling;
         }
 
-        private double WasteheatMult()
+        private double FuelWasteheatMult()
         {
             return FuelConfigurations.Count > 0 ? CurrentActiveConfiguration.wasteheatMult : 1;
         }
@@ -529,7 +530,6 @@ namespace KIT.Propulsion
         {
             FcUpdate();
             curEngineT.atmosphereCurve = BaseFloatCurve;
-            //MinIsp = currentIsp;
         }
 
         private void UpdateAtmosphereCurve(float currentIsp)
@@ -547,21 +547,20 @@ namespace KIT.Propulsion
         // Is called in the VAB
         public virtual void Update()
         {
-            if (HighLogic.LoadedSceneIsEditor)
-            {
-                SetRatios();
+            if (!HighLogic.LoadedSceneIsEditor) return;
 
-                currentIsp = hasIspThrottling ? SelectedIsp : MinIsp;
-                UpdateAtmosphereCurveInVab(currentIsp);
+            SetRatios();
 
-                maximumThrust = hasIspThrottling ? MaximumThrust : FullTrustMaximum;
+            currentIsp = hasIspThrottling ? SelectedIsp : MinIsp;
+            UpdateAtmosphereCurveInVab(currentIsp);
 
-                // Update FuelFlow
-                maxFuelFlow = maximumThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
+            maximumThrust = hasIspThrottling ? MaximumThrust : FullTrustMaximum;
 
-                curEngineT.maxFuelFlow = (float)maxFuelFlow;
-                curEngineT.maxThrust = (float)maximumThrust;
-            }
+            // Update FuelFlow
+            maxFuelFlow = maximumThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
+
+            curEngineT.maxFuelFlow = (float)maxFuelFlow;
+            curEngineT.maxThrust = (float)maximumThrust;
         }
 
         public new void KITFixedUpdate(IResourceManager resMan)
@@ -624,7 +623,7 @@ namespace KIT.Propulsion
                 // The Absorbed wasteheat from Fusion
                 rateMultplier = hasIspThrottling ? Math.Pow(SelectedIsp / MinIsp, 2) : 1;
                 neutronbsorbionBonus = hasIspThrottling ? 1 - NeutronAbsorptionFractionAtMinIsp * (1 - ((SelectedIsp - MinIsp) / (MaxIsp - MinIsp))) : 0.5;
-                absorbedWasteheat = FusionWasteHeat * wasteHeatMultiplier * fusionRatio * curEngineT.currentThrottle * neutronbsorbionBonus;
+                absorbedWasteheat = FusionWasteHeat * fusionRatio * curEngineT.currentThrottle * neutronbsorbionBonus;
                 supplyFNResourcePerSecond(absorbedWasteheat, ResourceSettings.Config.WasteHeatInMegawatt);
 
                 SetRatios();
@@ -710,7 +709,7 @@ namespace KIT.Propulsion
         private void SetRatios()
         {
             fuels = string.Join(" : ", CurrentActiveConfiguration.Fuels);
-            ratios = string.Join(" : ", CurrentActiveConfiguration.Ratios.Select(m => m.ToString()).ToArray());
+            ratios = string.Join(" : ", CurrentActiveConfiguration.Ratios.Select(m => m.ToString(CultureInfo.InvariantCulture)).ToArray());
 
             var typeMaskCount = CurrentActiveConfiguration.TypeMasks.Count();
             for (var i = 0; i < CurrentActiveConfiguration.Fuels.Count(); i++)

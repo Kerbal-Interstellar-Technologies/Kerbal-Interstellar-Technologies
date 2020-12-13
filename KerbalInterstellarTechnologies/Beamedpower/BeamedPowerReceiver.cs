@@ -2,17 +2,17 @@
 using KIT.Constants;
 using KIT.Extensions;
 using KIT.Microwave;
+using KIT.Powermanagement;
 using KIT.Propulsion;
 using KIT.Redist;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Powermanagement;
 using UnityEngine;
-using KIT.ResourceScheduler;
 
 namespace KIT
 {
@@ -111,20 +111,20 @@ namespace KIT
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_TargetWavelength", guiFormat = "F5")]//Target Wavelength
         public double targetWavelength = 0;
         [KSPField(isPersistant = true)]
-        public bool forceActivateAtStartup = false;
+        public bool forceActivateAtStartup;
 
         [KSPField(isPersistant = true)]
-        protected double total_sat_efficiency_fraction = 0;
+        protected double total_sat_efficiency_fraction;
         [KSPField(isPersistant = true)]
-        protected double total_beamed_power = 0;
+        protected double total_beamed_power;
         [KSPField(isPersistant = true)]
-        protected double total_beamed_power_max = 0;
+        protected double total_beamed_power_max;
         [KSPField(isPersistant = true)]
-        protected double total_beamed_wasteheat = 0;
+        protected double total_beamed_wasteheat;
         [KSPField(isPersistant = true)]
-        public double thermalSolarInputMegajoules = 0;
+        public double thermalSolarInputMegajoules;
         [KSPField(isPersistant = true)]
-        public double thermalSolarInputMegajoulesMax = 0;
+        public double thermalSolarInputMegajoulesMax;
 
         //Persistent False
         [KSPField]
@@ -790,12 +790,12 @@ namespace KIT
         private void ActivateRecieverState(bool forced = false)
         {
             receiverIsEnabled = true;
+            forceActivateAtStartup = true;
 
             // force activate to trigger any fairings and generators
             Debug.Log("[KSPI]: BeamedPowerReceiver was force activated on  " + part.name);
             this.part.force_activate();
 
-            forceActivateAtStartup = true;
             ShowDeployAnimation(forced);
         }
 
@@ -830,6 +830,7 @@ namespace KIT
         private void DeactivateRecieverState(bool forced = false)
         {
             receiverIsEnabled = false;
+            forceActivateAtStartup = false;
 
             ShowUndeployAnimation(forced);
         }
@@ -876,13 +877,13 @@ namespace KIT
             ShowUndeployAnimation(true);
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_ActivateReceiver", active = true)]//Activate Receiver
+        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_ActivateReceiver", active = true)]//Activate Receiver
         public void ActivateReceiver()
         {
             ActivateRecieverState();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_DisableReceiver", active = true)]//Disable Receiver
+        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_DisableReceiver", active = true)]//Disable Receiver
         public void DisableReceiver()
         {
             DeactivateRecieverState();
@@ -938,7 +939,7 @@ namespace KIT
             }
         }
 
-        private BandwidthConverter activeBandwidthConfiguration;
+        public BandwidthConverter activeBandwidthConfiguration;
 
         private List<BandwidthConverter> _bandwidthConverters;
         public List<BandwidthConverter> BandwidthConverters => _bandwidthConverters;
@@ -969,7 +970,7 @@ namespace KIT
             return 2 * MomentumWhole;
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             //string[] resources_to_supply = new [] {ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt};
 
@@ -1013,13 +1014,13 @@ namespace KIT
 
             instanceId = GetInstanceID();
 
-            Fields["hothBathtechLevel"].guiActiveEditor = isThermalReceiver;
-            Fields["hothBathTemperature"].guiActiveEditor = isThermalReceiver;
+            Fields[nameof(hothBathtechLevel)].guiActiveEditor = isThermalReceiver;
+            Fields[nameof(hothBathTemperature)].guiActiveEditor = isThermalReceiver;
 
-            _linkReceiverBaseEvent = Events["LinkReceiver"];
-            _unlinkReceiverBaseEvent = Events["UnlinkReceiver"];
-            _activateReceiverBaseEvent = Events["ActivateReceiver"];
-            _disableReceiverBaseEvent = Events["DisableReceiver"];
+            _linkReceiverBaseEvent = Events[nameof(LinkReceiver)];
+            _unlinkReceiverBaseEvent = Events[nameof(UnlinkReceiver)];
+            _activateReceiverBaseEvent = Events[nameof(ActivateReceiver)];
+            _disableReceiverBaseEvent = Events[nameof(DisableReceiver)];
 
             coreTempererature = CoreTemperature.ToString("0.0") + " K";
             _coreTempereratureField = Fields["coreTempererature"];
@@ -1059,28 +1060,18 @@ namespace KIT
             deployableAntenna = part.FindModuleImplementing<ModuleDeployableAntenna>();
             if (deployableAntenna != null)
             {
-                try
-                {
-                    deployableAntenna.Events["Extend"].guiActive = false;
-                    deployableAntenna.Events["Retract"].guiActive = false;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("[KSPI]: Error while disabling antenna deploy button " + e.Message + " at " + e.StackTrace);
-                }
+                deployableAntenna.Events[nameof(ModuleDeployableAntenna.Extend)].guiActive = false;
+                deployableAntenna.Events[nameof(ModuleDeployableAntenna.Retract)].guiActive = false;
             }
 
             deployableSolarPanel = part.FindModuleImplementing<ModuleDeployableSolarPanel>();
-            if (deployableSolarPanel != null)
-            {
-                deployableSolarPanel.Events["Extend"].guiActive = false;
-            }
+            HideSlavePartModules();
 
-            var isInSolarModeField = Fields["solarPowerMode"];
+            var isInSolarModeField = Fields[nameof(solarPowerMode)];
             isInSolarModeField.guiActive = deployableSolarPanel != null || solarReceptionSurfaceArea > 0;
             isInSolarModeField.guiActiveEditor = deployableSolarPanel != null || solarReceptionSurfaceArea > 0;
 
-            var dissipationInMegaJoulesField = Fields["dissipationInMegaJoules"];
+            var dissipationInMegaJoulesField = Fields[nameof(dissipationInMegaJoules)];
             dissipationInMegaJoulesField.guiActive = isMirror;
 
             if (deployableSolarPanel == null)
@@ -1107,9 +1098,9 @@ namespace KIT
                     fnRadiator.radiatorIsEnabled = radiatorMode;
                 }
 
-                var isInRatiatorMode = Fields["radiatorMode"];
-                isInRatiatorMode.guiActive = fnRadiator != null;
-                isInRatiatorMode.guiActiveEditor = fnRadiator != null;
+                var radiatorModeField = Fields[nameof(radiatorMode)];
+                radiatorModeField.guiActive = fnRadiator != null;
+                radiatorModeField.guiActiveEditor = fnRadiator != null;
             }
 
             if (state != StartState.Editor)
@@ -1121,7 +1112,7 @@ namespace KIT
 
                 localStar = GetCurrentStar();
 
-                // compensate for stock solar initialisation heating bug
+                // compensate for stock solar initialization heating bug
                 initializationCountdown = 10;
 
                 if (forceActivateAtStartup)
@@ -1134,7 +1125,7 @@ namespace KIT
                 {
                     var result = PowerSourceSearchResult.BreadthFirstSearchForThermalSource(this.part, (s) => s is BeamedPowerReceiver && (BeamedPowerReceiver)s != this, connectStackdepth, connectParentdepth, connectSurfacedepth, true);
 
-                    if (result == null || result.Source == null)
+                    if (result?.Source == null)
                         Debug.LogWarning("[KSPI]: MicrowavePowerReceiver - BreadthFirstSearchForThermalSource-Failed to find thermal receiver");
                     else
                         ((BeamedPowerReceiver)result.Source).RegisterAsSlave(this);
@@ -1178,6 +1169,20 @@ namespace KIT
             }
         }
 
+        private void HideSlavePartModules()
+        {
+            if (deployableSolarPanel != null)
+            {
+                var extendEvent = deployableSolarPanel.Events[nameof(ModuleDeployableSolarPanel.Extend)];
+                extendEvent.guiActive = false;
+                extendEvent.guiActive = false;
+
+                var retractEvent = deployableSolarPanel.Events[nameof(ModuleDeployableSolarPanel.Retract)];
+                retractEvent.guiActive = false;
+                retractEvent.guiActive = false;
+            }
+        }
+
         private void UpdateBuffers()
         {
             try
@@ -1193,14 +1198,13 @@ namespace KIT
 
         private void PowerDown()
         {
-            if (_powerState != PowerStates.PowerOffline)
-            {
-                if (powerDownFraction > 0)
-                    powerDownFraction -= 0.01;
+            if (_powerState == PowerStates.PowerOffline) return;
 
-                if (powerDownFraction <= 0)
-                    _powerState = PowerStates.PowerOffline;
-            }
+            if (powerDownFraction > 0)
+                powerDownFraction -= 0.01;
+
+            if (powerDownFraction <= 0)
+                _powerState = PowerStates.PowerOffline;
         }
 
         /// <summary>
@@ -1234,11 +1238,9 @@ namespace KIT
             try
             {
                 Debug.Log("[KSPI]: detach " + part.partInfo.title);
-                if (ConnectedChargedParticleElectricGenerator != null)
-                    ConnectedChargedParticleElectricGenerator.FindAndAttachToPowerSource();
 
-                if (ConnectedThermalElectricGenerator != null)
-                    ConnectedThermalElectricGenerator.FindAndAttachToPowerSource();
+                ConnectedChargedParticleElectricGenerator?.FindAndAttachToPowerSource();
+                ConnectedThermalElectricGenerator?.FindAndAttachToPowerSource();
             }
             catch (Exception e)
             {
@@ -1262,25 +1264,25 @@ namespace KIT
             part.temperature = storedTemp;
             part.skinTemperature = storedTemp;
 
-            var _bandwidthConverterNodes = node.GetNodes("BandwidthConverter");
+            var bandwidthConverterNodes = node.GetNodes("BandwidthConverter");
 
-            if(_bandwidthConverterNodes.Count() == 0)
+            if(!bandwidthConverterNodes.Any())
             {
-                Debug.Log("[KSP] BeamedPowerReceiever: something is wrong, no inline BandwidthConverters present");
+                Debug.Log("[KSP] BeamedPowerReceiver: something is wrong, no inline BandwidthConverters present");
                 return;
             }
 
-            var _inlineBandwidthConverters = new List<BandwidthConverter>();
+            var inlineBandwidthConverters = new List<BandwidthConverter>();
 
-            foreach(var converterNode in _bandwidthConverterNodes)
+            foreach(var converterNode in bandwidthConverterNodes)
             {
                 var converter = new BandwidthConverter(converterNode, part.partInfo.title);
                 if (converter.isValid)
-                    _inlineBandwidthConverters.Add(converter);
+                    inlineBandwidthConverters.Add(converter);
                 else Debug.Log($"[KSPI] OnLoad unable to parse BandwidthConverter, and it's not valid");
             }
 
-            _bandwidthConverters = _inlineBandwidthConverters.OrderByDescending(m => m.minimumWavelength).ToList();
+            _bandwidthConverters = inlineBandwidthConverters.OrderByDescending(m => m.minimumWavelength).ToList();
         }
 
         private void InitializeThermalModeSwitcher()
@@ -1291,7 +1293,7 @@ namespace KIT
             else if (!isThermalReceiver && isEnergyReceiver)
                 thermalMode = false;
 
-            var isInThermalModeField = Fields["thermalMode"];
+            var isInThermalModeField = Fields[nameof(thermalMode)];
 
             isInThermalModeField.guiActive = isThermalReceiver && isEnergyReceiver;
             isInThermalModeField.guiActiveEditor = isThermalReceiver && isEnergyReceiver;
@@ -1301,44 +1303,46 @@ namespace KIT
         {
             Debug.Log("[KSPI]: Setup Receiver BandWidth Configurations for " + part.partInfo.title);
 
-            _powerInputMegajoulesField = Fields["powerInputMegajoules"];
-            _maximumWavelengthField = Fields["maximumWavelength"];
-            _minimumWavelengthField = Fields["minimumWavelength"];
-            _solarFacingFactorField = Fields["solarFacingFactor"];
-            _linkedForRelayField = Fields["linkedForRelay"];
-            _slavesAmountField = Fields["slavesAmount"];
-            _ThermalPowerField = Fields["ThermalPower"];
-            _minimumConsumptionPercentageField = Fields["minimumConsumptionPercentage"];
-            _maximumConsumptionPercentageField = Fields["maximumConsumptionPercentage"];
-            _beamedpowerField = Fields["beamedpower"];
-            _solarFluxField = Fields["solarFlux"];
-            _diameterField = Fields["diameter"];
+            _powerInputMegajoulesField = Fields[nameof(powerInputMegajoules)];
+            _maximumWavelengthField = Fields[nameof(maximumWavelength)];
+            _minimumWavelengthField = Fields[nameof(minimumWavelength)];
+            _solarFacingFactorField = Fields[nameof(solarFacingFactor)];
+            _linkedForRelayField = Fields[nameof(linkedForRelay)];
+            _slavesAmountField = Fields[nameof(slavesAmount)];
+            _ThermalPowerField = Fields[nameof(ThermalPower)];
+            _minimumConsumptionPercentageField = Fields[nameof(minimumConsumptionPercentage)];
+            _maximumConsumptionPercentageField = Fields[nameof(maximumConsumptionPercentage)];
+            _beamedpowerField = Fields[nameof(beamedpower)];
+            _solarFluxField = Fields[nameof(solarFlux)];
+            _diameterField = Fields[nameof(diameter)];
 
-            _connectedsatsField = Fields["connectedsats"];
-            _connectedrelaysField = Fields["connectedrelays"];
-            _networkDepthStringField = Fields["networkDepthString"];
+            _connectedsatsField = Fields[nameof(connectedsats)];
+            _connectedrelaysField = Fields[nameof(connectedrelays)];
+            _networkDepthStringField = Fields[nameof(networkDepthString)];
 
-            _bandWidthNameField = Fields["bandWidthName"];
+            _bandWidthNameField = Fields[nameof(bandWidthName)];
             _bandWidthNameField.guiActiveEditor = showBandWidthName || !canSwitchBandwidthInEditor;
             _bandWidthNameField.guiActive = showBandWidthName || !canSwitchBandwidthInFlight;
 
-            _selectedBandwidthConfigurationField = Fields["selectedBandwidthConfiguration"];
+            _selectedBandwidthConfigurationField = Fields[nameof(selectedBandwidthConfiguration)];
             _selectedBandwidthConfigurationField.guiActiveEditor = showSelectedBandwidthConfiguration && canSwitchBandwidthInEditor;
             _selectedBandwidthConfigurationField.guiActive = showSelectedBandwidthConfiguration && canSwitchBandwidthInFlight;
 
             var names = BandwidthConverters.Select(m => m.bandwidthName).ToArray();
 
-            var chooseOptionEditor = _selectedBandwidthConfigurationField.uiControlEditor as UI_ChooseOption;
-            chooseOptionEditor.options = names;
+            if (_selectedBandwidthConfigurationField.uiControlEditor is UI_ChooseOption chooseOptionEditor)
+            {
+                chooseOptionEditor.options = names;
+                chooseOptionEditor.onFieldChanged = UpdateFromGui;
+            }
 
-            var chooseOptionFlight = _selectedBandwidthConfigurationField.uiControlFlight as UI_ChooseOption;
-            chooseOptionFlight.options = names;
+            if (_selectedBandwidthConfigurationField.uiControlFlight is UI_ChooseOption chooseOptionFlight)
+            {
+                chooseOptionFlight.options = names;
+                chooseOptionFlight.onFieldChanged = UpdateFromGui;
+            }
 
-            UpdateFromGUI(_selectedBandwidthConfigurationField, selectedBandwidthConfiguration);
-
-            // connect on change event
-            chooseOptionEditor.onFieldChanged = UpdateFromGUI;
-            chooseOptionFlight.onFieldChanged = UpdateFromGUI;
+            UpdateFromGui(_selectedBandwidthConfigurationField, selectedBandwidthConfiguration);
         }
 
         private void LoadInitialConfiguration()
@@ -1350,7 +1354,7 @@ namespace KIT
             Debug.Log("[KSPI]: LoadInitialConfiguration initialize initial beam configuration with wavelength target " + currentWavelength);
 
             // find wavelength closes to target wavelength
-            activeBandwidthConfiguration = BandwidthConverters.FirstOrDefault();
+            activeBandwidthConfiguration = BandwidthConverters.First();
             bandWidthName = activeBandwidthConfiguration.bandwidthName;
             selectedBandwidthConfiguration = 0;
             var lowestWavelengthDifference = Math.Abs(currentWavelength - activeBandwidthConfiguration.TargetWavelength);
@@ -1370,7 +1374,7 @@ namespace KIT
             }
         }
 
-        private void UpdateFromGUI(BaseField field, object oldFieldValueObj)
+        private void UpdateFromGui(BaseField field, object oldFieldValueObj)
         {
             if (!BandwidthConverters.Any())
                 return;
@@ -1380,9 +1384,7 @@ namespace KIT
             else
             {
                 if (selectedBandwidthConfiguration < BandwidthConverters.Count)
-                {
                     activeBandwidthConfiguration = BandwidthConverters[selectedBandwidthConfiguration];
-                }
                 else
                 {
                     selectedBandwidthConfiguration = BandwidthConverters.Count - 1;
@@ -1391,13 +1393,9 @@ namespace KIT
             }
 
             if (activeBandwidthConfiguration == null)
-            {
                 Debug.LogWarning("[KSPI]: BeamedPowerReceiver UpdateFromGUI failed to find BandwidthConfiguration");
-            }
             else
-            {
                 UpdateProperties();
-            }
         }
 
         private void UpdateProperties()
@@ -1426,32 +1424,25 @@ namespace KIT
                     return true;
 
                 if (deployableAntenna != null && deployableAntenna.isBreakable)
-                {
                     return !deployableAntenna.ShouldBreakFromPressure();
-                }
-                else if (deployableRadiator != null && deployableRadiator.isBreakable)
-                {
+
+                if (deployableRadiator != null && deployableRadiator.isBreakable)
                     return !deployableRadiator.ShouldBreakFromPressure();
-                }
-                else if (deployableSolarPanel != null && deployableSolarPanel.isBreakable)
-                {
+
+                if (deployableSolarPanel != null && deployableSolarPanel.isBreakable)
                     return !deployableSolarPanel.ShouldBreakFromPressure();
-                }
-                else if (genericAnimation == null)
-                {
+
+                if (genericAnimation == null)
                     return true;
-                }
-                else
-                {
-                    var pressure = FlightGlobals.getStaticPressure(vessel.GetVesselPos()) / 100;
-                    var dynamic_pressure = 0.5 * pressure * 1.2041 * vessel.srf_velocity.sqrMagnitude / 101325;
 
-                    if (dynamic_pressure <= 0) return true;
+                var pressure = FlightGlobals.getStaticPressure(vessel.GetVesselPos()) / 100;
+                var dynamicPressure = 0.5 * pressure * 1.2041 * vessel.srf_velocity.sqrMagnitude / 101325;
 
-                    var pressureLoad = dynamic_pressure / 1.4854428818159e-3 * 100;
+                if (dynamicPressure <= 0) return true;
 
-                    return !(pressureLoad > 100 * atmosphereToleranceModifier);
-                }
+                var pressureLoad = dynamicPressure / 1.4854428818159e-3 * 100;
+
+                return !(pressureLoad > 100 * atmosphereToleranceModifier);
             }
         }
 
@@ -1471,7 +1462,7 @@ namespace KIT
             return star;
         }
 
-        public override void OnUpdate()
+        public void Update()
         {
             var transmitterOn = has_transmitter && (part_transmitter.IsEnabled || part_transmitter.relay);
             var canBeActive = CanBeActiveInAtmosphere;
@@ -1495,6 +1486,11 @@ namespace KIT
             _minimumWavelengthField.guiActive = receiverIsEnabled;
             _maximumWavelengthField.guiActive = receiverIsEnabled;
 
+            HideSlavePartModules();
+        }
+
+        public override void OnUpdate()
+        {
             _connectedsatsField.guiActive = connectedsatsi > 0;
             _connectedrelaysField.guiActive = connectedrelaysi > 0;
             _networkDepthStringField.guiActive = networkDepth > 0;
@@ -1507,36 +1503,26 @@ namespace KIT
             if (IsThermalSource)
                 coreTempererature = CoreTemperature.ToString("0.0") + " K";
 
-            if (receiverIsEnabled)
-                beamedpower = PluginHelper.getFormattedPowerString(ProducedPower);
-            else
-                beamedpower = Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_BeamPowerOffline");//"Offline."
+            beamedpower = receiverIsEnabled ? PluginHelper.getFormattedPowerString(ProducedPower) : Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_BeamPowerOffline");
 
-            connectedsats = string.Format("{0}/{1}", connectedsatsi, BeamedPowerSources.instance.globalTransmitters.Count);
-            connectedrelays = string.Format("{0}/{1}", connectedrelaysi, BeamedPowerSources.instance.globalRelays.Count);
+            connectedsats = $"{connectedsatsi}/{BeamedPowerSources.instance.globalTransmitters.Count}";
+            connectedrelays = $"{connectedrelaysi}/{BeamedPowerSources.instance.globalRelays.Count}";
             networkDepthString = networkDepth.ToString();
 
             CalculateInputPower();
 
             if (deployableAntenna != null)
             {
-                try
-                {
-                    deployableAntenna.Events["Extend"].guiActive = false;
-                    deployableAntenna.Events["Retract"].guiActive = false;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("[KSPI]: Error while disabling antenna deploy button " + e.Message + " at " + e.StackTrace);
-                }
+                deployableAntenna.Events[nameof(deployableAntenna.Extend)].guiActive = false;
+                deployableAntenna.Events[nameof(deployableAntenna.Retract)].guiActive = false;
             }
         }
 
-        private double GetSolarFacingFactor(CelestialBody localStar, Vector3 vesselPosition)
+        private double GetSolarFacingFactor(CelestialBody star, Vector3 vesselPosition)
         {
-            if (localStar == null) return 0;
+            if (star == null) return 0;
 
-            Vector3d solarDirectionVector = (localStar.transform.position - vesselPosition).normalized;
+            Vector3d solarDirectionVector = (star.transform.position - vesselPosition).normalized;
 
             if (receiverType == 9)
                 return 1;
@@ -1554,7 +1540,7 @@ namespace KIT
 
         private void OnGUI()
         {
-            if (this.vessel == FlightGlobals.ActiveVessel && showWindow)
+            if (this.vessel == FlightGlobals.ActiveVessel && showWindow && !HighLogic.LoadedSceneIsEditor)
                 windowPosition = GUILayout.Window(windowID, windowPosition, DrawGui, Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_InterfaceWindowTitle"));//"Power Receiver Interface"
         }
 
@@ -1570,13 +1556,13 @@ namespace KIT
 
             GUILayout.BeginVertical();
 
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel1"), part.partInfo.title, bold_black_style, text_black_style, 200, 400);//"Receiver Type"
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel2"), diameter.ToString("F2"), bold_black_style, text_black_style, 200, 400);//"Receiver Diameter"
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel3"), part.vessel.mainBody.name + " @ " + DistanceToText(part.vessel.altitude), bold_black_style, text_black_style, 200, 400);//"Receiver Location"
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel4"), powerCapacityEfficiency.ToString("P1"), bold_black_style, text_black_style, 200, 400);//"Power Capacity Efficiency"
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel5"), PluginHelper.getFormattedPowerString(total_beamed_power), bold_black_style, text_black_style, 200, 400);//"Total Current Beamed Power"
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel6"), PluginHelper.getFormattedPowerString(total_beamed_power_max), bold_black_style, text_black_style, 200, 400);//"Total Maximum Beamed Power"
-            PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel7"), PluginHelper.getFormattedPowerString(total_beamed_wasteheat), bold_black_style, text_black_style, 200, 400);//"Total Wasteheat Production"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel1"), part.partInfo.title, bold_black_style, text_black_style, 200, 400);//"Receiver Type"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel2"), diameter.ToString("F2"), bold_black_style, text_black_style, 200, 400);//"Receiver Diameter"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel3"), part.vessel.mainBody.name + " @ " + DistanceToText(part.vessel.altitude), bold_black_style, text_black_style, 200, 400);//"Receiver Location"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel4"), powerCapacityEfficiency.ToString("P1"), bold_black_style, text_black_style, 200, 400);//"Power Capacity Efficiency"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel5"), PluginHelper.getFormattedPowerString(total_beamed_power), bold_black_style, text_black_style, 200, 400);//"Total Current Beamed Power"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel6"), PluginHelper.getFormattedPowerString(total_beamed_power_max), bold_black_style, text_black_style, 200, 400);//"Total Maximum Beamed Power"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel7"), PluginHelper.getFormattedPowerString(total_beamed_wasteheat), bold_black_style, text_black_style, 200, 400);//"Total Wasteheat Production"
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel8"), bold_black_style, GUILayout.Width(labelWidth));//"Transmitter"
@@ -1618,7 +1604,7 @@ namespace KIT
 
             if (received_power.Values.Any(m => m.Relays.Count > 0))
             {
-                PrintToGUILayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel21"), "", bold_black_style, text_black_style, 200);//"Relays"
+                PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel21"), "", bold_black_style, text_black_style, 200);//"Relays"
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_WinLabel22"), bold_black_style, GUILayout.Width(wideLabelWidth));//"Transmitter"
@@ -1636,18 +1622,18 @@ namespace KIT
                 {
                     for (int r = 0; r < receivedPowerData.Relays.Count; r++)
                     {
-                        VesselRelayPersistence vesselPersistance = receivedPowerData.Relays[r];
+                        VesselRelayPersistence vesselPersistence = receivedPowerData.Relays[r];
 
                         GUILayout.BeginHorizontal();
                         GUILayout.Label(r == 0 ? receivedPowerData.Transmitter.Vessel.name : "", text_black_style, GUILayout.Width(wideLabelWidth));
                         GUILayout.Label(r.ToString(), text_black_style, GUILayout.Width(ValueWidthNormal));
-                        GUILayout.Label(vesselPersistance.Vessel.name, text_black_style, GUILayout.Width(wideLabelWidth));
-                        GUILayout.Label(vesselPersistance.Vessel.mainBody.name + " @ " + DistanceToText(vesselPersistance.Vessel.altitude), text_black_style, GUILayout.Width(labelWidth));
-                        GUILayout.Label(PluginHelper.getFormattedPowerString(vesselPersistance.PowerCapacity), text_black_style, GUILayout.Width(valueWidthWide));
-                        GUILayout.Label(vesselPersistance.Aperture + " m", text_black_style, GUILayout.Width(ValueWidthNormal));
-                        GUILayout.Label(vesselPersistance.Diameter + " m", text_black_style, GUILayout.Width(ValueWidthNormal));
-                        GUILayout.Label(WavelengthToText(vesselPersistance.MinimumRelayWavelenght), text_black_style, GUILayout.Width(ValueWidthNormal));
-                        GUILayout.Label(WavelengthToText(vesselPersistance.MaximumRelayWavelenght), text_black_style, GUILayout.Width(ValueWidthNormal));
+                        GUILayout.Label(vesselPersistence.Vessel.name, text_black_style, GUILayout.Width(wideLabelWidth));
+                        GUILayout.Label(vesselPersistence.Vessel.mainBody.name + " @ " + DistanceToText(vesselPersistence.Vessel.altitude), text_black_style, GUILayout.Width(labelWidth));
+                        GUILayout.Label(PluginHelper.getFormattedPowerString(vesselPersistence.PowerCapacity), text_black_style, GUILayout.Width(valueWidthWide));
+                        GUILayout.Label(vesselPersistence.Aperture + " m", text_black_style, GUILayout.Width(ValueWidthNormal));
+                        GUILayout.Label(vesselPersistence.Diameter + " m", text_black_style, GUILayout.Width(ValueWidthNormal));
+                        GUILayout.Label(WavelengthToText(vesselPersistence.MinimumRelayWavelenght), text_black_style, GUILayout.Width(ValueWidthNormal));
+                        GUILayout.Label(WavelengthToText(vesselPersistence.MaximumRelayWavelenght), text_black_style, GUILayout.Width(ValueWidthNormal));
                         GUILayout.EndHorizontal();
                     }
                 }
@@ -1678,11 +1664,11 @@ namespace KIT
             }
         }
 
-        protected void PrintToGUILayout(string label, string value, GUIStyle bold_style, GUIStyle text_style, int witdhLabel = 130, int witdhValue = 130)
+        protected void PrintToGuiLayout(string label, string value, GUIStyle boldStyle, GUIStyle textStyle, int widthLabel = 130, int widthValue = 130)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(label, bold_style, GUILayout.Width(witdhLabel));
-            GUILayout.Label(value, text_style, GUILayout.Width(witdhValue));
+            GUILayout.Label(label, boldStyle, GUILayout.Width(widthLabel));
+            GUILayout.Label(value, textStyle, GUILayout.Width(widthValue));
             GUILayout.EndHorizontal();
         }
 
@@ -1738,15 +1724,15 @@ namespace KIT
                         received_power[beamedPowerData.Transmitter.Vessel] = beamedPowerData;
                     }
 
-                    // first reset owm recieved power to get correct amount recieved by others
+                    // first reset owm received power to get correct amount received by others
                     beamedPowerData.IsAlive = true;
                     beamedPowerData.AvailablePower = 0;
                     beamedPowerData.NetworkPower = 0;
                     beamedPowerData.Wavelengths = string.Empty;
 
-                    KeyValuePair<MicrowaveRoute, IList<VesselRelayPersistence>> keyvaluepair = connectedTransmitterEntry.Value;
-                    beamedPowerData.Route = keyvaluepair.Key;
-                    beamedPowerData.Relays = keyvaluepair.Value;
+                    KeyValuePair<MicrowaveRoute, IList<VesselRelayPersistence>> keyValuePair = connectedTransmitterEntry.Value;
+                    beamedPowerData.Route = keyValuePair.Key;
+                    beamedPowerData.Relays = keyValuePair.Value;
 
                     // convert initial beamed power from source into MegaWatt
                     beamedPowerData.TransmitPower = transmitter.getAvailablePowerInMW();
@@ -1755,7 +1741,7 @@ namespace KIT
                         ? Math.Min(beamedPowerData.TransmitPower, beamedPowerData.Relays.Min(m => m.PowerCapacity))
                         : beamedPowerData.TransmitPower;
 
-                    // calculate maximum power avialable from beamed power network
+                    // calculate maximum power available from beamed power network
                     beamedPowerData.PowerUsageOthers = GetEnumeratedPowerFromSatelliteForAllLoadedVessels(beamedPowerData.Transmitter);
 
                     // add to available network power
@@ -1771,13 +1757,13 @@ namespace KIT
                             ? activeBandwidthConfiguration
                             : BandwidthConverters.FirstOrDefault(m => (powerBeam.wavelength >= m.minimumWavelength && powerBeam.wavelength <= m.maximumWavelength));
 
-                        // skip if no compatible receiver brandwith found
+                        // skip if no compatible receiver bandwidth found
                         if (selectedBrandWith == null)
                             continue;
 
                         var maximumRoutePower = (powerBeam.nuclearPower + powerBeam.solarPower) *beamedPowerData.Route.Efficiency * 0.001;
 
-                        // subtract any power already recieved by other recievers
+                        // subtract any power already received by other receivers
                         var remainingPowerInBeam = Math.Min(beamedPowerData.RemainingPower, maximumRoutePower);
 
                         // skip if no power remaining
@@ -1794,7 +1780,7 @@ namespace KIT
                             ? Math.Min(remainingPowerInBeam, beamedPowerData.Relays.Min(m => m.PowerCapacity))
                             : remainingPowerInBeam;
 
-                        // substract from remaining power
+                        // subtract from remaining power
                         beamedPowerData.RemainingPower = Math.Max(0, beamedPowerData.RemainingPower - beamNetworkPower);
 
                         // determine allowed power
