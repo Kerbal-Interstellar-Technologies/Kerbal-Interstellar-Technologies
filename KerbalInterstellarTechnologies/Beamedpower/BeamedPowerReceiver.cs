@@ -77,8 +77,8 @@ namespace KIT
     [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName17")]//Beamed Power Receiver
     class BeamedPowerReceiver : PartModule, IKITMod, IFNPowerSource, IElectricPowerGeneratorSource, IBeamedPowerReceiver // tweakscales with exponent 2.5
     {
-        const string GROUP = "BeamedPowerReceiver";
-        const string GROUP_TITLE = "#LOC_KSPIE_BeamPowerReceiver_groupName";
+        internal const string GROUP = "BeamedPowerReceiver";
+        internal const string GROUP_TITLE = "#LOC_KSPIE_BeamPowerReceiver_groupName";
         const int labelWidth = 200;
         const int wideLabelWidth = 250;
         const int valueWidthWide = 100;
