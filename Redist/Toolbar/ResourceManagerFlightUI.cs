@@ -212,63 +212,108 @@ namespace KIT
 
         }
 
-        public static PopupDialog Create(string vesselName, KITResourceVesselModule vesselResourceManager)
+        private List<DialogGUIBase> electricChargeProducers = new List<DialogGUIBase>();
+        private List<DialogGUIBase> electricChargeConsumers = new List<DialogGUIBase>();
+
+        private List<DialogGUIBase> thermalPowerProducers = new List<DialogGUIBase>();
+        private List<DialogGUIBase> thermalPowerConsumers = new List<DialogGUIBase>();
+
+        private List<DialogGUIBase> chargedParticleProducers = new List<DialogGUIBase>();
+        private List<DialogGUIBase> chargedParticleConsumers = new List<DialogGUIBase>();
+
+        private List<DialogGUIBase> wasteHeatProducers = new List<DialogGUIBase>();
+        private List<DialogGUIBase> wasteHeatConsumers = new List<DialogGUIBase>();
+
+        private KITResourceVesselModule vesselResourceManager;
+
+        public DialogGUIVerticalLayout electricChargeProducersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout electricChargeConsumersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout thermalPowerProducersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout thermalPowerConsumersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout chargedParticleProducersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout chargedParticleConsumersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout wasteHeatProducersLayout = new DialogGUIVerticalLayout();
+        public DialogGUIVerticalLayout wasteHeatConsumersLayout = new DialogGUIVerticalLayout();
+
+
+        public ResourceUI(KITResourceVesselModule vesselResourceManager)
         {
-            List<DialogGUIBase> ecProducers = new List<DialogGUIBase>(32);
-            ecProducers.Add(new DialogGUILabel($"{KITResourceSettings.ElectricCharge} Producers", true, true));
-            ecProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+            this.vesselResourceManager = vesselResourceManager;
+            electricChargeProducersLayout.OnFixedUpdate = UpdateLists;
+        }
 
-            List<DialogGUIBase> ecConsumers = new List<DialogGUIBase>(32);
-            ecProducers.Add(new DialogGUILabel($"{KITResourceSettings.ElectricCharge} Consumers", true, true));
-            ecProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+        public void UpdateLists()
+        {
+            electricChargeProducers.Clear(); electricChargeConsumers.Clear(); thermalPowerProducers.Clear(); thermalPowerConsumers.Clear();
+            chargedParticleProducers.Clear(); chargedParticleConsumers.Clear(); wasteHeatProducers.Clear(); wasteHeatConsumers.Clear();
 
-            List<DialogGUIBase> tpProducers = new List<DialogGUIBase>(32);
-            tpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ThermalPower} Producers", true, true));
-            tpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+            if (vesselResourceManager.resourceManager.ModProduction.TryGetValue(ResourceName.ElectricCharge, out var resourceList))
+            {
+                foreach (var key in resourceList.Keys)
+                {
+                    if(resourceList.TryGetValue(key, out var ppri))
+                    {
+                        electricChargeProducers.Add(new DialogGUILabel($"{key.KITPartName()} -> amount: {ppri.amount} max: {ppri.maxAmount}"));
+                    }
+                }
+            }
 
-            List<DialogGUIBase> tpConsumers = new List<DialogGUIBase>(32);
-            tpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ThermalPower} Consumers", true, true));
-            tpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+            if (vesselResourceManager.resourceManager.ModConsumption.TryGetValue(ResourceName.ElectricCharge, out resourceList))
+            {
+                foreach (var key in resourceList.Keys)
+                {
+                    if (resourceList.TryGetValue(key, out var ppri))
+                    {
+                        electricChargeConsumers.Add(new DialogGUILabel($"{key.KITPartName()} -> amount: {ppri.amount} max: {ppri.maxAmount}"));
+                    }
+                }
+            }
+        } 
 
-            List<DialogGUIBase> cpProducers = new List<DialogGUIBase>(32);
-            cpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ChargedParticle} Producers", true, true));
-            cpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
 
-            List<DialogGUIBase> cpConsumers = new List<DialogGUIBase>(32);
-            cpProducers.Add(new DialogGUILabel($"{KITResourceSettings.ChargedParticle} Consumers", true, true));
-            cpProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
 
-            List<DialogGUIBase> whProducers = new List<DialogGUIBase>(32);
-            whProducers.Add(new DialogGUILabel($"{KITResourceSettings.WasteHeat} Producers", true, true));
-            whProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
+        public static PopupDialog CreateDialog(string vesselName, KITResourceVesselModule vesselResourceManager)
+        {
+            var resourceUI = new ResourceUI(vesselResourceManager);
 
-            List<DialogGUIBase> whConsumers = new List<DialogGUIBase>(32);
-            whProducers.Add(new DialogGUILabel($"{KITResourceSettings.WasteHeat} Consumers", true, true));
-            whProducers.Add(new DialogGUILabel($"¯\\_(ツ)_/¯", true, true));
-
-            List<DialogGUIBase> leftDialog = new List<DialogGUIBase>();
-            leftDialog.Add(new DialogGUIVerticalLayout(ecProducers.ToArray()));
-            leftDialog.Add(new DialogGUIVerticalLayout(ecConsumers.ToArray()));
-            leftDialog.Add(new DialogGUIVerticalLayout(tpProducers.ToArray()));
-            leftDialog.Add(new DialogGUIVerticalLayout(tpConsumers.ToArray()));
-
-            List<DialogGUIBase> rightDialog = new List<DialogGUIBase>();
-            rightDialog.Add(new DialogGUIVerticalLayout(cpProducers.ToArray()));
-            rightDialog.Add(new DialogGUIVerticalLayout(cpConsumers.ToArray()));
-            rightDialog.Add(new DialogGUIVerticalLayout(whProducers.ToArray()));
-            rightDialog.Add(new DialogGUIVerticalLayout(whConsumers.ToArray()));
-
-            //List<DialogGUIBase> virtDialog = new List<DialogGUIBase>();
-            //virtDialog.Add(new DialogGUIVerticalLayout(leftDialog.ToArray()));
-            //virtDialog.Add(new DialogGUIVerticalLayout(rightDialog.ToArray()));
-            // Horizontal
+            List<DialogGUIBase> loremIpsum = new List<DialogGUIBase>();
+            loremIpsum.Add(new DialogGUILabel("Lorem ipsum dolor sit amet"));
+            loremIpsum.Add(new DialogGUILabel("consectetur adipiscing elit"));
+            loremIpsum.Add(new DialogGUILabel("sed do eiusmod tempor incididunt"));
+            loremIpsum.Add(new DialogGUILabel("ut labore et dolore magna aliqua"));
+            loremIpsum.Add(new DialogGUILabel("Ut enim ad minim veniam"));
+            loremIpsum.Add(new DialogGUILabel("quis nostrud exercitation ullamco"));
+            loremIpsum.Add(new DialogGUILabel($"¯\\_(ツ)_/¯"));
 
             List<DialogGUIBase> dialog = new List<DialogGUIBase>();
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.ElectricCharge} Producers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 200), false, true, resourceUI.electricChargeProducersLayout));
 
-            //dialog.Add(new DialogGUIHorizontalLayout(virtDialog.ToArray()));
-            dialog.Add(new DialogGUIHorizontalLayout(leftDialog.ToArray()));
-            dialog.Add(new DialogGUIHorizontalLayout(rightDialog.ToArray()));
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.ElectricCharge} Consumers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 200), false, true, resourceUI.electricChargeConsumersLayout));
+
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.ThermalPower} Producers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 50), false, true, resourceUI.thermalPowerProducersLayout));
+
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.ThermalPower} Consumers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 50), false, true, resourceUI.thermalPowerConsumersLayout));
+
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.ChargedParticle} Producers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 50), false, true, resourceUI.chargedParticleProducersLayout));
+
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.ChargedParticle} Consumers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 50), false, true, resourceUI.chargedParticleConsumersLayout));
+
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.WasteHeat} Producers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 50), false, true, resourceUI.wasteHeatProducersLayout));
+
+            dialog.Add(new DialogGUILabel($"<b>{KITResourceSettings.WasteHeat} Consumers</b>", true, true));
+            dialog.Add(new DialogGUIScrollList(new Vector2(200, 50), false, true, resourceUI.wasteHeatProducersLayout));
+
             dialog.Add(new DialogGUIButton("Close", () => { }, 140f, 30f, true));
+
+            List<DialogGUIBase> virtLayout = new List<DialogGUIBase>();
+            virtLayout.Add(new DialogGUIHorizontalLayout(dialog.ToArray()));
 
             Rect pos = new Rect(0.5f, 0.5f, 750, 750);
             return PopupDialog.SpawnPopupDialog(/*new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), */new MultiOptionDialog(
@@ -277,7 +322,7 @@ namespace KIT
                 $"{vesselName} Resource Manager",
                 UISkinManager.defaultSkin,
                 pos,
-                dialog.ToArray()), false, UISkinManager.defaultSkin);
+                virtLayout.ToArray()), false, UISkinManager.defaultSkin);
         }
 
     }
@@ -287,8 +332,6 @@ namespace KIT
     {
         public static bool close_window = false;
         public static bool show_window = false;
-
-        ResourceUI resourceUI;
 
         PopupDialog dialog;
 
@@ -305,7 +348,7 @@ namespace KIT
                 if(dialog == null)
                 {
                     var vrm = FindVesselResourceManager(vessel);
-                    dialog = ResourceUI.Create(vessel.vesselName, vrm);
+                    dialog = ResourceUI.CreateDialog(vessel.vesselName, vrm);
                     dialog.OnDismiss = dismissDialog;
                 }
                 show_window = false;
