@@ -3,6 +3,7 @@ using KIT.Beamedpower;
 using KIT.Constants;
 using KIT.Extensions;
 using KIT.Resources;
+using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace PhotonSail
         public Vector3d powerSourceToVesselVector;
     }
 
-    public class ModulePhotonSail : PartModule, IBeamedPowerReceiver, IPartMassModifier, IRescalable<ModulePhotonSail>
+    public class ModulePhotonSail : PartModule, IKITMod, IBeamedPowerReceiver, IPartMassModifier, IRescalable<ModulePhotonSail>
     {
         // Persistent Variables
         [KSPField(isPersistant = true)]
@@ -363,7 +364,6 @@ namespace PhotonSail
         List<ReceivedPowerData> connectedTransmitters = new List<ReceivedPowerData>();
         IDictionary<VesselMicrowavePersistence, KeyValuePair<MicrowaveRoute, IList<VesselRelayPersistence>>> _transmitDataCollection;
 
-        IPowerSupply powerSupply;
         BeamEffect[] beamEffectArray;
         Texture2D beamTexture;
         Shader transparentShader;
@@ -441,11 +441,6 @@ namespace PhotonSail
         // Initialization
         public override void OnStart(PartModule.StartState state)
         {
-            powerSupply = part.FindModuleImplementing<IPowerSupply>();
-
-            if (powerSupply != null)
-                powerSupply.DisplayName = Localizer.Format("#LOC_PhotonSail_powerSupply");//"started"
-
             diameter = Math.Sqrt(surfaceArea);
 
             frontPhotovotalicRatio = surfaceArea > 0 ? frontPhotovoltaicArea / surfaceArea : 0;
@@ -766,106 +761,6 @@ namespace PhotonSail
 
         public override void OnFixedUpdate()
         {
-            kscLaserElevationAngle = 0;
-            skinTemperature = part.skinTemperature;
-            availableBeamedKscEnergy = 0;
-            receivedBeamedPowerFromKsc = 0;
-            totalReceivedBeamedPower = 0;
-            totalReceivedBeamedPowerInGigaWatt = 0;
-            photovoltaicFlowRate = 0;
-            photovoltaicPotential = 0;
-            totalSolarEnergyReceivedInMJ = 0;
-            totalForceInNewtonFromSolarEnergy = 0;
-            totalForceInNewtonFromBeamedPower = 0;
-            sailHeatDissipationTemperature = 0;
-            solar_force_d = 0;
-            solar_acc_d = 0;
-            beamCounter = 0;
-            beamedSailForce = 0;
-            beamed_acc_d = 0;
-            absorbedPhotonHeatInWatt = 0;
-            dissipationInMegaJoules = 0;
-
-            beamRays.Clear();
-            receivedBeamedPowerList.Clear();
-
-            if (FlightGlobals.fetch == null || part == null || vessel == null)
-                return;
-
-            UpdateChangeGui();
-
-            ResetBeams();
-
-            var vesselMassInKg = vessel.totalMass * 1000;
-            var universalTime = Planetarium.GetUniversalTime();
-            var positionVessel = vessel.orbit.getPositionAtUT(universalTime);
-            var beamedPowerThrottleRatio = beamedPowerThrottle * 0.01f;
-            var rentedBeamedPowerThrottleRatio = kcsBeamedPowerThrottle * 0.01f;
-
-            // apply drag and calculate drag heat
-            ApplyDrag(universalTime, vesselMassInKg);
-
-            // update solar flux
-            UpdateSolarFlux(universalTime, positionVessel, vessel);
-
-            // unconditionally apply solarFlux energy for every star
-            foreach (var starLight in KopernicusHelper.Stars)
-            {
-                GenerateForce(reflectedPhotonRatio, solarPhotovoltaicEfficiencyFactor, ref absorbedPhotonHeatInWatt, ref starLight.position, ref positionVessel, starLight.solarFlux, universalTime, vesselMassInKg);
-            }
-
-            // refresh connectedTransmittersCount
-            connectedTransmittersCount = connectedTransmitters.Count;
-
-            // apply photon pressure from Kerbal Space Station Beamed Power facility
-            ProcessKscBeamedPower(vesselMassInKg, universalTime, ref positionVessel, (double)(decimal)beamedPowerThrottleRatio * (double)(decimal)rentedBeamedPowerThrottleRatio, ref absorbedPhotonHeatInWatt);
-
-            // sort transmitter on most favoritable angle
-            var sortedConnectedTransmitters =  connectedTransmitters.Select(transmitter =>
-            {
-                var normalizedPowerSourceToVesselVector = (positionVessel - transmitter.Transmitter.Vessel.GetWorldPos3D()).normalized;
-                var cosConeAngle = Vector3d.Dot(normalizedPowerSourceToVesselVector, vessel.transform.up);
-                if (cosConeAngle < 0)
-                    cosConeAngle = Vector3d.Dot(normalizedPowerSourceToVesselVector, -vessel.transform.up);
-                return new { cosConeAngle, transmitter };
-            }).OrderByDescending(m => m.cosConeAngle).Select(m => m.transmitter);
-
-            // apply photon pressure from every potential laser source
-            foreach (var receivedPowerData in sortedConnectedTransmitters)
-            {
-                double photonReflection = 0;
-                double photovoltaicEfficiency = 0;
-                GetPhotonStatisticsForWavelength(receivedPowerData.Route.WaveLength, ref photonReflection, ref photovoltaicEfficiency);
-
-                var availableTransmitterPowerInWatt = CheatOptions.IgnoreMaxTemperature
-                    ? receivedPowerData.AvailablePower * 1e+6
-                    : Math.Min(receivedPowerData.AvailablePower * 1e+6, Math.Max(0, (maxSailHeatDissipationInWatt - absorbedPhotonHeatInWatt - dragHeatInJoule) / (1 - photonReflection)));
-
-                Vector3d beamedPowerSource = receivedPowerData.Transmitter.Vessel.GetWorldPos3D();
-
-                GenerateForce(photonReflection, photovoltaicEfficiency, ref absorbedPhotonHeatInWatt,  ref beamedPowerSource, ref positionVessel, beamedPowerThrottleRatio * availableTransmitterPowerInWatt, universalTime, vesselMassInKg, false, receivedPowerData.Route.Spotsize * 0.25);
-            }
-
-            // process statistical data
-            if (receivedBeamedPowerList.Count > 0)
-            {
-                totalReceivedBeamedPower = receivedBeamedPowerList.Sum(m => m.receivedPower);
-                if (totalReceivedBeamedPower > 0)
-                {
-                    weightedBeamPowerPitch = receivedBeamedPowerList.Sum(m => m.pitchAngle * m.receivedPower / totalReceivedBeamedPower);
-                    weightedBeamedPowerSpotsize = receivedBeamedPowerList.Sum(m => m.spotsize * m.receivedPower / totalReceivedBeamedPower);
-                    totalReceivedBeamedPowerInGigaWatt = totalReceivedBeamedPower * 1e-3;
-                }
-            }
-
-            // generate electric power
-            powerSupply.SupplyMegajoulesPerSecondWithMax(photovoltaicFlowRate, photovoltaicPotential);
-
-            // apply wasteheat
-            ProcessThermalDynamics(absorbedPhotonHeatInWatt);
-
-            // display beamed rays
-            AnimateRays();
         }
 
         private void GetPhotonStatisticsForWavelength(double wavelength, ref double reflection, ref double photovolaticEfficiency)
@@ -1398,5 +1293,114 @@ namespace PhotonSail
 
             return TechnologyHelper.UpgradeAvailable(name);
         }
+
+        public ResourcePriorityValue ResourceProcessPriority() => 0;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            kscLaserElevationAngle = 0;
+            skinTemperature = part.skinTemperature;
+            availableBeamedKscEnergy = 0;
+            receivedBeamedPowerFromKsc = 0;
+            totalReceivedBeamedPower = 0;
+            totalReceivedBeamedPowerInGigaWatt = 0;
+            photovoltaicFlowRate = 0;
+            photovoltaicPotential = 0;
+            totalSolarEnergyReceivedInMJ = 0;
+            totalForceInNewtonFromSolarEnergy = 0;
+            totalForceInNewtonFromBeamedPower = 0;
+            sailHeatDissipationTemperature = 0;
+            solar_force_d = 0;
+            solar_acc_d = 0;
+            beamCounter = 0;
+            beamedSailForce = 0;
+            beamed_acc_d = 0;
+            absorbedPhotonHeatInWatt = 0;
+            dissipationInMegaJoules = 0;
+
+            beamRays.Clear();
+            receivedBeamedPowerList.Clear();
+
+            if (FlightGlobals.fetch == null || part == null || vessel == null)
+                return;
+
+            UpdateChangeGui();
+
+            ResetBeams();
+
+            var vesselMassInKg = vessel.totalMass * 1000;
+            var universalTime = Planetarium.GetUniversalTime();
+            var positionVessel = vessel.orbit.getPositionAtUT(universalTime);
+            var beamedPowerThrottleRatio = beamedPowerThrottle * 0.01f;
+            var rentedBeamedPowerThrottleRatio = kcsBeamedPowerThrottle * 0.01f;
+
+            // apply drag and calculate drag heat
+            ApplyDrag(universalTime, vesselMassInKg);
+
+            // update solar flux
+            UpdateSolarFlux(universalTime, positionVessel, vessel);
+
+            // unconditionally apply solarFlux energy for every star
+            foreach (var starLight in KopernicusHelper.Stars)
+            {
+                GenerateForce(reflectedPhotonRatio, solarPhotovoltaicEfficiencyFactor, ref absorbedPhotonHeatInWatt, ref starLight.position, ref positionVessel, starLight.solarFlux, universalTime, vesselMassInKg);
+            }
+
+            // refresh connectedTransmittersCount
+            connectedTransmittersCount = connectedTransmitters.Count;
+
+            // apply photon pressure from Kerbal Space Station Beamed Power facility
+            ProcessKscBeamedPower(vesselMassInKg, universalTime, ref positionVessel, (double)(decimal)beamedPowerThrottleRatio * (double)(decimal)rentedBeamedPowerThrottleRatio, ref absorbedPhotonHeatInWatt);
+
+            // sort transmitter on most favoritable angle
+            var sortedConnectedTransmitters = connectedTransmitters.Select(transmitter =>
+            {
+                var normalizedPowerSourceToVesselVector = (positionVessel - transmitter.Transmitter.Vessel.GetWorldPos3D()).normalized;
+                var cosConeAngle = Vector3d.Dot(normalizedPowerSourceToVesselVector, vessel.transform.up);
+                if (cosConeAngle < 0)
+                    cosConeAngle = Vector3d.Dot(normalizedPowerSourceToVesselVector, -vessel.transform.up);
+                return new { cosConeAngle, transmitter };
+            }).OrderByDescending(m => m.cosConeAngle).Select(m => m.transmitter);
+
+            // apply photon pressure from every potential laser source
+            foreach (var receivedPowerData in sortedConnectedTransmitters)
+            {
+                double photonReflection = 0;
+                double photovoltaicEfficiency = 0;
+                GetPhotonStatisticsForWavelength(receivedPowerData.Route.WaveLength, ref photonReflection, ref photovoltaicEfficiency);
+
+                var availableTransmitterPowerInWatt = CheatOptions.IgnoreMaxTemperature
+                    ? receivedPowerData.AvailablePower * 1e+6
+                    : Math.Min(receivedPowerData.AvailablePower * 1e+6, Math.Max(0, (maxSailHeatDissipationInWatt - absorbedPhotonHeatInWatt - dragHeatInJoule) / (1 - photonReflection)));
+
+                Vector3d beamedPowerSource = receivedPowerData.Transmitter.Vessel.GetWorldPos3D();
+
+                GenerateForce(photonReflection, photovoltaicEfficiency, ref absorbedPhotonHeatInWatt, ref beamedPowerSource, ref positionVessel, beamedPowerThrottleRatio * availableTransmitterPowerInWatt, universalTime, vesselMassInKg, false, receivedPowerData.Route.Spotsize * 0.25);
+            }
+
+            // process statistical data
+            if (receivedBeamedPowerList.Count > 0)
+            {
+                totalReceivedBeamedPower = receivedBeamedPowerList.Sum(m => m.receivedPower);
+                if (totalReceivedBeamedPower > 0)
+                {
+                    weightedBeamPowerPitch = receivedBeamedPowerList.Sum(m => m.pitchAngle * m.receivedPower / totalReceivedBeamedPower);
+                    weightedBeamedPowerSpotsize = receivedBeamedPowerList.Sum(m => m.spotsize * m.receivedPower / totalReceivedBeamedPower);
+                    totalReceivedBeamedPowerInGigaWatt = totalReceivedBeamedPower * 1e-3;
+                }
+            }
+
+            // generate electric power
+            resMan.ProduceResource(ResourceName.ElectricCharge, photovoltaicFlowRate, photovoltaicPotential);
+
+            // apply wasteheat
+            ProcessThermalDynamics(absorbedPhotonHeatInWatt);
+
+            // display beamed rays
+            AnimateRays();
+
+        }
+
+        public string KITPartName() => part.partInfo.title;
     }
 }

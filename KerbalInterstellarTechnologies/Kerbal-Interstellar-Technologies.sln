@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kerbal-Interstellar-Technol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kerbal-Interstellar-Technologies_Redist", "..\Redist\Kerbal-Interstellar-Technologies_Redist.csproj", "{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotonSail", "..\PhotonSail\PhotonSail.csproj", "{34403539-F4E1-4D16-A771-DE807067761C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBF9A4EC-4F9A-4E80-9BD1-13316309EA69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34403539-F4E1-4D16-A771-DE807067761C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34403539-F4E1-4D16-A771-DE807067761C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34403539-F4E1-4D16-A771-DE807067761C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34403539-F4E1-4D16-A771-DE807067761C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
