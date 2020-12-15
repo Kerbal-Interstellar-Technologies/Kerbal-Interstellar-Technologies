@@ -3,8 +3,6 @@ using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace KIT.ResourceScheduler
@@ -239,7 +237,7 @@ namespace KIT.ResourceScheduler
         /// <param name="resourceAmounts">What resources are available for this call.</param>
         public void ExecuteKITModules(double deltaTime, ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
         {
-            int index = 0;
+            var index = 0;
 
             KITSteps++;
 
@@ -247,14 +245,15 @@ namespace KIT.ResourceScheduler
             currentMaxResources = resourceMaxAmounts;
 
             // Cycle the resource tracking data over.
-            for (int i = 0; i < (int)(ResourceName.WasteHeat - ResourceName.ElectricCharge); i++)
+            for (var i = 0; i < ResourceName.WasteHeat - ResourceName.ElectricCharge; i++)
             {
-                resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._currentlyRequested;
-                resourceProductionStats[i]._previouslySupplied = resourceProductionStats[i]._currentlySupplied;
+                var currentResourceProduction = resourceProductionStats[i];
 
-                resourceProductionStats[i]._currentlyRequested = resourceProductionStats[i]._currentlySupplied =
-                    resourceProductionStats[i]._previouslyRequested = resourceProductionStats[i]._previouslySupplied =
-                    0;
+                currentResourceProduction._previouslyRequested = currentResourceProduction._currentlyRequested;
+                currentResourceProduction._previouslySupplied = currentResourceProduction._currentlySupplied;
+
+                currentResourceProduction._currentlyRequested = currentResourceProduction._currentlySupplied
+                    = currentResourceProduction._previouslyRequested = currentResourceProduction._previouslySupplied = 0;
             }
 
             for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
