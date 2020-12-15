@@ -309,7 +309,7 @@ namespace KIT.Resources
 
             if (nameToResourceMap.ContainsKey(name) == false)
             {
-                Debug.Log($"[ResourceSettings.ResourceName] requested to map unknown resource {name} - this will likely blow up");
+                // Debug.Log($"[ResourceSettings.ResourceName] requested to map unknown resource {name} - this will likely blow up");
                 return ResourceName.Unknown;
             }
 

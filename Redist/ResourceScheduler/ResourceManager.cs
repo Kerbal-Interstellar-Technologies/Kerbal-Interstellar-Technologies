@@ -111,7 +111,6 @@ namespace KIT.ResourceScheduler
                 tmpPPRI.maxAmount += wanted;
             }
 
-
             if (myCheatOptions.InfiniteElectricity && resource == ResourceName.ElectricCharge)
             {
                 tmpPPRI.amount += wanted;
@@ -426,17 +425,26 @@ namespace KIT.ResourceScheduler
 
         public double ResourceSpareCapacity(ResourceName resourceIdentifier)
         {
-            return currentMaxResources[resourceIdentifier] - currentResources[resourceIdentifier];
+            if (currentResources.ContainsKey(resourceIdentifier) && currentMaxResources.ContainsKey(resourceIdentifier))
+                return currentMaxResources[resourceIdentifier] - currentResources[resourceIdentifier];
+
+            return 0;
         }
 
         public double ResourceCurrentCapacity(ResourceName resourceIdentifier)
         {
-            return currentResources[resourceIdentifier];
+            if (currentResources.ContainsKey(resourceIdentifier))
+                return currentResources[resourceIdentifier];
+
+            return 0;
         }
 
         public double ResourceFillFraction(ResourceName resourceIdentifier)
         {
-            return currentResources[resourceIdentifier] / currentMaxResources[resourceIdentifier];
+            if(currentResources.ContainsKey(resourceIdentifier) && currentMaxResources.ContainsKey(resourceIdentifier)) 
+                return currentResources[resourceIdentifier] / currentMaxResources[resourceIdentifier];
+
+            return 0;
         }
 
         private ResourceProduction[] resourceProductionStats;

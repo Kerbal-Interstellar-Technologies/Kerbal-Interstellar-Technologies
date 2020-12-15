@@ -166,8 +166,6 @@ namespace KIT.Powermanagement
         [KSPField] public double requestedPostChargedPower;
         [KSPField] public double requestedPostThermalPower;
         [KSPField] public double requestedPostReactorPower;
-        [KSPField] public double postThermalPowerReceived;
-        [KSPField] public double postChargedPowerReceived;
         [KSPField] public double thermalPowerRequestRatio;
         [KSPField] public double effectiveMaxThermalPowerRatio;
         [KSPField] public double electricdtps;
@@ -176,8 +174,6 @@ namespace KIT.Powermanagement
         [KSPField] public double _totalEff;
         [KSPField] public double capacityRatio;
         [KSPField] public double maximumGeneratorPowerMJ;
-        [KSPField] public double currentPowerForGeneratorMJ;
-        [KSPField] public double maximumGeneratorPowerEC;
 
         // Internal
         protected double outputPower;
@@ -1022,6 +1018,8 @@ namespace KIT.Powermanagement
         // todo - max power output limit
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {
+            if (!IsEnabled || attachedPowerSource == null || !FNRadiator.HasRadiatorsForVessel(vessel)) return false;
+
             if (!chargedParticleMode)
             {
                 electrical_power_currently_needed = requestedAmount;
