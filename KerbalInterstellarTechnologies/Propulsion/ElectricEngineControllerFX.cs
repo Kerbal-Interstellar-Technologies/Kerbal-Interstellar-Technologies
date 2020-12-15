@@ -159,23 +159,23 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_CapacityModifier")]//Capacity Modifier
         protected double powerCapacityModifier = 1;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_AtmTrustEfficiency")]//Atm Trust Efficiency
-        protected double _atmosphereThrustEfficiency;
+        protected double _atmosphereThrustEfficiency = 0;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_ElectricEngineController_AtmTrustEfficiency", guiFormat = "F2", guiUnits = "%")]//Atm Trust Efficiency
-        protected double _atmosphereThrustEfficiencyPercentage;
+        protected double _atmosphereThrustEfficiencyPercentage = 0;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_MaxFuelFlowRate")]//Max Fuel Flow Rate
         protected float _maxFuelFlowRate;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_CurrentSpaceFuelFlowRate")]//Current Space Fuel Flow Rate
-        protected double _currentSpaceFuelFlowRate;
+        protected double _currentSpaceFuelFlowRate = 0;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_PotentialSpaceFuelFlowRate")]//Potential Space Fuel Flow Rate
-        protected double _simulatedSpaceFuelFlowRate;
+        protected double _simulatedSpaceFuelFlowRate = 0;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_FuelFlowModifier")]//Fuel Flow Modifier
-        protected double _fuelFlowModifier;
+        protected double _fuelFlowModifier = 0;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_ElectricEngineController_CurrentThrustinSpace", guiFormat = "F3", guiUnits = " kN")]//Current Thrust in Space
-        protected double currentThrustInSpace;
+        protected double currentThrustInSpace = 0;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_ElectricEngineController_MaxThrustinSpace", guiFormat = "F3", guiUnits = " kN")]//Max Thrust in Space
-        protected double simulatedThrustInSpace;
+        protected double simulatedThrustInSpace = 0;
         [KSPField(guiActive = false)]
-        public double simulated_max_thrust;
+        public double simulated_max_thrust = 0;
 
         [KSPField(guiActive = false)]
         public double currentPropellantEfficiency;
@@ -190,48 +190,47 @@ namespace KIT.Propulsion
         public double desiredMass = 0;
 
         [KSPField(guiActive = false)]
-        protected double modifiedMaximumPowerForEngine;
+        protected double modifiedMaximumPowerForEngine = 0;
         [KSPField(guiActive = false)]
-        protected double modifiedCurrentPowerForEngine;
+        protected double modifiedCurrentPowerForEngine = 0;
 
         [KSPField(guiActive = false)]
-        protected double effectiveMaximumAvailablePowerForEngine;
+        protected double effectiveMaximumAvailablePowerForEngine = 0;
         [KSPField(guiActive = false)]
-        protected double effectiveCurrentAvailablePowerForEngine;
+        protected double effectiveCurrentAvailablePowerForEngine = 0;
 
         [KSPField(guiActive = false)]
-        protected double effectiveMaximumPower;
+        protected double effectiveMaximumPower = 0;
         [KSPField(guiActive = false)]
-        protected double effectiveRecievedPower;
+        protected double effectiveRecievedPower = 0;
         [KSPField(guiActive = false)]
-        protected double effectiveSimulatedPower;
+        protected double effectiveSimulatedPower = 0;
         [KSPField(guiActive = false)]
         protected double modifiedThrotte;
         [KSPField(guiActive = false)]
-        protected double effectivePowerThrustModifier;
+        protected double effectivePowerThrustModifier = 0;
         [KSPField(guiActive = false)]
-        public double actualPowerReceived;
+        public double actualPowerReceived = 0;
         [KSPField(guiActive = false)]
-        public double simulatedPowerReceived;
+        public double simulatedPowerReceived = 0;
 
         [KSPField]
-        protected double maximumAvailablePowerForEngine;
+        protected double maximumAvailablePowerForEngine = 0;
         [KSPField]
-        protected double currentAvailablePowerForEngine;
+        protected double currentAvailablePowerForEngine = 0;
         [KSPField(guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_TotalPowerSupplied")]//Total Power Supplied
-        protected double totalPowerSupplied;
+        protected double totalPowerSupplied = 0;
         [KSPField(guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_MaximumAvailablePower")]//Maximum Available Power
-        protected double availableMaximumPower;
+        protected double availableMaximumPower = 0;
         [KSPField(guiActive = false, guiName = "#LOC_KSPIE_ElectricEngineController_CurrentAvailablePower")]//Current Available Power
-        protected double availableCurrentPower;
+        protected double availableCurrentPower = 0;
 
         [KSPField]
         protected double maximumThrustFromPower = 0.001;
         [KSPField]
         protected double currentThrustFromPower = 0.001;
 
-        [KSPField]
-        protected double megaJoulesBarRatio;
+
         [KSPField]
         protected double effectPower = 0;
         [KSPField]
@@ -246,9 +245,9 @@ namespace KIT.Propulsion
         [KSPField]
         public double maxPower = 1000;
         [KSPField]
-        public double effectiveResourceThrotling;
+        public double effectiveResourceThrotling = 0;
         [KSPField]
-        public double ratioHeadingVersusRequest;
+        public double ratioHeadingVersusRequest = 0;
 
         int _rep;
         int _initializationCountdown;

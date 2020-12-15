@@ -92,23 +92,23 @@ namespace KIT.Propulsion
         public double neutronbsorbionBonus;
 
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_AvailablePower", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Available Power
-        public double availablePower;
+        public double availablePower = 0;
         [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_FusionECU2_MaxPowerRequirement", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Max Power Requirement
-        public double currentMaximumPowerRequirement;
+        public double currentMaximumPowerRequirement = 0;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_MaxPowerProduction", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Max Power Production
-        public double currentMaximumPowerProduction;
+        public double currentMaximumPowerProduction = 0;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionECU2_LaserWasteheat", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Laser Wasteheat
-        public double laserWasteheat;
+        public double laserWasteheat = 0;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionECU2_AbsorbedWasteheat", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Absorbed Wasteheat
-        public double absorbedWasteheat;
+        public double absorbedWasteheat = 0;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_RadiatorTemp")]//Radiator Temp
-        public double coldBathTemp;
+        public double coldBathTemp = 0;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_MaxRadiatorTemp")]//Max Radiator Temp
-        public float maxTempatureRadiators;
+        public float maxTempatureRadiators = 0;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_PerformanceRadiators")]//Performance Radiators
-        public double radiatorPerformance;
+        public double radiatorPerformance = 0;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_Emisiveness")]//Emisiveness
-        public double partEmissiveConstant;
+        public double partEmissiveConstant = 0;
         [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_Temperature")]//Temperature
         public string temperatureStr = "";
         [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_Radhazardstr")]//Radiation Hazard To
@@ -118,6 +118,7 @@ namespace KIT.Propulsion
         [KSPField]
         public double radius = 1;
 
+        /*
         [KSPField]
         public double requiredPowerPerSecond;
         [KSPField]
@@ -126,6 +127,7 @@ namespace KIT.Propulsion
         public double requestedPowerPerSecond;
         [KSPField]
         public double recievedPowerPerSecond;
+        */
 
         // abstracts
         protected abstract float InitialGearRatio { get; }

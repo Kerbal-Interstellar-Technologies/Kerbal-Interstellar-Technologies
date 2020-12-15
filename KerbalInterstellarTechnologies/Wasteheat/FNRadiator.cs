@@ -33,10 +33,10 @@ namespace KIT.Wasteheat
         public float surfaceArea = 1;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "Surface Area Upgrade", guiFormat = "F0", guiUnits = " m2"), UI_FloatRange(stepIncrement = 1F, maxValue = 128F, minValue = 0F)]
-        public float surfaceAreaUpgrade;
+        public float surfaceAreaUpgrade = 0;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "Pump Speed Upgrade", guiFormat = "F0", guiUnits = " m/s"), UI_FloatRange(stepIncrement = 1F, maxValue = 1024F, minValue = 0F)]
-        public float pumpSpeedUpgrade;
+        public float pumpSpeedUpgrade = 0;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Pump Speed"), UI_FloatRange(stepIncrement = 1.0F, maxValue = 1000F, minValue = 0F)]
         public float pumpSpeed = 1;
@@ -101,20 +101,20 @@ namespace KIT.Wasteheat
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Upgrades applied")]
         public string upgradeInformation;
 
-        [KSPField] public string surfaceAreaUpgradeMk1;
-        [KSPField] public string surfaceAreaUpgradeMk2;
-        [KSPField] public string surfaceAreaUpgradeMk3;
-        [KSPField] public string surfaceAreaUpgradeMk4;
+        [KSPField] public string surfaceAreaUpgradeMk1 = "";
+        [KSPField] public string surfaceAreaUpgradeMk2 = "";
+        [KSPField] public string surfaceAreaUpgradeMk3 = "";
+        [KSPField] public string surfaceAreaUpgradeMk4 = "";
 
-        [KSPField] public string pumpSpeedUpgradeMk1;
-        [KSPField] public string pumpSpeedUpgradeMk2;
-        [KSPField] public string pumpSpeedUpgradeMk3;
-        [KSPField] public string pumpSpeedUpgradeMk4;
+        [KSPField] public string pumpSpeedUpgradeMk1 = "";
+        [KSPField] public string pumpSpeedUpgradeMk2 = "";
+        [KSPField] public string pumpSpeedUpgradeMk3 = "";
+        [KSPField] public string pumpSpeedUpgradeMk4 = "";
 
-        [KSPField] public string storageTechUpgradeMk1;
-        [KSPField] public string storageTechUpgradeMk2;
-        [KSPField] public string storageTechUpgradeMk3;
-        [KSPField] public string storageTechUpgradeMk4;
+        [KSPField] public string storageTechUpgradeMk1 = "";
+        [KSPField] public string storageTechUpgradeMk2 = "";
+        [KSPField] public string storageTechUpgradeMk3 = "";
+        [KSPField] public string storageTechUpgradeMk4 = "";
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk1;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk2;

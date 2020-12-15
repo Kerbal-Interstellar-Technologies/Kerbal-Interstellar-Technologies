@@ -72,9 +72,13 @@ namespace KIT.Refinery.Activity
             _methaneResourceName = KITResourceSettings.MethaneGas;
             _oxygenResourceName = KITResourceSettings.OxygenGas;
 
+            Debug.Log("${_monoxideResourceName}");
             _monoxideDensity = PartResourceLibrary.Instance.GetDefinition(_monoxideResourceName).density;
+            Debug.Log("${_hydrogenResourceName}");
             _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(_hydrogenResourceName).density;
+            Debug.Log("${_methaneResourceName}");
             _methaneDensity = PartResourceLibrary.Instance.GetDefinition(_methaneResourceName).density;
+            Debug.Log("${_oxygenResourceName}");
             _oxygenDensity = PartResourceLibrary.Instance.GetDefinition(_oxygenResourceName).density;
         }
 

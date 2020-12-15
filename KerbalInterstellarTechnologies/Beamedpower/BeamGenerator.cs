@@ -61,17 +61,17 @@ namespace KIT.Microwave
         [KSPField]
         public string techLevelMk1 = "start";
         [KSPField]
-        public string techLevelMk2;
+        public string techLevelMk2 = "";
         [KSPField]
-        public string techLevelMk3;
+        public string techLevelMk3 = "";
         [KSPField]
-        public string techLevelMk4;
+        public string techLevelMk4 = "";
         [KSPField]
-        public string techLevelMk5;
+        public string techLevelMk5 = "";
         [KSPField]
-        public string techLevelMk6;
+        public string techLevelMk6 = "";
         [KSPField]
-        public string techLevelMk7;
+        public string techLevelMk7 = "";
         [KSPField]
         public double powerMassFraction = 0.5;
         [KSPField]

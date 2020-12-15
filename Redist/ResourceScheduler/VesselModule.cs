@@ -89,7 +89,7 @@ namespace KIT.ResourceScheduler
             }
 
             resourceScheduler.ExecuteKITModules(TimeWarp.fixedDeltaTime, ref resourceAmounts, ref resourceMaxAmounts);
-            DisperseResources(ref resourceAmounts);
+            DisperseResources(ref resourceAmounts, ref resourceMaxAmounts);
         }
 
         bool IVesselResources.VesselModified()
@@ -220,6 +220,9 @@ namespace KIT.ResourceScheduler
 
         void GatherResources(ref Dictionary<ResourceName, double> amounts, ref Dictionary<ResourceName, double> maxAmounts)
         {
+            resourceAmounts.Clear();
+            resourceMaxAmounts.Clear();
+
             foreach (var part in vessel.Parts)
             {
                 foreach (var resource in part.Resources)
@@ -229,7 +232,7 @@ namespace KIT.ResourceScheduler
                     var resourceID = KITResourceSettings.NameToResource(resource.resourceName);
                     if (resourceID == ResourceName.Unknown)
                     {
-                        Debug.Log($"[KITResourceManager.GatherResources] ignoring unknown resource {resource.resourceName}");
+                        //Debug.Log($"[KITResourceManager.GatherResources] ignoring unknown resource {resource.resourceName}");
                         continue;
                     }
 
@@ -244,7 +247,7 @@ namespace KIT.ResourceScheduler
             }
         }
 
-        void DisperseResources(ref Dictionary<ResourceName, double> available)
+        void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
         {
             foreach (var part in vessel.Parts)
             {
@@ -253,16 +256,13 @@ namespace KIT.ResourceScheduler
                     var resourceID = KITResourceSettings.NameToResource(resource.resourceName);
                     if (resourceID == ResourceName.Unknown)
                     {
-                        Debug.Log($"[KITResourceManager.DisperseResources] ignoring unknown resource {resource.resourceName}");
+                        //Debug.Log($"[KITResourceManager.DisperseResources] ignoring unknown resource {resource.resourceName}");
                         continue;
                     }
 
-                    if (available.ContainsKey(resourceID) == false) return; // Shouldn't happen
-                    if (available[resourceID] == 0) return;
+                    if (available.ContainsKey(resourceID) == false || maxAmounts.ContainsKey(resourceID) == false) return; // Shouldn't happen
 
-                    var tmp = Math.Min(available[resourceID], resource.maxAmount);
-                    available[resourceID] -= tmp;
-                    resource.amount = tmp;
+                    resource.amount = resource.maxAmount * (available[resourceID] / maxAmounts[resourceID]);
                 }
             }
         }

@@ -60,6 +60,8 @@ namespace KIT.Microwave
 
         public BandwidthConverter(ConfigNode node, string partTitle)
         {
+            var original = bandwidthName;
+
             node.TryGetValue(nameof(bandwidthName), ref this.bandwidthName);
             node.TryGetValue(nameof(targetWavelength), ref this.targetWavelength);
             node.TryGetValue(nameof(minimumWavelength), ref this.minimumWavelength);
@@ -104,38 +106,38 @@ namespace KIT.Microwave
                     break;
             }
 
-            if (bandwidthName != string.Empty) isValid = true;
+            isValid = (original != bandwidthName);
         }
 
         public void Save(ConfigNode node)
         {
             ConfigNode myself = new ConfigNode("BandwidthConverter");
 
-            node.AddValue(nameof(bandwidthName), this.bandwidthName);
-            node.AddValue(nameof(targetWavelength), this.targetWavelength);
-            node.AddValue(nameof(minimumWavelength), this.minimumWavelength);
-            node.AddValue(nameof(maximumWavelength), this.maximumWavelength);
-            node.AddValue(nameof(AvailableTechLevel), this.AvailableTechLevel);
+            myself.AddValue(nameof(bandwidthName), this.bandwidthName);
+            myself.AddValue(nameof(targetWavelength), this.targetWavelength);
+            myself.AddValue(nameof(minimumWavelength), this.minimumWavelength);
+            myself.AddValue(nameof(maximumWavelength), this.maximumWavelength);
+            myself.AddValue(nameof(AvailableTechLevel), this.AvailableTechLevel);
 
-            node.AddValue(nameof(efficiencyPercentage0), this.efficiencyPercentage0);
-            node.AddValue(nameof(electricEfficiencyPercentage0), this.electricEfficiencyPercentage0);
-            node.AddValue(nameof(thermalEfficiencyPercentage0), this.thermalEfficiencyPercentage0);
-            node.AddValue(nameof(techRequirement0), this.techRequirement0);
+            myself.AddValue(nameof(efficiencyPercentage0), this.efficiencyPercentage0);
+            myself.AddValue(nameof(electricEfficiencyPercentage0), this.electricEfficiencyPercentage0);
+            myself.AddValue(nameof(thermalEfficiencyPercentage0), this.thermalEfficiencyPercentage0);
+            myself.AddValue(nameof(techRequirement0), this.techRequirement0);
 
-            node.AddValue(nameof(efficiencyPercentage1), this.efficiencyPercentage1);
-            node.AddValue(nameof(electricEfficiencyPercentage1), this.electricEfficiencyPercentage1);
-            node.AddValue(nameof(thermalEfficiencyPercentage1), this.thermalEfficiencyPercentage1);
-            node.AddValue(nameof(techRequirement1), this.techRequirement1);
+            myself.AddValue(nameof(efficiencyPercentage1), this.efficiencyPercentage1);
+            myself.AddValue(nameof(electricEfficiencyPercentage1), this.electricEfficiencyPercentage1);
+            myself.AddValue(nameof(thermalEfficiencyPercentage1), this.thermalEfficiencyPercentage1);
+            myself.AddValue(nameof(techRequirement1), this.techRequirement1);
 
-            node.AddValue(nameof(efficiencyPercentage2), this.efficiencyPercentage2);
-            node.AddValue(nameof(electricEfficiencyPercentage2), this.electricEfficiencyPercentage2);
-            node.AddValue(nameof(thermalEfficiencyPercentage2), this.thermalEfficiencyPercentage2);
-            node.AddValue(nameof(techRequirement2), this.techRequirement2);
+            myself.AddValue(nameof(efficiencyPercentage2), this.efficiencyPercentage2);
+            myself.AddValue(nameof(electricEfficiencyPercentage2), this.electricEfficiencyPercentage2);
+            myself.AddValue(nameof(thermalEfficiencyPercentage2), this.thermalEfficiencyPercentage2);
+            myself.AddValue(nameof(techRequirement2), this.techRequirement2);
 
-            node.AddValue(nameof(efficiencyPercentage3), this.efficiencyPercentage3);
-            node.AddValue(nameof(electricEfficiencyPercentage3), this.electricEfficiencyPercentage3);
-            node.AddValue(nameof(thermalEfficiencyPercentage3), this.thermalEfficiencyPercentage3);
-            node.AddValue(nameof(techRequirement3), this.techRequirement3);
+            myself.AddValue(nameof(efficiencyPercentage3), this.efficiencyPercentage3);
+            myself.AddValue(nameof(electricEfficiencyPercentage3), this.electricEfficiencyPercentage3);
+            myself.AddValue(nameof(thermalEfficiencyPercentage3), this.thermalEfficiencyPercentage3);
+            myself.AddValue(nameof(techRequirement3), this.techRequirement3);
 
             node.AddNode(myself);
         }

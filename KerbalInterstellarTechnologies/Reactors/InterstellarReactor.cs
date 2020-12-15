@@ -332,7 +332,7 @@ namespace KIT.Reactors
         [KSPField] protected double maxThermalToSupplyPerSecond;
         [KSPField] protected double requestedChargedToSupplyPerSecond;
         [KSPField] protected double maxChargedToSupplyPerSecond;
-        [KSPField] protected double minThrottle;
+        [KSPField] protected double minThrottle = 0;
         [KSPField] public double massCostExponent = 2.5;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_InitialCost")]//Initial Cost
@@ -2750,7 +2750,7 @@ namespace KIT.Reactors
 
             UpdateGeeforceModifier();
 
-            Debug.Log($"[reactor] maximumPower is {maximumPower}, and geeForceModifier is {geeForceModifier}");
+            // Debug.Log($"[reactor] maximumPower is {maximumPower}, and geeForceModifier is {geeForceModifier}");
 
             if (IsEnabled && maximumPower > 0) CalculateMaxPowerOutput(resMan);
 
@@ -2782,7 +2782,7 @@ namespace KIT.Reactors
 
             stored_fuel_ratio = CheatOptions.InfinitePropellant ? 1 : currentFuelVariant != null ? Math.Min(currentFuelVariant.FuelRatio, 1) : 0;
 
-            Debug.Log($"[reactor] overheatModifier is {overheatModifier}, fuel_mode_variant is {fuel_mode_variant}, and stored_fuel_ratio is {stored_fuel_ratio}");
+            // Debug.Log($"[reactor] overheatModifier is {overheatModifier}, fuel_mode_variant is {fuel_mode_variant}, and stored_fuel_ratio is {stored_fuel_ratio}");
 
             LookForAlternativeFuelTypes();
 
@@ -2806,7 +2806,7 @@ namespace KIT.Reactors
             plasmaThrottleRatio = connectedEngines.Any(m => m.RequiresPlasmaHeat) ? Math.Min(1, connectedEngines.Where(m => m.RequiresPlasmaHeat).Sum(e => e.CurrentThrottle)) : 0;
             chargedThrottleRatio = connectedEngines.Any(m => m.RequiresChargedPower) ? Math.Min(1, connectedEngines.Where(m => m.RequiresChargedPower).Max(e => e.CurrentThrottle)) : 0;
 
-            Debug.Log($"[reactor] stored_fuel_ratio is {stored_fuel_ratio}, thermalThrottleRatio is {thermalThrottleRatio}, plasmaThrottleRatio is {plasmaThrottleRatio}, and chargedThrottleRatio is {chargedThrottleRatio}");
+            // Debug.Log($"[reactor] stored_fuel_ratio is {stored_fuel_ratio}, thermalThrottleRatio is {thermalThrottleRatio}, plasmaThrottleRatio is {plasmaThrottleRatio}, and chargedThrottleRatio is {chargedThrottleRatio}");
 
             var thermalPropulsionRatio = ThermalPropulsionEfficiency * thermalThrottleRatio;
             var plasmaPropulsionRatio = PlasmaPropulsionEfficiency * plasmaThrottleRatio;
