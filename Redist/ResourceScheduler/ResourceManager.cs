@@ -425,24 +425,24 @@ namespace KIT.ResourceScheduler
 
         public double ResourceSpareCapacity(ResourceName resourceIdentifier)
         {
-            if (currentResources.ContainsKey(resourceIdentifier) && currentMaxResources.ContainsKey(resourceIdentifier))
-                return currentMaxResources[resourceIdentifier] - currentResources[resourceIdentifier];
+            if (currentMaxResources.TryGetValue(resourceIdentifier, out var maxResourceAmount) && currentResources.TryGetValue(resourceIdentifier, out var currentResourceAmount))
+                return maxResourceAmount - currentResourceAmount;
 
             return 0;
         }
 
         public double ResourceCurrentCapacity(ResourceName resourceIdentifier)
         {
-            if (currentResources.ContainsKey(resourceIdentifier))
-                return currentResources[resourceIdentifier];
+            if (currentResources.TryGetValue(resourceIdentifier, out var currentResourceAmount))
+                return currentResourceAmount;
 
             return 0;
         }
 
         public double ResourceFillFraction(ResourceName resourceIdentifier)
         {
-            if(currentResources.ContainsKey(resourceIdentifier) && currentMaxResources.ContainsKey(resourceIdentifier)) 
-                return currentResources[resourceIdentifier] / currentMaxResources[resourceIdentifier];
+            if (currentMaxResources.TryGetValue(resourceIdentifier, out var maxResourceAmount) && currentResources.TryGetValue(resourceIdentifier, out var currentResourceAmount))
+                return currentResourceAmount / maxResourceAmount;
 
             return 0;
         }
