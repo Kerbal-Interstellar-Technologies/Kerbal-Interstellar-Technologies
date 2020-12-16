@@ -18,7 +18,7 @@ namespace KIT.Beamedpower
 
     class BeamedPowerLaserTransmitter : BeamedPowerTransmitter { }
 
-    class BeamedPowerTransmitter : PartModule, IKITMod, IMicrowavePowerTransmitter //, IScalarModule
+    class BeamedPowerTransmitter : PartModule, IKITMod, IMicrowavePowerTransmitter, IScalarModule
     {
         public const string GROUP = "BeamedPowerTransmitter";
         public const string GROUP_TITLE = "#LOC_KSPIE_MicrowavePowerTransmitter_groupName";
@@ -971,5 +971,10 @@ namespace KIT.Beamedpower
         }
 
         public string KITPartName() => part.partInfo.title;
+
+        public void SetScalar(float t)
+        {
+            ((IScalarModule)genericAnimation).SetScalar(t);
+        }
     }
 }
