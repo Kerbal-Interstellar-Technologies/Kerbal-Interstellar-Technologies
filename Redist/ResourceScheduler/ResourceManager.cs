@@ -3,6 +3,9 @@ using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace KIT.ResourceScheduler
@@ -152,7 +155,7 @@ namespace KIT.ResourceScheduler
             // ProduceResource which credits the _currentlySupplied field here.
 
             // is it close enough to being fully requested? (accounting for precision issues)
-            var result = (modifiedAmount * fudgeFactor <= obtainedAmount) ? wanted : wanted * (obtainedAmount / modifiedAmount);
+            var result = (wanted * fudgeFactor < obtainedAmount) ? wanted : wanted * (obtainedAmount / wanted);
 
             tmpPPRI.amount += result;
             if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
@@ -295,35 +298,14 @@ namespace KIT.ResourceScheduler
                 var mod = activeKITModules[index];
                 index++;
 
-                if (fixedUpdateCalledMods.Contains(mod)) continue;
-                fixedUpdateCalledMods.Add(mod);
-
                 if (modsCurrentlyRunning.Contains(mod))
                 {
                     Debug.Log($"[KITResourceManager.ExecuteKITModules] This module {mod.KITPartName()} should not be marked busy at this stage");
                     continue;
                 }
-
                 modsCurrentlyRunning.Add(mod);
 
-                try
-                {
-                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.ExecuteKITModules.{mod.KITPartName()}");
-                    mod.KITFixedUpdate(this);
-                }
-                catch (Exception ex)
-                {
-                    if (UseThisToHelpWithTesting) throw;
-                    else
-                    {
-                        // XXX - part names and all that.
-                        Debug.Log($"[KITResourceManager.ExecuteKITModules] Exception when processing [{mod.KITPartName()}, {(mod as PartModule).ClassName}]: {ex.ToString()}");
-                    }
-                }
-                finally
-                {
-                    UnityEngine.Profiling.Profiler.EndSample();
-                }
+                InitializeModuleIfNeeded(mod);
 
                 if (vesselResources.VesselModified())
                 {
@@ -357,9 +339,36 @@ namespace KIT.ResourceScheduler
 
         HashSet<IKITVariableSupplier> tappedOutMods = new HashSet<IKITVariableSupplier>(128);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InitializeModuleIfNeeded(IKITMod KITMod)
+        {
+            if (fixedUpdateCalledMods.Contains(KITMod) == false)
+            {
+                // Hasn't had it's KITFixedUpdate() yet? call that first.
+                fixedUpdateCalledMods.Add(KITMod);
+                UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.InitializeModuleIfNeeded.Init.{KITMod.KITPartName()}");
+
+                try
+                {
+                    KITMod.KITFixedUpdate(this);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log($"[KITResourceManager.InitializeModuleIfNeeded] Exception when processing [{KITMod.KITPartName()}, {(KITMod as PartModule).ClassName}]: {ex.ToString()}");
+                }
+                finally
+                {
+                    UnityEngine.Profiling.Profiler.EndSample();
+                }
+            }
+        }
+
         private double CallVariableSuppliers(ResourceName resource, double obtainedAmount, double originalAmount, double resourceFiller = 0)
         {
             if (variableSupplierModules.ContainsKey(resource) == false) return 0;
+
+            var reducedObtainedAmount = obtainedAmount * fixedDeltaTime;
+            var reducedOriginalAmount = originalAmount * fixedDeltaTime;
 
             foreach (var mod in variableSupplierModules[resource])
             {
@@ -370,28 +379,9 @@ namespace KIT.ResourceScheduler
 
                 modsCurrentlyRunning.Add(KITMod);
 
-                if (fixedUpdateCalledMods.Contains(KITMod) == false)
-                {
-                    // Hasn't had it's KITFixedUpdate() yet? call that first.
-                    fixedUpdateCalledMods.Add(KITMod);
-                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.Init.{KITMod.KITPartName()}");
+                InitializeModuleIfNeeded(KITMod);
 
-                    try
-                    {
-                        KITMod.KITFixedUpdate(this);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Log($"[KITResourceManager.CallVariableSuppliers] Exception when processing [{KITMod.KITPartName()}, {(mod as PartModule).ClassName}]: {ex.ToString()}");
-                    }
-                    finally
-                    {
-                        UnityEngine.Profiling.Profiler.EndSample();
-                    }
-
-                }
-
-                double perSecondAmount = originalAmount * (1 - (obtainedAmount / originalAmount));
+                double perSecondAmount = originalAmount * (1 - (reducedObtainedAmount / reducedOriginalAmount));
 
                 try
                 {
@@ -410,16 +400,16 @@ namespace KIT.ResourceScheduler
                     UnityEngine.Profiling.Profiler.EndSample();
                 }
 
-                var tmp = Math.Min(currentResources[resource], perSecondAmount);
+                var tmp = Math.Min(currentResources[resource], reducedOriginalAmount - reducedObtainedAmount);
                 currentResources[resource] -= tmp;
-                obtainedAmount += tmp;
+                reducedObtainedAmount += tmp;
 
                 modsCurrentlyRunning.Remove(KITMod);
 
-                if (obtainedAmount >= originalAmount) return originalAmount;
+                if (reducedObtainedAmount >= reducedOriginalAmount) return originalAmount;
             }
 
-            return obtainedAmount;
+            return obtainedAmount * (reducedObtainedAmount / reducedOriginalAmount);
         }
 
         public double ResourceSpareCapacity(ResourceName resourceIdentifier)

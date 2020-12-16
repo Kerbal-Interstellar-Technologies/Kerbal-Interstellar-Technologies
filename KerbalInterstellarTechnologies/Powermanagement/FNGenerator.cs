@@ -90,7 +90,6 @@ namespace KIT.Powermanagement
         [KSPField] public double capacityToMassExponent = 0.7;
         [KSPField] public double targetMass;
         [KSPField] public double initialMass;
-        [KSPField] public double megajouleBarRatio;
         [KSPField] public double rawThermalPower;
         [KSPField] public double rawChargedPower;
         [KSPField] public double rawReactorPower;

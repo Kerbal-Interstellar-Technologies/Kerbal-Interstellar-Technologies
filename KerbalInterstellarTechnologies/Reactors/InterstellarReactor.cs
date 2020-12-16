@@ -2220,7 +2220,7 @@ namespace KIT.Reactors
             {
                 double reduction = Math.Min(consumeAmountInUnitOfStorage, part.Resources[fuel.ResourceName].amount) * resMan.FixedDeltaTime();
                 part.Resources[fuel.ResourceName].amount -= reduction;
-                return (reduction  / resMan.FixedDeltaTime()) * fuel.DensityInTon;
+                return reduction * fuel.DensityInTon;
             }
             else
                 return 0;
@@ -2849,6 +2849,7 @@ namespace KIT.Reactors
             // Debug.Log($"[reactor] maxThermalToSupplyPerSecond is {maxThermalToSupplyPerSecond}, maxChargedToSupplyPerSecond is {maxChargedToSupplyPerSecond}, power_request_ratio is {power_request_ratio}, maxStoredGeneratorEnergyRequestedRatio is {maxStoredGeneratorEnergyRequestedRatio}, ");
 
             maxThermalToSupplyPerSecondAvail = maxThermalToSupplyPerSecond;
+            maxChargedToSupplyPerSecondAvail = maxChargedToSupplyPerSecond;
 
             // XXX todo. fill in the max we want.
             // maxPowerToSupply = Math.Max(maximumPower, );
@@ -2864,8 +2865,14 @@ namespace KIT.Reactors
         }
 
         double maxThermalToSupplyPerSecondAvail;
+        double maxChargedToSupplyPerSecondAvail;
 
-        public string KITPartName() => $"{part.partInfo.title}{(fuelModes.Count > 1 ? " (" + fuelModeStr + ")" : "")}";
+        public string KITPartName()
+        {
+            if (part == null || part.partInfo == null) return "Interstellar Reactor";
+
+            return $"{part.partInfo.title}{(fuelModes.Count > 1 ? " (" + fuelModeStr + ")" : "")}";
+        }
         // TODO
         //if (similarParts != null && similarParts.Count > 1)
         //    displayName += " " + partNrInList;
@@ -2967,7 +2974,8 @@ namespace KIT.Reactors
             foreach (var reactorFuel in currentFuelVariant.ReactorFuels)
             {
                 tmp = ConsumeReactorFuel(resMan, reactorFuel, totalPowerReceivedFixed / geeForceModifier);
-                powerGenerated += reactorFuel.TonsFuelUsePerMJ * tmp;
+                // TODO not correct. :(
+                powerGenerated += reactorFuel.TonsFuelUsePerMJ;
 
                 _consumedFuelTotalFixed += tmp;
             }
