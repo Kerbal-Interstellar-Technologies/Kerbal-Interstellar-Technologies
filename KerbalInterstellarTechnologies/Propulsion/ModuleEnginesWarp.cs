@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace KIT.Propulsion
 {
-    public class ModuleEnginesWarp : ModuleEnginesFX
+    public class ModuleEnginesWarp : ModuleEnginesFX, IKITMod
     {
         [KSPField(isPersistant = true)]
         bool IsForceActivated;
@@ -107,6 +107,11 @@ namespace KIT.Propulsion
         PartResourceDefinition propellantResourceDefinition3;
         PartResourceDefinition propellantResourceDefinition4;
 
+        ResourceName propellantResourceID1;
+        ResourceName propellantResourceID2;
+        ResourceName propellantResourceID3;
+        ResourceName propellantResourceID4;
+
         // Are we transitioning from timewarp to reatime?
         bool _warpToReal = false;
 
@@ -148,10 +153,69 @@ namespace KIT.Propulsion
 
         private void UpdateFuelFactors()
         {
-            propellantResourceDefinition1 = !String.IsNullOrEmpty(propellant1) ? PartResourceLibrary.Instance.GetDefinition(propellant1) : null;
-            propellantResourceDefinition2 = !String.IsNullOrEmpty(propellant2) ? PartResourceLibrary.Instance.GetDefinition(propellant2) : null;
-            propellantResourceDefinition3 = !String.IsNullOrEmpty(propellant3) ? PartResourceLibrary.Instance.GetDefinition(propellant3) : null;
-            propellantResourceDefinition4 = !String.IsNullOrEmpty(propellant4) ? PartResourceLibrary.Instance.GetDefinition(propellant4) : null;
+            if(!String.IsNullOrEmpty(propellant1))
+            {
+                propellantResourceDefinition1 = PartResourceLibrary.Instance.GetDefinition(propellant1);
+                propellantResourceID1 = KITResourceSettings.NameToResource(propellant1);
+
+                if(propellantResourceDefinition1 == null || propellantResourceID1 == ResourceName.Unknown)
+                {
+                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant1 is not correctly defined -- {(propellantResourceDefinition1 == null ? "definition" : "resource id")}");
+                }
+            }
+            else
+            {
+                propellantResourceDefinition1 = null;
+                propellantResourceID1 = ResourceName.Unknown;
+            }
+
+            if (!String.IsNullOrEmpty(propellant2))
+            {
+                propellantResourceDefinition2 = PartResourceLibrary.Instance.GetDefinition(propellant2);
+                propellantResourceID2 = KITResourceSettings.NameToResource(propellant2);
+
+                if (propellantResourceDefinition2 == null || propellantResourceID2 == ResourceName.Unknown)
+                {
+                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant2 is not correctly defined");
+                }
+            }
+            else
+            {
+                propellantResourceDefinition2 = null;
+                propellantResourceID2 = ResourceName.Unknown;
+            }
+
+            if (!String.IsNullOrEmpty(propellant3))
+            {
+                propellantResourceDefinition3 = PartResourceLibrary.Instance.GetDefinition(propellant3);
+                propellantResourceID3 = KITResourceSettings.NameToResource(propellant3);
+
+                if (propellantResourceDefinition3 == null || propellantResourceID3 == ResourceName.Unknown)
+                {
+                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant3 is not correctly defined");
+                }
+            }
+            else
+            {
+                propellantResourceDefinition3 = null;
+                propellantResourceID3 = ResourceName.Unknown;
+            }
+
+            if (!String.IsNullOrEmpty(propellant4))
+            {
+                propellantResourceDefinition4 = PartResourceLibrary.Instance.GetDefinition(propellant4);
+                propellantResourceID4 = KITResourceSettings.NameToResource(propellant4);
+
+                if (propellantResourceDefinition4 == null || propellantResourceID4 == ResourceName.Unknown)
+                {
+                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant4 is not correctly defined");
+                }
+            }
+            else
+            {
+                propellantResourceDefinition4 = null;
+                propellantResourceID4 = ResourceName.Unknown;
+            }
 
             var ratioSumOveral = 0.0;
             var ratioSumWithMass = 0.0;
@@ -222,7 +286,7 @@ namespace KIT.Propulsion
             return currentAmount;
         }
 
-        private double CollectFuel(double demandMass, ResourceFlowMode fuelMode = ResourceFlowMode.STACK_PRIORITY_SEARCH)
+        private double CollectFuel(IResourceManager resMan, double demandMass, ResourceFlowMode fuelMode = ResourceFlowMode.STACK_PRIORITY_SEARCH)
         {
             fuelRequestAmount1 = 0;
             fuelRequestAmount2 = 0;
@@ -244,22 +308,22 @@ namespace KIT.Propulsion
             if (propellantResourceDefinition1 != null && ratio1 > 0)
             {
                 fuelRequestAmount1 = fuelWithMassPercentage1 > 0 ? fuelWithMassPercentage1 * propellantWithMassNeededInLiter : masslessFuelPercentage1 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition1, fuelMode) / fuelRequestAmount1);
+                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID1) / fuelRequestAmount1);
             }
             if (propellantResourceDefinition2 != null && ratio2 > 0)
             {
                 fuelRequestAmount2 = fuelWithMassPercentage2 > 0 ? fuelWithMassPercentage2 * propellantWithMassNeededInLiter : masslessFuelPercentage2 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition2, fuelMode) / fuelRequestAmount2);
+                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID2) / fuelRequestAmount2);
             }
             if (propellantResourceDefinition3 != null && ratio3 > 0)
             {
                 fuelRequestAmount3 = fuelWithMassPercentage3 > 0 ? fuelWithMassPercentage3 * propellantWithMassNeededInLiter : masslessFuelPercentage3 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition3, fuelMode) / fuelRequestAmount3);
+                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID3) / fuelRequestAmount3);
             }
             if (propellantResourceDefinition4 != null && ratio4 > 0)
             {
                 fuelRequestAmount4 = fuelWithMassPercentage4 > 0 ? fuelWithMassPercentage4 * propellantWithMassNeededInLiter : masslessFuelPercentage4 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, GetResourceAvailable(part, propellantResourceDefinition4, fuelMode) / fuelRequestAmount4);
+                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID4) / fuelRequestAmount4);
             }
 
             // ignore insignificant amount
@@ -274,22 +338,22 @@ namespace KIT.Propulsion
             double recievedRatio = 1;
             if (fuelRequestAmount1 > 0 && !double.IsNaN(fuelRequestAmount1) && !double.IsInfinity(fuelRequestAmount1))
             {
-                consumedPropellant1 = part.RequestResource(propellantResourceDefinition1.id, fuelRequestAmount1 * availableRatio, fuelMode);
+                consumedPropellant1 = resMan.ConsumeResource(propellantResourceID1, fuelRequestAmount1 * availableRatio);
                 recievedRatio = Math.Min(recievedRatio, fuelRequestAmount1 > 0 ? consumedPropellant1 / fuelRequestAmount1 : 0);
             }
             if (fuelRequestAmount2 > 0 && !double.IsNaN(fuelRequestAmount2) && !double.IsInfinity(fuelRequestAmount2))
             {
-                consumedPropellant2 = part.RequestResource(propellantResourceDefinition2.id, fuelRequestAmount2 * availableRatio, fuelMode);
+                consumedPropellant2 = resMan.ConsumeResource(propellantResourceID2, fuelRequestAmount2 * availableRatio);
                 recievedRatio = Math.Min(recievedRatio, fuelRequestAmount2 > 0 ? consumedPropellant2 / fuelRequestAmount2 : 0);
             }
             if (fuelRequestAmount3 > 0 && !double.IsNaN(fuelRequestAmount3) && !double.IsInfinity(fuelRequestAmount3))
             {
-                consumedPropellant3 = part.RequestResource(propellantResourceDefinition3.id, fuelRequestAmount3 * availableRatio, fuelMode);
+                consumedPropellant3 = resMan.ConsumeResource(propellantResourceID3, fuelRequestAmount3 * availableRatio);
                 recievedRatio = Math.Min(recievedRatio, fuelRequestAmount3 > 0 ? consumedPropellant3 / fuelRequestAmount3 : 0);
             }
             if (fuelRequestAmount4 > 0 && !double.IsNaN(fuelRequestAmount4) && !double.IsInfinity(fuelRequestAmount4))
             {
-                consumedPropellant4 = part.RequestResource(propellantResourceDefinition4.id, fuelRequestAmount4 * availableRatio, fuelMode);
+                consumedPropellant4 = resMan.ConsumeResource(propellantResourceID4, fuelRequestAmount4 * availableRatio);
                 recievedRatio = Math.Min(recievedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
             }
 
@@ -298,6 +362,31 @@ namespace KIT.Propulsion
 
         // Physics update
         public override void OnFixedUpdate()
+        {
+            // deliberately empty
+        }
+
+        private bool IsPositiveValidNumber(double vaiable)
+        {
+            return !double.IsNaN(vaiable) && !double.IsInfinity(vaiable) && vaiable > 0;
+        }
+
+        // Format thrust into mN, N, kN
+        public static string FormatThrust(double thrust)
+        {
+            if (thrust < 1e-6)
+                return Math.Round(thrust * 1e+9, 3) + " µN";
+            if (thrust < 1e-3)
+                return Math.Round(thrust * 1e+6, 3) + " mN";
+            else if (thrust < 1)
+                return Math.Round(thrust * 1e+3, 3) + " N";
+            else
+                return Math.Round(thrust, 3) + " kN";
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+
+        public void KITFixedUpdate(IResourceManager resMan)
         {
             if (vesselChangedSIOCountdown > 0)
                 vesselChangedSIOCountdown--;
@@ -326,7 +415,7 @@ namespace KIT.Propulsion
                 // allow throtle to be used up to Geeforce treshold
                 TimeWarp.GThreshold = GThreshold;
 
-                demandMass = requestedFlow * (double)(decimal)TimeWarp.fixedDeltaTime;
+                demandMass = requestedFlow * (double)(decimal)resMan.FixedDeltaTime();
 
                 // if not transitioning from warp to real
                 // Update values to use during timewarp
@@ -360,7 +449,7 @@ namespace KIT.Propulsion
                     }
 
                     // determine maximum deltaV durring this frame
-                    demandMass = requestedFlow * (double)(decimal)TimeWarp.fixedDeltaTime;
+                    demandMass = requestedFlow * resMan.FixedDeltaTime();
                     remainingMass = totalmassVessel - demandMass;
 
                     deltaV = _realIsp * GameConstants.STANDARD_GRAVITY * Math.Log(totalmassVessel / remainingMass);
@@ -384,7 +473,8 @@ namespace KIT.Propulsion
                         return;
                     }
 
-                    fuelRatio = CollectFuel(demandMass, ResourceFlowMode.ALL_VESSEL);
+                    // using the resource manager interface will reduce the requested resources to fixedDeltaTime for us.
+                    fuelRatio = CollectFuel(resMan, requestedFlow, ResourceFlowMode.ALL_VESSEL);
 
                     // Calculate thrust and deltaV if demand output > 0
                     if (IsPositiveValidNumber(fuelRatio) && IsPositiveValidNumber(demandMass) && IsPositiveValidNumber(totalmassVessel) && IsPositiveValidNumber(_realIsp))
@@ -430,23 +520,7 @@ namespace KIT.Propulsion
             throttle_d = _throttlePersistent;
         }
 
-        private bool IsPositiveValidNumber(double vaiable)
-        {
-            return !double.IsNaN(vaiable) && !double.IsInfinity(vaiable) && vaiable > 0;
-        }
-
-        // Format thrust into mN, N, kN
-        public static string FormatThrust(double thrust)
-        {
-            if (thrust < 1e-6)
-                return Math.Round(thrust * 1e+9, 3) + " µN";
-            if (thrust < 1e-3)
-                return Math.Round(thrust * 1e+6, 3) + " mN";
-            else if (thrust < 1)
-                return Math.Round(thrust * 1e+3, 3) + " N";
-            else
-                return Math.Round(thrust, 3) + " kN";
-        }
+        public string KITPartName() => part.partInfo.title;
     }
 
 }

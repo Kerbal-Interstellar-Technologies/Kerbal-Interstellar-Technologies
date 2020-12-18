@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KIT.ResourceScheduler;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -36,7 +37,40 @@ namespace KIT.Resources
         /// WasteHeat by default is measured in Megajoules
         /// </summary>
         WasteHeat,
-        // End vessel wide tracking. The below order is not important.
+        // End vessel wide tracking. 
+
+        // Automatic resource conversion beginning
+        // Keep Gas in alphabetical order, then liquids underneath in alphabetical order.
+
+        CarbonDioxideGas,
+        CarbonMonoxideGas,
+        DeuteriumGas,
+        Helium4Gas,
+        Helium3Gas,
+        HydrogenGas,
+        KryptonGas,
+        MethaneGas,
+        NeonGas,
+        NitrogenGas,
+        OxygenGas,
+        TritiumGas,
+        XenonGas,
+
+        CarbonDioxideLqd,
+        CarbonMonoxideLqd,
+        DeuteriumLqd,
+        Helium4Lqd,
+        Helium3Lqd,
+        HydrogenLqd,
+        KryptonLqd,
+        MethaneLqd,
+        NeonLqd,
+        NitrogenLqd,
+        OxygenLqd,
+        TritiumLqd,
+        XenonLqd,
+
+        // end of automatic resource conversion, the following order is not important.
 
         LiquidFuel,
         Oxidizer,
@@ -46,45 +80,19 @@ namespace KIT.Resources
         Aluminium,
         AmmoniaLqd,
         ArgonLqd,
-        CarbonDioxideGas,
-        CarbonDioxideLqd,
-        CarbonMonoxideGas,
-        CarbonMonoxideLqd,
-        DeuteriumLqd,
-        DeuteriumGas,
-        Helium4Gas,
-        Helium4Lqd,
-        Helium3Gas,
-        Helium3Lqd,
-        HydrogenGas,
-        HydrogenLqd,
         HydrogenPeroxide,
         Hydrazine,
         FluorineGas,
-        KryptonGas,
-        KryptonLqd,
         Lithium6,
         Lithium7,
         ChlorineGas,
-        MethaneGas,
-        MethaneLqd,
-        NeonGas,
-        NeonLqd,
-        NitrogenGas,
-        NitrogenLqd,
         Nitrogen15Lqd,
-        OxygenGas,
-        OxygenLqd,
         Regolith,
         Sodium,
         SolarWind,
-        TritiumGas,
-        TritiumLqd,
         WaterHeavy,
         WaterPure,
         WaterRaw,
-        XenonGas,
-        XenonLqd,
 
         Actinides,
         DepletedFuel,
@@ -102,6 +110,8 @@ namespace KIT.Resources
         IntakeOxygenAir,
         IntakeLiquid,
         IntakeAtmosphere,
+        
+        FusionPellets,
 
         EndResource,
     }
@@ -170,7 +180,7 @@ namespace KIT.Resources
         public static string ChlorineGas { get; private set; } = "Chlorine";
         public static string MethaneGas { get; private set; } = "Methane";
         public static string MethaneLqd { get; private set; } = "LqdMethane";
-        public static string NeonGas { get; private set; } = "LqdGas";
+        public static string NeonGas { get; private set; } = "NeonGas";
         public static string NeonLqd { get; private set; } = "LqdNeon";
         public static string NitrogenGas { get; private set; } = "Nitrogen";
         public static string NitrogenLqd { get; private set; } = "LqdNitrogen";
@@ -187,6 +197,7 @@ namespace KIT.Resources
         public static string WaterRaw { get; private set; } = "LqdWater";
         public static string XenonGas { get; private set; } = "XenonGas";
         public static string XenonLqd { get; private set; } = "LqdXenon";
+        public static string FusionPellets { get; private set; } = "FusionPellets";
         #endregion
 
         #region Pseudo resources
@@ -283,6 +294,8 @@ namespace KIT.Resources
                 case ResourceName.IntakeAtmosphere: return IntakeAtmosphere;
 
                 case ResourceName.WasteHeat: return WasteHeat;
+
+                case ResourceName.FusionPellets: return FusionPellets;
                 case ResourceName.EndResource: return EndResource;
                 default: throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
             }

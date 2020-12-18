@@ -83,7 +83,7 @@ namespace KIT.Propulsion
         [KSPField]
         public double variableEfficency = 0;
         [KSPField]
-        public float storedThrotle;
+        public float storedThrottle;
         [KSPField]
         public double particleEffectMult = 1;
         [KSPField]
@@ -195,24 +195,15 @@ namespace KIT.Propulsion
         protected double modifiedCurrentPowerForEngine = 0;
 
         [KSPField(guiActive = false)]
-        protected double effectiveMaximumAvailablePowerForEngine = 0;
-        [KSPField(guiActive = false)]
-        protected double effectiveCurrentAvailablePowerForEngine = 0;
-
-        [KSPField(guiActive = false)]
         protected double effectiveMaximumPower = 0;
         [KSPField(guiActive = false)]
         protected double effectiveRecievedPower = 0;
         [KSPField(guiActive = false)]
-        protected double effectiveSimulatedPower = 0;
-        [KSPField(guiActive = false)]
-        protected double modifiedThrotte;
+        protected double modifiedThrottle;
         [KSPField(guiActive = false)]
         protected double effectivePowerThrustModifier = 0;
         [KSPField(guiActive = false)]
         public double actualPowerReceived = 0;
-        [KSPField(guiActive = false)]
-        public double simulatedPowerReceived = 0;
 
         [KSPField]
         protected double maximumAvailablePowerForEngine = 0;
@@ -244,8 +235,6 @@ namespace KIT.Propulsion
         public double massExponent = 3;
         [KSPField]
         public double maxPower = 1000;
-        [KSPField]
-        public double effectiveResourceThrotling = 0;
         [KSPField]
         public double ratioHeadingVersusRequest = 0;
 
@@ -644,19 +633,19 @@ namespace KIT.Propulsion
             base.OnUpdate();
 
             // stop engines and drop out of timewarp when X pressed
-            if (vessel.packed && storedThrotle > 0 && Input.GetKeyDown(KeyCode.X))
+            if (vessel.packed && storedThrottle > 0 && Input.GetKeyDown(KeyCode.X))
             {
                 // Return to realtime
                 TimeWarp.SetRate(0, true);
 
-                storedThrotle = 0;
-                vessel.ctrlState.mainThrottle = storedThrotle;
+                storedThrottle = 0;
+                vessel.ctrlState.mainThrottle = storedThrottle;
             }
 
             // When transitioning from timewarp to real update throttle
             if (_warpToReal)
             {
-                vessel.ctrlState.mainThrottle = storedThrotle;
+                vessel.ctrlState.mainThrottle = storedThrottle;
                 _warpToReal = false;
             }
 
@@ -969,7 +958,7 @@ namespace KIT.Propulsion
             if (CurrentPropellant == null) return;
 
             if (!vessel.packed && !_warpToReal)
-                storedThrotle = vessel.ctrlState.mainThrottle;
+                storedThrottle = vessel.ctrlState.mainThrottle;
 
             maxEffectivePower = MaxEffectivePower;
             currentPropellantEfficiency = CurrentPropellantEfficiency;
@@ -977,20 +966,14 @@ namespace KIT.Propulsion
             var sumOfAllEffectivePower = vessel.FindPartModulesImplementing<ElectricEngineControllerFX>().Where(ee => ee.IsOperational).Sum(ee => ee.MaxEffectivePower);
             _electricalShareF = sumOfAllEffectivePower > 0 ? maxEffectivePower / sumOfAllEffectivePower : 1;
 
-            modifiedThrotte = ModifiedThrottle;
-            modifiedMaxThrottlePower = maxEffectivePower * modifiedThrotte;
+            modifiedThrottle = ModifiedThrottle;
+            modifiedMaxThrottlePower = maxEffectivePower * modifiedThrottle;
 
-            throw new Exception("need to implement the below");
-            /*
-            totalPowerSupplied = getTotalPowerSupplied(KITResourceSettings.ElectricPowerInMegawatt);
-            megaJoulesBarRatio = getResourceBarRatio(KITResourceSettings.ElectricPowerInMegawatt);
+            totalPowerSupplied = resMan.ConsumeResource(ResourceName.ElectricCharge, maxPower * storedThrottle); 
 
-            effectiveResourceThrotling = megaJoulesBarRatio > 0.1 ? 1 : megaJoulesBarRatio * 10;
-
-            availableMaximumPower = getAvailablePrioritisedStableSupply(KITResourceSettings.ElectricPowerInMegawatt);
-            availableCurrentPower = CheatOptions.InfiniteElectricity
-                ? availableMaximumPower
-                : getAvailablePrioritisedCurrentSupply(KITResourceSettings.ElectricPowerInMegawatt);
+            var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+            availableMaximumPower = stats.PreviousDataSupplied() ? stats.PreviouslySupplied() : stats.CurrentSupplied();
+            availableCurrentPower = totalPowerSupplied;
 
             maximumAvailablePowerForEngine = availableMaximumPower * _electricalShareF;
             currentAvailablePowerForEngine = availableCurrentPower * _electricalShareF;
@@ -998,28 +981,15 @@ namespace KIT.Propulsion
             maximumThrustFromPower = EvaluateMaxThrust(maximumAvailablePowerForEngine);
             currentThrustFromPower = EvaluateMaxThrust(currentAvailablePowerForEngine);
 
-            effectiveMaximumAvailablePowerForEngine = maximumAvailablePowerForEngine * effectiveResourceThrotling;
-            effectiveCurrentAvailablePowerForEngine = currentAvailablePowerForEngine * effectiveResourceThrotling;
+            modifiedMaximumPowerForEngine = maximumAvailablePowerForEngine * modifiedThrottle;
+            modifiedCurrentPowerForEngine = currentAvailablePowerForEngine * modifiedThrottle;
 
-            modifiedMaximumPowerForEngine = effectiveMaximumAvailablePowerForEngine * modifiedThrotte;
-            modifiedCurrentPowerForEngine = effectiveCurrentAvailablePowerForEngine * modifiedThrotte;
-
-            maximum_power_request = CheatOptions.InfiniteElectricity
-                ? modifiedMaximumPowerForEngine
-                : currentPropellantEfficiency <= 0
-                    ? 0
-                    : Math.Min(modifiedMaximumPowerForEngine, modifiedMaxThrottlePower);
-
-            current_power_request = CheatOptions.InfiniteElectricity
-                ? modifiedCurrentPowerForEngine
-                : currentPropellantEfficiency <= 0
-                    ? 0
-                    : Math.Min(modifiedCurrentPowerForEngine, modifiedMaxThrottlePower);
+            maximum_power_request = availableMaximumPower;
+            current_power_request = totalPowerSupplied;
 
             // request electric power
-            actualPowerReceived = resMan.ConsumeResource(ResourceName.ElectricCharge, current_power_request * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+            actualPowerReceived = totalPowerSupplied; 
 
-            simulatedPowerReceived = Math.Min(effectiveMaximumAvailablePowerForEngine, maxEffectivePower);
 
             // produce waste heat
             var heatModifier = (1 - currentPropellantEfficiency) * CurrentPropellant.WasteHeatMultiplier;
@@ -1041,11 +1011,10 @@ namespace KIT.Propulsion
 
             effectiveMaximumPower = effectivePowerThrustModifier * modifiedMaxThrottlePower * throttleModifier;
             effectiveRecievedPower = effectivePowerThrustModifier * actualPowerReceived * throttleModifier;
-            effectiveSimulatedPower = effectivePowerThrustModifier * simulatedPowerReceived;
 
             _maximumThrustInSpace = effectiveMaximumPower / _effectiveIsp / GameConstants.STANDARD_GRAVITY;
             currentThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveRecievedPower / _effectiveIsp / GameConstants.STANDARD_GRAVITY;
-            simulatedThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveSimulatedPower / _effectiveIsp / GameConstants.STANDARD_GRAVITY;
+            simulatedThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveRecievedPower / _effectiveIsp / GameConstants.STANDARD_GRAVITY;
 
             _attachedEngine.maxThrust = (float)Math.Max(simulatedThrustInSpace, 0.001);
 
@@ -1139,7 +1108,6 @@ namespace KIT.Propulsion
                 vacuumPlasmaResource.maxAmount = vacuumPlasmaResourceAmount;
                 part.RequestResource(KITResourceSettings.VacuumPlasma, -vacuumPlasmaResource.maxAmount);
             }
-            */
         }
 
         public string KITPartName() => $"{part.partInfo.title}{(CurrentPropellant != null ? " (" + CurrentPropellant.PropellantGUIName + ")" : "")}";
