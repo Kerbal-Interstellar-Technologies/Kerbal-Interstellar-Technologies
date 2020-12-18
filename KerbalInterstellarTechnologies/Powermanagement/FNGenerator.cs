@@ -51,7 +51,7 @@ namespace KIT.Powermanagement
         [KSPField] public float powerCapacityStepIncrement = 0.5f;
         [KSPField] public bool isHighPower = false;
         [KSPField] public bool isMHD = false;
-        [KSPField] public bool isLimitedByMinThrottle = false;
+        [KSPField] public bool isLimitedByMinThrottle = false;          // old name isLimitedByMinThrotle
         [KSPField] public double powerOutputMultiplier = 1;
         [KSPField] public double hotColdBathRatio;
         [KSPField] public bool calculatedMass = false;
@@ -135,10 +135,7 @@ namespace KIT.Powermanagement
         public double initialGeneratorPowerEC;
 
         // Debug
-        [KSPField] public double stableMaximumReactorPower;
-        [KSPField] public double heat_exchanger_thrust_divisor;
         [KSPField] public double requested_power_per_second;
-        [KSPField] public double received_power_per_second;
         [KSPField] public double post_received_power_per_second;
         [KSPField] public double spareResourceCapacity;
         [KSPField] public double possibleSpareResourceCapacityFilling;
@@ -149,7 +146,6 @@ namespace KIT.Powermanagement
         [KSPField] public double stablePowerForBuffer;
         [KSPField] public double maxStableMegaWattPower;
         [KSPField] public bool applies_balance;
-        [KSPField] public double effectiveThermalPowerNeededForElectricity;
         [KSPField] public double thermalPowerRequested;
         [KSPField] public double reactorPowerRequested;
         [KSPField] public double attachedPowerSourceMaximumThermalPowerUsageRatio;
@@ -169,14 +165,15 @@ namespace KIT.Powermanagement
         [KSPField] public double effectiveMaxThermalPowerRatio;
         [KSPField] public double electricdtps;
         [KSPField] public double maxElectricdtps;
-        [KSPField] public bool shouldUseChargedPower;
         [KSPField] public double _totalEff;
         [KSPField] public double capacityRatio;
         [KSPField] public double maximumGeneratorPowerMJ;
 
         // Internal
-        protected double outputPower;
-        protected double powerDownFraction;
+        private double stableMaximumReactorPower;
+        private double outputPower;
+        private double powerDownFraction;
+        private double heatExchangerThrustDivisor = 1;
 
         protected bool play_down = true;
         protected bool play_up = true;
@@ -568,12 +565,7 @@ namespace KIT.Powermanagement
                 return;
 
             var maximumPower = isLimitedByMinThrottle ? attachedPowerSource.MinimumPower : attachedPowerSource.MaximumPower;
-
-            if (chargedParticleMode)
-                maximumGeneratorPowerMJ = maximumPower * maxEfficiency;
-            else
-                maximumGeneratorPowerMJ = maximumPower * maxEfficiency * 0.6;
-
+            maximumGeneratorPowerMJ = maximumPower * maxEfficiency * heatExchangerThrustDivisor;
         }
 
         private PowerSourceSearchResult FindThermalPowerSource()
@@ -755,11 +747,11 @@ namespace KIT.Powermanagement
 
             if (attachedPowerSource.Radius <= 0 || radius <= 0)
             {
-                heat_exchanger_thrust_divisor = 1;
+                heatExchangerThrustDivisor = 1;
                 return;
             }
 
-            heat_exchanger_thrust_divisor = radius > attachedPowerSource.Radius
+            heatExchangerThrustDivisor = radius > attachedPowerSource.Radius
                 ? attachedPowerSource.Radius * attachedPowerSource.Radius / radius / radius
                 : radius * radius / attachedPowerSource.Radius / attachedPowerSource.Radius;
         }
@@ -832,19 +824,20 @@ namespace KIT.Powermanagement
 
             UpdateTargetMass();
 
-            Fields[nameof(targetMass)].guiActive = attachedPowerSource != null && attachedPowerSource.Part != this.part;
+            UpdateHeatExchangedThrustDivisor();
+
+            UpdateModuleGeneratorOutput();
         }
 
         private void PowerDown()
         {
-            if (_powerState != PowerStates.PowerOffline)
-            {
-                if (powerDownFraction > 0)
-                    powerDownFraction -= 0.01;
+            if (_powerState == PowerStates.PowerOffline) return;
 
-                if (powerDownFraction <= 0)
-                    _powerState = PowerStates.PowerOffline;
-            }
+            if (powerDownFraction > 0)
+                powerDownFraction -= 0.01;
+
+            if (powerDownFraction <= 0)
+                _powerState = PowerStates.PowerOffline;
         }
 
         public override string GetInfo()
@@ -997,7 +990,7 @@ namespace KIT.Powermanagement
 
             var displayName = part.partInfo.title + " " + Localizer.Format("#LOC_KSPIE_Generator_partdisplay");//(generator)
 
-            /* 
+            /*
             if (similarParts == null)
             {
                 similarParts = vessel.parts.Where(m => m.partInfo.title == this.part.partInfo.title).ToList();
@@ -1023,7 +1016,7 @@ namespace KIT.Powermanagement
             {
                 electrical_power_currently_needed = requestedAmount;
 
-                effectiveThermalPowerNeededForElectricity = electrical_power_currently_needed / _totalEff;
+                var effectiveThermalPowerNeededForElectricity = electrical_power_currently_needed / _totalEff;
 
                 reactorPowerRequested = Math.Max(0, Math.Min(maxReactorPower, effectiveThermalPowerNeededForElectricity));
                 requestedPostReactorPower = Math.Max(0, attachedPowerSource.MinimumPower - reactorPowerRequested);
@@ -1055,7 +1048,7 @@ namespace KIT.Powermanagement
                 thermalPowerReceived = initialThermalPowerReceived + initialChargedPowerReceived;
                 totalPowerReceived = thermalPowerReceived;
 
-                shouldUseChargedPower = chargedPowerRatio > 0;
+                bool shouldUseChargedPower = chargedPowerRatio > 0;
 
                 // Collect charged power when needed
                 if (chargedPowerRatio == 1)
@@ -1108,8 +1101,7 @@ namespace KIT.Powermanagement
                 chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
             }
 
-            received_power_per_second = thermalPowerReceived + chargedPowerReceived;
-            effectiveInputPowerPerSecond = received_power_per_second * _totalEff;
+            effectiveInputPowerPerSecond = (thermalPowerReceived + chargedPowerReceived) * _totalEff;
 
             resMan.ProduceResource(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
 
