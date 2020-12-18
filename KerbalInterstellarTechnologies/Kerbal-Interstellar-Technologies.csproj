@@ -90,7 +90,7 @@
     <Compile Include="Beamedpower\InterstellarBeamedPowerHelper.cs" />
     <Compile Include="GameEventSubscriber.cs" />
     <Compile Include="PluginSettings.cs" />
-    <Compile Include="Reactors\KITRadioisotapeGenerator.cs" />
+    <Compile Include="Reactors\KITRadioisotopeGenerator.cs" />
     <Compile Include="Resources\RegolithCollector.cs" />
     <Compile Include="Resources\SolarWindCollector.cs" />
     <Compile Include="Resources\UniversalCrustExtractor.cs" />

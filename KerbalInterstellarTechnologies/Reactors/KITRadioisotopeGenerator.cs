@@ -1,5 +1,6 @@
 ﻿using KIT.Resources;
 using KIT.ResourceScheduler;
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,11 @@ namespace KIT.Reactors
         [KSPField(isPersistant = true)] public double wattsPerGram;
         [KSPField(isPersistant = true, guiName = "Mass Remaining", guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massInKilograms = 1;
         [KSPField(isPersistant = true)] public double halfLifeInSeconds;
-        [KSPField(isPersistant = true, guiName = "Radioactive Isotope", guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public string radioisotopeFuel;
+        [KSPField(isPersistant = true, guiName = "Radioactive Isotope", guiActive = true, guiActiveEditor = true)] public string radioisotopeFuel;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW/s", guiFormat = "F4")] public double currentPowerOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW", guiFormat = "F4")] public double currentPowerOutput;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "Waste Heat Output", guiUnits = " KW/s", guiFormat = "F2")] public double wasteHeatOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "Waste Heat Output", guiUnits = " KW", guiFormat = "F2")] public double wasteHeatOutput;
 
 
         /*
@@ -95,11 +96,12 @@ namespace KIT.Reactors
             DecayFuel(resMan);
         }
 
-        public string KITPartName() => "#LOC_KIT_RTG_PartName";
+        private string _KITPartName = Localizer.Format("#LOC_KIT_RTG_PartName");
+        public string KITPartName() => _KITPartName;
 
         public override string GetInfo()
         {
-            return "#LOC_KIT_RTG_GetInfo";
+            return Localizer.Format("#LOC_KIT_RTG_GetInfo");
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
