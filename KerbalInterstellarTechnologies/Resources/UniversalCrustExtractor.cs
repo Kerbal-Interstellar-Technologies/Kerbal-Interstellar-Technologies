@@ -52,6 +52,9 @@ namespace KIT.Resources
         [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_ReasonNotCollecting")]//Reason Not Collecting
         public string reasonNotCollecting;
 
+        [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "Harvest Type")]
+        public string harvestType;
+
         private int powerCountdown;
         private int powerCountdownMax = 90;
         private const double minimumPowerNeeded = 0.15;
@@ -337,14 +340,15 @@ namespace KIT.Resources
         /// <returns>Bool signifying whether yes, we can mine here, or not.</returns>
         private string CheckIfCollectingPossible()
         {
-            if (vessel.checkLanded() == false || vessel.checkSplashed())
-                return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");//"Vessel is not landed properly."
-
             if (!IsDrillExtended())
                 return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg2");//"needs to be extended before it can be used."
 
-            if (!CanReachTerrain())
+            if (!IsTerrainReachable())
                 return " " + Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg3");//trouble reaching the terrain.
+
+            if (terrainType == TerrainType.Planetary)
+                if (vessel.checkLanded() == false || vessel.checkSplashed())
+                    return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");//"Vessel is not landed properly."
 
             // cleared all the prerequisites
             return string.Empty;
@@ -354,16 +358,7 @@ namespace KIT.Resources
         /// Helper function to see if the drill part is extended.
         /// </summary>
         /// <returns>Bool signifying whether the part is extended or not (if it's animation is played out).</returns>
-        private bool IsDrillExtended()
-        {
-            return isDeployed && !deployAnimation.IsPlaying(deployAnimationName);
-            //return deployAnimation.GetScalar == 1;
-
-            //if (_moduleAnimationGroup != null)
-            //    return _moduleAnimationGroup.isDeployed;
-
-            //return false;
-        }
+        private bool IsDrillExtended() => isDeployed && !deployAnimation.IsPlaying(deployAnimationName);
 
         /// <summary>
         /// Helper function to raycast what the drill could hit.
@@ -376,7 +371,6 @@ namespace KIT.Resources
             var drillDistance = drillReach * scaleFactor; // adjust the distance for the ray with the rescale factor, needs to be a float for raycast.
 
             RaycastHit hit = new RaycastHit(); // create a variable that stores info about hit colliders etc.
-            LayerMask terrainMask = 32768; // layermask in unity, number 1 bitshifted to the left 15 times (1 << 15), (terrain = 15, the bitshift is there so that the mask bits are raised; this is a good reading about that: http://answers.unity3d.com/questions/8715/how-do-i-use-layermasks.html)
             Ray drillPartRay = new Ray(partPosition, -part.transform.up); // this ray will start at the part's center and go down in local space coordinates (Vector3d.down is in world space)
 
             /* This little bit will fire a ray from the part, straight down, in the distance that the part should be able to reach.
@@ -385,33 +379,63 @@ namespace KIT.Resources
              * to check for contact, but that seems to be bugged somehow, at least when paired with this drill - it works enough times to pass tests, but when testing
              * this module in a difficult terrain, it just doesn't work properly. (I blame KSP planet meshes + Unity problems with accuracy further away from origin).
             */
-            Physics.Raycast(drillPartRay, out hit, drillDistance, terrainMask); // use the defined ray, pass info about a hit, go the proper distance and choose the proper layermask
+            Physics.Raycast(drillPartRay, out hit, drillDistance); // use the defined ray, pass info about a hit, go the proper distance and choose the proper layermask
 
             return hit;
         }
+
+        private int rateLimit;
+
+        enum TerrainType
+        {
+            None,
+            Planetary,
+            Comet,
+            Asteroid,
+        }
+
+        private TerrainType terrainType;
 
         /// <summary>
         /// Helper function to calculate (and raycast) if the drill could potentially hit the terrain.
         /// </summary>
         /// <returns>True if the raycast hits the terrain layermask and it's close enough for the drill to reach (affected by the drillReach part property).</returns>
-        private bool CanReachTerrain()
+        private bool IsTerrainReachable()
         {
-            RaycastHit hit = WhatsUnderneath();
-            return hit.collider != null;
-        }
-
-        private bool DistanceToGround(out double groundDistance)
-        {
+            terrainType = TerrainType.None;
             RaycastHit hit = WhatsUnderneath();
 
-            if (hit.collider == null)
+            if (hit.collider == null) return false;
+
+            if (hit.collider.gameObject.GetComponentUpwards<LocalSpace>())
             {
-                groundDistance = double.NaN;
-                return false;
+                terrainType = TerrainType.Planetary;
+                harvestType = $"LocalSpace (planet / moon) - {vessel.checkLanded()}";
             }
 
-            groundDistance = hit.distance;
-            return !(groundDistance <= 0);
+            if (hit.collider.gameObject.GetComponentUpwards<ModuleComet>())
+            {
+                terrainType = TerrainType.Comet;
+                harvestType = $"Comet harvesting - {vessel.SituationString}";
+            }
+
+            if (hit.collider.gameObject.GetComponentUpwards<ModuleAsteroid>())
+            {
+                terrainType = TerrainType.Asteroid;
+                harvestType = $"Asteroid harvesting - {vessel.SituationString}";
+            }
+
+            if (terrainType == TerrainType.None)
+            {
+                if (rateLimit++ % 250 == 0)
+                {
+                    Debug.Log($"[Universal Drill] Hit /something/ but I have no idea what. Please let a developer know about this, what planet pack you're using, so on and so fourth. Thanks.");
+                    return false;
+                }
+            }
+
+            return true;
+
         }
 
         /// <summary>
@@ -578,6 +602,16 @@ namespace KIT.Resources
         /// <param name="deltaTime">Double, signifies the amount of time since last Fixed Update (Unity).</param>
         private void MineResources(IResourceManager resMan)
         {
+            reasonNotCollecting = CheckIfCollectingPossible();
+
+            if (!string.IsNullOrEmpty(reasonNotCollecting)) // collecting not possible due to some reasons.
+            {
+                ScreenMessages.PostScreenMessage(reasonNotCollecting, 3.0f, ScreenMessageStyle.LOWER_CENTER);
+
+                DisableCollector();
+                return; // let's get out of here, no mining for now
+            }
+
             double wantedPower = PluginSettings.Config.PowerConsumptionMultiplier * mwRequirements;
             double percentPower = resMan.ConsumeResource(ResourceName.ElectricCharge, wantedPower) / wantedPower;
 
@@ -594,16 +628,28 @@ namespace KIT.Resources
                 return;
             }
 
-            reasonNotCollecting = CheckIfCollectingPossible();
-
-            if (!string.IsNullOrEmpty(reasonNotCollecting)) // collecting not possible due to some reasons.
+            switch (terrainType)
             {
-                ScreenMessages.PostScreenMessage(reasonNotCollecting, 3.0f, ScreenMessageStyle.LOWER_CENTER);
+                case TerrainType.None:
+                    return;
 
-                DisableCollector();
-                return; // let's get out of here, no mining for now
+                case TerrainType.Planetary:
+                    MinePlanetaryBody(resMan, percentPower);
+                    return;
+                case TerrainType.Comet:
+                case TerrainType.Asteroid:
+                    MineAsteroidComet(resMan, percentPower);
+                    return;
             }
+        }
+        
+        private void MineAsteroidComet(IResourceManager resMan, double percentPower)
+        {
+            // TODO :)
+        }
 
+        private void MinePlanetaryBody(IResourceManager resMan, double percentPower)
+        {
             if (!GetResourceData()) // if the resource data was not okay, no mining
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg2"), 3.0f, ScreenMessageStyle.LOWER_CENTER);//"The universal drill is not sure where you are trying to mine. Please contact the mod author, tell him the details of this situation and provide the output log."
@@ -757,10 +803,7 @@ namespace KIT.Resources
             loopAnimation.Blend(loopingAnimationName, 1);
         }
 
-        public ResourcePriorityValue ResourceProcessPriority()
-        {
-            throw new NotImplementedException();
-        }
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -780,9 +823,6 @@ namespace KIT.Resources
             }
         }
 
-        public string KITPartName()
-        {
-            throw new NotImplementedException();
-        }
+        public string KITPartName() => part.partInfo.title;
     }
 }
