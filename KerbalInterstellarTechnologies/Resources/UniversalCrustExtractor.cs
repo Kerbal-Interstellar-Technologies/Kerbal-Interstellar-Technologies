@@ -413,13 +413,17 @@ namespace KIT.Resources
                 harvestType = $"LocalSpace (planet / moon) - {vessel.checkLanded()}";
             }
 
-            if (hit.collider.gameObject.GetComponentUpwards<ModuleComet>())
+            var mod = hit.collider.gameObject.GetComponentUpwards<PartModule>();
+
+            if (mod == null) return false;
+                
+            if(mod.name == "ModuleComet")
             {
                 terrainType = TerrainType.Comet;
                 harvestType = $"Comet harvesting - {vessel.SituationString}";
             }
 
-            if (hit.collider.gameObject.GetComponentUpwards<ModuleAsteroid>())
+            if (mod.name == "ModuleAsteroid")
             {
                 terrainType = TerrainType.Asteroid;
                 harvestType = $"Asteroid harvesting - {vessel.SituationString}";
