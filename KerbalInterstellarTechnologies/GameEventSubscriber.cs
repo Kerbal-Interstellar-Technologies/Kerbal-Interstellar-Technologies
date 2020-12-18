@@ -11,8 +11,8 @@ namespace KIT
     {
         void Start()
         {
-            BeamedPowerSources.getVesselMicrowavePersistanceForProtoVesselCallback = BeamedPowerTransmitter.getVesselMicrowavePersistanceForProtoVessel;
-            BeamedPowerSources.getVesselRelayPersistanceForProtoVesselCallback = BeamedPowerTransmitter.getVesselRelayPersistanceForProtoVessel;
+            BeamedPowerSources.getVesselMicrowavePersistanceForProtoVesselCallback = BeamedPowerTransmitter.GetVesselMicrowavePersistanceForProtoVessel;
+            BeamedPowerSources.getVesselRelayPersistanceForProtoVesselCallback = BeamedPowerTransmitter.GetVesselRelayPersistanceForProtoVessel;
             BeamedPowerSources.getVesselMicrowavePersistanceForVesselCallback = BeamedPowerTransmitter.getVesselMicrowavePersistanceForVessel;
             BeamedPowerSources.getVesselRelayPersistenceForVesselCallback = BeamedPowerTransmitter.getVesselRelayPersistenceForVessel;
 

@@ -23,7 +23,7 @@ namespace KIT.Beamedpower
         public const string GROUP = "BeamedPowerTransmitter";
         public const string GROUP_TITLE = "#LOC_KSPIE_MicrowavePowerTransmitter_groupName";
 
-        //Persistent 
+        //Persistent
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_TransmitPower"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0)]//Transmission Strength
         public float transmitPower = 100;
         [KSPField(isPersistant = true)]
@@ -71,7 +71,7 @@ namespace KIT.Beamedpower
         [KSPField(isPersistant = true, guiActiveEditor = false)]
         public double nativeAtmosphericAbsorptionPercentage = 10;
 
-        //Non Persistent 
+        //Non Persistent
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_AtmosphericAbsorptionPercentage", guiFormat = "F2", guiUnits = "%")]//Air Absorption Percentage
         public double atmosphericAbsorptionPercentage;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_WaterAbsorptionPercentage", guiFormat = "F2", guiUnits = "%")]//Water Absorption Percentage
@@ -99,7 +99,7 @@ namespace KIT.Beamedpower
         [KSPField]
         protected int nearbyPartsCount;
 
-        //GUI 
+        //GUI
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_CanTransmit")]//Can Transmit
         public bool canTransmit = false;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_BuildinRelay")]//Build in Relay
@@ -150,19 +150,19 @@ namespace KIT.Beamedpower
         private BaseField wavelengthField;
         private BaseField wavelengthNameField;
 
-        public bool CanMove { get { return true; } }
+        public bool CanMove => true;
 
-        public float GetScalar { get { return 1; } }
+        public float GetScalar => 1;
 
-        public EventData<float, float> OnMoving { get { return onMoving; } }
+        public EventData<float, float> OnMoving => onMoving;
 
-        public EventData<float> OnStop { get { return onStop; } }
+        public EventData<float> OnStop => onStop;
 
-        public string ScalarModuleID { get { return scalarModuleID; } }
+        public string ScalarModuleID => scalarModuleID;
 
         public bool IsMoving()
         {
-            return anim != null ? anim.isPlaying : false;
+            return anim != null && anim.isPlaying;
         }
 
         public void SetUIRead(bool state)
@@ -224,7 +224,7 @@ namespace KIT.Beamedpower
             {
                 genericAnimation.Toggle();
             }
- 
+
             IsEnabled = false;
         }
 
@@ -331,7 +331,7 @@ namespace KIT.Beamedpower
             // store  aperture and diameter
             aperture = apertureDiameter;
             diameter = apertureDiameter;
-            
+
             part_receiver = part.FindModulesImplementing<BeamedPowerReceiver>().FirstOrDefault();
             genericAnimation = part.FindModulesImplementing<ModuleAnimateGeneric>().FirstOrDefault(m => m.animationName == animName);
 
@@ -377,7 +377,7 @@ namespace KIT.Beamedpower
 
         private void ConnectToBeamGenerator()
         {
-            // connect with bbeam gnerators 
+            // connect with bbeam gnerators
             beamGenerators = part.FindModulesImplementing<BeamGenerator>().Where(m => (m.beamType & compatibleBeamTypes) == m.beamType).ToList();
 
             if (beamGenerators.Count == 0 && part.parent != null)
@@ -406,7 +406,7 @@ namespace KIT.Beamedpower
 
             activeBeamGenerator = beamGenerators.FirstOrDefault();
 
-            if (activeBeamGenerator != null) 
+            if (activeBeamGenerator != null)
             {
                 activeBeamGenerator.Connect(this);
 
@@ -419,10 +419,10 @@ namespace KIT.Beamedpower
         {
             get
             {
-                if (anim == null) 
+                if (anim == null)
                     return true;
 
-                var pressure = part.atmDensity;      
+                var pressure = part.atmDensity;
                 var dynamic_pressure = 0.5 * pressure * 1.2041 * vessel.srf_velocity.sqrMagnitude / 101325.0;
 
                 if (dynamic_pressure <= 0) return true;
@@ -430,7 +430,7 @@ namespace KIT.Beamedpower
                 var pressureLoad = (dynamic_pressure / 1.4854428818159e-3) * 100;
                 if (pressureLoad > 100 * atmosphereToleranceModifier)
                     return false;
-                else 
+                else
                     return true;
             }
         }
@@ -548,7 +548,7 @@ namespace KIT.Beamedpower
 
         public void FixedUpdate()
         {
-          
+
         }
 
         private void CollectBiomeData()
@@ -593,26 +593,17 @@ namespace KIT.Beamedpower
             moistureModifier = 2 * moistureModifier * latitude_variance * cloud_variance;
         }
 
-        public double getPowerCapacity()
-        {
-            return power_capacity;
-        }
+        public double PowerCapacity =>  power_capacity;
 
-        public double Wavelength
-        {
-            get { return activeBeamGenerator != null ? activeBeamGenerator.wavelength : nativeWaveLength; }
-        }
+        public double Wavelength => activeBeamGenerator != null ? activeBeamGenerator.wavelength : nativeWaveLength;
 
-        public string WavelengthName
-        {
-            get { return activeBeamGenerator != null ? activeBeamGenerator.beamWaveName : ""; }
-        }
+        public string WavelengthName => activeBeamGenerator != null ? activeBeamGenerator.beamWaveName : "";
 
         public double CombinedAtmosphericAbsorption
         {
             get { return activeBeamGenerator != null
-                ? (atmosphericAbsorptionPercentage + waterAbsorptionPercentage) / 100d 
-                : nativeAtmosphericAbsorptionPercentage / 100d; } 
+                ? (atmosphericAbsorptionPercentage + waterAbsorptionPercentage) / 100d
+                : nativeAtmosphericAbsorptionPercentage / 100d; }
         }
 
         public double getNuclearPower()
@@ -647,15 +638,15 @@ namespace KIT.Beamedpower
 
             if (relayPersistance.IsActive)
                 return relayPersistance;
-            
+
             foreach (var relay in relays)
             {
                 var transmitData = relayPersistance.SupportedTransmitWavelengths.FirstOrDefault(m => m.wavelength == relay.wavelength);
                 if (transmitData == null)
                 {
                     // Add guid if missing
-                    relay.partId = string.IsNullOrEmpty(relay.partId) 
-                        ? Guid.NewGuid().ToString() 
+                    relay.partId = string.IsNullOrEmpty(relay.partId)
+                        ? Guid.NewGuid().ToString()
                         : relay.partId;
 
                     relayPersistance.SupportedTransmitWavelengths.Add(new WaveLengthData()
@@ -681,7 +672,7 @@ namespace KIT.Beamedpower
 
             relayPersistance.Aperture = relays.Average(m => m.aperture) * Approximate.Sqrt(relays.Count);
             relayPersistance.Diameter = relays.Average(m => m.diameter);
-            relayPersistance.PowerCapacity = relays.Sum(m => m.getPowerCapacity());
+            relayPersistance.PowerCapacity = relays.Sum(m => m.PowerCapacity);
             relayPersistance.MinimumRelayWavelenght = relays.Min(m => m.minimumRelayWavelenght);
             relayPersistance.MaximumRelayWavelenght = relays.Max(m => m.maximumRelayWavelenght);
 
@@ -735,7 +726,7 @@ namespace KIT.Beamedpower
             vesselTransmitters.Aperture = transmitters.Average(m => m.aperture) * transmitters.Count.Sqrt();
             vesselTransmitters.NuclearPower = transmitters.Sum(m => m.getNuclearPower());
             vesselTransmitters.SolarPower = transmitters.Sum(m => m.getSolarPower());
-            vesselTransmitters.PowerCapacity = transmitters.Sum(m => m.getPowerCapacity());
+            vesselTransmitters.PowerCapacity = transmitters.Sum(m => m.PowerCapacity);
 
             return vesselTransmitters;
         }
@@ -745,7 +736,7 @@ namespace KIT.Beamedpower
         /// </summary>
         /// <param name="vessel"></param>
         /// <returns></returns>
-        public static IVesselMicrowavePersistence getVesselMicrowavePersistanceForProtoVessel(Vessel vessel)
+        public static IVesselMicrowavePersistence GetVesselMicrowavePersistanceForProtoVessel(Vessel vessel)
         {
             var transmitter = new VesselMicrowavePersistence(vessel);
             int totalCount = 0;
@@ -755,23 +746,23 @@ namespace KIT.Beamedpower
             double totalSolarPower = 0.0;
             double totalPowerCapacity = 0.0;
 
-            foreach (var protopart in vessel.protoVessel.protoPartSnapshots)
+            foreach (var protoPart in vessel.protoVessel.protoPartSnapshots)
             {
-                foreach (var protomodule in protopart.modules)
+                foreach (var protoModule in protoPart.modules)
                 {
-                    if (protomodule.moduleName != "MicrowavePowerTransmitter" && protomodule.moduleName != "PhasedArrayTransmitter" && protomodule.moduleName != "BeamedPowerLaserTransmitter")
+                    if (protoModule.moduleName != "MicrowavePowerTransmitter" && protoModule.moduleName != "PhasedArrayTransmitter" && protoModule.moduleName != "BeamedPowerLaserTransmitter")
                         continue;
 
                     // filter on active transmitters
-                    bool transmitterIsEnabled = bool.Parse(protomodule.moduleValues.GetValue("IsEnabled"));
+                    bool transmitterIsEnabled = bool.Parse(protoModule.moduleValues.GetValue("IsEnabled"));
                     if (!transmitterIsEnabled)
                         continue;
 
-                    var aperture = double.Parse(protomodule.moduleValues.GetValue("aperture"));
-                    var nuclearPower = double.Parse(protomodule.moduleValues.GetValue("nuclear_power"));
-                    var solarPower = double.Parse(protomodule.moduleValues.GetValue("solar_power"));
-                    var powerCapacity = double.Parse(protomodule.moduleValues.GetValue("power_capacity"));
-                    var wavelength = double.Parse(protomodule.moduleValues.GetValue("wavelength"));
+                    var aperture = double.Parse(protoModule.moduleValues.GetValue("aperture"));
+                    var nuclearPower = double.Parse(protoModule.moduleValues.GetValue("nuclear_power"));
+                    var solarPower = double.Parse(protoModule.moduleValues.GetValue("solar_power"));
+                    var powerCapacity = double.Parse(protoModule.moduleValues.GetValue("power_capacity"));
+                    var wavelength = double.Parse(protoModule.moduleValues.GetValue("wavelength"));
 
                     totalCount++;
                     totalAperture += aperture;
@@ -782,8 +773,8 @@ namespace KIT.Beamedpower
                     var transmitData = transmitter.SupportedTransmitWavelengths.FirstOrDefault(m => m.wavelength == wavelength);
                     if (transmitData == null)
                     {
-                        bool isMirror = bool.Parse(protomodule.moduleValues.GetValue("isMirror"));
-                        string partId = protomodule.moduleValues.GetValue("partId");
+                        bool isMirror = bool.Parse(protoModule.moduleValues.GetValue("isMirror"));
+                        string partId = protoModule.moduleValues.GetValue("partId");
 
                         transmitter.SupportedTransmitWavelengths.Add(new WaveLengthData()
                         {
@@ -797,7 +788,7 @@ namespace KIT.Beamedpower
                             nuclearPower = nuclearPower,
                             solarPower = solarPower,
                             powerCapacity = powerCapacity,
-                            atmosphericAbsorption = double.Parse(protomodule.moduleValues.GetValue("atmosphericAbsorption"))
+                            atmosphericAbsorption = double.Parse(protoModule.moduleValues.GetValue("atmosphericAbsorption"))
                         });
                     }
                     else
@@ -820,7 +811,7 @@ namespace KIT.Beamedpower
             return transmitter;
         }
 
-        public static IVesselRelayPersistence getVesselRelayPersistanceForProtoVessel(Vessel vessel)
+        public static IVesselRelayPersistence GetVesselRelayPersistanceForProtoVessel(Vessel vessel)
         {
             var relayVessel = new VesselRelayPersistence(vessel);
             int totalCount = 0;
@@ -849,7 +840,7 @@ namespace KIT.Beamedpower
                     {
                         var wavelength = double.Parse(protomodule.moduleValues.GetValue("wavelength"));
                         var isMirror = bool.Parse(protomodule.moduleValues.GetValue("isMirror"));
-                        var aperture = double.Parse(protomodule.moduleValues.GetValue("aperture"));                        
+                        var aperture = double.Parse(protomodule.moduleValues.GetValue("aperture"));
                         var powerCapacity = double.Parse(protomodule.moduleValues.GetValue("power_capacity"));
 
                         var diameter = protomodule.moduleValues.HasValue("diameter") ? double.Parse(protomodule.moduleValues.GetValue("diameter")) : aperture;
@@ -880,7 +871,7 @@ namespace KIT.Beamedpower
                                 powerCapacity = powerCapacity,
                                 wavelength = wavelength,
                                 minWavelength = relayWavelenghtMin,
-                                maxWavelength = relayWavelenghtMax, 
+                                maxWavelength = relayWavelenghtMax,
                                 isMirror = isMirror,
                                 atmosphericAbsorption = double.Parse(protomodule.moduleValues.GetValue("atmosphericAbsorption"))
                             });
@@ -938,14 +929,14 @@ namespace KIT.Beamedpower
             CollectBiomeData();
 
             base.OnFixedUpdate();
-           
+
             if (activeBeamGenerator != null && IsEnabled && !relay)
             {
                 double powerTransmissionRatio = (double)(decimal)transmitPower / 100d;
                 double transmissionWasteRatio = (100 - activeBeamGenerator.efficiencyPercentage) / 100d;
                 double transmissionEfficiencyRatio = activeBeamGenerator.efficiencyPercentage / 100d;
 
-                var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
+                var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
                 var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
 
                 var effectiveResourceThrottling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
