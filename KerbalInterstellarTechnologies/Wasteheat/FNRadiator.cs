@@ -686,6 +686,8 @@ namespace KIT.Wasteheat
         [KSPField(isPersistant = true)] public bool showRetractButton = false;
         [KSPField(isPersistant = true)] public bool showControls = true;
         [KSPField(isPersistant = true)] public double currentRadTemp;
+        [KSPField(isPersistant = true)] public bool clarifyFunction;
+        
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_Cooling"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Radiator Cooling--Off--On
         public bool radiatorIsEnabled;
@@ -706,7 +708,7 @@ namespace KIT.Wasteheat
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_MaxCurrentTemp", guiFormat = "F0", guiUnits = "K")]//Max Current Temp
         public double maxCurrentRadiatorTemperature = maximumRadiatorTempAtOneAtmosphere;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_MaxRadiatorTemperature", guiFormat = "F0", guiUnits = "K")]//Max Radiator Temperature
-        public float maxRadiatorTemperature = _maximumRadiatorTempInSpace;
+        public double maxRadiatorTemperature = _maximumRadiatorTempInSpace;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_SpaceRadiatorBonus", guiFormat = "F0", guiUnits = "K")]//Space Radiator Bonus
         public double spaceRadiatorBonus;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_Mass", guiUnits = " t", guiFormat = "F3")]//Mass
@@ -727,6 +729,7 @@ namespace KIT.Wasteheat
         [KSPField] public string radiatorTypeMk5 = Localizer.Format("#LOC_KSPIE_Radiator_radiatorTypeMk5");//"Graphene Radiator Mk2"
         [KSPField] public string radiatorTypeMk6 = Localizer.Format("#LOC_KSPIE_Radiator_radiatorTypeMk6");//"Graphene Radiator Mk3"
 
+        
         [KSPField] public bool canRadiateHeat = true;
         [KSPField] public bool showColorHeat = true;
         [KSPField] public string surfaceAreaUpgradeTechReq = null;
@@ -777,7 +780,8 @@ namespace KIT.Wasteheat
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "Atmosphere Density", guiFormat = "F2", guiUnits = "")]
         public double atmDensity;
 
-        private double instantaneous_rad_temp;
+        private double _sphericalCowInAVacuum;
+        private double _instantaneousRadTemp;
         private int nrAvailableUpgradeTechs;
         private bool hasSurfaceAreaUpgradeTechReq;
         private double atmosphericMultiplier;
@@ -789,8 +793,7 @@ namespace KIT.Wasteheat
         private double oxidationModifier;
         private double temperatureDifference;
         private double submergedModifier;
-        [KSPField(isPersistant = true)] public bool clarifyFunction;
-        private double sphericalCowInAVaccum;
+
 
         static float _maximumRadiatorTempInSpace = 4500;
         static float maximumRadiatorTempAtOneAtmosphere = 1200;
@@ -846,7 +849,7 @@ namespace KIT.Wasteheat
 
         public ModuleActiveRadiator ModuleActiveRadiator => _moduleActiveRadiator;
 
-        public double MaxRadiatorTemperature => GetMaximumTemperatureForGen(CurrentGenerationType);
+        public double MaxRadiatorTemperature => maxRadiatorTemperature;
 
         public static void InitializeTemperatureColorChannels()
         {
@@ -1296,7 +1299,7 @@ namespace KIT.Wasteheat
 
                 // Because I have absolutely no idea what I'm doing, I'm taking some short cuts and major simplifications.
                 // This is the radius of a circular radiator, (operating in a vacuum)
-                sphericalCowInAVaccum = (radiatorArea / Mathf.PI).Sqrt();
+                _sphericalCowInAVacuum = (radiatorArea / Mathf.PI).Sqrt();
 
                 return hasSurfaceAreaUpgradeTechReq
                     ? radiatorArea * surfaceAreaUpgradeMult
@@ -1337,6 +1340,8 @@ namespace KIT.Wasteheat
                 CurrentGenerationType = GenerationType.Mk2;
             else
                 CurrentGenerationType = GenerationType.Mk1;
+
+            maxRadiatorTemperature = GetMaximumTemperatureForGen(CurrentGenerationType);
         }
 
         private string RadiatorType
@@ -1385,11 +1390,11 @@ namespace KIT.Wasteheat
                 return _maximumRadiatorTempInSpace;
         }
 
-        public static float GetAverageMaximumRadiatorTemperatureForVessel(Vessel vess)
+        public static double GetAverageMaximumRadiatorTemperatureForVessel(Vessel vess)
         {
             var radiatorVessel = GetRadiatorsForVessel(vess);
 
-            float averageTemp = 0;
+            double averageTemp = 0;
             float nRadiators = 0;
 
             foreach (FNRadiator radiator in radiatorVessel)
@@ -1400,7 +1405,7 @@ namespace KIT.Wasteheat
                 nRadiators += 1;
             }
 
-            return nRadiators > 0 ? averageTemp / nRadiators : 0.0f;
+            return nRadiators > 0 ? averageTemp / nRadiators : 0.0;
         }
 
         [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_DeployRadiator", active = true)]//Deploy Radiator
@@ -1578,7 +1583,6 @@ namespace KIT.Wasteheat
             _temperatureRange = _maximumRadiatorTempInSpace - drapperPoint;
 
             _kspShader = Shader.Find(kspShaderLocation);
-            maxRadiatorTemperature = (float)MaxRadiatorTemperature;
 
             part.heatConvectiveConstant = convectiveBonus;
             if (hasSurfaceAreaUpgradeTechReq)
@@ -1879,7 +1883,7 @@ namespace KIT.Wasteheat
             // rb.angularVelocity.magnitude in radians/second
             double tmp = 180 * Math.Abs(rb.angularVelocity.magnitude);
             // calculate the linear velocity
-            double tmpVelocity = tmp / (Mathf.PI * sphericalCowInAVaccum);
+            double tmpVelocity = tmp / (Mathf.PI * _sphericalCowInAVacuum);
             // and then distance traveled.
             double distanceTraveled = effectiveRadiatorArea * tmpVelocity;
 
@@ -2135,9 +2139,9 @@ namespace KIT.Wasteheat
                     if (double.IsNaN(_radiatedThermalPower))
                         Debug.LogError("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in radiatedThermalPower after call consumeWasteHeat (" + _thermalPowerDissipationPerSecond + ")");
 
-                    instantaneous_rad_temp = CalculateInstantaneousRadTemp();
+                    _instantaneousRadTemp = CalculateInstantaneousRadTemp();
 
-                    CurrentRadiatorTemperature = instantaneous_rad_temp;
+                    CurrentRadiatorTemperature = _instantaneousRadTemp;
 
                     if (_moduleDeployableRadiator)
                         _moduleDeployableRadiator.hasPivot = pivotEnabled;
@@ -2148,9 +2152,9 @@ namespace KIT.Wasteheat
 
                     _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
 
-                    instantaneous_rad_temp = CalculateInstantaneousRadTemp();
+                    _instantaneousRadTemp = CalculateInstantaneousRadTemp();
 
-                    CurrentRadiatorTemperature = instantaneous_rad_temp;
+                    CurrentRadiatorTemperature = _instantaneousRadTemp;
                 }
 
                 if (CanConvect())

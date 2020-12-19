@@ -18,6 +18,7 @@ namespace KIT
     {
         public static bool renderWindow;
 
+        private int _maxIterations = 10;
         private int _bestScenarioPercentage;
         private int _numberOfRadiators;
         private int _thermalWindowId = 825462;
@@ -118,6 +119,7 @@ namespace KIT
         private double generator_efficiency_at_4pcnt;
         private double generator_efficiency_at_2pcnt;
 
+        private double electricPowerAtCustom;
         private double electricPowerAt100;
         private double electricPowerAt90;
         private double electricPowerAt80;
@@ -136,7 +138,6 @@ namespace KIT
         private double electricPowerAt6;
         private double electricPowerAt4;
         private double electricPowerAt2;
-        private double electricPowerAtCustom;
 
         private double _totalSourcePower;
         private double _radMaxDissipation;
@@ -170,7 +171,7 @@ namespace KIT
 
             _dryMass = 0;
             _wetMass = 0;
-            _totalSourcePower = 0;
+
             customScenarioFraction = customScenarioPercentage * 0.01f;
 
             foreach (var part in EditorLogic.fetch.ship.parts)
@@ -187,6 +188,17 @@ namespace KIT
                 fusionEngines.AddRange(part.FindModulesImplementing<DaedalusEngineController>());
                 beamedTransmitter.AddRange(part.FindModulesImplementing<BeamedPowerTransmitter>());
             }
+
+            for (var iteration = 0; iteration < _maxIterations; iteration++)
+            {
+                CalculatePowerBalance(thermalSources, beamedReceivers, beamedTransmitter, thermalEngines, variableEngines, fusionEngines, generators, radiators);
+            }
+        }
+
+        private void CalculatePowerBalance(List<IPowerSource> thermalSources, List<BeamedPowerReceiver> beamedReceivers, List<BeamedPowerTransmitter> beamedTransmitter, List<ThermalEngineController> thermalEngines,
+            List<FusionECU2> variableEngines, List<DaedalusEngineController> fusionEngines, List<FNGenerator> generators, List<FNRadiator> radiators)
+        {
+            _totalSourcePower = 0;
 
             wasteheat_source_power_custom = 0;
             wasteheat_source_power_100pc = 0;
@@ -259,8 +271,7 @@ namespace KIT
                 var connectedChargedPowerGenerator = powerSource.ConnectedChargedParticleElectricGenerator;
 
                 // when connected to a thermal source, assume most thermal energy thermal power can end up in the radiators
-                if (connectedThermalPowerGenerator != null)
-                    combinedMaxStableMegaWattPower += (1 - powerSource.ChargedPowerRatio) * connectedThermalPowerGenerator.MaxStableMegaWattPower;
+                if (connectedThermalPowerGenerator != null) combinedMaxStableMegaWattPower += (1 - powerSource.ChargedPowerRatio) * connectedThermalPowerGenerator.MaxStableMegaWattPower;
 
                 if (connectedChargedPowerGenerator != null)
                 {
@@ -270,8 +281,7 @@ namespace KIT
 
                     // only non directly converted power end up in the radiators
                     var chargedPowerGenerator = connectedChargedPowerGenerator as FNGenerator;
-                    if (chargedPowerGenerator != null)
-                        combinedMaxStableMegaWattPower += powerSource.ChargedPowerRatio * connectedChargedPowerGenerator.MaxStableMegaWattPower * (1 - chargedPowerGenerator.maxEfficiency);
+                    if (chargedPowerGenerator != null) combinedMaxStableMegaWattPower += powerSource.ChargedPowerRatio * connectedChargedPowerGenerator.MaxStableMegaWattPower * (1 - chargedPowerGenerator.maxEfficiency);
                 }
 
                 // only take reactor power in account when its actually connected to a power generator
@@ -442,7 +452,8 @@ namespace KIT
 
             foreach (ThermalEngineController thermalNozzle in thermalEngines)
             {
-                var maxWasteheatProduction = engineThrottleRatio * thermalNozzle.ReactorWasteheatModifier * thermalNozzle.AttachedReactor.NormalisedMaximumPower;
+                var maxWasteheatProduction = engineThrottleRatio * thermalNozzle.ReactorWasteheatModifier *
+                                             thermalNozzle.AttachedReactor.NormalisedMaximumPower;
 
                 wasteheat_source_power_100pc += maxWasteheatProduction;
                 wasteheat_source_power_90pc += maxWasteheatProduction * 0.90;
@@ -524,14 +535,14 @@ namespace KIT
 
             foreach (FNRadiator radiator in radiators)
             {
-                _totalArea += radiator.BaseRadiatorArea;
-                var maxRadTemperature = radiator.MaxRadiatorTemperature;
-                maxRadTemperature = Math.Min(maxRadTemperature, source_temp_at_100pc);
                 _numberOfRadiators++;
+                _totalArea += radiator.BaseRadiatorArea;
+                var maxRadTemperature = Math.Min(radiator.MaxRadiatorTemperature, source_temp_at_100pc);
                 var tempToPowerFour = maxRadTemperature * maxRadTemperature * maxRadTemperature * maxRadTemperature;
                 _radMaxDissipation += GameConstants.stefan_const * radiator.EffectiveRadiatorArea * tempToPowerFour / 1e6;
                 _averageRadTemp += maxRadTemperature;
             }
+
             _averageRadTemp = _numberOfRadiators != 0 ? _averageRadTemp / _numberOfRadiators : double.NaN;
 
             var radRatioCustom = wasteheat_source_power_custom / _radMaxDissipation;
@@ -579,7 +590,8 @@ namespace KIT
             if (thermalGenerators.Count > 0)
             {
                 var maximumGeneratedPower = thermalGenerators.Sum(m => m.maximumGeneratorPowerMJ);
-                var averageMaxEfficiency = thermalGenerators.Sum(m => m.maxEfficiency * m.maximumGeneratorPowerMJ) / maximumGeneratedPower;
+                var averageMaxEfficiency = thermalGenerators.Sum(m => m.maxEfficiency * m.maximumGeneratorPowerMJ) /
+                                           maximumGeneratedPower;
 
                 _hasThermalGenerators = true;
 
