@@ -102,7 +102,7 @@ namespace KIT.Propulsion
         [KSPField] public double requestedElectricPowerMegajoules;
         [KSPField] public double requiredElectricalPowerFromMhd;
         [KSPField] public double requiredMhdEnergyRatio;
-        [KSPField] public double mhdTrustIspModifier;
+
         [KSPField] public double exhaustModifier;
         [KSPField] public double maxEngineFuelFlow;
         [KSPField] public double fuelEffectRatio;
@@ -378,6 +378,7 @@ namespace KIT.Propulsion
         private string _runningEffectNameParticleFX;
         private string _fuelTechRequirement;
 
+        private double _mhdTrustIspModifier = 1;
         private double _heatDecompositionFraction;
 
         private float _fuelCoolingFactor = 1;
@@ -1612,7 +1613,7 @@ namespace KIT.Propulsion
             else
                 requiredMhdEnergyRatio = 0;
 
-            mhdTrustIspModifier = 1 - requiredMhdEnergyRatio;
+            _mhdTrustIspModifier = 1 - requiredMhdEnergyRatio;
 
             GetMaximumIspAndThrustMultiplier(resMan);
             UpdateSootAccumulation();
@@ -1649,7 +1650,7 @@ namespace KIT.Propulsion
 
                 powerHeatModifier = receivedMegajoulesRatio * GetPowerThrustModifier() * GetHeatThrustModifier();
 
-                engineMaxThrust = powerHeatModifier * mhdTrustIspModifier * reactor_power_received / _maxISP / GameConstants.STANDARD_GRAVITY;
+                engineMaxThrust = powerHeatModifier * _mhdTrustIspModifier * reactor_power_received / _maxISP / GameConstants.STANDARD_GRAVITY;
 
                 thrustPerMegaJoule = powerHeatModifier * maximumPowerUsageForPropulsionRatio / _maxISP / GameConstants.STANDARD_GRAVITY * ispRatio;
 
@@ -1971,7 +1972,7 @@ namespace KIT.Propulsion
 
             ispFlowMultiplier = _ispPropellantMultiplier * fuelFlowDivider;
 
-            _maxISP *= ispFlowMultiplier * mhdTrustIspModifier;
+            _maxISP *= ispFlowMultiplier * _mhdTrustIspModifier;
 
             exhaustModifier = Math.Pow(Math.Min(1, (effectiveFuelflowThrottle / _ispPropellantMultiplier) / fuelflowThrottleMaxValue), 0.5);
         }
