@@ -26,10 +26,13 @@ namespace KIT.ResourceScheduler
                 GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
                 GameEvents.onVesselPartCountChanged.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
                 GameEvents.onVesselLoaded.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
+                GameEvents.onPartDeCouple.Add(new EventData<Part>.OnEvent(refreshActiveParts));
                 GameEvents.onPartDestroyed.Add(new EventData<Part>.OnEvent(refreshActiveParts));
                 GameEvents.onPartPriorityChanged.Add(new EventData<Part>.OnEvent(refreshActiveParts));
                 GameEvents.onPartDie.Add(new EventData<Part>.OnEvent(refreshActiveParts));
+                GameEvents.onPartWillDie.Add(new EventData<Part>.OnEvent(refreshActiveParts));
                 GameEvents.onPartDeCouple.Add(new EventData<Part>.OnEvent(refreshActiveParts));
+                GameEvents.onPartFailure.Add(new EventData<Part>.OnEvent(refreshActiveParts));
                 // GameEvents.
                 initialized = true;
             }

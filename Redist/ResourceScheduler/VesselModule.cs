@@ -75,12 +75,6 @@ namespace KIT.ResourceScheduler
             lastExecuted = currentTime;
 
             GatherResources(ref resourceAmounts, ref resourceMaxAmounts);
-            VesselWideResourceBuffering(resourceAmounts[ResourceName.ElectricCharge]);
-
-            // handle vessel wide EC buffering, discount the buffer used internally so we don't
-            // generate EC that will be voided later on. Will be 0 if none present.
-            if (resourceMaxAmounts.ContainsKey(ResourceName.ElectricCharge))
-                resourceMaxAmounts[ResourceName.ElectricCharge] -= extraECPresent;
 
             if (catchUpNeeded)
             {
@@ -318,102 +312,10 @@ namespace KIT.ResourceScheduler
 
         #region Vessel Wide Resource Buffering
 
-        public double extraECPresent = 0;
 
-        private PartResource electricChargeBufferPartResource;
-        private bool inHighWarp;
-        double originalMaxAmount;
-        public const double timeWarpCutoff = 50;
-        public const double initialECBufferSize = 50000;
-
-
-        public int warpECCountdown;
-        public double instrumentECChangeStart;
-        public double electricChargeAmountAtStart;
-
-        public double chargeRatio;
-        public double previousTimewarp;
-
-        private void VesselWideResourceBuffering(double currentEC)
+        private void VesselWideResourceBuffering(double fixedDeltaTime)
         {
-            // warp -> non warp transition
-            if (inHighWarp && Time.fixedDeltaTime < timeWarpCutoff)
-            {
-                Debug.Log($"[VesselResourceManager.VesselWideResourceBuffering] transitioning from high warp -> low warp");
-
-                inHighWarp = false;
-                if (electricChargeBufferPartResource != null)
-                {
-                    electricChargeBufferPartResource.maxAmount = originalMaxAmount;
-                    electricChargeBufferPartResource = null;
-                }
-                instrumentECChangeStart = 0;
-                extraECPresent = 0;
-
-                return;
-            }
-
-            // non-warp -> warp transition
-            if (!inHighWarp && Time.fixedDeltaTime >= timeWarpCutoff)
-            {
-                Debug.Log($"[VesselResourceManager.VesselWideResourceBuffering] transitioning from low warp -> high warp");
-                warpECCountdown = 4;
-                inHighWarp = true;
-                // Find a part to increase for buffer.
-                foreach (var part in vessel.parts)
-                {
-                    electricChargeBufferPartResource = part.Resources.Get("ElectricCharge");
-                    if (electricChargeBufferPartResource != null) break;
-                }
-                if (electricChargeBufferPartResource == null)
-                {
-                    Debug.Log($"[VesselResourceManager.VesselWideResourceBuffering] low warp -> high warp transition - can't find part to buffer in");
-                    return;
-                }
-
-                originalMaxAmount = electricChargeBufferPartResource.maxAmount;
-                electricChargeBufferPartResource.maxAmount += initialECBufferSize;
-                extraECPresent = initialECBufferSize;
-
-                instrumentECChangeStart = Planetarium.GetUniversalTime();
-                electricChargeAmountAtStart = currentEC;
-                previousTimewarp = 0;
-                return;
-            }
-
-            // warp -> warp transition, after some FixedUpdate cycles
-            if (inHighWarp && Time.fixedDeltaTime >= timeWarpCutoff && --warpECCountdown > 0)
-            {
-                Debug.Log($"[VesselResourceManager.VesselWideResourceBuffering] transitioning from low warp -> high warp");
-                var deltaTime = Planetarium.GetUniversalTime() - instrumentECChangeStart;
-                var deltaEC = currentEC - electricChargeAmountAtStart;
-
-                // warp -> warp transition, negative EC.
-                if (currentEC < electricChargeAmountAtStart)
-                {
-                    Debug.Log($"[VesselResourceManager.VesselWideResourceBuffering] EC will deplete, regardless of buffering");
-                    // EC will deplete. XXX: How do we stop time warp for them / alert them.
-                    electricChargeBufferPartResource.maxAmount = originalMaxAmount;
-                    return;
-                }
-
-                // warp -> warp transition, positive / equal EC
-                chargeRatio = Math.Max(20, deltaEC) / deltaTime;
-                previousTimewarp = 0;
-                // deliberate fall through
-            }
-
-            // warp -> warp transition, after counting down several ticks.
-            if (inHighWarp && warpECCountdown == 0 && previousTimewarp != Time.fixedDeltaTime)
-            {
-                Debug.Log($"[VesselResourceManager.VesselWideResourceBuffering] recalculating buffer size");
-                previousTimewarp = Time.fixedDeltaTime;
-                extraECPresent = (initialECBufferSize * chargeRatio) * Time.fixedDeltaTime;
-                electricChargeBufferPartResource.maxAmount = originalMaxAmount + extraECPresent;
-                return;
-            }
-
-            // nothing worth writing home about.
+            // Removed for now.
         }
         #endregion
 

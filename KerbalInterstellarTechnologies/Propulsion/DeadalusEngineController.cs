@@ -167,7 +167,7 @@ namespace KIT.Propulsion
 
         [KSPField] public float throttle;
         [KSPField] public float maxAtmosphereDensity = 0;
-        [KSPField] public float leathalDistance = 2000;
+        [KSPField] public float lethalDistance = 2000;
         [KSPField] public float killDivider = 50;
         [KSPField] public float wasteHeatMultiplier = 1;
         [KSPField] public float powerRequirementMultiplier = 1;
@@ -617,7 +617,7 @@ namespace KIT.Propulsion
             foreach (var currentVessel in FlightGlobals.Vessels)
             {
                 var distance = Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
-                if (distance < leathalDistance && currentVessel != this.vessel)
+                if (distance < lethalDistance && currentVessel != this.vessel)
                     kerbalHazardCount += currentVessel.GetCrewCount();
             }
 
@@ -824,7 +824,7 @@ namespace KIT.Propulsion
             {
                 var distance = Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
 
-                if (distance >= leathalDistance || currentVessel == vessel || currentVessel.GetCrewCount() <= 0) continue;
+                if (distance >= lethalDistance || currentVessel == vessel || currentVessel.GetCrewCount() <= 0) continue;
 
                 var invSqDist = distance / killDivider;
                 var invSqMult = 1 / invSqDist / invSqDist;
@@ -929,10 +929,7 @@ namespace KIT.Propulsion
             return sb.ToStringAndRelease();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority()
-        {
-            throw new NotImplementedException();
-        }
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -1070,9 +1067,6 @@ namespace KIT.Propulsion
             UpdateKerbalismEmitter();
         }
 
-        public string KITPartName()
-        {
-            throw new NotImplementedException();
-        }
+        public string KITPartName() => part.partInfo.title;
     }
 }

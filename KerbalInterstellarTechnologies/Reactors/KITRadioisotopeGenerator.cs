@@ -17,13 +17,18 @@ namespace KIT.Reactors
 
         [KSPField(isPersistant = true)] public double peltierEfficency;
         [KSPField(isPersistant = true)] public double wattsPerGram;
-        [KSPField(isPersistant = true, guiName = "Mass Remaining", guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massInKilograms = 1;
+        [KSPField(isPersistant = true)] public double massInKilograms = 1;
         [KSPField(isPersistant = true)] public double halfLifeInSeconds;
-        [KSPField(isPersistant = true, guiName = "Radioactive Isotope", guiActive = true, guiActiveEditor = true)] public string radioisotopeFuel;
+        [KSPField(isPersistant = true)] public double halfLifeInKerbinSeconds;
+
+        // how long has this part existed for?
+        [KSPField(isPersistant = true)] public double partLifeTimeInSeconds;
+
+        [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_MassRemaining", groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massRemaining;
+        [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_RadioactiveIsotope", groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiActive = true, guiActiveEditor = true)] public string radioisotopeFuel;
 
         [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW", guiFormat = "F4")] public double currentPowerOutput;
-
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "Waste Heat Output", guiUnits = " KW", guiFormat = "F2")] public double wasteHeatOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_WasteHeatOutput", guiUnits = " KW", guiFormat = "F4")] public double wasteHeatOutput;
 
 
         /*
@@ -60,8 +65,8 @@ namespace KIT.Reactors
 
         private void PowerGeneratedPerSecond(out double electricalCurrentInKW, out double wasteHeatInKW)
         {
-            // convert tonnes to grams
-            var heatInWatts = (massInKilograms * 1000) * wattsPerGram;
+            // convert kg to grams, then calculate the heat generated
+            var heatInWatts = (massRemaining * 1000) * wattsPerGram;
             var powerInWatts = heatInWatts * peltierEfficency;
 
             var heatGeneratedInKW = heatInWatts / (1e+3);
@@ -71,11 +76,27 @@ namespace KIT.Reactors
 
         private void DecayFuel(IResourceManager resMan)
         {
-            double perSecondDecayConstant = 1 / halfLifeInSeconds;
-            double originalMassInKilograms = massInKilograms;
-            massInKilograms = originalMassInKilograms * Math.Exp(-perSecondDecayConstant * resMan.FixedDeltaTime());
+            double halfLife = GameSettings.KERBIN_TIME ? halfLifeInKerbinSeconds : halfLifeInSeconds;
+
+            double perSecondDecayConstant = 1 / halfLife;
+            double originalMassRemaining = massRemaining;
             
+            massRemaining = massInKilograms * Math.Pow(2, (-partLifeTimeInSeconds) / halfLife);
+
+            var productsToGenerateInKG = originalMassRemaining - massRemaining;
+
+            partLifeTimeInSeconds += resMan.FixedDeltaTime();
             // decay products being generated.
+        }
+
+        public override void OnStart(StartState state)
+        {
+            if (partLifeTimeInSeconds == 0)
+            {
+                massRemaining = massInKilograms;
+                halfLifeInKerbinSeconds = (halfLifeInSeconds / 60 / 60 / 24 / 365) * 426 * 6 * 60 * 60;
+            }
+
         }
 
         public void Update()

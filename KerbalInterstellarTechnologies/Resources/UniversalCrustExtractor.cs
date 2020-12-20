@@ -257,7 +257,14 @@ namespace KIT.Resources
 
                 Events["ToggleWindow"].active = true;
 
-                UpdateResourceAbundances();
+                if (terrainType == TerrainType.Planetary)
+                {
+                    UpdateResourceAbundances();
+                }
+                else
+                {
+                    UpdateAsteroidCometResources();
+                }
             }
             else
             {
@@ -279,6 +286,23 @@ namespace KIT.Resources
             //    PlayAnimation(loopingAnimation, false, false, true); //plays independently of other anims
 
             base.OnUpdate();
+        }
+
+        private void UpdateAsteroidCometResources()
+        {
+            if (drillTarget == null)
+            {
+                // Debug.Log($"[Universal Drill] no resources because of no drillTarget");
+                return;
+            }
+
+            // throw new NotImplementedException();
+            if (rateLimit++ % 250 == 0)
+            {
+                var resources = drillTarget.vessel.FindPartModulesImplementing<ModuleSpaceObjectResource>();
+
+                Debug.Log($"[Universal Crust Extractor] there's {resources.Count} resources present on {drillTarget.vessel.GetDisplayName()}");
+            }
         }
 
         private void UpdateResourceAbundances()
@@ -346,10 +370,21 @@ namespace KIT.Resources
             if (!IsTerrainReachable())
                 return " " + Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg3");//trouble reaching the terrain.
 
-            if (terrainType == TerrainType.Planetary)
-                if (vessel.checkLanded() == false || vessel.checkSplashed())
-                    return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");//"Vessel is not landed properly."
-
+            switch (terrainType)
+            {
+                case TerrainType.Planetary:
+                    if (vessel.checkLanded() == false || vessel.checkSplashed())
+                        return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");//"Vessel is not landed properly."
+                    break;
+                case TerrainType.Asteroid:
+                case TerrainType.Comet:
+                    var attached = vessel.parts.Find(x => x == drillTarget.part);
+                    if(attached == null)
+                    {
+                        return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");
+                    }
+                    break;
+            }
             // cleared all the prerequisites
             return string.Empty;
         }
@@ -396,6 +431,8 @@ namespace KIT.Resources
 
         private TerrainType terrainType;
 
+        private PartModule drillTarget;
+
         /// <summary>
         /// Helper function to calculate (and raycast) if the drill could potentially hit the terrain.
         /// </summary>
@@ -405,6 +442,9 @@ namespace KIT.Resources
             terrainType = TerrainType.None;
             RaycastHit hit = WhatsUnderneath();
 
+            drillTarget = null;
+            asteroidCometResources = null;
+
             if (hit.collider == null) return false;
 
             if (hit.collider.gameObject.GetComponentUpwards<LocalSpace>())
@@ -413,17 +453,17 @@ namespace KIT.Resources
                 harvestType = $"LocalSpace (planet / moon) - {vessel.checkLanded()}";
             }
 
-            var mod = hit.collider.gameObject.GetComponentUpwards<PartModule>();
+            drillTarget = hit.collider.gameObject.GetComponentUpwards<PartModule>();
 
-            if (mod == null) return false;
-                
-            if(mod.name == "ModuleComet")
+            if (drillTarget == null) return false;
+
+            if (drillTarget.ClassName == "ModuleComet")
             {
                 terrainType = TerrainType.Comet;
                 harvestType = $"Comet harvesting - {vessel.SituationString}";
             }
 
-            if (mod.name == "ModuleAsteroid")
+            if (drillTarget.ClassName == "ModuleAsteroid")
             {
                 terrainType = TerrainType.Asteroid;
                 harvestType = $"Asteroid harvesting - {vessel.SituationString}";
@@ -431,9 +471,12 @@ namespace KIT.Resources
 
             if (terrainType == TerrainType.None)
             {
+                drillTarget = null;
+
                 if (rateLimit++ % 250 == 0)
                 {
                     Debug.Log($"[Universal Drill] Hit /something/ but I have no idea what. Please let a developer know about this, what planet pack you're using, so on and so fourth. Thanks.");
+                    Debug.Log($"[Universal Drill] drillTarget.className is {drillTarget.ClassName}, name is {drillTarget.name}");
                     return false;
                 }
             }
@@ -590,10 +633,10 @@ namespace KIT.Resources
             resID = KITResourceSettings.NameToResource(resourceName);
             if (resID == ResourceName.Unknown)
             {
-                return part.RequestResource(resourceName, -amount, ResourceFlowMode.ALL_VESSEL);
+                return part.RequestResource(resourceName, -amount * resMan.FixedDeltaTime(), ResourceFlowMode.ALL_VESSEL);
             }
 
-            resMan.ProduceResource(resID, amount * resMan.FixedDeltaTime());
+            resMan.ProduceResource(resID, amount);
             return amount;
         }
 
@@ -646,10 +689,63 @@ namespace KIT.Resources
                     return;
             }
         }
-        
+
+        int mineRateLimit;
+
+        // TODO - densities of the items harvested and so on probably should be accounted for?
         private void MineAsteroidComet(IResourceManager resMan, double percentPower)
         {
-            // TODO :)
+            // TODO - can we add a bonus multiplier here? Perhaps based on asteroid mass?
+            double bonusMultiplier = 0.05; // 0.0005
+            double minedAmount = bonusMultiplier * drillSize * effectiveness * percentPower;
+
+            if(drillTarget == null)
+            {
+                Debug.Log($"[Universal Drill] Odd, no drillTarget");
+                return;
+            }
+
+            var spaceObjectInfo = drillTarget.part.FindModuleImplementing<ModuleSpaceObjectInfo>();
+            if (spaceObjectInfo == null)
+            {
+                Debug.Log($"[Universal Drill] no ModuleSpaceObjectInfo available. Free resources!");
+                return;
+            }
+
+            minedAmount = Math.Min(minedAmount, (spaceObjectInfo.currentMassVal - spaceObjectInfo.massThresholdVal));
+            if(minedAmount < 1e-6)
+            {
+                spaceObjectInfo.currentMassVal = 0;
+                return;
+            }
+
+            GetAsteroidCometResourceData();
+            foreach (var resource in asteroidCometResources)
+            {
+                var def = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
+                if (def == null) continue;
+
+                var amount = (minedAmount * resource.abundance) / def.density;
+
+                if (amount == 0) continue;
+
+                if(mineRateLimit % 250 == 0)
+                    Debug.Log($"[Universal Drill] generating {amount} units/sec of {resource.resourceName}");
+
+                var resID = KITResourceSettings.NameToResource(resource.resourceName);
+                if(resID == ResourceName.Unknown)
+                {
+                    part.RequestResource(resource.resourceName.GetHashCode(), -(amount * resMan.FixedDeltaTime()));
+                }
+                else
+                {
+                    resMan.ProduceResource(resID, amount);
+                }
+            }
+
+            mineRateLimit++;
+
+            spaceObjectInfo.currentMassVal = Math.Max(spaceObjectInfo.massThresholdVal, spaceObjectInfo.currentMassVal - (minedAmount * resMan.FixedDeltaTime()));
         }
 
         private void MinePlanetaryBody(IResourceManager resMan, double percentPower)
@@ -689,6 +785,14 @@ namespace KIT.Resources
             }
         }
 
+        private List<ModuleSpaceObjectResource> asteroidCometResources;
+
+        private void GetAsteroidCometResourceData()
+        {
+            if (drillTarget == null) return;
+
+            asteroidCometResources = drillTarget.part.FindModulesImplementing<ModuleSpaceObjectResource>();
+        }
 
         private void DrawGui(int window)
         {
@@ -731,53 +835,69 @@ namespace KIT.Resources
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MaxCapacity"), _bold_label, GUILayout.Width(valueWidth));//"Max Capacity"
             GUILayout.EndHorizontal();
 
-            GetResourceData();
-
-            if (localResources != null)
+            if (terrainType == TerrainType.Planetary)
             {
-                foreach (CrustalResource resource in localResources)
+                GetResourceData();
+                if (localResources != null)
                 {
-                    CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
-                    if (abundance == null)
-                        continue;
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(resource.DisplayName, _normal_label, GUILayout.Width(valueWidth));
-                    GUILayout.Label(abundance.Local.ToString("##.######") + "%", _normal_label, GUILayout.Width(valueWidth));
-
-                    if (resource.Definition != null)
+                    foreach (CrustalResource resource in localResources)
                     {
-                        if (resource.MaxAmount > 0)
-                        {
-                            var spareRoomMass = resource.SpareRoom * resource.Definition.density;
+                        CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
+                        if (abundance == null)
+                            continue;
 
-                            if (Math.Round(spareRoomMass, 6) > 0.000001)
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(resource.DisplayName, _normal_label, GUILayout.Width(valueWidth));
+                        GUILayout.Label(abundance.Local.ToString("##.######") + "%", _normal_label, GUILayout.Width(valueWidth));
+
+                        if (resource.Definition != null)
+                        {
+                            if (resource.MaxAmount > 0)
                             {
-                                GUILayout.Label(resource.Production.ToString("##.######") + " U/s", _normal_label, GUILayout.Width(valueWidth));
-                                GUILayout.Label((resource.Production * resource.Definition.density * 3600).ToString("##.######") + " t/h", _normal_label, GUILayout.Width(valueWidth));
-                                GUILayout.Label(spareRoomMass.ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
+                                var spareRoomMass = resource.SpareRoom * resource.Definition.density;
+
+                                if (Math.Round(spareRoomMass, 6) > 0.000001)
+                                {
+                                    GUILayout.Label(resource.Production.ToString("##.######") + " U/s", _normal_label, GUILayout.Width(valueWidth));
+                                    GUILayout.Label((resource.Production * resource.Definition.density * 3600).ToString("##.######") + " t/h", _normal_label, GUILayout.Width(valueWidth));
+                                    GUILayout.Label(spareRoomMass.ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
+                                }
+                                else
+                                {
+                                    GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
+                                    GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
+                                    GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_full"), _normal_label, GUILayout.Width(valueWidth));//"full"
+                                }
+
+                                GUILayout.Label((resource.Amount * resource.Definition.density).ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
+                                GUILayout.Label((resource.MaxAmount * resource.Definition.density).ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
                             }
                             else
                             {
                                 GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
                                 GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                                GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_full"), _normal_label, GUILayout.Width(valueWidth));//"full"
+                                GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_missing"), _normal_label, GUILayout.Width(valueWidth));//"missing"
                             }
+                        }
 
-                            GUILayout.Label((resource.Amount * resource.Definition.density).ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
-                            GUILayout.Label((resource.MaxAmount * resource.Definition.density).ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
-                        }
-                        else
-                        {
-                            GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                            GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_missing"), _normal_label, GUILayout.Width(valueWidth));//"missing"
-                        }
+                        GUILayout.EndHorizontal();
                     }
-
-                    GUILayout.EndHorizontal();
                 }
             }
+            else
+            {
+                GetAsteroidCometResourceData();
+
+                foreach (var spaceObjectResource in asteroidCometResources.OrderByDescending(sor => sor.abundance))
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(spaceObjectResource.resourceName, _normal_label, GUILayout.Width(valueWidth));
+                    GUILayout.Label((spaceObjectResource.abundance * 100).ToString("##.######") + "%", _normal_label, GUILayout.Width(valueWidth));
+                    GUILayout.EndHorizontal();
+                }
+
+            }
+
             GUILayout.EndVertical();
             GUI.DragWindow();
         }
