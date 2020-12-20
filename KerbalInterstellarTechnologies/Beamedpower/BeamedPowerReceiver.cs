@@ -1291,7 +1291,7 @@ namespace KIT
             _solarFacingFactorField.guiActive = solarReceptionSurfaceArea > 0;
             _solarFluxField.guiActive = solarReceptionSurfaceArea > 0;
 
-            _selectedBandwidthConfigurationField.guiActive = (CheatOptions.NonStrictAttachmentOrientation || canSwitchBandwidthInFlight) && receiverIsEnabled; ;
+            _selectedBandwidthConfigurationField.guiActive = (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().reconfigureAntennas || canSwitchBandwidthInFlight) && receiverIsEnabled; ;
 
             if (IsThermalSource)
                 coreTempererature = CoreTemperature.ToString("0.0") + " K";

@@ -76,6 +76,8 @@ namespace KIT.Reactors
 
         private void DecayFuel(IResourceManager resMan)
         {
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().preventRadioactiveDecay) return;
+
             double halfLife = GameSettings.KERBIN_TIME ? halfLifeInKerbinSeconds : halfLifeInSeconds;
 
             double perSecondDecayConstant = 1 / halfLife;

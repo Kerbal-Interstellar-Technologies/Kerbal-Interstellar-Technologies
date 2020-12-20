@@ -393,8 +393,7 @@ namespace KIT.Propulsion
 
         private bool AllowedExhaust()
         {
-            if (CheatOptions.IgnoreAgencyMindsetOnContracts)
-                return true;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines) return true;
 
             var homeworld = FlightGlobals.GetHomeBody();
             var toHomeworld = vessel.CoMD - homeworld.position;

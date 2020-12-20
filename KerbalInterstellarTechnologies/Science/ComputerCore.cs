@@ -183,7 +183,7 @@ namespace KIT
             _scienceRateField.guiActive = isUpgradedOrNoActiveScience;
             _isPoweredField.guiActive = isUpgradedOrNoActiveScience;
 
-            var science = _scienceRateF * GameConstants.KEBRIN_DAY_SECONDS * PluginHelper.GetScienceMultiplier(vessel);
+            var science = _scienceRateF * GameConstants.KERBIN_DAY_SECONDS * PluginHelper.GetScienceMultiplier(vessel);
             scienceRate = science.ToString("0.000") + "/ Day";
 
             if (ResearchAndDevelopment.Instance != null)
@@ -362,7 +362,7 @@ namespace KIT
 
             var scienceMultiplier = PluginHelper.GetScienceMultiplier(vessel);
 
-            _scienceRateF = baseScienceRate * scienceMultiplier / GameConstants.KEBRIN_DAY_SECONDS * powerReturned / _effectivePowerRequirement / Math.Sqrt(altitudeMultiplier);
+            _scienceRateF = baseScienceRate * scienceMultiplier / GameConstants.KERBIN_DAY_SECONDS * powerReturned / _effectivePowerRequirement / Math.Sqrt(altitudeMultiplier);
 
             if (ResearchAndDevelopment.Instance != null && !double.IsInfinity(_scienceRateF) && !double.IsNaN(_scienceRateF))
                 science_to_add += _scienceRateF * TimeWarp.fixedDeltaTime;

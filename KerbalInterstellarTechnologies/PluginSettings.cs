@@ -11,10 +11,10 @@ namespace KIT
         public static PluginSettings Config => _config ?? (_config = new PluginSettings(PluginHelper.PluginSettingsConfig));
 
         // integers
-        public int HoursInDay { get; private set; } = GameConstants.KEBRIN_HOURS_DAY;
+        public int HoursInDay { get; private set; } = GameConstants.KERBIN_HOURS_DAY;
         public int MicrowaveApertureDiameterMult { get; private set; } = 10;
         public int SpeedOfLight { get; private set; } = 299792458;
-        public int SecondsInDay { get; private set; } = GameConstants.KEBRIN_DAY_SECONDS;
+        public int SecondsInDay { get; private set; } = GameConstants.KERBIN_DAY_SECONDS;
         public int SecondsInHour => GameConstants.SECONDS_IN_HOUR;
 
 

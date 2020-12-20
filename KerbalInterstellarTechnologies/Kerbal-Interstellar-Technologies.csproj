@@ -85,6 +85,7 @@
     <Compile Include="Beamedpower\BeamedPowerTransmitterTag.cs" />
     <Compile Include="Beamedpower\InterstellarBeamedPowerHelper.cs" />
     <Compile Include="GameEventSubscriber.cs" />
+    <Compile Include="KITDifficultyConfig.cs" />
     <Compile Include="PluginSettings.cs" />
     <Compile Include="Reactors\KITRadioisotopeGenerator.cs" />
     <Compile Include="Resources\RegolithCollector.cs" />

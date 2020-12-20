@@ -83,6 +83,7 @@ namespace KIT.ResourceScheduler
             }
 
             resourceScheduler.ExecuteKITModules(TimeWarp.fixedDeltaTime, ref resourceAmounts, ref resourceMaxAmounts);
+            
             DisperseResources(ref resourceAmounts, ref resourceMaxAmounts);
         }
 

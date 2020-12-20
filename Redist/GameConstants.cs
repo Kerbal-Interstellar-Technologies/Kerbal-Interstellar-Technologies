@@ -55,9 +55,9 @@
         public const double AirflowHeatMultiplier = 1;
         public const double ecPerMJ = 1000.0;
 
-        public const int KEBRIN_HOURS_DAY = 8;
+        public const int KERBIN_HOURS_DAY = 6;
         public const int SECONDS_IN_HOUR = 3600;
-        public const int KEBRIN_DAY_SECONDS = SECONDS_IN_HOUR * KEBRIN_HOURS_DAY;
+        public const int KERBIN_DAY_SECONDS = SECONDS_IN_HOUR * KERBIN_HOURS_DAY;
 
         public const int defaultSupportedPropellantAtoms = 511; // any atom type
         public const int defaultSupportedPropellantTypes = 127; // any molecular type

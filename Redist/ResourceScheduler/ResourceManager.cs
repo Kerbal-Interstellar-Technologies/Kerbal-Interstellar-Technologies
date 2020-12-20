@@ -47,7 +47,6 @@ namespace KIT.ResourceScheduler
         private double fixedDeltaTime;
 
         HashSet<IKITMod> fixedUpdateCalledMods = new HashSet<IKITMod>(128);
-        //HashSet<IKITMod> modsCurrentlyRunning = new HashSet<IKITMod>(128);
         List<IKITMod> modsCurrentlyRunning = new List<IKITMod>(128);
 
         public bool UseThisToHelpWithTesting;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace KIT.ResourceScheduler
 {
@@ -10,41 +11,52 @@ namespace KIT.ResourceScheduler
     /// VesselEventData is used to track game events occurring. Once it picks up an event occurring, it tries to
     /// find the corresponding KITResourceManager and lets it know to refresh it's part module cache.
     /// </summary>
-    public static class VesselEventData
+    
+    [KSPAddon(KSPAddon.Startup.Flight, false)]
+    public class VesselEventData : MonoBehaviour
     {
-        private static bool initialized;
-
         /// <summary>
         /// Initializes the VesselEventData class, and hooks into the GameEvents code.
         /// </summary>
-        static void initialize()
+        void Start()
         {
-            if (!initialized && HighLogic.LoadedSceneIsGame | HighLogic.LoadedSceneIsFlight)
-            {
-                GameEvents.onVesselGoOnRails.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
-                GameEvents.onVesselGoOffRails.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
-                GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
-                GameEvents.onVesselPartCountChanged.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
-                GameEvents.onVesselLoaded.Add(new EventData<Vessel>.OnEvent(refreshActiveParts));
-                GameEvents.onPartDeCouple.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                GameEvents.onPartDestroyed.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                GameEvents.onPartPriorityChanged.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                GameEvents.onPartDie.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                GameEvents.onPartWillDie.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                GameEvents.onPartDeCouple.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                GameEvents.onPartFailure.Add(new EventData<Part>.OnEvent(refreshActiveParts));
-                // GameEvents.
-                initialized = true;
-            }
+            GameEvents.onVesselGoOnRails.Add(refreshActiveParts);
+            GameEvents.onVesselGoOffRails.Add(refreshActiveParts);
+            GameEvents.onVesselWasModified.Add(refreshActiveParts);
+            GameEvents.onVesselPartCountChanged.Add(refreshActiveParts);
+            GameEvents.onVesselLoaded.Add(refreshActiveParts);
+            GameEvents.onPartDeCouple.Add(refreshActiveParts);
+            GameEvents.onPartDestroyed.Add(refreshActiveParts);
+            GameEvents.onPartPriorityChanged.Add(refreshActiveParts);
+            GameEvents.onPartDie.Add(refreshActiveParts);
+            GameEvents.onPartWillDie.Add(refreshActiveParts);
+            GameEvents.onPartDeCouple.Add(refreshActiveParts);
+            GameEvents.onPartFailure.Add(refreshActiveParts);
         }
 
-        private static KITResourceVesselModule FindVesselModuleImplementing(Vessel v)
+        void OnDestroy()
+        {
+            GameEvents.onVesselGoOnRails.Remove(refreshActiveParts);
+            GameEvents.onVesselGoOffRails.Remove(refreshActiveParts);
+            GameEvents.onVesselWasModified.Remove(refreshActiveParts);
+            GameEvents.onVesselPartCountChanged.Remove(refreshActiveParts);
+            GameEvents.onVesselLoaded.Remove(refreshActiveParts);
+            GameEvents.onPartDeCouple.Remove(refreshActiveParts);
+            GameEvents.onPartDestroyed.Remove(refreshActiveParts);
+            GameEvents.onPartPriorityChanged.Remove(refreshActiveParts);
+            GameEvents.onPartDie.Remove(refreshActiveParts);
+            GameEvents.onPartWillDie.Remove(refreshActiveParts);
+            GameEvents.onPartDeCouple.Remove(refreshActiveParts);
+            GameEvents.onPartFailure.Remove(refreshActiveParts);
+        }
+
+        private KITResourceVesselModule FindVesselModuleImplementing(Vessel v)
         {
             KITResourceVesselModule ret;
             for (var i = 0; i < v.vesselModules.Count; i++)
             {
                 ret = v.vesselModules[i] as KITResourceVesselModule;
-                if(ret != null) return ret;
+                if (ret != null) return ret;
             }
             return null;
         }
@@ -53,7 +65,7 @@ namespace KIT.ResourceScheduler
         /// Looks up the corresponding KITResourceManager and tells it to refresh its module cache.
         /// </summary>
         /// <param name="data">Part triggering the event</param>
-        private static void refreshActiveParts(Part data)
+        private void refreshActiveParts(Part data)
         {
             if (data == null || data.vessel == null) return;
             var resourceMod = FindVesselModuleImplementing(data.vessel);
@@ -64,22 +76,12 @@ namespace KIT.ResourceScheduler
         /// /// Looks up the corresponding KITResourceManager and tells it to refresh its module cache.
         /// </summary>
         /// <param name="data">Vessel triggering the event</param>
-        private static void refreshActiveParts(Vessel data)
+        private void refreshActiveParts(Vessel data)
         {
             if (data == null) return;
             var resourceMod = FindVesselModuleImplementing(data);
             if (resourceMod == null) return;
             resourceMod.refreshEventOccurred = true;
-        }
-
-        /// <summary>
-        /// Dummy func to ensure the class is initialized.
-        /// </summary>
-        /// <returns>true</returns>
-        public static bool Ready()
-        {
-            if (initialized == false) initialize();
-            return initialized;
         }
     }
 }
