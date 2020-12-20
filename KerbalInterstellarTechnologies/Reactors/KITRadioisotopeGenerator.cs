@@ -66,7 +66,8 @@ namespace KIT.Reactors
         private void PowerGeneratedPerSecond(out double electricalCurrentInKW, out double wasteHeatInKW)
         {
             // convert kg to grams, then calculate the heat generated
-            var heatInWatts = (massRemaining * 1000) * wattsPerGram;
+            var mass = Math.Max(massRemaining * 1000, massInKilograms * 1000 * HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().minimumRTGOutput);
+            var heatInWatts = mass * wattsPerGram;
             var powerInWatts = heatInWatts * peltierEfficency;
 
             var heatGeneratedInKW = heatInWatts / (1e+3);
@@ -79,8 +80,6 @@ namespace KIT.Reactors
             if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().preventRadioactiveDecay) return;
 
             double halfLife = GameSettings.KERBIN_TIME ? halfLifeInKerbinSeconds : halfLifeInSeconds;
-
-            double perSecondDecayConstant = 1 / halfLife;
             double originalMassRemaining = massRemaining;
             
             massRemaining = massInKilograms * Math.Pow(2, (-partLifeTimeInSeconds) / halfLife);
