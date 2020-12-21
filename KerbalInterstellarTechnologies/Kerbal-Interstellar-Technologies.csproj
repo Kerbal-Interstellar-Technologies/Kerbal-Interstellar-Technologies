@@ -87,6 +87,7 @@
     <Compile Include="GameEventSubscriber.cs" />
     <Compile Include="KITDifficultyConfig.cs" />
     <Compile Include="PluginSettings.cs" />
+    <Compile Include="Powermanagement\Interfaces\IFNElectricPowerGeneratorSource.cs" />
     <Compile Include="Reactors\KITRadioisotopeGenerator.cs" />
     <Compile Include="Resources\RegolithCollector.cs" />
     <Compile Include="Resources\SolarWindCollector.cs" />
@@ -103,8 +104,8 @@
     <Compile Include="Powermanagement\PowerDistribution.cs" />
     <Compile Include="Powermanagement\TPResourceManager.cs" />
     <Compile Include="Powermanagement\FNGeneratorAdapterVariable.cs" />
-    <Compile Include="Powermanagement\IFNChargedParticleSource.cs" />
-    <Compile Include="Powermanagement\IFNPowerSource.cs" />
+    <Compile Include="Powermanagement\Interfaces\IFNChargedParticleSource.cs" />
+    <Compile Include="Powermanagement\Interfaces\IFNPowerSource.cs" />
     <Compile Include="Powermanagement\KspiSuperCapacitator.cs" />
     <Compile Include="Powermanagement\MegajoulesResourceManager.cs" />
     <Compile Include="Powermanagement\CPResourceManager.cs" />
@@ -133,9 +134,9 @@
     <Compile Include="IUpgradeableModule.cs" />
     <Compile Include="Powermanagement\ResourceManager.cs" />
     <Compile Include="Powermanagement\ResourceOvermanager.cs" />
-    <Compile Include="Powermanagement\IResourceSuppliable.cs" />
+    <Compile Include="Powermanagement\Interfaces\IResourceSuppliable.cs" />
     <Compile Include="Powermanagement\ResourceSuppliableModule.cs" />
-    <Compile Include="Powermanagement\IResourceSupplier.cs" />
+    <Compile Include="Powermanagement\Interfaces\IResourceSupplier.cs" />
     <Compile Include="Powermanagement\SupplyPriorityManager.cs" />
     <Compile Include="Propulsion\AlcubierreDrive.cs" />
     <Compile Include="Propulsion\EngineECU2.cs" />

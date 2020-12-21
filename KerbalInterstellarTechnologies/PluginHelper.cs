@@ -362,13 +362,13 @@ namespace KIT
             {
                 ResourceManagerFlightUI.close_window = false;
                 ResourceManagerFlightUI.show_window = true;
-                VABThermalUI.renderWindow = false;
+                VABThermalUI.RenderWindow = false;
             }
             else
             {
                 ResourceManagerFlightUI.close_window = false;
                 ResourceManagerFlightUI.show_window = false;
-                VABThermalUI.renderWindow = true;
+                VABThermalUI.RenderWindow = true;
             }
         }
 
@@ -376,7 +376,7 @@ namespace KIT
         {
             ResourceManagerFlightUI.close_window = true;
             ResourceManagerFlightUI.show_window = false;
-            VABThermalUI.renderWindow = false;
+            VABThermalUI.RenderWindow = false;
         }
 
         static int _ignoredGForces;

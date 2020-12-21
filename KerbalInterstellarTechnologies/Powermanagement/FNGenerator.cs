@@ -9,6 +9,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FNPlugin.Powermanagement;
 using TweakScale;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace KIT.Powermanagement
     class ChargedParticlesPowerGenerator : FNGenerator { }
 
     [KSPModule(" Generator")]
-    class FNGenerator : PartModule, IKITMod, IKITVariableSupplier, IUpgradeableModule, IElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
+    class FNGenerator : PartModule, IKITMod, IKITVariableSupplier, IUpgradeableModule, IFNElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
     {
         public const string GROUP = "FNGenerator";
         public const string GROUP_TITLE = "#LOC_KSPIE_Generator_groupName";
@@ -717,7 +718,7 @@ namespace KIT.Powermanagement
                 OutputPower = Localizer.Format("#LOC_KSPIE_Generator_Offline");//"Generator Offline"
         }
 
-        public double MaxStableMegaWattPower
+        public double RawGeneratorSourcePower
         {
             get
             {
@@ -737,9 +738,14 @@ namespace KIT.Powermanagement
                         ? attachedPowerSource.MaximumPower
                         : attachedPowerSource.StableMaximumReactorPower;
 
-                return stableMaximumReactorPower * attachedPowerSource.PowerRatio * maxPowerUsageRatio * maxEfficiency * CapacityRatio;
+                return stableMaximumReactorPower * attachedPowerSource.PowerRatio * maxPowerUsageRatio * CapacityRatio;
             }
         }
+
+        public double MaxEfficiency => maxEfficiency;
+
+        public double MaxStableMegaWattPower => RawGeneratorSourcePower * maxEfficiency;
+
 
         private void UpdateHeatExchangedThrustDivisor()
         {
