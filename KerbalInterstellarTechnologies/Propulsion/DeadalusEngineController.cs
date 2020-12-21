@@ -29,7 +29,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)] public double thrustMultiplier = 1;
         [KSPField(isPersistant = true)] public double ispMultiplier = 1;
         [KSPField(isPersistant = true)] public bool IsEnabled;
-        [KSPField(isPersistant = true)] public bool rad_safety_features = true;
+        [KSPField(isPersistant = true)] public bool radiationSafetyFeatures = true;
 
         [KSPField] public double massThrustExp = 0;
         [KSPField] public double massIspExp = 0;
@@ -236,13 +236,13 @@ namespace KIT.Propulsion
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DeadalusEngineController_DeactivateRadSafety", active = true)]//Disable Radiation Safety
         public void DeactivateRadSafety()
         {
-            rad_safety_features = false;
+            radiationSafetyFeatures = false;
         }
 
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DeadalusEngineController_ActivateRadSafety", active = false)]//Activate Radiation Safety
         public void ActivateRadSafety()
         {
-            rad_safety_features = true;
+            radiationSafetyFeatures = true;
         }
 
         public void VesselChangedSOI()
@@ -603,8 +603,8 @@ namespace KIT.Propulsion
                 warpToReal = false;
             }
 
-            deactivateRadSafetyEvent.active = rad_safety_features;
-            activateRadSafetyEvent.active = !rad_safety_features;
+            deactivateRadSafetyEvent.active = radiationSafetyFeatures;
+            activateRadSafetyEvent.active = !radiationSafetyFeatures;
 
             if (curEngineT.isOperational && !IsEnabled)
             {
@@ -815,7 +815,7 @@ namespace KIT.Propulsion
 
         private void KillKerbalsWithRadiation(float radiationRatio)
         {
-            if (!radhazard || radiationRatio <= 0 || rad_safety_features) return;
+            if (!radhazard || radiationRatio <= 0 || radiationSafetyFeatures) return;
 
             var vesselsToRemove = new List<Vessel>();
             var crewToRemove = new List<ProtoCrewMember>();
@@ -947,7 +947,7 @@ namespace KIT.Propulsion
                 if (vessel.atmDensity > maxAtmosphereDensity)
                     ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason1"));//"Inertial Fusion cannot operate in atmosphere!"
 
-                if (radhazard && rad_safety_features)
+                if (radhazard && radiationSafetyFeatures)
                     ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason2"));//"Engines throttled down as they presently pose a radiation hazard"
             }
 

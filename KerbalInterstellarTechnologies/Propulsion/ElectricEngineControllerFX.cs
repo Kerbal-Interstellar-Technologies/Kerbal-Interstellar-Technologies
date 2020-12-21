@@ -969,6 +969,8 @@ namespace KIT.Propulsion
             modifiedThrottle = ModifiedThrottle;
             modifiedMaxThrottlePower = maxEffectivePower * modifiedThrottle;
 
+            if (!_attachedEngine.getIgnitionState) maxPower = 0;
+
             totalPowerSupplied = resMan.ConsumeResource(ResourceName.ElectricCharge, maxPower * storedThrottle); 
 
             var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
@@ -997,7 +999,7 @@ namespace KIT.Propulsion
             var maxHeatToProduce = maximumAvailablePowerForEngine * heatModifier;
 
             _heatProductionF = heatToProduce;
-            resMan.ProduceResource(ResourceName.WasteHeat, heatToProduce * GameConstants.ecPerMJ);
+            resMan.ProduceResource(ResourceName.WasteHeat, heatToProduce);
 
             // update GUI Values
             _electricalConsumptionF = actualPowerReceived;

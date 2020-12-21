@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static GameParameters;
 
 namespace KIT
 {
@@ -11,7 +12,7 @@ namespace KIT
         public override string Section => "Kerbal Interstellar Technologies";
         public override string DisplaySection => "#LOC_KIT_DifficultyConfig_DisplaySection";
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.SANDBOX | GameParameters.GameMode.CAREER | GameParameters.GameMode.SCIENCE;
-        public override bool HasPresets => false;
+        public override bool HasPresets => true;
     }
 
     class KITGamePlayParams : KITDifficultyCustomParams
@@ -36,6 +37,31 @@ namespace KIT
         //   -> refuel reactors without an EVA'd kerbal?
         // [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_ExtendedReactorControl", toolTip = "#LOC_KIT_DifficultyConfig_ExtendedReactorControl_tip")]
         // public bool extendedReactorControl;
+
+        // Per AntaresMC, some engines that can kill by radiation should have a on/off switch
+        //   Daedalus engine is on example, Kerbalism helper FNEmitter is another area
+
+        public override void SetDifficultyPreset(Preset preset)
+        {
+            switch(preset)
+            {
+                case Preset.Easy:
+                    allowDestructiveEngines = reconfigureAntennas = true;
+                    preventRadioactiveDecay = true;
+                    minimumRTGOutput = 0.1f;
+                    break;
+                case Preset.Moderate:
+                    allowDestructiveEngines = reconfigureAntennas = true;
+                    minimumRTGOutput = 0.05f;
+                    preventRadioactiveDecay = false;
+                    break;
+                case Preset.Normal:
+                case Preset.Hard:
+                    allowDestructiveEngines = reconfigureAntennas = preventRadioactiveDecay = false;
+                    minimumRTGOutput = 0;
+                    break;
+            }
+        }
 
     }
 

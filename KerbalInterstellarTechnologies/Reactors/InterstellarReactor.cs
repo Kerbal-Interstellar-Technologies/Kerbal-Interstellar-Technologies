@@ -2871,7 +2871,7 @@ namespace KIT.Reactors
         {
             if (part == null || part.partInfo == null) return "Interstellar Reactor";
 
-            return $"{part.partInfo.title}{(fuelModes.Count > 1 ? " (" + fuelModeStr + ")" : "")}";
+            return $"{part.partInfo.title}"; // exception {(fuelModes.Count > 1 ? " (" + fuelModeStr + ")" : "")}";
         }
         // TODO
         //if (similarParts != null && similarParts.Count > 1)
