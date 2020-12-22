@@ -2209,6 +2209,6 @@ namespace KIT.Wasteheat
             }
         }
 
-        public string KITPartName() => $"{part.partInfo.title}{(clarifyFunction ? "(radiator)" : "")}";
+        public string KITPartName() => $"{part.partInfo.title}{(clarifyFunction ? " (radiator)" : "")}";
     }
 }

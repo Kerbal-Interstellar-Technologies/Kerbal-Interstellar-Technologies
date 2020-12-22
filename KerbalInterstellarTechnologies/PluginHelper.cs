@@ -1,4 +1,5 @@
-﻿using KSP.Localization;
+﻿using KIT.Constants;
+using KSP.Localization;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
@@ -106,6 +107,10 @@ namespace KIT
 
 
         #endregion
+
+        public static int HoursInDay { get; private set; } = GameConstants.KERBIN_HOURS_DAY;
+        public static int SecondsInDay { get; private set; } = GameConstants.KERBIN_DAY_SECONDS;
+        public static int SecondsInHour => GameConstants.SECONDS_IN_HOUR;
 
         public static string FormatMassStr(double mass, string format = "0.000000")
         {

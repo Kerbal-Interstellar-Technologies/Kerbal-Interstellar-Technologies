@@ -9,6 +9,7 @@ using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using TweakScale;
@@ -1552,7 +1553,7 @@ namespace KIT.Reactors
             currentRawPowerOutput = RawPowerOutput;
             coretempStr = CoreTemperature.ToString("0") + " K";
 
-            Events[nameof(DeactivateReactor)].guiActive = HighLogic.LoadedSceneIsFlight && showShutDownInFlight && IsEnabled;
+            Events[nameof(DeactivateReactor)].guiActive = HighLogic.LoadedSceneIsFlight && IsEnabled && (showShutDownInFlight || HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().extendedReactorControl);
 
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -1765,7 +1766,7 @@ namespace KIT.Reactors
             stored_fuel_ratio = currentFuelVariant.FuelRatio;
         }
 
-        private void StoreGeneratorRequests(/*double timeWarpFixedDeltaTime*/)
+        private void StoreGeneratorRequests(IResourceManager resMan)
         {
             storedIsThermalEnergyGeneratorEfficiency = _currentIsThermalEnergyGeneratorEfficiency;
             storedIsPlasmaEnergyGeneratorEfficiency = _currentIsPlasmaEnergyGeneratorEfficiency;
@@ -1795,8 +1796,8 @@ namespace KIT.Reactors
             var plasmaThrottleIsGrowing = _currentGeneratorPlasmaEnergyRequestRatio > storedGeneratorPlasmaEnergyRequestRatio;
             var chargedThrottleIsGrowing = _currentGeneratorChargedEnergyRequestRatio > storedGeneratorChargedEnergyRequestRatio;
 
-            var fixedReactorSpeedMultiplier = ReactorSpeedMult; // * timeWarpFixedDeltaTime;
-            var minimumAcceleration = 1; //  timeWarpFixedDeltaTime * timeWarpFixedDeltaTime;
+            var fixedReactorSpeedMultiplier = ReactorSpeedMult * resMan.FixedDeltaTime(); // * timeWarpFixedDeltaTime;
+            var minimumAcceleration = resMan.FixedDeltaTime() * resMan.FixedDeltaTime(); //  1; //  timeWarpFixedDeltaTime * timeWarpFixedDeltaTime;
 
             var thermalAccelerationReductionRatio = thermalThrottleIsGrowing
                 ? storedGeneratorThermalEnergyRequestRatio <= 0.5 ? 1 : minimumAcceleration + (1 - storedGeneratorThermalEnergyRequestRatio) / 0.5
@@ -1837,15 +1838,16 @@ namespace KIT.Reactors
             return fuelUseForPower > 0 ? GetFuelAvailability(reactorFuel) / fuelUseForPower : 0;
         }
 
-        private void BreedTritium(IResourceManager resMan)
+        private void BreedTritium(IResourceManager resMan, double neutronPowerReceivedEachSecond)
         {
+
             _lithiumConsumedPerSecond = 0;
             _tritiumProducedPerSecond = 0;
             _heliumProducedPerSecond = 0;
             totalAmountLithium = 0;
             totalMaxAmountLithium = 0;
 
-            if (breedtritium == false)
+            if (breedtritium == false || neutronPowerReceivedEachSecond <= 0 || resMan.FixedDeltaTime() <= 0)
                 return;
 
             // verify if there is any lithium6 present
@@ -1865,7 +1867,7 @@ namespace KIT.Reactors
                 return;
 
             // calculate current maximum lithium consumption
-            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * lithiumNeutronAbsorbtion;
+            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * neutronPowerReceivedEachSecond *  lithiumNeutronAbsorbtion;
             var lithiumRate = breedRate / _lithium6Density;
 
             // get spare room tritium
@@ -1877,9 +1879,7 @@ namespace KIT.Reactors
             var lithiumRequest = lithiumRate * maximumLithiumConsumptionRatio;
 
             // consume the lithium
-            var lithiumUsed = CheatOptions.InfinitePropellant
-                ? lithiumRequest
-                : resMan.ConsumeResource(ResourceName.Lithium6, lithiumRequest);
+            var lithiumUsed = resMan.CheatOptions().InfinitePropellant ? lithiumRequest : resMan.ConsumeResource(ResourceName.Lithium6, lithiumRequest);
 
             // calculate effective lithium used for tritium breeding
             _lithiumConsumedPerSecond = lithiumUsed;
@@ -1888,12 +1888,13 @@ namespace KIT.Reactors
             var tritiumProduction = lithiumUsed * _tritiumBreedingMassAdjustment;
             var heliumProduction = lithiumUsed * _heliumBreedingMassAdjustment;
 
+
             // produce tritium and helium
             _tritiumProducedPerSecond = tritiumProduction;
             resMan.ProduceResource(ResourceName.TritiumGas, tritiumProduction);
 
             _heliumProducedPerSecond = heliumProduction;
-            resMan.ProduceResource(ResourceName.TritiumGas, heliumProduction);
+            resMan.ProduceResource(ResourceName.Helium4Gas, heliumProduction);
         }
 
         public virtual double GetCoreTempAtRadiatorTemp(double radTemp)
@@ -2261,8 +2262,6 @@ namespace KIT.Reactors
         // Called by the UI, no resource manager present
         protected double GetFuelAvailability(ReactorFuel fuel)
         {
-            //throw new IndexOutOfRangeException("GetProductAvailability need to work out how to do this ");
-
             if (fuel == null)
             {
                 Debug.LogError("[KSPI]: GetFuelAvailability fuel null");
@@ -2298,8 +2297,8 @@ namespace KIT.Reactors
 
         protected double GetFuelAvailability(PartResourceDefinition definition)
         {
-            throw new IndexOutOfRangeException("GetProductAvailability need to work out how to do this ");
-            /*
+            // called by UI code, no resource manager present
+
             if (definition == null)
             {
                 Debug.LogError("[KSPI]: GetFuelAvailability definition null");
@@ -2314,14 +2313,15 @@ namespace KIT.Reactors
                     return 0;
             }
 
-            return HighLogic.LoadedSceneIsFlight ? part.GetResourceAvailable(definition) : part.FindAmountOfAvailableFuel(definition.name, 4);
-            
+            part.GetConnectedResourceTotals(definition.id, out double amount, out _);
+            return amount;
+
+            // is the below logic needed? I'd be surprised if so..
+            // return HighLogic.LoadedSceneIsFlight ? () => { part.GetConnectedResourceTotals(definition.id, out double amount, out _); return amount; } : part.FindAmountOfAvailableFuel(definition.name, 4);
         }
 
         protected double GetProductAvailability(ReactorProduct product)
         {
-            throw new IndexOutOfRangeException("GetProductAvailability need to work out how to do this ");
-            /*
             if (product == null)
             {
                 Debug.LogError("[KSPI]: GetFuelAvailability product null");
@@ -2342,8 +2342,10 @@ namespace KIT.Reactors
                     return 0;
             }
 
-            return HighLogic.LoadedSceneIsFlight ? part.GetResourceAvailable(product.Definition) : part.FindAmountOfAvailableFuel(product.ResourceName, 4);
-            */
+            // return HighLogic.LoadedSceneIsFlight ? part.GetResourceAvailable(product.Definition) : part.FindAmountOfAvailableFuel(product.ResourceName, 4);
+
+            part.GetConnectedResourceTotals(product.ResourceName.GetHashCode(), out double amount, out _);
+            return amount;
         }
 
         protected double GetMaxProductAvailability(IResourceManager resMan, ReactorProduct product)
@@ -2367,7 +2369,8 @@ namespace KIT.Reactors
                     return 0;
             }
 
-            if (HighLogic.LoadedSceneIsFlight) {
+            if (HighLogic.LoadedSceneIsFlight)
+            {
                 //return part.GetResourceMaxAvailable(product.Definition);
                 ResourceName resID = KITResourceSettings.NameToResource(product.Definition.name);
                 if (resID == ResourceName.Unknown)
@@ -2381,6 +2384,49 @@ namespace KIT.Reactors
             else
                 return part.FindMaxAmountOfAvailableFuel(product.ResourceName, 4);
         }
+
+
+        protected double GetMaxProductAvailability(ReactorProduct product)
+        {
+            // called by UI code
+
+            if (product == null)
+            {
+                Debug.LogError("[KSPI]: GetMaxProductAvailability product null");
+                return 0;
+            }
+
+            if (product.Definition == null)
+                return 0;
+
+            if (!product.ProduceGlobal)
+            {
+                if (part.Resources.Contains(product.ResourceName))
+                    return part.Resources[product.ResourceName].maxAmount;
+                else
+                    return 0;
+            }
+            /*
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                //return part.GetResourceMaxAvailable(product.Definition);
+                ResourceName resID = KITResourceSettings.NameToResource(product.Definition.name);
+                if (resID == ResourceName.Unknown)
+                {
+                    Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] unknown resource {product.Definition.name}");
+                    return 0;
+                }
+                return resMan.ResourceCurrentCapacity(resID) + resMan.ResourceSpareCapacity(resID);
+
+            }
+            else
+                return part.FindMaxAmountOfAvailableFuel(product.ResourceName, 4);
+            */
+
+            part.GetConnectedResourceTotals(product.ResourceName.GetHashCode(), out double amount, out _);
+            return amount;
+        }
+
 
         private void InitializeKerbalismEmitter()
         {
@@ -2435,8 +2481,8 @@ namespace KIT.Reactors
 
         private void Window(int windowId)
         {
-            throw new IndexOutOfRangeException("InterstellarReactor.Window need to work out how to do this ");
-            /*
+            //throw new IndexOutOfRangeException("InterstellarReactor.Window need to work out how to do this ");
+
             try
             {
                 windowPositionX = windowPosition.x;
@@ -2557,16 +2603,16 @@ namespace KIT.Reactors
                         var availabilityInTon = availableResources.Sum(m => m.amount * m.effectiveDensity);
 
                         var variantText = availableResources.Count > 1 ? " (" + availableResources.Count + " variants)" : "";
-                        PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Reserves"), PluginHelper.formatMassStr(availabilityInTon) + variantText, boldStyle, textStyle);//Reserves
+                        PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Reserves"), PluginHelper.FormatMassStr(availabilityInTon) + variantText, boldStyle, textStyle);//Reserves
 
                         var tonFuelUsePerHour = ongoing_total_power_generated * fuel.TonsFuelUsePerMJ * fuelUsePerMJMult / FuelEfficiency * PluginHelper.SecondsInHour;
                         var kgFuelUsePerHour = tonFuelUsePerHour * 1000;
                         var kgFuelUsePerDay = kgFuelUsePerHour * PluginHelper.HoursInDay;
 
                         if (tonFuelUsePerHour > 120)
-                            PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Consumption") + " ", PluginHelper.formatMassStr(tonFuelUsePerHour / 60) + " / " + Localizer.Format("#LOC_KSPIE_Reactor_min"), boldStyle, textStyle);//Consumption-min
+                            PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Consumption") + " ", PluginHelper.FormatMassStr(tonFuelUsePerHour / 60) + " / " + Localizer.Format("#LOC_KSPIE_Reactor_min"), boldStyle, textStyle);//Consumption-min
                         else
-                            PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Consumption") + " ", PluginHelper.formatMassStr(tonFuelUsePerHour) + " / " + Localizer.Format("#LOC_KSPIE_Reactor_hour"), boldStyle, textStyle);//Consumption--hour
+                            PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Consumption") + " ", PluginHelper.FormatMassStr(tonFuelUsePerHour) + " / " + Localizer.Format("#LOC_KSPIE_Reactor_hour"), boldStyle, textStyle);//Consumption--hour
 
                         if (kgFuelUsePerDay > 0)
                         {
@@ -2618,13 +2664,13 @@ namespace KIT.Reactors
 
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(product.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Storage"), boldStyle, GUILayout.Width(150));//Storage
-                            GUILayout.Label(PluginHelper.formatMassStr(availabilityInTon, "0.00000") + " / " + PluginHelper.formatMassStr(maxAvailabilityInTon, "0.00000"), textStyle, GUILayout.Width(150));
+                            GUILayout.Label(PluginHelper.FormatMassStr(availabilityInTon, "0.00000") + " / " + PluginHelper.FormatMassStr(maxAvailabilityInTon, "0.00000"), textStyle, GUILayout.Width(150));
                             GUILayout.EndHorizontal();
 
                             var hourProductionInTon = ongoing_total_power_generated * product.TonsProductUsePerMJ * fuelUsePerMJMult / FuelEfficiency * PluginHelper.SecondsInHour;
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(product.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Production"), boldStyle, GUILayout.Width(150));//Production
-                            GUILayout.Label(PluginHelper.formatMassStr(hourProductionInTon) + " / " + Localizer.Format("#LOC_KSPIE_Reactor_hour"), textStyle, GUILayout.Width(150));//hour
+                            GUILayout.Label(PluginHelper.FormatMassStr(hourProductionInTon) + " / " + Localizer.Format("#LOC_KSPIE_Reactor_hour"), textStyle, GUILayout.Width(150));//hour
                             GUILayout.EndHorizontal();
                         }
                     }
@@ -2662,7 +2708,7 @@ namespace KIT.Reactors
                 Debug.LogError("[KSPI]: InterstellarReactor Window(" + windowId + "): " + e.Message);
                 throw;
             }
-            */
+
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => (ResourcePriorityValue)electricPowerPriority;
@@ -2698,6 +2744,8 @@ namespace KIT.Reactors
                 return;
             }
 
+            ongoing_total_power_generated = 0;
+
             // KITFixedUpdate always runs before each power draw attempt.
             electricChargeGeneratedLastUpdate = electricChargeBeingSuppliedThisUpdate;
             electricChargeMissingLastUpdate = electricChargeBeingRequestedThisUpdate - electricChargeBeingSuppliedThisUpdate;
@@ -2723,7 +2771,7 @@ namespace KIT.Reactors
                 IsEnabled = true;
             }
 
-            StoreGeneratorRequests();
+            StoreGeneratorRequests(resMan);
             decay_ongoing = false;
 
             if (!IsEnabled && IsNuclear && MaximumPower > 0 && (Planetarium.GetUniversalTime() - last_active_time <= 3 * PluginSettings.Config.SecondsInDay))
@@ -2736,7 +2784,7 @@ namespace KIT.Reactors
                 resMan.ProduceResource(ResourceName.ThermalPower, powerToSupply);
 
                 ongoing_total_power_generated = ongoing_thermal_power_generated;
-                // TODO FIX ME .. revert changes. BreedTritium(ongoing_thermal_power_generated);
+                BreedTritium(resMan, ongoing_thermal_power_generated);
                 ongoing_consumption_rate = MaximumPower > 0 ? ongoing_thermal_power_generated / MaximumPower : 0;
                 powerPcnt = 100 * ongoing_consumption_rate;
                 decay_ongoing = true;
@@ -2906,7 +2954,7 @@ namespace KIT.Reactors
 
         private ResourceName[] thermalResourcesProvided = new ResourceName[] { ResourceName.ThermalPower };
         private ResourceName[] chargedResourcesProvided = new ResourceName[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
-        
+
         // What resources can this reactor provide, either as intended, or by side effect.
         // an example might be that we can generate ThermalPower when generating ElectricCharge.
         public ResourceName[] ResourcesProvided()
@@ -2918,7 +2966,7 @@ namespace KIT.Reactors
 
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {
-            if(resMan.CheatOptions().InfinitePropellant)
+            if (resMan.CheatOptions().InfinitePropellant)
             {
                 resMan.ProduceResource(resource, requestedAmount);
                 return true;
@@ -2966,6 +3014,8 @@ namespace KIT.Reactors
             var tmp = Math.Min(requestedAmount, maxThermalToSupplyPerSecondAvail);
             maxThermalToSupplyPerSecondAvail -= tmp;
 
+            ongoing_total_power_generated += tmp; // or charged. todo
+
             double totalPowerReceivedFixed = tmp;
             double powerGenerated = 0;
 
@@ -2975,7 +3025,7 @@ namespace KIT.Reactors
             {
                 tmp = ConsumeReactorFuel(resMan, reactorFuel, totalPowerReceivedFixed / geeForceModifier);
                 // TODO not correct. :(
-                powerGenerated += reactorFuel.TonsFuelUsePerMJ;
+                powerGenerated += tmp / reactorFuel.TonsFuelUsePerMJ;
 
                 _consumedFuelTotalFixed += tmp;
             }
@@ -2996,11 +3046,8 @@ namespace KIT.Reactors
             }
 
 
-            // TODO FIX ME. BreedTritium(resMan, ongoing_thermal_power_generated);
-
-            return true;
+           BreedTritium(resMan, ongoing_thermal_power_generated);
+           return true;
         }
-
-        // string IKITMod.KITPartName() => part.partInfo.title;
     }
 }

@@ -1169,7 +1169,7 @@ namespace KIT
 
         private void UpdateFromGui(BaseField field, object oldFieldValueObj)
         {
-            if (!BandwidthConverters.Any())
+            if (BandwidthConverters == null || !BandwidthConverters.Any())
                 return;
 
             if (isLoaded == false)

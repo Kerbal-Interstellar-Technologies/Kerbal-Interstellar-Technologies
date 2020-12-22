@@ -613,24 +613,30 @@ namespace KIT.Propulsion
                 part.force_activate();
             }
 
-            var kerbalHazardCount = 0;
-            foreach (var currentVessel in FlightGlobals.Vessels)
+            radhazard = false;
+
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines)
             {
-                var distance = Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
-                if (distance < lethalDistance && currentVessel != this.vessel)
-                    kerbalHazardCount += currentVessel.GetCrewCount();
+                var kerbalHazardCount = 0;
+                foreach (var currentVessel in FlightGlobals.Vessels)
+                {
+                    var distance = Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
+                    if (distance < lethalDistance && currentVessel != this.vessel)
+                        kerbalHazardCount += currentVessel.GetCrewCount();
+                }
+
+                if (kerbalHazardCount > 0)
+                {
+                    radhazard = true;
+                    radhazardstr = Localizer.Format(kerbalHazardCount > 1
+                        ? "#LOC_KSPIE_DeadalusEngineController_radhazardstr2"
+                        : "#LOC_KSPIE_DeadalusEngineController_radhazardstr1", kerbalHazardCount);
+
+                    radhazardstrField.guiActive = true;
+                }
             }
 
-            if (kerbalHazardCount > 0)
-            {
-                radhazard = true;
-                radhazardstr = Localizer.Format(kerbalHazardCount > 1
-                    ? "#LOC_KSPIE_DeadalusEngineController_radhazardstr2"
-                    : "#LOC_KSPIE_DeadalusEngineController_radhazardstr1", kerbalHazardCount);
-
-                radhazardstrField.guiActive = true;
-            }
-            else
+            if (radhazard == false)
             {
                 radhazardstrField.guiActive = false;
                 radhazard = false;
@@ -792,7 +798,7 @@ namespace KIT.Propulsion
 
             finalRequestedPower = requestedPower * wasteheatModifier;
 
-            var receivedPower = resMan.ConsumeResource(ResourceName.ElectricCharge, finalRequestedPower * GameConstants.ecPerMJ);
+            var receivedPower = resMan.ConsumeResource(ResourceName.ElectricCharge, finalRequestedPower);
 
             var plasmaRatio = !requestedPower.IsInfinityOrNaNorZero() && !receivedPower.IsInfinityOrNaNorZero() ? Math.Min(1, receivedPower / requestedPower) : 0;
 

@@ -20,7 +20,7 @@ namespace KIT
         public override string Title => "#LOC_KIT_DifficultyConfig_GamePlay";
         public override int SectionOrder => 1;
 
-        [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_ExhaustHomeWorld", toolTip = "#LOC_KIT_DifficultyConfig_ExhaustHomeWorld_tip")]
+        [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_DestructiveEngines", toolTip = "#LOC_KIT_DifficultyConfig_DestructiveEngines_tip")]
         public bool allowDestructiveEngines;
 
         [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_PreventRadioactiveDecay", toolTip = "#LOC_KIT_DifficultyConfig_PreventRadioactiveDecay_tip")]
@@ -32,14 +32,8 @@ namespace KIT
         [GameParameters.CustomFloatParameterUI("#LOC_KIT_DifficultyConfig_MinimumRTGOutput", toolTip = "#LOC_KIT_DifficultyConfig_MinimumRTGOutput_tip", minValue = 0.0f, maxValue = 0.10f, displayFormat = "F2", asPercentage = true)]
         public float minimumRTGOutput;
 
-        // Per garoand_ran, toggle on/off reactor without EVA ing
-        //   -> perhaps we want to change fuel sources?
-        //   -> refuel reactors without an EVA'd kerbal?
-        // [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_ExtendedReactorControl", toolTip = "#LOC_KIT_DifficultyConfig_ExtendedReactorControl_tip")]
-        // public bool extendedReactorControl;
-
-        // Per AntaresMC, some engines that can kill by radiation should have a on/off switch
-        //   Daedalus engine is on example, Kerbalism helper FNEmitter is another area
+        [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_ExtendedReactorControl", toolTip = "#LOC_KIT_DifficultyConfig_ExtendedReactorControl_tip")]
+        public bool extendedReactorControl;
 
         public override void SetDifficultyPreset(Preset preset)
         {
@@ -48,16 +42,18 @@ namespace KIT
                 case Preset.Easy:
                     allowDestructiveEngines = reconfigureAntennas = true;
                     preventRadioactiveDecay = true;
+                    extendedReactorControl = false;
                     minimumRTGOutput = 0.1f;
                     break;
                 case Preset.Moderate:
-                    allowDestructiveEngines = reconfigureAntennas = true;
+                    reconfigureAntennas = true;
                     minimumRTGOutput = 0.05f;
-                    preventRadioactiveDecay = false;
+                    extendedReactorControl = allowDestructiveEngines = preventRadioactiveDecay = false;
                     break;
                 case Preset.Normal:
                 case Preset.Hard:
                     allowDestructiveEngines = reconfigureAntennas = preventRadioactiveDecay = false;
+                    extendedReactorControl = false;
                     minimumRTGOutput = 0;
                     break;
             }

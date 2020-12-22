@@ -22,7 +22,7 @@ namespace KIT.Reactors
         [KSPField(isPersistant = true)] public double halfLifeInKerbinSeconds;
 
         // how long has this part existed for?
-        [KSPField(isPersistant = true)] public double partLifeTimeInSeconds;
+        [KSPField(isPersistant = true)] public double partLifeStarted;
 
         [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_MassRemaining", groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massRemaining;
         [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_RadioactiveIsotope", groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiActive = true, guiActiveEditor = true)] public string radioisotopeFuel;
@@ -75,25 +75,82 @@ namespace KIT.Reactors
             wasteHeatInKW = heatGeneratedInKW - electricalCurrentInKW;
         }
 
+        PartResourceDefinition decayResource;           // source
+        PartResourceDefinition decayProductResource;    // destination
+        bool resourceNotDefined;
+        ResourceName decayProductID;
+
         private void DecayFuel(IResourceManager resMan)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().preventRadioactiveDecay) return;
 
             double halfLife = GameSettings.KERBIN_TIME ? halfLifeInKerbinSeconds : halfLifeInSeconds;
             double originalMassRemaining = massRemaining;
-            
-            massRemaining = massInKilograms * Math.Pow(2, (-partLifeTimeInSeconds) / halfLife);
+
+            var currentPartLifetime = Planetarium.GetUniversalTime() - partLifeStarted;
+
+            massRemaining = massInKilograms * Math.Pow(2, (-currentPartLifetime) / halfLife);
+
+            if (resourceNotDefined) return;
 
             var productsToGenerateInKG = originalMassRemaining - massRemaining;
+            if(decayResource == null || decayProductResource == null)
+            {
+                ConfigNode[] config;
+                config = GameDatabase.Instance.GetConfigNodes("KIT_Radioactive_Decay");
+                if(config == null || config.Count() == 0)
+                {
+                    resourceNotDefined = true;
+                    Debug.Log($"[KITRadioisotopeGenerator] can't find KIT_Radioactive_Decay configuration");
+                    return;
+                }
 
-            partLifeTimeInSeconds += resMan.FixedDeltaTime();
+                var node = config[0].GetNode(radioisotopeFuel);
+                if(node == null)
+                {
+                    resourceNotDefined = true;
+                    Debug.Log($"[KITRadioisotopeGenerator] {radioisotopeFuel} has no decay products defined");
+                    return;
+                }
+
+                string decayProduct = "";
+                if(node.TryGetValue("product", ref decayProduct) == false)
+                {
+                    resourceNotDefined = true;
+                    Debug.Log($"[KITRadioisotopeGenerator] {radioisotopeFuel} configuration has no product to decay into defined");
+                    return;
+                }
+
+                decayResource = PartResourceLibrary.Instance.GetDefinition(radioisotopeFuel);
+                decayProductResource = PartResourceLibrary.Instance.GetDefinition(decayProduct);
+
+                if(decayResource == null || decayProductResource == null)
+                {
+                    resourceNotDefined = true;
+                    Debug.Log($"[KITRadioisotopeGenerator] could not get definitions for {(decayResource == null ? radioisotopeFuel + " " : "")}{(decayProductResource == null ? decayProduct : "")}");
+                    return;
+                }
+
+                decayProductID = KITResourceSettings.NameToResource(decayProduct);
+                if(decayProductID == ResourceName.Unknown)
+                {
+                    resourceNotDefined = true;
+                    Debug.Log($"[KITRadioisotopeGenerator] could not get KIT definition for {decayProduct}");
+                    return;
+                }
+            }
+
+            var densityRatio = decayResource.density / decayProductResource.density;
+            resMan.ProduceResource(decayProductID, productsToGenerateInKG * densityRatio);
+
             // decay products being generated.
         }
 
         public override void OnStart(StartState state)
         {
-            if (partLifeTimeInSeconds == 0)
+            if (partLifeStarted == 0)
             {
+                if(state != StartState.Editor) partLifeStarted = Planetarium.GetUniversalTime();
                 massRemaining = massInKilograms;
                 halfLifeInKerbinSeconds = (halfLifeInSeconds / 60 / 60 / 24 / 365) * 426 * 6 * 60 * 60;
             }

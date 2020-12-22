@@ -289,7 +289,7 @@ namespace KIT.Propulsion
             }
         }
 
-        private double PowerMult ()
+        private double PowerMult()
         {
             return FuelConfigurations.Count > 0 ? CurrentActiveConfiguration.powerMult : 1;
         }
@@ -449,28 +449,35 @@ namespace KIT.Propulsion
                 part.force_activate();
             }
 
-            var kerbalHazardCount = 0;
-            foreach (var currentVessel in FlightGlobals.Vessels)
-            {
-                var distance = (float)Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
-                if (distance < leathalDistance && currentVessel != vessel)
-                    kerbalHazardCount += currentVessel.GetCrewCount();
-            }
 
-            if (kerbalHazardCount > 0)
-            {
-                radhazard = true;
-                if (kerbalHazardCount > 1)
-                    radhazardstr = kerbalHazardCount + " Kerbals.";
-                else
-                    radhazardstr = kerbalHazardCount + " Kerbal.";
+            radhazard = false;
 
-                Fields[nameof(radhazardstr)].guiActive = true;
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines)
+            {
+
+                var kerbalHazardCount = 0;
+                foreach (var currentVessel in FlightGlobals.Vessels)
+                {
+                    var distance = (float)Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
+                    if (distance < leathalDistance && currentVessel != vessel)
+                        kerbalHazardCount += currentVessel.GetCrewCount();
+                }
+
+                if (kerbalHazardCount > 0)
+                {
+                    radhazard = true;
+                    if (kerbalHazardCount > 1)
+                        radhazardstr = kerbalHazardCount + " Kerbals.";
+                    else
+                        radhazardstr = kerbalHazardCount + " Kerbal.";
+
+                    Fields[nameof(radhazardstr)].guiActive = true;
+                }
             }
-            else
+            
+            if(radhazard == false)
             {
                 Fields[nameof(radhazardstr)].guiActive = false;
-                radhazard = false;
                 radhazardstr = "None.";
             }
 

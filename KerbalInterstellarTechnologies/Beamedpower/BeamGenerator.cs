@@ -229,7 +229,7 @@ namespace KIT.Microwave
             Debug.Log("[KSPI]: Setup Transmit Beams Configurations for " + part.partInfo.title);
 
             chooseField = Fields["selectedBeamConfiguration"];
-            chooseField.guiActive = HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().reconfigureAntennas || (canSwitchWavelengthInFlight && BeamConfigurations.Count > 1);
+            chooseField.guiActive = BeamConfigurations.Count > 1 && (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().reconfigureAntennas || canSwitchWavelengthInFlight);
 
             var chooseOptionEditor = chooseField.uiControlEditor as UI_ChooseOption;
             var chooseOptionFlight = chooseField.uiControlFlight as UI_ChooseOption;
