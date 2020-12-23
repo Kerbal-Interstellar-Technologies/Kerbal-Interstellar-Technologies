@@ -15,7 +15,7 @@ namespace KIT.Powermanagement
 
 
     [KSPModule("Thermal Power Generator")]
-    class FNThermalPowerGenerator : PartModule, IKITMod
+    class FNThermalPowerGenerator : PartModule, IKITMod, IKITVariableSupplier
     {
         //Configuration
         [KSPField] public double maximumPowerCapacity = 0.02; // 20 Kw
@@ -41,6 +41,8 @@ namespace KIT.Powermanagement
         private List<Part> _stackAttachedParts;
         private double timeWarpModifer;
         private double spaceTemperature;
+        private double hotColdBathRatio;
+        private double thermalConversionEfficiency;
 
         public Part Part
         {
@@ -70,59 +72,56 @@ namespace KIT.Powermanagement
 
         public override string GetInfo()
         {
-            return "Maximum Power: " + PluginHelper.getFormattedPowerString(maximumPowerCapacity);
+            return "Maximum Power: " + PluginHelper.getFormattedPowerString(maximumPowerCapacity) + "<br>Requires radiators to work.<br>";
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            var hasRadiators = FNRadiator.HasRadiatorsForVessel(vessel);
 
-            // get radiator temperature
-            if (hasRadiators)
-                radiatorTemperature = FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel);
-            else if (!_stackAttachedParts.Any())
-                return;
-            else
-                radiatorTemperature = _stackAttachedParts.Min(m => m.temperature);
-
-            if (double.IsNaN(radiatorTemperature))
-                return;
-
-            timeWarpModifer = PluginHelper.GetTimeWarpModifer();
             spaceTemperature = FlightIntegrator.ActiveVesselFI == null ? 4 : FlightIntegrator.ActiveVesselFI.backgroundRadiationTemp;
-
             hotBathTemperature = Math.Max(4, Math.Max(part.temperature, part.skinTemperature));
 
-            var hotColdBathRatio = 1 - Math.Min(1, radiatorTemperature / hotBathTemperature);
+            var hasRadiators = FNRadiator.HasRadiatorsForVessel(vessel);
 
-            var thermalConversionEfficiency = maxConversionEfficiency * hotColdBathRatio;
+            if (!hasRadiators)
+            {
+                radiatorTemperature = 0;
+                maximumPowerSupplyInMegaWatt = 0;
+                currentPowerSupplyInMegaWatt = 0;
+                return;
+            }
+
+            radiatorTemperature = FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel);
+            timeWarpModifer = PluginHelper.GetTimeWarpModifer();
+
+            hotColdBathRatio = 1 - Math.Min(1, radiatorTemperature / hotBathTemperature);
+            thermalConversionEfficiency = maxConversionEfficiency * hotColdBathRatio;
 
             maximumPowerSupplyInMegaWatt = hotColdBathRatio > requiredTemperatureRatio
                 ? thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency)
                 : thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency) *
                   Math.Pow(hotColdBathRatio * (1 / requiredTemperatureRatio), hotColdBathRatioExponent);
-
-            // TODO 
-            // var currentUnfilledResourceDemand = Math.Max(0, GetCurrentUnfilledResourceDemand(ResourceSettings.Config.ElectricPowerInMegawatt));
-            double currentUnfilledResourceDemand = 10000;
-
-            var requiredRatio = Math.Min(1, currentUnfilledResourceDemand / maximumPowerSupplyInMegaWatt);
-
-            currentPowerSupplyInMegaWatt = requiredRatio * maximumPowerSupplyInMegaWatt;
-
-            var wasteheatInMegaJoules = (1 - thermalConversionEfficiency) * currentPowerSupplyInMegaWatt;
-
-            if (hasRadiators)
-                resMan.ProduceResource(ResourceName.WasteHeat, wasteheatInMegaJoules * 1000);
-            // TODO supplyFNResourcePerSecondWithMax(maximumPowerSupplyInMegaWatt, wasteheatInMegaJoules, ResourceSettings.Config.WasteHeatInMegawatt);
-
-            // generate thermal power
-            resMan.ProduceResource(ResourceName.ElectricCharge, currentPowerSupplyInMegaWatt * 1000);
-            
         }
 
         public string KITPartName() => part.partInfo.title;
+
+        public ResourceName[] ResourcesProvided() => new ResourceName[] { ResourceName.ElectricCharge };
+
+        public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
+        {
+            var tmp = Math.Min(requestedAmount, maximumPowerSupplyInMegaWatt - currentPowerSupplyInMegaWatt);
+            if (tmp == 0) return false;
+
+            currentPowerSupplyInMegaWatt += tmp;
+
+            var wasteheatInMegaJoules = (1 - thermalConversionEfficiency) * tmp;
+
+            resMan.ProduceResource(ResourceName.WasteHeat, wasteheatInMegaJoules);
+            resMan.ProduceResource(ResourceName.ElectricCharge, tmp);
+
+            return true;
+        }
     }
 }

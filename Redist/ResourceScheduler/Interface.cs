@@ -176,5 +176,8 @@ namespace KIT.ResourceScheduler
         bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount);
     }
 
-
+    public interface IDCElectricalSystem
+    {
+        double unallocatedElectricChargeConsumption();
+    }
 }

@@ -117,6 +117,7 @@
     <Compile Include="Resources\KITCryostat.cs" />
     <Compile Include="ResourceScheduler\ResourceManager.cs" />
     <Compile Include="Resources\Identifiers.cs" />
+    <Compile Include="Resources\VesselWasteHeat.cs" />
     <Compile Include="Toolbar\ResourceManagerFlightUI.cs" />
   </ItemGroup>
   <ItemGroup />

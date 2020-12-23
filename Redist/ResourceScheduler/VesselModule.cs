@@ -1,5 +1,6 @@
 ﻿using KIT.Interfaces;
 using KIT.Resources;
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,30 @@ using UnityEngine;
 
 namespace KIT.ResourceScheduler
 {
+
+    public class KITDCElectricalSystem : IKITMod, IDCElectricalSystem
+    {
+        public double unallocatedElectricChargeConsumption;
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+        }
+
+        private string _KITPartName;
+        public string KITPartName()
+        {
+            if(string.IsNullOrEmpty(_KITPartName))
+            {
+                _KITPartName = Localizer.Format("#LOC_KIT_DC_Electrical_System");
+            }
+
+            return _KITPartName;
+        }
+
+        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+
+        double IDCElectricalSystem.unallocatedElectricChargeConsumption() => unallocatedElectricChargeConsumption;
+    }
 
     /// <summary>
     /// KITResourceManager implements the Resource Manager code for Kerbal Interstellar Technologies.
@@ -35,6 +60,9 @@ namespace KIT.ResourceScheduler
 
         Dictionary<string, DecayConfiguration> resourceDecayConfiguration;
 
+        private KITDCElectricalSystem dcSystem;
+        private VesselHeatDissipation vesselHeatDissipation;
+
         protected override void OnAwake()
         {
             base.OnAwake();
@@ -48,6 +76,12 @@ namespace KIT.ResourceScheduler
             if (resourceDecayConfiguration == null)
                 resourceDecayConfiguration = ResourceDecayConfiguration.Instance();
 
+            if (dcSystem == null)
+                dcSystem = new KITDCElectricalSystem();
+
+            if (vesselHeatDissipation == null)
+                vesselHeatDissipation = new VesselHeatDissipation(vessel);
+
             refreshEventOccurred = true;
         }
 
@@ -55,6 +89,8 @@ namespace KIT.ResourceScheduler
 
         Dictionary<ResourceName, double> resourceAmounts = new Dictionary<ResourceName, double>(32);
         Dictionary<ResourceName, double> resourceMaxAmounts = new Dictionary<ResourceName, double>(32);
+
+        private double trackElectricChargeUsage;
 
         /// <summary>
         /// FixedUpdate() triggers the ExecuteKITModules() function call above. It implements automatic catch up processing for each module.
@@ -76,6 +112,8 @@ namespace KIT.ResourceScheduler
 
             GatherResources(ref resourceAmounts, ref resourceMaxAmounts);
 
+            dcSystem.unallocatedElectricChargeConsumption = Math.Max(0, trackElectricChargeUsage - resourceAmounts[ResourceName.ElectricCharge]);
+
             if (catchUpNeeded)
             {
                 resourceScheduler.ExecuteKITModules(deltaTime, ref resourceAmounts, ref resourceMaxAmounts);
@@ -83,7 +121,8 @@ namespace KIT.ResourceScheduler
             }
 
             resourceScheduler.ExecuteKITModules(TimeWarp.fixedDeltaTime, ref resourceAmounts, ref resourceMaxAmounts);
-            
+
+            trackElectricChargeUsage = resourceAmounts[ResourceName.ElectricCharge];
             DisperseResources(ref resourceAmounts, ref resourceMaxAmounts);
         }
 
@@ -105,6 +144,8 @@ namespace KIT.ResourceScheduler
             // Clear the inputs
 
             moduleList.Clear();
+            moduleList.Add(dcSystem);
+
             variableSupplierModules.Clear();
 
             // Clear the temporary variables
@@ -211,6 +252,8 @@ namespace KIT.ResourceScheduler
                     variableSupplierModules[resource].AddRange(list);
                 }
             }
+
+            moduleList.Add(vesselHeatDissipation);
         }
 
         void GatherResources(ref Dictionary<ResourceName, double> amounts, ref Dictionary<ResourceName, double> maxAmounts)

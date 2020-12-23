@@ -100,16 +100,9 @@
     <Compile Include="External\FNEmitterController.cs" />
     <Compile Include="HideHiddenPartsFilter.cs" />
     <Compile Include="External\Kerbalism.cs" />
-    <Compile Include="Powermanagement\DefaultResourceManager.cs" />
     <Compile Include="Powermanagement\PowerDistribution.cs" />
-    <Compile Include="Powermanagement\TPResourceManager.cs" />
-    <Compile Include="Powermanagement\FNGeneratorAdapterVariable.cs" />
     <Compile Include="Powermanagement\Interfaces\IFNChargedParticleSource.cs" />
     <Compile Include="Powermanagement\Interfaces\IFNPowerSource.cs" />
-    <Compile Include="Powermanagement\KspiSuperCapacitator.cs" />
-    <Compile Include="Powermanagement\MegajoulesResourceManager.cs" />
-    <Compile Include="Powermanagement\CPResourceManager.cs" />
-    <Compile Include="Powermanagement\WasteHeatResourceManager.cs" />
     <Compile Include="Propulsion\FNPersistentRotation.cs" />
     <Compile Include="Propulsion\FNSimpleEngineIgnatorFX.cs" />
     <Compile Include="Propulsion\IFNEngineNoozle.cs" />
@@ -132,12 +125,8 @@
     <Compile Include="Beamedpower\BeamGenerator.cs" />
     <Compile Include="Beamedpower\BandwidthConverter.cs" />
     <Compile Include="IUpgradeableModule.cs" />
-    <Compile Include="Powermanagement\ResourceManager.cs" />
-    <Compile Include="Powermanagement\ResourceOvermanager.cs" />
     <Compile Include="Powermanagement\Interfaces\IResourceSuppliable.cs" />
-    <Compile Include="Powermanagement\ResourceSuppliableModule.cs" />
     <Compile Include="Powermanagement\Interfaces\IResourceSupplier.cs" />
-    <Compile Include="Powermanagement\SupplyPriorityManager.cs" />
     <Compile Include="Propulsion\AlcubierreDrive.cs" />
     <Compile Include="Propulsion\EngineECU2.cs" />
     <Compile Include="Propulsion\ExtendedPropellant.cs" />
@@ -218,7 +207,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Science\ComputerCore.cs" />
     <Compile Include="Wasteheat\FNRadiator.cs" />
-    <Compile Include="Powermanagement\FNGeneratorAdapter.cs" />
     <Compile Include="Wasteheat\FNSolarPanelWasteHeatModule.cs" />
     <Compile Include="Storage\AntimatterStorageTank.cs" />
     <Compile Include="Propulsion\ModuleSolarSail.cs" />

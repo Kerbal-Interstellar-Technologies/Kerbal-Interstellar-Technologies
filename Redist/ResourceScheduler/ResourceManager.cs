@@ -74,7 +74,8 @@ namespace KIT.ResourceScheduler
         ICheatOptions IResourceManager.CheatOptions() => myCheatOptions;
         private bool inExecuteKITModules;
 
-        // public List<KeyValuePair<IKITMod, double>>[] resourceFlow;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TrackableResource(ResourceName resource) => resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat;
 
         /// <summary>
         /// Called by the IKITMod to consume resources present on a vessel. It automatically converts the wanted amount by the appropriate value to
@@ -97,8 +98,7 @@ namespace KIT.ResourceScheduler
 
             var lastMod = modsCurrentlyRunning.Last();
 
-            bool trackResourceUsage = resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat;
-
+            var trackResourceUsage = TrackableResource(resource);
             if (trackResourceUsage)
             {
                 resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlyRequested += wanted;
@@ -130,7 +130,7 @@ namespace KIT.ResourceScheduler
             obtainedAmount += tmp;
             currentResources[resource] -= tmp;
 
-            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat && tmp > 0)
+            if (trackResourceUsage && tmp > 0)
                 resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlySupplied += tmp;
 
             if (obtainedAmount >= modifiedAmount)
@@ -143,9 +143,6 @@ namespace KIT.ResourceScheduler
                 return wanted;
             }
 
-            // XXX - todo. At this stage, we might want to try requesting more than we need to refill the resources on hand.
-            // Some % of total capacity or something like that? Might reduce some future calls
-
             // Convert to seconds
             obtainedAmount = wanted * (obtainedAmount / modifiedAmount);
             obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted, currentMaxResources[resource]); ;
@@ -154,7 +151,7 @@ namespace KIT.ResourceScheduler
             // ProduceResource which credits the _currentlySupplied field here.
 
             // is it close enough to being fully requested? (accounting for precision issues)
-            var result = (wanted * fudgeFactor < obtainedAmount) ? wanted : wanted * (obtainedAmount / wanted);
+            var result = (obtainedAmount < (wanted * fudgeFactor)) ? wanted * (obtainedAmount / wanted) : wanted;
 
             tmpPPRI.amount += result;
             if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
@@ -185,7 +182,7 @@ namespace KIT.ResourceScheduler
                 return;
             }
 
-            if (resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat)
+            if (TrackableResource(resource))
             {
                 resourceProductionStats[resource - ResourceName.ElectricCharge]._currentlySupplied += amount;
 
@@ -220,13 +217,10 @@ namespace KIT.ResourceScheduler
         #endregion
         #region IResourceScheduler implementation
 
-        // private SortedDictionary<ResourcePriorityValue, List<IKITMod>> sortedModules = new SortedDictionary<ResourcePriorityValue, List<IKITMod>>();
         private List<IKITMod> activeKITModules = new List<IKITMod>(128);
-
         private Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules = new Dictionary<ResourceName, List<IKITVariableSupplier>>();
 
         private bool complainedToWaiterAboutOrder;
-        private bool firstRun = true;
 
         public ulong KITSteps;
 
@@ -254,8 +248,7 @@ namespace KIT.ResourceScheduler
                 currentResourceProduction._previouslyRequested = currentResourceProduction._currentlyRequested;
                 currentResourceProduction._previouslySupplied = currentResourceProduction._currentlySupplied;
 
-                currentResourceProduction._currentlyRequested = currentResourceProduction._currentlySupplied
-                    = currentResourceProduction._previouslyRequested = currentResourceProduction._previouslySupplied = 0;
+                currentResourceProduction._currentlyRequested = currentResourceProduction._currentlySupplied = 0;
             }
 
             for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
@@ -286,6 +279,17 @@ namespace KIT.ResourceScheduler
                     return;
                 }
                 Debug.Log("[resource manager] got {activeKITModules.Count} modules and also {variableSupplierModules.Count} variable modules");
+            }
+
+            if (activeKITModules.Count >= 1)
+            {
+                var dc = activeKITModules[0] as IDCElectricalSystem;
+                if (dc != null)
+                {
+                    var ppri = new PerPartResourceInformation();
+                    ppri.amount = dc.unallocatedElectricChargeConsumption();
+                    ModConsumption[ResourceName.ElectricCharge][activeKITModules[0]] = ppri;
+                }
             }
 
             inExecuteKITModules = true;
@@ -321,6 +325,21 @@ namespace KIT.ResourceScheduler
                 modsCurrentlyRunning.Remove(mod);
             }
 
+            RechargeBatteries(ref resourceAmounts, ref resourceMaxAmounts);
+            vesselResources.OnKITProcessingFinished(this);
+
+            currentResources = null;
+            inExecuteKITModules = false;
+        }
+
+        // Track EC at end of processing, check it at beginning - we know how much EC the rest of the vessel is using. Track / account for that usage.
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void RechargeBatteries(ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
+        {
+            // TODO: should we do this every loop, or should we wait a until a certain % has dropped?
+
             // Check to see if the variable suppliers can be used to fill any missing EC from the vessel. This will charge
             // any batteries present on the ship.
             if (resourceMaxAmounts.ContainsKey(ResourceName.ElectricCharge) && resourceAmounts.ContainsKey(ResourceName.ElectricCharge))
@@ -329,11 +348,6 @@ namespace KIT.ResourceScheduler
                 if (fillBattery > 0)
                     resourceAmounts[ResourceName.ElectricCharge] += CallVariableSuppliers(ResourceName.ElectricCharge, 0, fillBattery);
             }
-
-            vesselResources.OnKITProcessingFinished(this);
-
-            currentResources = null;
-            inExecuteKITModules = false;
         }
 
         HashSet<IKITVariableSupplier> tappedOutMods = new HashSet<IKITVariableSupplier>(128);

@@ -2481,8 +2481,6 @@ namespace KIT.Reactors
 
         private void Window(int windowId)
         {
-            //throw new IndexOutOfRangeException("InterstellarReactor.Window need to work out how to do this ");
-
             try
             {
                 windowPositionX = windowPosition.x;
