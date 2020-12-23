@@ -5,13 +5,11 @@ PART
 	author = TD
 
 	// --- asset parameters ---
-	//mesh = NewModel
-
 	MODEL
 	{
-		model = Kerbal-Interstellar-Technologies/Parts/Engines/AluminiumEngine/NewModel
-		texture = ShortEngine, Kerbal-Interstellar-Technologies/Parts/Engines/AluminiumEngine/PneumaticPowerFuelFeed
-		texture = ShortEngineNRML, Kerbal-Interstellar-Technologies/Parts/Engines/AluminiumEngine/ShortEngineNRML
+		model =LiteFuels/AluminiumEngine/NewModel
+		texture = ShortEngine, PneumaticPowerFuelFeed
+		texture = ShortEngineNRML, ShortEngineNRML
 		scale = 1, 1, 1
 		rotation = 0, 0, 0
 		position = 0, 0, 0
@@ -168,7 +166,7 @@ PART
 		useMegajouleBattery = true
 		powerRequirement = 0
 		fusionWasteHeat = 0
-		lethalDistance = 0
+		leathalDistance = 0
 		killDivider = 0
 		maxTemp = 2500
 		wasteHeatMultiplier = 1

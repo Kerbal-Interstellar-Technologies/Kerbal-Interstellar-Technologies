@@ -9,9 +9,9 @@ PART
 
 	MODEL
 	{
-		model = Kerbal-Interstellar-Technologies/Parts/Engines/AluminiumEngine/NewModel
-		texture = ShortEngine, Kerbal-Interstellar-Technologies/Parts/Engines/AluminiumEngine/LiquidMetalInjectionEngine
-		texture = ShortEngineNRML, Kerbal-Interstellar-Technologies/Parts/Engines/AluminiumEngine/ShortEngineNRML
+		model =LiteFuels/AluminiumEngine/NewModel
+		texture = ShortEngine, LiquidMetalInjectionEngine
+		texture = ShortEngineNRML, ShortEngineNRML
 		scale = 1, 1, 1
 		rotation = 0, 0, 0
 		position = 0, 0, 0
@@ -164,7 +164,7 @@ PART
 		maxThrust = 1500
 		powerRequirement = 220 			// (1100000N / 290 / 9.81) * (659 x  880) = 220 MW
 		fusionWasteHeat = 0
-		lethalDistance = 0
+		leathalDistance = 0
 		killDivider = 0
 		maxTemp = 2500
 		wasteHeatMultiplier = 1
