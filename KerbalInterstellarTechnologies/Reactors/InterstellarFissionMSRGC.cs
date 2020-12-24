@@ -37,6 +37,8 @@ namespace KIT.Reactors
         [KSPField(guiActive = false)]
         public bool canDumpActinides = false;
 
+        BaseEvent _manualRestartEvent;
+
         PartResourceDefinition fluorineGasDefinition;
         PartResourceDefinition depletedFuelDefinition;
         PartResourceDefinition enrichedUraniumDefinition;
@@ -271,6 +273,8 @@ namespace KIT.Reactors
 
             fuelModeStr = CurrentFuelMode.ModeGUIName;
 
+            _manualRestartEvent = Events[nameof(ManualRestart)];
+
             oxygenGasDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.OxygenGas);
             fluorineGasDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.FluorineGas);
             depletedFuelDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.DepletedFuel);
@@ -463,6 +467,14 @@ namespace KIT.Reactors
                 }
             }
             return modesAvailable;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (_manualRestartEvent != null)
+                _manualRestartEvent.externalToEVAOnly = !CheatOptions.NonStrictAttachmentOrientation;
         }
     }
 }
