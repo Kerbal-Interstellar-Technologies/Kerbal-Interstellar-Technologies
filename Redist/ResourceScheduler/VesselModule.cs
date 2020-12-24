@@ -283,10 +283,37 @@ namespace KIT.ResourceScheduler
                     maxAmounts[resourceID] += resource.maxAmount;
                 }
             }
+
+            resourceMaxAmounts.Remove(ResourceName.ChargedParticle);
         }
 
         void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
         {
+            // Per FreeThinker, "charged particle  power should technically not be storable. The only reason it existed was to have some consumption
+            // balancing when there are more than one consumer.", "charged particled should become thermal heat when unconsumed and if no thermal
+            // storage available it should become wasteheat."
+
+            if (available.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount))
+            {
+                resourceMaxAmounts.Remove(ResourceName.ChargedParticle);
+                available.Remove(ResourceName.ChargedParticle);
+
+                available[ResourceName.ThermalPower] += chargedParticleAmount;
+            }
+
+            if (available.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount))
+            {
+                var diff = thermalPowerAmount - resourceMaxAmounts[ResourceName.ThermalPower];
+
+                if (diff > 0)
+                {
+                    available[ResourceName.WasteHeat] += diff;
+                    available[ResourceName.ThermalPower] = resourceMaxAmounts[ResourceName.ThermalPower];
+                }
+            }
+
+            // Disperse the resources throughout the vessel
+
             foreach (var part in vessel.Parts)
             {
                 foreach (var resource in part.Resources)
@@ -298,9 +325,9 @@ namespace KIT.ResourceScheduler
                         continue;
                     }
 
-                    if (available.ContainsKey(resourceID) == false || maxAmounts.ContainsKey(resourceID) == false) return; // Shouldn't happen
+                    if (available.ContainsKey(resourceID) == false || maxAmounts.ContainsKey(resourceID) == false) return;
 
-                    var mult = Math.Min(1, (available[resourceID] / maxAmounts[resourceID]));
+                    var mult = Math.Max(1, (available[resourceID] / maxAmounts[resourceID]));
                     resource.amount = resource.maxAmount * mult;
                 }
             }
