@@ -712,7 +712,7 @@ namespace KIT.Wasteheat
         public double spaceRadiatorBonus;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_Mass", guiUnits = " t", guiFormat = "F3")]//Mass
         public float partMass;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_ConverctionBonus", guiUnits = "x")]//Converction Bonus
+        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_ConverctionBonus", guiUnits = "x")]//Converction Bonus
         public double convectiveBonus = 1;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_EffectiveArea", guiFormat = "F2", guiUnits = " m\xB2")]//Effective Area
         public double effectiveRadiatorArea;
@@ -1729,10 +1729,6 @@ namespace KIT.Wasteheat
 
             if (MeshRadiatorSize(out var size))
                 convectiveBonus = Math.Max(1, size / radiatorArea);
-
-            // The Liquid Metal Cooled Reactor shows a tiny surface space, so this should not be an else statement
-            if (radiatorArea == 0)
-                radiatorArea = 1;
         }
 
         void radiatorIsEnabled_OnValueModified(object arg1)
