@@ -24,7 +24,7 @@ namespace KIT.Propulsion
         {
             throw new NotImplementedException();
         }
-        public void ProduceResource(ResourceName resource, double amount, double max = -1)
+        public double ProduceResource(ResourceName resource, double amount, double max = -1)
         {
             throw new NotImplementedException();
         }

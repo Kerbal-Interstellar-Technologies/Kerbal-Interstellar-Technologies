@@ -172,14 +172,14 @@ namespace KIT.ResourceScheduler
         /// </summary>
         /// <param name="resource">Resource to produce</param>
         /// <param name="amount">Amount you are providing</param>
-        public void ProduceResource(ResourceName resource, double amount, double max = -1)
+        public double ProduceResource(ResourceName resource, double amount, double max = -1)
         {
             KITResourceSettings.ValidateResource(resource);
 
             if (!inExecuteKITModules)
             {
                 Debug.Log("[KITResourceManager.ProduceResource] don't do this.");
-                return;
+                return 0;
             }
 
             if (TrackableResource(resource))
@@ -205,13 +205,15 @@ namespace KIT.ResourceScheduler
             }
 
 
-            if (resource == ResourceName.WasteHeat && myCheatOptions.IgnoreMaxTemperature) return;
+            if (resource == ResourceName.WasteHeat && myCheatOptions.IgnoreMaxTemperature) return 0;
 
             if (currentResources.ContainsKey(resource) == false)
             {
                 currentResources[resource] = 0;
             }
             currentResources[resource] += amount * fixedDeltaTime;
+
+            return amount;
         }
 
         #endregion

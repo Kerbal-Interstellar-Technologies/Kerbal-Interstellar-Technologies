@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 namespace KIT.ResourceScheduler
 {
     /// <summary>
-    /// ResourceProduction tracks what was supplied in a previous update. Code must assume that the previous entries can be 0  
+    /// ResourceProduction tracks what was supplied in a previous update. Code must assume that the previous entries can be 0
     /// </summary>
     public interface IResourceProduction
     {
         /// <summary>
-        /// Does this have previous update data available? 
+        /// Does this have previous update data available?
         /// </summary>
         /// <returns>May be false at any time for any reason.</returns>
         bool PreviousDataSupplied();
@@ -36,12 +36,12 @@ namespace KIT.ResourceScheduler
         /// </returns>
         bool PreviousDemandMet();
         /// <summary>
-        /// Returns the surplus resource production in the previous update. The minimum will be 0 
+        /// Returns the surplus resource production in the previous update. The minimum will be 0
         /// </summary>
         /// <returns>Math.Max(0, previouslySupplied - previouslyRequested) for the most part.</returns>
         double PreviousSurplus();
         /// <summary>
-        /// Returns the unmet demand in the previous update. 
+        /// Returns the unmet demand in the previous update.
         /// </summary>
         /// <returns>Math.Max(0, previouslyRequested - previouslySupplied) for the most part.</returns>
         double PreviousUnmetDemand();
@@ -80,7 +80,7 @@ namespace KIT.ResourceScheduler
         /// <param name="name">Resource Name</param>
         /// <param name="amount">Amount of resource to produce per second</param>
         /// <param name="max">The maximum that this part can produce of this resource, in total. If -1, then it will add up all the times the resource has been produced.</param>
-        void ProduceResource(ResourceName resource, double amount, double max = -1);
+        double ProduceResource(ResourceName resource, double amount, double max = -1);
 
         /// <summary>
         /// Checks to see how much storage is available for the given resource, returning 0 if there is none.
