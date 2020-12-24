@@ -1725,10 +1725,7 @@ namespace KIT.Wasteheat
 
             clarifyFunction = true;
 
-            radiatorArea =
-                2 * part.surfaceAreas.x * part.surfaceAreas.y +
-                2 * part.surfaceAreas.x * part.surfaceAreas.z +
-                2 * part.surfaceAreas.y * part.surfaceAreas.z;
+            radiatorArea = Math.PI * part.partInfo.partSize;
 
             if (MeshRadiatorSize(out var size))
                 convectiveBonus = Math.Max(1, size / radiatorArea);
