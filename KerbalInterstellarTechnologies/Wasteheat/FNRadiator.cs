@@ -687,7 +687,6 @@ namespace KIT.Wasteheat
         [KSPField(isPersistant = true)] public bool showControls = true;
         [KSPField(isPersistant = true)] public double currentRadTemp;
         [KSPField(isPersistant = true)] public bool clarifyFunction;
-        
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_Cooling"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Radiator Cooling--Off--On
         public bool radiatorIsEnabled;
@@ -729,7 +728,6 @@ namespace KIT.Wasteheat
         [KSPField] public string radiatorTypeMk5 = Localizer.Format("#LOC_KSPIE_Radiator_radiatorTypeMk5");//"Graphene Radiator Mk2"
         [KSPField] public string radiatorTypeMk6 = Localizer.Format("#LOC_KSPIE_Radiator_radiatorTypeMk6");//"Graphene Radiator Mk3"
 
-        
         [KSPField] public bool canRadiateHeat = true;
         [KSPField] public bool showColorHeat = true;
         [KSPField] public string surfaceAreaUpgradeTechReq = null;
@@ -780,7 +778,6 @@ namespace KIT.Wasteheat
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "Atmosphere Density", guiFormat = "F2", guiUnits = "")]
         public double atmDensity;
 
-        private double _sphericalCowInAVacuum;
         private double _instantaneousRadTemp;
         private int nrAvailableUpgradeTechs;
         private bool hasSurfaceAreaUpgradeTechReq;
@@ -793,6 +790,8 @@ namespace KIT.Wasteheat
         private double oxidationModifier;
         private double temperatureDifference;
         private double submergedModifier;
+        private double _attachedPartsModifier;
+        private double _upgradeModifier;
 
 
         static float _maximumRadiatorTempInSpace = 4500;
@@ -1281,31 +1280,7 @@ namespace KIT.Wasteheat
                 return RadiatorProperties.RadiatorTemperatureMk1;
         }
 
-        public double BaseRadiatorArea
-        {
-            get
-            {
-                if (radiatorArea == 0)
-                {
-                    clarifyFunction = true;
-
-                    if (MeshRadiatorSize(out var size))
-                        radiatorArea = Math.Round(size);
-
-                    // The Liquid Metal Cooled Reactor shows a tiny surface space, so this should not be an else statement
-                    if (radiatorArea == 0)
-                        radiatorArea = 1;
-                }
-
-                // Because I have absolutely no idea what I'm doing, I'm taking some short cuts and major simplifications.
-                // This is the radius of a circular radiator, (operating in a vacuum)
-                _sphericalCowInAVacuum = (radiatorArea / Mathf.PI).Sqrt();
-
-                return hasSurfaceAreaUpgradeTechReq
-                    ? radiatorArea * surfaceAreaUpgradeMult
-                    : radiatorArea;
-            }
-        }
+        public double BaseRadiatorArea => radiatorArea * _upgradeModifier * _attachedPartsModifier;
 
         public double EffectiveRadiatorArea => BaseRadiatorArea * areaMultiplier * PluginSettings.Config.RadiatorAreaMultiplier;
 
@@ -1313,6 +1288,8 @@ namespace KIT.Wasteheat
         {
             // check if we have SurfaceAreaUpgradeTechReq
             hasSurfaceAreaUpgradeTechReq = PluginHelper.UpgradeAvailable(surfaceAreaUpgradeTechReq);
+
+            _upgradeModifier = hasSurfaceAreaUpgradeTechReq ? surfaceAreaUpgradeMult : 1;
 
             // determine number of upgrade techs
             nrAvailableUpgradeTechs = 1;
@@ -1576,6 +1553,7 @@ namespace KIT.Wasteheat
             _radiatorDeployDelay = 0;
 
             DetermineGenerationType();
+            InitializeRadiatorAreaWhenMissing();
 
             _isGraphene = !string.IsNullOrEmpty(surfaceAreaUpgradeTechReq);
             _maximumRadiatorTempInSpace = (float)RadiatorProperties.RadiatorTemperatureMk6;
@@ -1741,6 +1719,25 @@ namespace KIT.Wasteheat
             Fields[nameof(dynamicPressureStress)].guiActive = isDeployable;
         }
 
+        private void InitializeRadiatorAreaWhenMissing()
+        {
+            if (radiatorArea != 0) return;
+
+            clarifyFunction = true;
+
+            radiatorArea =
+                2 * part.surfaceAreas.x * part.surfaceAreas.y +
+                2 * part.surfaceAreas.x * part.surfaceAreas.z +
+                2 * part.surfaceAreas.y * part.surfaceAreas.z;
+
+            if (MeshRadiatorSize(out var size))
+                convectiveBonus = Math.Max(1, size / radiatorArea);
+
+            // The Liquid Metal Cooled Reactor shows a tiny surface space, so this should not be an else statement
+            if (radiatorArea == 0)
+                radiatorArea = 1;
+        }
+
         void radiatorIsEnabled_OnValueModified(object arg1)
         {
             isAutomated = false;
@@ -1754,6 +1751,10 @@ namespace KIT.Wasteheat
         public void Update()
         {
             partMass = part.mass;
+
+            var stackAttachedNodesCount = part.attachNodes.Count(m => m.attachedPart != null && m.nodeType == AttachNode.NodeType.Stack);
+            var surfaceAttachedNodesCount = part.attachNodes.Count(m => m.attachedPart != null && m.nodeType == AttachNode.NodeType.Surface);
+            _attachedPartsModifier = Math.Max(0, 1 - (0.2 * stackAttachedNodesCount + 0.1 * surfaceAttachedNodesCount));
 
             var isDeployStateUndefined = _moduleDeployableRadiator == null
                 || _moduleDeployableRadiator.deployState == ModuleDeployablePart.DeployState.EXTENDING
@@ -1883,7 +1884,7 @@ namespace KIT.Wasteheat
             // rb.angularVelocity.magnitude in radians/second
             double tmp = 180 * Math.Abs(rb.angularVelocity.magnitude);
             // calculate the linear velocity
-            double tmpVelocity = tmp / (Mathf.PI * _sphericalCowInAVacuum);
+            double tmpVelocity = tmp / (Mathf.PI * (radiatorArea / Mathf.PI).Sqrt());
             // and then distance traveled.
             double distanceTraveled = effectiveRadiatorArea * tmpVelocity;
 
