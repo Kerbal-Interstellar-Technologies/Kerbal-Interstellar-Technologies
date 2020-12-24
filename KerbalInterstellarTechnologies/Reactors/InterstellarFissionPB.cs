@@ -1,4 +1,4 @@
-﻿using KIT.Resources;
+﻿using KIT.Wasteheat;
 using System;
 
 namespace KIT.Reactors
@@ -15,20 +15,12 @@ namespace KIT.Reactors
         public bool heatThrottling = false;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = true, guiUnits = "%", guiName = "#LOC_KSPIE_FissionPB_Overheating", guiFormat = "F3")]//Overheating
         public double overheatPercentage;
-        [KSPField(groupName = GROUP, isPersistant = false, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_FissionPB_WasteheatRatio")]//Wasteheat Ratio
-        public double resourceBarRatio;
         [KSPField(isPersistant = false)]
         public double thermalRatioEfficiencyModifier = 0.81;
         [KSPField(isPersistant = false)]
         public double maximumChargedIspMult = 114;
         [KSPField(isPersistant = false)]
         public double minimumChargdIspMult = 11.4;
-        [KSPField(isPersistant = false)]
-        public double coreTemperatureWasteheatPower = 0.3;
-        [KSPField(isPersistant = false)]
-        public double coreTemperatureWasteheatModifier = -0.2;
-        [KSPField(isPersistant = false)]
-        public double coreTemperatureWasteheatMultiplier = 1.25;
 
         [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionPB_ManualRestart", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Manual Restart
         public void ManualRestart()
@@ -50,15 +42,10 @@ namespace KIT.Reactors
 
         public override double StableMaximumReactorPower => IsEnabled ? NormalisedMaximumPower * ThermalRatioEfficiency : 0;
 
-        private double ThermalRatioEfficiency
-        {
-            get
-            {
-                return reactorType == 4 || heatThrottling
-                    ? Math.Pow((ZeroPowerTemp - CoreTemperature) / OptimalTempDifference, thermalRatioEfficiencyModifier)
-                    : 1;
-            }
-        }
+        private double ThermalRatioEfficiency =>
+            reactorType == 4 || heatThrottling
+                ? Math.Pow((ZeroPowerTemp - CoreTemperature) / OptimalTempDifference, thermalRatioEfficiencyModifier)
+                : 1;
 
         private double OptimalTemp => base.CoreTemperature;
 
@@ -72,17 +59,9 @@ namespace KIT.Reactors
         {
             get
             {
-                if (HighLogic.LoadedSceneIsFlight && heatThrottling)
-                {
-                    // TODO fix this
-                    part.GetConnectedResourceTotals("WasteHeat".GetHashCode(), out var amount, out var maxAmount);
-                    resourceBarRatio = CheatOptions.IgnoreMaxTemperature ? 0 : amount / maxAmount;
+                var radiatorTemperature = HighLogic.LoadedSceneIsEditor || CheatOptions.IgnoreMaxTemperature ? 0 : FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel);
 
-                    var temperatureIncrease = Math.Max(Math.Pow(resourceBarRatio, coreTemperatureWasteheatPower) + coreTemperatureWasteheatModifier, 0) * coreTemperatureWasteheatMultiplier * OptimalTempDifference;
-
-                    return Math.Min(Math.Max(OptimalTemp + temperatureIncrease, OptimalTemp), ZeroPowerTemp);
-                }
-                return base.CoreTemperature;
+                return GetCoreTempAtRadiatorTemp(radiatorTemperature);
             }
         }
 
@@ -109,33 +88,28 @@ namespace KIT.Reactors
 
         public override double GetCoreTempAtRadiatorTemp(double radTemp)
         {
-            if (heatThrottling)
-            {
-                double pfr_temp = 0;
+            if (!heatThrottling) return base.CoreTemperature;
 
-                if (!double.IsNaN(radTemp) && !double.IsInfinity(radTemp))
-                    pfr_temp = Math.Min(Math.Max(radTemp * 1.5, OptimalTemp), ZeroPowerTemp);
-                else
-                    pfr_temp = OptimalTemp;
+            double pfrTemp;
+            if (!double.IsNaN(radTemp) && !double.IsInfinity(radTemp))
+                pfrTemp = Math.Min(Math.Max(radTemp * 1.5, OptimalTemp), ZeroPowerTemp);
+            else
+                pfrTemp = OptimalTemp;
 
-                return pfr_temp;
-            }
-            return base.GetCoreTempAtRadiatorTemp(radTemp);
+            return pfrTemp;
         }
 
         public override double GetThermalPowerAtTemp(double temp)
         {
-            if (reactorType == 4 || heatThrottling)
-            {
-                double rel_temp_diff;
-                if (temp > OptimalTemp && temp < ZeroPowerTemp)
-                    rel_temp_diff = Math.Pow((ZeroPowerTemp - temp) / (ZeroPowerTemp - OptimalTemp), thermalRatioEfficiencyModifier);
-                else
-                    rel_temp_diff = 1;
+            if (reactorType != 4 && !heatThrottling) return base.GetThermalPowerAtTemp(temp);
 
-                return MaximumPower * rel_temp_diff;
-            }
-            return base.GetThermalPowerAtTemp(temp);
+            double relTempDiff;
+            if (temp > OptimalTemp && temp < ZeroPowerTemp)
+                relTempDiff = Math.Pow((ZeroPowerTemp - temp) / (ZeroPowerTemp - OptimalTemp), thermalRatioEfficiencyModifier);
+            else
+                relTempDiff = 1;
+
+            return MaximumPower * relTempDiff;
         }
     }
 }

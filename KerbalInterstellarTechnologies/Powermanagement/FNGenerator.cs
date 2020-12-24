@@ -1,4 +1,3 @@
-using KIT.Constants;
 using KIT.Extensions;
 using KIT.Reactors;
 using KIT.Redist;
@@ -9,7 +8,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement.Interfaces;
 using TweakScale;
 using UnityEngine;
 
@@ -655,6 +654,34 @@ namespace KIT.Powermanagement
             }
         }
 
+        public double GetHotBathTemperature(double coldBathTemperature)
+        {
+            if (attachedPowerSource == null)
+                return -1;
+
+            var coreTemperature = attachedPowerSource.GetCoreTempAtRadiatorTemp(coldBathTemperature);
+
+            var plasmaTemperature = coreTemperature <= attachedPowerSource.HotBathTemperature
+                ? coreTemperature
+                : attachedPowerSource.HotBathTemperature + Math.Pow(coreTemperature - attachedPowerSource.HotBathTemperature, coreTemperateHotBathExponent);
+
+            double temperature;
+            if (applies_balance || !isMHD)
+                temperature = attachedPowerSource.HotBathTemperature;
+            else
+            {
+                if (attachedPowerSource.SupportMHD)
+                    temperature = plasmaTemperature;
+                else
+                {
+                    var chargedPowerModifier = attachedPowerSource.ChargedPowerRatio * attachedPowerSource.ChargedPowerRatio;
+                    temperature = plasmaTemperature * chargedPowerModifier + (1 - chargedPowerModifier) * attachedPowerSource.HotBathTemperature; // for fusion reactors connected to MHD
+                }
+            }
+
+            return temperature;
+        }
+
         /// <summary>
         /// Is called by KSP while the part is active
         /// </summary>
@@ -768,24 +795,15 @@ namespace KIT.Powermanagement
 
             if (!chargedParticleMode) // thermal or plasma mode
             {
-                var chargedPowerModifier = attachedPowerSource.ChargedPowerRatio * attachedPowerSource.ChargedPowerRatio;
-
-                var plasmaTemperature = attachedPowerSource.CoreTemperature <= attachedPowerSource.HotBathTemperature
-                    ? attachedPowerSource.CoreTemperature
-                    : attachedPowerSource.HotBathTemperature + Math.Pow(attachedPowerSource.CoreTemperature - attachedPowerSource.HotBathTemperature, coreTemperateHotBathExponent);
-
-                hotBathTemp = applies_balance || !isMHD
-                    ? attachedPowerSource.HotBathTemperature
-                    : attachedPowerSource.SupportMHD
-                        ? plasmaTemperature
-                        : plasmaTemperature * chargedPowerModifier + (1 - chargedPowerModifier) * attachedPowerSource.HotBathTemperature;	// for fusion reactors connected to MHD
-
                 averageRadiatorTemperatureQueue.Enqueue(FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel));
 
                 while (averageRadiatorTemperatureQueue.Count > 10)
                     averageRadiatorTemperatureQueue.Dequeue();
 
                 coldBathTempDisplay = averageRadiatorTemperatureQueue.Average();
+
+                hotBathTemp = GetHotBathTemperature(coldBathTempDisplay);
+
                 coldBathTemp = coldBathTempDisplay * 0.75;
             }
 
