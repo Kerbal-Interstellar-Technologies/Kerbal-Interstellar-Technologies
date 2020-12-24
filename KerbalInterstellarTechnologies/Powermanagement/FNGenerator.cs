@@ -1,4 +1,3 @@
-using KIT.Constants;
 using KIT.Extensions;
 using KIT.Reactors;
 using KIT.Redist;
@@ -9,7 +8,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FNPlugin.Powermanagement;
+using KIT.Powermanagement.Interfaces;
 using TweakScale;
 using UnityEngine;
 
