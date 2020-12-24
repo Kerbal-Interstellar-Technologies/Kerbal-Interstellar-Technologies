@@ -135,8 +135,6 @@ namespace KIT.ResourceScheduler
 
             if (obtainedAmount >= modifiedAmount)
             {
-                // resourceFlow[(int)resource].Add(new KeyValuePair<IKITMod, double>(modsCurrentlyRunning.Last(), -wanted));
-
                 tmpPPRI.amount += wanted;
                 if(trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
 
@@ -331,9 +329,6 @@ namespace KIT.ResourceScheduler
             currentResources = null;
             inExecuteKITModules = false;
         }
-
-        // Track EC at end of processing, check it at beginning - we know how much EC the rest of the vessel is using. Track / account for that usage.
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void RechargeBatteries(ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
