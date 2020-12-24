@@ -88,9 +88,9 @@ namespace KIT.Reactors
 
         public override double GetCoreTempAtRadiatorTemp(double radTemp)
         {
-            if (!heatThrottling) return base.GetCoreTempAtRadiatorTemp(radTemp);
-            double pfrTemp;
+            if (!heatThrottling) return base.CoreTemperature;
 
+            double pfrTemp;
             if (!double.IsNaN(radTemp) && !double.IsInfinity(radTemp))
                 pfrTemp = Math.Min(Math.Max(radTemp * 1.5, OptimalTemp), ZeroPowerTemp);
             else
