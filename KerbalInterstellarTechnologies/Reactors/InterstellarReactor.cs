@@ -2964,6 +2964,8 @@ namespace KIT.Reactors
 
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {
+            if (!IsEnabled) return false;
+
             if (resMan.CheatOptions().InfinitePropellant)
             {
                 resMan.ProduceResource(resource, requestedAmount);
