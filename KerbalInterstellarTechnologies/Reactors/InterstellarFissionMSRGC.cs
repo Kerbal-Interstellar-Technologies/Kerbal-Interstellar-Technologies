@@ -474,7 +474,7 @@ namespace KIT.Reactors
             base.Update();
 
             if (_manualRestartEvent != null)
-                _manualRestartEvent.externalToEVAOnly = !CheatOptions.NonStrictAttachmentOrientation;
+                _manualRestartEvent.externalToEVAOnly = !HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().extendedReactorControl;
         }
     }
 }
