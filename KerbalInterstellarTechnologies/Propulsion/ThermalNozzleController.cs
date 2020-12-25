@@ -1583,12 +1583,12 @@ namespace KIT.Propulsion
             if (requiredMegajouleRatio > 0)
             {
                 var requestedMegajoules = (availableThermalPower + availableChargedPower) * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
-                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedMegajoules * GameConstants.ecPerMJ);
+                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedMegajoules);
                 receivedMegajoulesRatio = requestedMegajoules > 0 ? availablePower / requestedMegajoules : 0;
 
                 requestedElectricPowerMegajoules = availablePower * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
                 //var receivedMegajoules = consumeFNResourcePerSecond(requestedElectricPowerMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
-                var receivedMegajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedElectricPowerMegajoules * GameConstants.ecPerMJ);
+                var receivedMegajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedElectricPowerMegajoules);
                 requiredElectricalPowerFromMhd = CalculateElectricalPowerCurrentlyNeeded(resMan, availablePower * requiredMegajouleRatio * 2);
                 var electricalPowerCurrentlyNeedRatio = availablePower > 0 ? Math.Min(1, requiredElectricalPowerFromMhd / requestedElectricPowerMegajoules) : 0;
                 receivedMegajoulesRatio = Math.Min(1, Math.Max(electricalPowerCurrentlyNeedRatio, requestedElectricPowerMegajoules > 0 ? receivedMegajoules / requestedElectricPowerMegajoules : 0));
@@ -2257,10 +2257,10 @@ namespace KIT.Propulsion
             currentMaxChargedPower = Math.Min(effectiveChargedSupply, effectiveThrustFraction * maximumChargedPower * maximumPowerUsageForPropulsionRatio * adjustedThrottle);
 
             thermalResourceRatio = resMan.ResourceFillFraction(ResourceName.ThermalPower);
-            chargedResourceRatio = resMan.ResourceFillFraction(ResourceName.ChargedParticle);
+            chargedResourceRatio = resMan.ResourceFillFraction(ResourceName.ChargedParticle); // does not work anymore.
 
             availableThermalPower = exhaustAllowed ? currentMaxThermalPower * (thermalResourceRatio > 0.5 ? 1 : thermalResourceRatio * 2) : 0;
-            availableChargedPower = exhaustAllowed ? currentMaxChargedPower * (chargedResourceRatio > 0.5 ? 1 : chargedResourceRatio * 2) : 0;
+            availableChargedPower = exhaustAllowed ? /* currentMaxChargedPower * (chargedResourceRatio > 0.5 ? 1 : chargedResourceRatio * 2) */ 1: 0;
 
             UpdateAnimation();
 
@@ -2271,7 +2271,7 @@ namespace KIT.Propulsion
             {
                 var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
                 airFlowForCooling = maxFuelFlowRate * resMan.ResourceFillFraction(ResourceName.IntakeOxygenAir);
-                resMan.ConsumeResource(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling * GameConstants.ecPerMJ);
+                resMan.ConsumeResource(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling);
             }
 
             // flameout when reactor cannot produce power

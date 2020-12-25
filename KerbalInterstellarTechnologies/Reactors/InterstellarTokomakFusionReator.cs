@@ -44,13 +44,15 @@ namespace KIT.Reactors
             }
         }
 
+        double demandRatio;
+        double resourceRatio;
+
         public override void OnUpdate()
         {
-            throw new ArgumentException("please fix tokomak OnUpdate");
-            /*
             base.OnUpdate();
-            if (!isSwappingFuelMode && (!CheatOptions.InfiniteElectricity && getDemandStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt) > 1.01
-                                                                          && getResourceBarRatio(ResourceSettings.Config.ElectricPowerInMegawatt) < 0.25) && IsEnabled && !fusion_alert)
+
+            if (!isSwappingFuelMode && (!CheatOptions.InfiniteElectricity && demandRatio > 1.01
+                                                                          && resourceRatio < 0.25) && IsEnabled && !fusion_alert)
                 fusionAlertFrames++;
             else
             {
@@ -65,7 +67,7 @@ namespace KIT.Reactors
             }
 
             electricPowerMaintenance = PluginHelper.getFormattedPowerString(power_consumed) + " / " + PluginHelper.getFormattedPowerString(heatingPowerRequirements);
-            */
+            
         }
 
         private double GetPlasmaRatio(double receivedPowerPerSecond, double fusionPowerRequirement)
@@ -88,51 +90,15 @@ namespace KIT.Reactors
             return Math.Round(fusionPowerRequirement > 0 ? receivedPowerPerSecond / fusionPowerRequirement : 1, 4);
         }
 
+        private bool startingReactor;
+
         public override void StartReactor()
         {
             base.StartReactor();
 
             if (HighLogic.LoadedSceneIsEditor) return;
 
-            throw new ArgumentException("please fix tokomak StartReactor");
-
-            /*
-
-            var fixedDeltaTime = (double)(decimal)TimeWarp.fixedDeltaTime;
-
-            var availablePower = getResourceAvailability(ResourceSettings.Config.ElectricPowerInMegawatt);
-
-            var fusionPowerRequirement = PowerRequirement;
-
-            if (availablePower >= fusionPowerRequirement)
-            {
-                // consume from any stored megajoule source
-                power_consumed = CheatOptions.InfiniteElectricity
-                    ? fusionPowerRequirement
-                    : part.RequestResource(ResourceSettings.Config.ElectricPowerInMegawatt, fusionPowerRequirement * fixedDeltaTime) / fixedDeltaTime;
-            }
-            else
-            {
-                var message = Localizer.Format("#LOC_KSPIE_TokomakFusionReator_PostMsg2", fusionPowerRequirement.ToString("F2"));//"Not enough power to start fusion reactor, it requires at " +  + " MW"
-                UnityEngine.Debug.Log("[KSPI]: " + message);
-                ScreenMessages.PostScreenMessage(message, 5f, ScreenMessageStyle.LOWER_CENTER);
-                return;
-            }
-
-            // determine if we have received enough power
-            plasma_ratio = GetPlasmaRatio(power_consumed, fusionPowerRequirement);
-            UnityEngine.Debug.Log("[KSPI]: InterstellarTokamakFusionReactor StartReactor plasma_ratio " + plasma_ratio);
-            allowJumpStart = plasma_ratio > 0.99;
-            if (allowJumpStart)
-            {
-                storedPlasmaEnergyRatio = 1;
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_TokomakFusionReator_PostMsg3"), 5f, ScreenMessageStyle.LOWER_CENTER);//"Starting fusion reaction"
-                jumpstartPowerTime = 10;
-            }
-            else
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_TokomakFusionReator_PostMsg4"), 5f, ScreenMessageStyle.LOWER_CENTER);//"Not enough power to start fusion reaction"
-
-            */
+            startingReactor = true;
         }
 
         public new void KITFixedUpdate(IResourceManager resMan)
@@ -142,6 +108,31 @@ namespace KIT.Reactors
             {
                 plasma_ratio = 0;
                 power_consumed = 0;
+                return;
+            }
+
+            if(startingReactor)
+            {
+                startingReactor = false;
+
+                var myFusionPowerRequirement = PowerRequirement;
+                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, myFusionPowerRequirement);
+
+                // determine if we have received enough power
+
+                plasma_ratio = GetPlasmaRatio(availablePower, myFusionPowerRequirement);
+                UnityEngine.Debug.Log("[KSPI]: InterstellarTokamakFusionReactor StartReactor plasma_ratio " + plasma_ratio);
+                allowJumpStart = plasma_ratio > 0.99;
+
+                if (allowJumpStart)
+                {
+                    storedPlasmaEnergyRatio = 1;
+                    ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_TokomakFusionReator_PostMsg3"), 5f, ScreenMessageStyle.LOWER_CENTER);//"Starting fusion reaction"
+                    jumpstartPowerTime = 10;
+                }
+                else
+                    ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_TokomakFusionReator_PostMsg4"), 5f, ScreenMessageStyle.LOWER_CENTER);//"Not enough power to start fusion reaction"
+
                 return;
             }
 
@@ -171,6 +162,13 @@ namespace KIT.Reactors
                 allowJumpStart = plasma_ratio > 0.99;
             }
 
+            var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+
+            demandRatio = stats.PreviousDataSupplied() ?
+                stats.PreviouslyRequested() / stats.PreviouslySupplied() :
+                stats.CurrentlyRequested() / stats.CurrentlyRequested();
+            resourceRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
+
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -192,6 +190,12 @@ namespace KIT.Reactors
             }
 
             base.OnStart(state);
+        }
+
+        public new bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
+        {
+            if(!IsEnabled || startingReactor) return false;
+            return base.ProvideResource(resMan, resource, requestedAmount);
         }
     }
 }
