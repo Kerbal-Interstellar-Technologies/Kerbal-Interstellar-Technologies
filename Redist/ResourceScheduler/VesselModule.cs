@@ -327,7 +327,7 @@ namespace KIT.ResourceScheduler
 
                     if (available.ContainsKey(resourceID) == false || maxAmounts.ContainsKey(resourceID) == false) return;
 
-                    var mult = Math.Max(1, (available[resourceID] / maxAmounts[resourceID]));
+                    var mult = Math.Min(1, (available[resourceID] / maxAmounts[resourceID]));
                     resource.amount = resource.maxAmount * mult;
                 }
             }
