@@ -1897,7 +1897,7 @@ namespace KIT.Wasteheat
 
         protected virtual bool CanConvect()
         {
-            return (vessel.mainBody == null) ? false : vessel.mainBody.atmosphere && vessel.altitude < vessel.mainBody.atmosphereDepth;
+            return vessel.mainBody != null && vessel.mainBody.atmosphere && vessel.altitude < vessel.mainBody.atmosphereDepth;
         }
 
         protected virtual double AtmDensity()
@@ -2159,12 +2159,7 @@ namespace KIT.Wasteheat
                 {
                     atmDensity = AtmDensity();
 
-                    var localWasteheat = part.Resources[KITResourceSettings.WasteHeat];
-
-                    double efficiency = localWasteheat != null ? localWasteheat.amount / localWasteheat.maxAmount : 1;
-
                     var convPowerDissipation = CalculateConvPowerDissipation(
-                        efficiency: efficiency,
                         radiatorTemperature: CurrentRadiatorTemperature,
                         externalTemperature: ExternalTemp(),
                         effectiveVesselSpeed: vessel.speed.Sqrt(),
@@ -2199,7 +2194,6 @@ namespace KIT.Wasteheat
         }
 
         public double CalculateConvPowerDissipation(
-            double efficiency,
             double radiatorTemperature,
             double externalTemperature,
             double effectiveVesselSpeed,
@@ -2209,7 +2203,7 @@ namespace KIT.Wasteheat
         {
             var airHeatTransferModifier = airHeatTransferCoefficient * _intakeAtmSpecificHeatCapacity * _intakeAtmDensity * (1 - submergedPortion) * convectiveBonus * atmosphericDensity;
             var lqdHeatTransferModifier = lqdHeatTransferCoefficient * _intakeLqdSpecificHeatCapacity * _intakeLqdDensity * submergedPortion;
-            var heatTransferCoefficient = efficiency * 0.01 * (airHeatTransferModifier + lqdHeatTransferModifier) * Math.Max(1, effectiveVesselSpeed + rotationModifier) * (_isGraphene ? 0.20 : 1);
+            var heatTransferCoefficient = 0.001 * (airHeatTransferModifier + lqdHeatTransferModifier) * Math.Max(1, effectiveVesselSpeed + rotationModifier) * (_isGraphene ? 0.10 : 1);
 
             var temperatureDifference = radiatorTemperature - externalTemperature;
 
