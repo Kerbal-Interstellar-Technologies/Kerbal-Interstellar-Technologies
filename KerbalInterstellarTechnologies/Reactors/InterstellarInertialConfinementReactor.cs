@@ -235,16 +235,14 @@ namespace KIT.Reactors
 
             var powerRequested = LaserPowerRequirements * required_reactor_ratio;
 
-            double primaryPowerReceived;
-            if (!CheatOptions.InfiniteElectricity && powerRequested > 0)
+            double primaryPowerReceived = 0;
+            if (powerRequested > 0)
             {
                 primaryPowerReceived = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequested);
-            }
-            else
-                primaryPowerReceived = powerRequested;
 
-            if (maintenancePowerWasteheatRatio > 0)
-                resMan.ProduceResource(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * primaryPowerReceived);
+                if (maintenancePowerWasteheatRatio > 0)
+                    resMan.ProduceResource(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * primaryPowerReceived);
+            }
 
             // calculate effective primary power ratio
             var powerReceived = primaryPowerReceived;

@@ -767,17 +767,17 @@ namespace KIT.Propulsion
             double receivedRatio = 1;
             if (fuelFactor1 > 0)
             {
-                var receivedFusionFuel = part.RequestResource(fuelResourceDefinition1.id, fusionFuelRequestAmount1 * availableRatio, ResourceFlowMode.STACK_PRIORITY_SEARCH);
+                var receivedFusionFuel = resMan.ConsumeResource(fuelResourceID1, fusionFuelRequestAmount1 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fusionFuelRequestAmount1 > 0 ? receivedFusionFuel / fusionFuelRequestAmount1 : 0);
             }
             if (fuelFactor2 > 0)
             {
-                var receivedFusionFuel = part.RequestResource(fuelResourceDefinition2.id, fusionFuelRequestAmount2 * availableRatio, ResourceFlowMode.STACK_PRIORITY_SEARCH);
+                var receivedFusionFuel = resMan.ConsumeResource(fuelResourceID2, fusionFuelRequestAmount2 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fusionFuelRequestAmount2 > 0 ? receivedFusionFuel / fusionFuelRequestAmount2 : 0);
             }
             if (fuelFactor3 > 0)
             {
-                var receivedFusionFuel = part.RequestResource(fuelResourceDefinition3.id, fusionFuelRequestAmount3 * availableRatio, ResourceFlowMode.STACK_PRIORITY_SEARCH);
+                var receivedFusionFuel = resMan.ConsumeResource(fuelResourceID3, fusionFuelRequestAmount3 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fusionFuelRequestAmount3 > 0 ? receivedFusionFuel / fusionFuelRequestAmount3 : 0);
             }
             return receivedRatio;
@@ -809,12 +809,8 @@ namespace KIT.Propulsion
             if (effectiveMaxFusionWasteHeat > 0)
                 resMan.ProduceResource(ResourceName.WasteHeat, wasteHeat);
 
-            // supplyFNResourcePerSecondWithMax(wasteHeat, effectiveMaxFusionWasteHeat, ResourceSettings.Config.WasteHeatInMegawatt);
-
-            if (!CheatOptions.InfiniteElectricity && effectiveMaxPowerProduction > 0)
-                resMan.ProduceResource(ResourceName.ElectricCharge, requestedThrottle * plasmaRatio * effectiveMaxPowerProduction * GameConstants.ecPerMJ);
-
-            //    supplyFNResourcePerSecondWithMax(requestedThrottle * plasmaRatio * effectiveMaxPowerProduction, effectiveMaxPowerProduction, ResourceSettings.Config.ElectricPowerInMegawatt);
+            if (effectiveMaxPowerProduction > 0)
+                resMan.ProduceResource(ResourceName.ElectricCharge, requestedThrottle * plasmaRatio * effectiveMaxPowerProduction);
 
             return plasmaRatio;
         }

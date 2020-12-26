@@ -18,7 +18,7 @@ namespace KIT
     class KITGamePlayParams : KITDifficultyCustomParams
     {
         public override string Title => "#LOC_KIT_DifficultyConfig_GamePlay";
-        public override int SectionOrder => 1;
+        public override int SectionOrder => 2;
 
         [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_DestructiveEngines", toolTip = "#LOC_KIT_DifficultyConfig_DestructiveEngines_tip")]
         public bool allowDestructiveEngines;
@@ -37,7 +37,7 @@ namespace KIT
 
         public override void SetDifficultyPreset(Preset preset)
         {
-            switch(preset)
+            switch (preset)
             {
                 case Preset.Easy:
                     allowDestructiveEngines = reconfigureAntennas = true;
@@ -51,6 +51,10 @@ namespace KIT
                     extendedReactorControl = allowDestructiveEngines = preventRadioactiveDecay = false;
                     break;
                 case Preset.Normal:
+                    allowDestructiveEngines = reconfigureAntennas = preventRadioactiveDecay = false;
+                    extendedReactorControl = false;
+                    minimumRTGOutput = 0;
+                    break;
                 case Preset.Hard:
                     allowDestructiveEngines = reconfigureAntennas = preventRadioactiveDecay = false;
                     extendedReactorControl = false;

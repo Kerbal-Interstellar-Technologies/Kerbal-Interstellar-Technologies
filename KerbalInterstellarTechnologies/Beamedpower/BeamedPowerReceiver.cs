@@ -1709,8 +1709,8 @@ namespace KIT
 
             var alternatorWasteheat = alternatorPower * AverageEfficiencyFraction;
 
-            resMan.ProduceResource(ResourceName.ElectricCharge, alternatorPower * AverageEfficiencyFraction * GameConstants.ecPerMJ);
-            resMan.ProduceResource(ResourceName.WasteHeat, alternatorWasteheat * GameConstants.ecPerMJ);
+            resMan.ProduceResource(ResourceName.ElectricCharge, alternatorPower * AverageEfficiencyFraction);
+            resMan.ProduceResource(ResourceName.WasteHeat, alternatorWasteheat);
 
             return alternatorPower * AverageEfficiencyFraction;
         }
@@ -1817,9 +1817,7 @@ namespace KIT
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-
             powerCapacityEfficiency = 1 - resMan.ResourceFillFraction(ResourceName.WasteHeat);
-
 
             wasteheatRatio = CheatOptions.IgnoreMaxTemperature ? 0 : resMan.ResourceFillFraction(ResourceName.WasteHeat);
 
@@ -1911,7 +1909,6 @@ namespace KIT
                 alternatorPowerMax = alternatorRatio * powerInputMegajoules * 0.001;
                 alternatorPowerConsumed = 0;
 
-                // add max EC output from here (0, max), from alternator
                 // add max TP output from there..
                 UpdatePowerState();
 
@@ -2034,7 +2031,7 @@ namespace KIT
             resMan.ProduceResource(ResourceName.ElectricCharge, powerGeneratedResult);
 
             var solarWasteheat = thermalSolarInputMegajoules * (1 - effectiveSolarThermalElectricEfficiency);
-            resMan.ProduceResource(ResourceName.WasteHeat, supply_ratio * total_conversion_waste_heat_production + supply_ratio * solarWasteheat * GameConstants.ecPerMJ);
+            resMan.ProduceResource(ResourceName.WasteHeat, supply_ratio * total_conversion_waste_heat_production + supply_ratio * solarWasteheat);
 
             foreach (var item in received_power)
             {

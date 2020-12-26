@@ -160,8 +160,8 @@ namespace KIT
 
         private void UpdatePowerStatusString()
         {
-            powerStatusStr = PluginHelper.getFormattedPowerString(recievedPowerKW / GameConstants.ecPerMJ) +
-                " / " + PluginHelper.getFormattedPowerString(currentPowerReq / GameConstants.ecPerMJ);
+            powerStatusStr = PluginHelper.getFormattedPowerString(recievedPowerKW) +
+                " / " + PluginHelper.getFormattedPowerString(currentPowerReq);
         }
 
         public override string GetInfo()
@@ -185,7 +185,7 @@ namespace KIT
 
             if (!isDisabled && currentPowerReq > 0.0)
             {
-                recievedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq * GameConstants.ecPerMJ);
+                recievedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq);
             }
             else
                 recievedPowerKW = 0;

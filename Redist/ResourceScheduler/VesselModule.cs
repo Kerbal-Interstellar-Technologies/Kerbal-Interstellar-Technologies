@@ -22,7 +22,7 @@ namespace KIT.ResourceScheduler
         private string _KITPartName;
         public string KITPartName()
         {
-            if(string.IsNullOrEmpty(_KITPartName))
+            if (string.IsNullOrEmpty(_KITPartName))
             {
                 _KITPartName = Localizer.Format("#LOC_KIT_DC_Electrical_System");
             }
@@ -283,14 +283,12 @@ namespace KIT.ResourceScheduler
                     maxAmounts[resourceID] += resource.maxAmount;
                 }
             }
-
-            resourceMaxAmounts.Remove(ResourceName.ChargedParticle);
         }
 
         void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
         {
             // Per FreeThinker, "charged particle  power should technically not be storable. The only reason it existed was to have some consumption
-            // balancing when there are more than one consumer.", "charged particled should become thermal heat when unconsumed and if no thermal
+            // balancing when there are more than one consumer.", "charged particles should become thermal heat when unconsumed and if no thermal
             // storage available it should become wasteheat."
 
             if (available.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount))
@@ -309,6 +307,20 @@ namespace KIT.ResourceScheduler
                 {
                     available[ResourceName.WasteHeat] += diff;
                     available[ResourceName.ThermalPower] = resourceMaxAmounts[ResourceName.ThermalPower];
+                }
+            }
+
+            if (available.TryGetValue(ResourceName.WasteHeat, out var wasteHeatAmount) && maxAmounts.TryGetValue(ResourceName.WasteHeat, out var wasteHeatMaxAmount))
+            {
+                var ratio = wasteHeatAmount / wasteHeatMaxAmount;
+                if (ratio > HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().emergencyShutdownTemperaturePercentage)
+                {
+                    ScreenMessages.PostScreenMessage(
+                        Localizer.Format("#LOC_KIT_EmergencyShutdownWasteHeat"),
+                        5.0f, ScreenMessageStyle.UPPER_CENTER
+                    );
+
+                    // TODO, actuallytrigger emergency shutdown vessel wide :)
                 }
             }
 

@@ -406,7 +406,7 @@ namespace KIT.Propulsion
 
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(selectedWarpSpeed);
 
-            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp * GameConstants.ecPerMJ);
+            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
 
             if (powerReturned < 0.99 * currentPowerRequirementForWarp)
             {
@@ -1277,7 +1277,7 @@ namespace KIT.Propulsion
 
             receivedExoticMaintenancePower = CheatOptions.InfiniteElectricity
                    ? requiredExoticMaintenancePower
-                   : resMan.ConsumeResource(ResourceName.ElectricCharge, requiredExoticMaintenancePower * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+                   : resMan.ConsumeResource(ResourceName.ElectricCharge, requiredExoticMaintenancePower);
 
             minimumExoticMatterMaintenanceRatio = minimumExoticMaintenancePower > 0 ? receivedExoticMaintenancePower / minimumExoticMaintenancePower : 0;
 
@@ -1316,7 +1316,7 @@ namespace KIT.Propulsion
 
                     exoticMatterProduced = CheatOptions.InfiniteElectricity
                         ? chargePowerDraw
-                        : resMan.ConsumeResource(ResourceName.ElectricCharge, overheatModifier * chargePowerDraw * effectiveResourceThrottling * GameConstants.ecPerMJ);
+                        : resMan.ConsumeResource(ResourceName.ElectricCharge, overheatModifier * chargePowerDraw * effectiveResourceThrottling);
 
                     if (!CheatOptions.InfinitePropellant && stablePowerSupply < minPowerRequirementForLightSpeed)
                         insufficientPowerTimeout--;
@@ -1418,7 +1418,7 @@ namespace KIT.Propulsion
                 powerReturned = currentPowerRequirementForWarp;
             else
             {
-                powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp * GameConstants.ecPerMJ);
+                powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
                 ProduceWasteheat(resMan, powerReturned);
             }
 

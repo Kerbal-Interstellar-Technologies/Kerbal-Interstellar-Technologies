@@ -2957,8 +2957,8 @@ namespace KIT.Reactors
         // an example might be that we can generate ThermalPower when generating ElectricCharge.
         public ResourceName[] ResourcesProvided()
         {
-            if (chargedParticleEnergyEfficiency > 0) return chargedResourcesProvided;
-            if (thermalEnergyEfficiency > 0) return thermalResourcesProvided;
+            if (ChargedPowerRatio > 0) return chargedResourcesProvided;
+            if (ThermalPowerRatio > 0) return thermalResourcesProvided;
             return null;
         }
 
@@ -3011,10 +3011,30 @@ namespace KIT.Reactors
             }
             */
 
-            var tmp = Math.Min(requestedAmount, maxThermalToSupplyPerSecondAvail);
-            maxThermalToSupplyPerSecondAvail -= tmp;
+            double tmp;
+            switch(resource)
+            {
+                case ResourceName.ThermalPower:
+                    tmp = requestedAmount / ThermalPowerRatio;
+                    tmp = Math.Min(tmp, maxThermalToSupplyPerSecondAvail);
+                    break;
+                case ResourceName.ChargedParticle:
+                    tmp = requestedAmount / ChargedPowerRatio;
+                    tmp = Math.Min(requestedAmount, maxChargedToSupplyPerSecondAvail);
+                    break;
+                default:
+                    Debug.Log($"[KIT InterstellarReactor] don't know how to handle {resource} request");
+                    return true; ;
+            }
 
-            ongoing_total_power_generated += tmp; // or charged. todo
+
+            maxThermalToSupplyPerSecondAvail -= tmp * ThermalPowerRatio;
+            maxChargedToSupplyPerSecondAvail -= tmp * ChargedPowerRatio;
+
+            ongoing_thermal_power_generated += tmp * ThermalPowerRatio;
+            ongoing_charged_power_generated += tmp * ChargedPowerRatio;
+
+            ongoing_total_power_generated = ongoing_thermal_power_generated + ongoing_charged_power_generated;
 
             double totalPowerReceivedFixed = tmp;
             double powerGenerated = 0;
@@ -3030,13 +3050,25 @@ namespace KIT.Reactors
                 _consumedFuelTotalFixed += tmp;
             }
 
-            resMan.ProduceResource(resource, powerGenerated);
+            resMan.ProduceResource(ResourceName.ThermalPower, powerGenerated * ThermalPowerRatio);
+            resMan.ProduceResource(ResourceName.ChargedParticle, powerGenerated * ChargedPowerRatio);
 
-            // XXX. what 
+            /*
+            
+            TODO - waste heat. Doesn't seem right at the moment.
+
+            ongoing_consumption_rate = maximumPower > 0 ? ongoing_total_power_generated / maximumPower : 0;
+            PluginHelper.SetAnimationRatio((float)Math.Pow(ongoing_consumption_rate, animExponent), pulseAnimation);
+            powerPcnt = 100 * ongoing_consumption_rate;
+
+            var delayedWasteheatRate = ongoing_consumption_rate > ongoing_wasteheat_rate ? Math.Min(ongoing_wasteheat_rate, ongoing_consumption_rate) : ongoing_consumption_rate;
+
+            resMan.ProduceResource(ResourceName.WasteHeat, delayedWasteheatRate * maximumPower);
+            ongoing_wasteheat_rate = ongoing_consumption_rate;
+            */
 
             // refresh production list
-            // TODO reactorProduction.Clear();
-
+            reactorProduction.Clear();
             // produce reactor products
             foreach (var product in currentFuelVariant.ReactorProducts)
             {

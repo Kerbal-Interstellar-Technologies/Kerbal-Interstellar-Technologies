@@ -282,7 +282,7 @@ namespace KIT.Resources
             if (dConcentrationRegolith > 0 && (dRegolithSpareCapacity > 0))
             {
                 // Determine available power, using EC if below 2 MW required
-                double powerreceivedMW = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMW * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+                double powerreceivedMW = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMW);
 
                 // show in GUI
                 strCollectingStatus = Localizer.Format("#LOC_KSPIE_RegolithCollector_Collectingregolith");//"Collecting regolith"
@@ -317,7 +317,7 @@ namespace KIT.Resources
 
             dTotalWasteHeatProduction = dPowerRequirementsMW * wasteHeatModifier; // calculate amount of heat to be produced
 
-            resMan.ProduceResource(ResourceName.WasteHeat, dTotalWasteHeatProduction * GameConstants.ecPerMJ);
+            resMan.ProduceResource(ResourceName.WasteHeat, dTotalWasteHeatProduction);
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;

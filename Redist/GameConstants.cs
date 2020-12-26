@@ -53,7 +53,6 @@
         public const float MaxThermalNozzleIsp = 2997.13f;
         public const double EngineHeatProduction = 1000;
         public const double AirflowHeatMultiplier = 1;
-        public const double ecPerMJ = 1000.0;
 
         public const int KERBIN_HOURS_DAY = 6;
         public const int SECONDS_IN_HOUR = 3600;

@@ -307,7 +307,7 @@ namespace KIT.Refinery
 
             consumedPowerMW = CheatOptions.InfiniteElectricity
                 ? powerRequest
-                : resMan.ConsumeResource(ResourceName.ElectricCharge, consumedPowerMW * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+                : resMan.ConsumeResource(ResourceName.ElectricCharge, consumedPowerMW);
 
             var power_ratio = currentPowerReq > 0 ? consumedPowerMW / currentPowerReq : 0;
 

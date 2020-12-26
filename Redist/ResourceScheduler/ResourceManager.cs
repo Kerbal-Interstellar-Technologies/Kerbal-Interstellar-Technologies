@@ -77,6 +77,46 @@ namespace KIT.ResourceScheduler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TrackableResource(ResourceName resource) => resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private double WasteHeatRatio()
+        {
+            if (!currentResources.TryGetValue(ResourceName.WasteHeat, out var currentHeat) || !currentMaxResources.TryGetValue(ResourceName.WasteHeat, out var maxCurrentHeat)) return 0;
+
+            maxCurrentHeat = Math.Max(maxCurrentHeat, 1);
+
+            return currentHeat / maxCurrentHeat;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private double ReduceConsumptionIfOverHeating(ResourceName resource, double requestedAmount)
+        {
+            // Allow full consumption of WasteHeat
+            if (resource == ResourceName.WasteHeat) return requestedAmount;
+
+            // We probably only want to reduce the top level requests
+            // Request EC -> Request TP -> Request Uranium <-- only target EC.
+            if (modsCurrentlyRunning.Count > 1) return requestedAmount;
+
+            // If players don't want the requests scaled back, so be it
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().disableResourceConsumptionRateLimit) return requestedAmount;
+
+            var ratio = WasteHeatRatio();
+            if(ratio > 0.90)
+            {
+                // do any modules need exemptions? 
+                // emergency liquid -> gas converter would. can implement that easily enough.
+                // perhaps as a flag in the priority int?
+
+                var reduction = (1 - Math.Min(1, ratio)) * 10;
+
+                Debug.Log($"[KIT ReduceConsumptionIfOverHeating] reducing consumption of {KITResourceSettings.ResourceToName(resource)} on {modsCurrentlyRunning.Last().KITPartName()} from {requestedAmount} by {Math.Round(reduction * 100, 2)}% to {requestedAmount * reduction}");
+
+                requestedAmount = requestedAmount * reduction;
+            }
+
+            return requestedAmount;
+        }
+
         /// <summary>
         /// Called by the IKITMod to consume resources present on a vessel. It automatically converts the wanted amount by the appropriate value to
         /// give you a per-second resource consumption.
@@ -95,6 +135,9 @@ namespace KIT.ResourceScheduler
                 return 0;
             }
             tmpPPRI.amount = tmpPPRI.maxAmount = 0;
+
+            // TODO - priorities, and where do they lie?
+            // wanted = ReduceConsumptionIfOverHeating(resource, wanted);
 
             var lastMod = modsCurrentlyRunning.Last();
 

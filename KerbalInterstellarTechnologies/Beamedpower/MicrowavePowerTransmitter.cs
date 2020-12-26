@@ -536,7 +536,7 @@ namespace KIT.Beamedpower
             atmosphericAbsorptionPercentage = activeBeamGenerator.atmosphericAbsorptionPercentage;
             waterAbsorptionPercentage = activeBeamGenerator.waterAbsorptionPercentage * moistureModifier;
 
-            beamedpower = PluginHelper.getFormattedPowerString((nuclear_power + solar_power) / GameConstants.ecPerMJ);
+            beamedpower = PluginHelper.getFormattedPowerString(nuclear_power + solar_power);
             solarCells = vessel.FindPartModulesImplementing<ISolarPower>();
         }
 

@@ -11,6 +11,7 @@ namespace KIT.ReplacementPartModules
     class KITModuleEnginesFX : ModuleEnginesFX, IKITMod
     {
         public new void FixedUpdate() { }
+
         public override  void UpdateThrottle()
         {
             // take into account resMan.fixedDeltaTime

@@ -97,6 +97,7 @@ namespace KIT.Resources
         Actinides,
         DepletedFuel,
         EnrichedUranium,
+        DepletedUranium,
         Plutonium238,
         ThoriumTetraflouride,
         UraniumTetraflouride,
@@ -146,6 +147,7 @@ namespace KIT.Resources
         public static string Actinides { get; private set; } = "Actinides";
         public static string DepletedFuel { get; private set; } = "DepletedFuel";
         public static string EnrichedUranium { get; private set; } = "EnrichedUranium";
+        public static string DepletedUranium { get; private set; } = "DepletedUranium";
         public static string Plutonium238 { get; private set; } = "Plutonium-238";
         public static string ThoriumTetraflouride { get; private set; } = "ThF4";
         public static string UraniumTetraflouride { get; private set; } = "UF4";
@@ -221,6 +223,10 @@ namespace KIT.Resources
         public static string IntakeAtmosphere { get; private set; } = "IntakeAtm";
         #endregion
 
+        #region Community Resource Pack
+
+        #endregion
+
         public static string ResourceToName(ResourceName resource)
         {
             switch (resource)
@@ -233,6 +239,7 @@ namespace KIT.Resources
                 case ResourceName.Actinides: return Actinides;
                 case ResourceName.DepletedFuel: return DepletedFuel;
                 case ResourceName.EnrichedUranium: return EnrichedUranium;
+                case ResourceName.DepletedUranium: return DepletedUranium;
                 case ResourceName.Plutonium238: return Plutonium238;
                 case ResourceName.ThoriumTetraflouride: return ThoriumTetraflouride;
                 case ResourceName.UraniumTetraflouride: return UraniumTetraflouride;
@@ -423,6 +430,7 @@ namespace KIT.Resources
             // nuclear resources
             UpdatePropertyWithConfigNode(pluginSettings, nameof(DepletedFuel), value => DepletedFuel = value);
             UpdatePropertyWithConfigNode(pluginSettings, nameof(EnrichedUranium), value => EnrichedUranium = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(DepletedUranium), value => DepletedUranium = value);
             UpdatePropertyWithConfigNode(pluginSettings, nameof(Plutonium238), value => Plutonium238 = value);
             UpdatePropertyWithConfigNode(pluginSettings, nameof(ThoriumTetraflouride), value => ThoriumTetraflouride = value);
             UpdatePropertyWithConfigNode(pluginSettings, nameof(Uranium233), value => Uranium233 = value);

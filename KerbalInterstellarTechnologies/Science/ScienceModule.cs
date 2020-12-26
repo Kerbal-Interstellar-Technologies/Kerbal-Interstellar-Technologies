@@ -607,7 +607,7 @@ namespace KIT
             }
             else if (active_mode == 2) //Antimatter
             {
-                var powerRequestInMegajoules = powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption *  GameConstants.ecPerMJ;
+                var powerRequestInMegajoules = powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption;
 
                 var energy_provided_in_megajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequestInMegajoules);
 

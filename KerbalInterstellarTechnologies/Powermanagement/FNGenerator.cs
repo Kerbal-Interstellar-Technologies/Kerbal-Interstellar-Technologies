@@ -914,7 +914,7 @@ namespace KIT.Powermanagement
         public ResourcePriorityValue ResourceProcessPriority()
         {
             if (isLimitedByMinThrottle)
-                return ResourcePriorityValue.First;
+                return (ResourcePriorityValue)1;
 
             if (attachedPowerSource == null)
                 return ResourcePriorityValue.Third;

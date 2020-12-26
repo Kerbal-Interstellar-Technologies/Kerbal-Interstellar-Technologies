@@ -507,7 +507,7 @@ namespace KIT.Wasteheat
                  */
             }
 
-            var heatTransferred = resMan.ConsumeResource(ResourceName.WasteHeat, actuallyReduced * GameConstants.ecPerMJ);
+            var heatTransferred = resMan.ConsumeResource(ResourceName.WasteHeat, actuallyReduced);
 
             if (heatTransferred == 0) return;
 
@@ -2173,7 +2173,7 @@ namespace KIT.Wasteheat
                     _convectedThermalPower = canRadiateHeat
                         ? convPowerDissipation > 0
                             ? resMan.ConsumeResource(ResourceName.WasteHeat, convPowerDissipation)
-                            : resMan.ProduceResource(ResourceName.WasteHeat, -convPowerDissipation)
+                            : resMan.ProduceResource(ResourceName.WasteHeat, convPowerDissipation)
                         : 0;
 
                     if (_radiatorDeployDelay >= DEPLOYMENT_DELAY)

@@ -536,7 +536,7 @@ namespace KIT.Propulsion
 
                 _recievedElectricPower = CheatOptions.InfiniteElectricity || _requestedElectricPower == 0
                     ? _requestedElectricPower
-                    : resMan.ConsumeResource(ResourceName.ElectricCharge, _requestedElectricPower * GameConstants.ecPerMJ) / GameConstants.ecPerMJ;
+                    : resMan.ConsumeResource(ResourceName.ElectricCharge, _requestedElectricPower);
 
                 // adjust power buffer
                 var powerSurplus = _recievedElectricPower - minimumEnginePower;

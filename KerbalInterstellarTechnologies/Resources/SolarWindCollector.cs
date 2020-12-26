@@ -646,7 +646,7 @@ namespace KIT.Resources
                 var heliumRatio = Math.Min(1,  requiredHeliumMass > 0 ? (receivedHeliumGasMass + receiverLqdHeliumMass) / requiredHeliumMass : 0);
 
                 // calculate available power
-                var receivedPowerMw = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMw * heliumRatio * GameConstants.ecPerMJ);
+                var receivedPowerMw = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMw * heliumRatio);
 
                 dLastPowerRatio = offlineCollecting ? dLastPowerRatio : (dPowerRequirementsMw > 0 ? receivedPowerMw / dPowerRequirementsMw : 0);
 

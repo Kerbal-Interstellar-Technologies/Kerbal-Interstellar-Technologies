@@ -153,12 +153,12 @@ namespace KIT.Propulsion
 
         private void UpdateFuelFactors()
         {
-            if(!String.IsNullOrEmpty(propellant1))
+            if (!String.IsNullOrEmpty(propellant1))
             {
                 propellantResourceDefinition1 = PartResourceLibrary.Instance.GetDefinition(propellant1);
                 propellantResourceID1 = KITResourceSettings.NameToResource(propellant1);
 
-                if(propellantResourceDefinition1 == null || propellantResourceID1 == ResourceName.Unknown)
+                if (propellantResourceDefinition1 == null || propellantResourceID1 == ResourceName.Unknown)
                 {
                     Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant1 is not correctly defined -- {(propellantResourceDefinition1 == null ? "definition" : "resource id")}");
                 }
@@ -357,7 +357,7 @@ namespace KIT.Propulsion
                 recievedRatio = Math.Min(recievedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
             }
 
-            return Math.Min (recievedRatio, 1);
+            return Math.Min(recievedRatio, 1);
         }
 
         // Physics update

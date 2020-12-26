@@ -38,7 +38,7 @@ namespace KIT.Refinery.Activity
         // These functions are called from a GUI thread, not the KITFixedUpdate thread
         public bool HasActivityRequirements ()
         {
-            return HasAccessToHydrogen() & HasAccessToNitrogen() & HasSpareCapacityAmmonia();
+            return HasAccessToHydrogen() && HasAccessToNitrogen() && HasSpareCapacityAmmonia();
         }
 
         private bool HasAccessToHydrogen()
