@@ -1,0 +1,20 @@
+{
+  "NAME": "Filter Extensions",
+  "URL": "http://ksp.spacetux.net/avc/FilterExtension",
+  "DOWNLOAD": "https://github.com/LinuxGuruGamer/FilterExtension/releases",
+  "GITHUB": {
+    "USERNAME": "linuxgurugamer",
+    "REPOSITORY": "FilterExtension"
+  },
+  "VERSION": {
+    "MAJOR": 3,
+    "MINOR": 2,
+    "PATCH": 6,
+    "BUILD": 0
+  },
+  "KSP_VERSION_MIN": {
+    "MAJOR": 1,
+    "MINOR": 8,
+    "PATCH": 0
+  }
+}
