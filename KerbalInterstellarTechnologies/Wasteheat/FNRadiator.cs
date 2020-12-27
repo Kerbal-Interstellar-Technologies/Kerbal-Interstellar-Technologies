@@ -2194,22 +2194,31 @@ namespace KIT.Wasteheat
             }
         }
 
-        public double CalculateConvPowerDissipation(
+        public static double CalculateConvPowerDissipation(
+            double radiatorSurfaceArea,
+            double radiatorConvectiveBonus,
             double radiatorTemperature,
             double externalTemperature,
-            double effectiveVesselSpeed,
-            double atmosphericDensity,
-            double submergedPortion,
-            double rotationModifier)
+            double atmosphericDensity = 0,
+            double grapheneRadiatorRatio = 0,
+            double submergedPortion = 0,
+            double effectiveVesselSpeed = 0,
+            double rotationModifier = 0
+        )
         {
-            var airHeatTransferModifier = airHeatTransferCoefficient * _intakeAtmSpecificHeatCapacity * _intakeAtmDensity * (1 - submergedPortion) * convectiveBonus * atmosphericDensity;
-            var lqdHeatTransferModifier = lqdHeatTransferCoefficient * _intakeLqdSpecificHeatCapacity * _intakeLqdDensity * submergedPortion;
-            var heatTransferCoefficient = 0.001 * (airHeatTransferModifier + lqdHeatTransferModifier) * Math.Max(1, effectiveVesselSpeed + rotationModifier) * (_isGraphene ? 0.10 : 1);
+            if (radiatorTemperature.IsInfinityOrNaN())
+                return 0;
+
+            var airHeatTransferModifier = PluginSettings.Config.AirHeatTransferCoefficient * (1 - submergedPortion) * atmosphericDensity;
+            var lqdHeatTransferModifier = PluginSettings.Config.LqdHeatTransferCoefficient * submergedPortion;
+            var grapheneModifier = 1 - grapheneRadiatorRatio + grapheneRadiatorRatio * 0.10;
+            var totalHeatTransferModifier = airHeatTransferModifier + lqdHeatTransferModifier;
+            var heatTransferModifier = radiatorConvectiveBonus + Math.Max(1, effectiveVesselSpeed + rotationModifier);
 
             var temperatureDifference = radiatorTemperature - externalTemperature;
 
             // q = h * A * deltaT
-            return heatTransferCoefficient * radiatorArea * temperatureDifference;
+            return heatTransferModifier * radiatorSurfaceArea * temperatureDifference * PluginSettings.Config.ConvectionMultiplier * grapheneModifier * totalHeatTransferModifier;
         }
 
         public string KITPartName() => $"{part.partInfo.title}{(clarifyFunction ? " (radiator)" : "")}";

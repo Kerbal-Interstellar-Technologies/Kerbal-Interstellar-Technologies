@@ -47,6 +47,10 @@ namespace KIT
         public double MaxThermalNozzleIsp { get; private set; } = GameConstants.MaxThermalNozzleIsp;
         public double SpotsizeMult { get; private set; } = 1.22;
         public double ThrustCoreTempThreshold { get; private set; }
+        public double MaxResourceProcessingTimewarp { get; private set; } = 200;
+        public double ConvectionMultiplier { get; private set; } = 0.01;
+        public double AirHeatTransferCoefficient { get; private set; } = 0.001;
+        public double LqdHeatTransferCoefficient { get; private set; } = 0.01;
 
         // Jet Upgrade Techs
         public string JetUpgradeTech1 { get; private set; } = "";
@@ -91,6 +95,10 @@ namespace KIT
             UpdateDoubleWithConfigNode(pluginSettings, nameof(MaxThermalNozzleIsp), value => MaxThermalNozzleIsp = value);
             UpdateDoubleWithConfigNode(pluginSettings, nameof(SpotsizeMult), value => SpotsizeMult = value);
             UpdateDoubleWithConfigNode(pluginSettings, nameof(ThrustCoreTempThreshold), value => ThrustCoreTempThreshold = value);
+            UpdateDoubleWithConfigNode(pluginSettings, nameof(MaxResourceProcessingTimewarp), value => MaxResourceProcessingTimewarp = value);
+            UpdateDoubleWithConfigNode(pluginSettings, nameof(ConvectionMultiplier), value => ConvectionMultiplier = value);
+            UpdateDoubleWithConfigNode(pluginSettings, nameof(AirHeatTransferCoefficient), value => AirHeatTransferCoefficient = value);
+            UpdateDoubleWithConfigNode(pluginSettings, nameof(LqdHeatTransferCoefficient), value => LqdHeatTransferCoefficient = value);
 
             UpdateStringWithConfigNode(pluginSettings, nameof(JetUpgradeTech1), value => JetUpgradeTech1 = value);
             UpdateStringWithConfigNode(pluginSettings, nameof(JetUpgradeTech2), value => JetUpgradeTech2 = value);
