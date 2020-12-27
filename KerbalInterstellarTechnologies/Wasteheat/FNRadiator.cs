@@ -1236,20 +1236,20 @@ namespace KIT.Wasteheat
             redTempColorChannel.AddKey(38200, 156 / 255f); greenTempColorChannel.AddKey(38200, 188 / 255f); blueTempColorChannel.AddKey(38200, 255 / 255f);
             redTempColorChannel.AddKey(38300, 156 / 255f); greenTempColorChannel.AddKey(38300, 188 / 255f); blueTempColorChannel.AddKey(38300, 255 / 255f);
 
-            for (int i = 0; i < redTempColorChannel.keys.Length; i++)
+            var j = redTempColorChannel.keys.Length;
+
+            if (j != greenTempColorChannel.keys.Length || j != blueTempColorChannel.keys.Length)
+            {
+                throw new InvalidOperationException("red keys length must equal green keys length must equal blue green keys length");
+            }
+            
+            for (int i = 0; i < j; i++)
             {
                 redTempColorChannel.SmoothTangents(i, 0);
-            }
-            for (int i = 0; i < greenTempColorChannel.keys.Length; i++)
-            {
                 greenTempColorChannel.SmoothTangents(i, 0);
-            }
-            for (int i = 0; i < blueTempColorChannel.keys.Length; i++)
-            {
                 blueTempColorChannel.SmoothTangents(i, 0);
             }
         }
-
         private static List<FNRadiator> GetRadiatorsForVessel(Vessel vessel)
         {
             if (RadiatorsByVessel.TryGetValue(vessel, out var vesselRadiator))
@@ -1343,9 +1343,10 @@ namespace KIT.Wasteheat
             RadiatorsByVessel.Clear();
         }
 
+        
         public static bool HasRadiatorsForVessel(Vessel vess)
         {
-            return GetRadiatorsForVessel(vess).Any();
+            return vess.FindPartModuleImplementing<FNRadiator>() != null;
         }
 
         public static double GetAverageRadiatorTemperatureForVessel(Vessel vess)
@@ -2135,7 +2136,7 @@ namespace KIT.Wasteheat
                     _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
 
                     if (double.IsNaN(_radiatedThermalPower))
-                        Debug.LogError("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in radiatedThermalPower after call consumeWasteHeat (" + _thermalPowerDissipationPerSecond + ")");
+                        Debug.LogError($"[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in radiatedThermalPower after call consumeWasteHeat ({_thermalPowerDissipationPerSecond})");
 
                     _instantaneousRadTemp = CalculateInstantaneousRadTemp();
 
@@ -2173,7 +2174,7 @@ namespace KIT.Wasteheat
                     _convectedThermalPower = canRadiateHeat
                         ? convPowerDissipation > 0
                             ? resMan.ConsumeResource(ResourceName.WasteHeat, convPowerDissipation)
-                            : resMan.ProduceResource(ResourceName.WasteHeat, convPowerDissipation)
+                            : resMan.ProduceResource(ResourceName.WasteHeat, -convPowerDissipation)
                         : 0;
 
                     if (_radiatorDeployDelay >= DEPLOYMENT_DELAY)

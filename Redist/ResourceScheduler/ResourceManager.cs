@@ -1,5 +1,6 @@
 ﻿using KIT.Interfaces;
 using KIT.Resources;
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,6 +135,7 @@ namespace KIT.ResourceScheduler
                 Debug.Log("[KITResourceManager.ConsumeResource] don't do this.");
                 return 0;
             }
+
             tmpPPRI.amount = tmpPPRI.maxAmount = 0;
 
             // TODO - priorities, and where do they lie?
@@ -267,6 +269,8 @@ namespace KIT.ResourceScheduler
 
         public ulong KITSteps;
 
+        private int overHeatingCounter;
+
         /// <summary>
         /// ExecuteKITModules() does the heavy work of executing all the IKITMod FixedUpdate() equiv. It needs to be careful to ensure
         /// it is using the most recent list of modules, hence the odd looping code. In the case of no part updates are needed, it's
@@ -332,6 +336,7 @@ namespace KIT.ResourceScheduler
                     var ppri = new PerPartResourceInformation();
                     ppri.amount = dc.unallocatedElectricChargeConsumption();
                     ModConsumption[ResourceName.ElectricCharge][activeKITModules[0]] = ppri;
+                    activeKITModules.Remove(activeKITModules[0]);
                 }
             }
 

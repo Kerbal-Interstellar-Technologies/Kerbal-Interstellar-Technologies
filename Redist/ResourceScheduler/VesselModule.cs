@@ -285,7 +285,7 @@ namespace KIT.ResourceScheduler
             }
         }
 
-        void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
+        private void HandleChargedParticles(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
         {
             // Per FreeThinker, "charged particle  power should technically not be storable. The only reason it existed was to have some consumption
             // balancing when there are more than one consumer.", "charged particles should become thermal heat when unconsumed and if no thermal
@@ -296,33 +296,41 @@ namespace KIT.ResourceScheduler
                 resourceMaxAmounts.Remove(ResourceName.ChargedParticle);
                 available.Remove(ResourceName.ChargedParticle);
 
-                available[ResourceName.ThermalPower] += chargedParticleAmount;
+                // Store any charged particles in either WasteHeat or ThermalPower
+                if (available.ContainsKey(ResourceName.ThermalPower) == false)
+                {
+                    available[ResourceName.WasteHeat] += chargedParticleAmount;
+                }
+                else
+                {
+                    available[ResourceName.ThermalPower] += chargedParticleAmount;
+                }
             }
 
             if (available.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount))
             {
-                var diff = thermalPowerAmount - resourceMaxAmounts[ResourceName.ThermalPower];
-
-                if (diff > 0)
+                // Have we exceeded the storage capacity for Thermal Power?
+                if (resourceMaxAmounts.ContainsKey(ResourceName.ThermalPower))
                 {
-                    available[ResourceName.WasteHeat] += diff;
-                    available[ResourceName.ThermalPower] = resourceMaxAmounts[ResourceName.ThermalPower];
+                    var diff = thermalPowerAmount - resourceMaxAmounts[ResourceName.ThermalPower];
+
+                    if (diff > 0)
+                    {
+                        available[ResourceName.WasteHeat] += diff;
+                        available[ResourceName.ThermalPower] = resourceMaxAmounts[ResourceName.ThermalPower];
+                    }
+                }
+                else
+                {
+                    available.Remove(ResourceName.ThermalPower);
+                    available[ResourceName.WasteHeat] += thermalPowerAmount;
                 }
             }
+        }
 
-            if (available.TryGetValue(ResourceName.WasteHeat, out var wasteHeatAmount) && maxAmounts.TryGetValue(ResourceName.WasteHeat, out var wasteHeatMaxAmount))
-            {
-                var ratio = wasteHeatAmount / wasteHeatMaxAmount;
-                if (ratio > HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().emergencyShutdownTemperaturePercentage)
-                {
-                    ScreenMessages.PostScreenMessage(
-                        Localizer.Format("#LOC_KIT_EmergencyShutdownWasteHeat"),
-                        5.0f, ScreenMessageStyle.UPPER_CENTER
-                    );
-
-                    // TODO, actuallytrigger emergency shutdown vessel wide :)
-                }
-            }
+        void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
+        {
+            HandleChargedParticles(ref available, ref maxAmounts);
 
             // Disperse the resources throughout the vessel
 
