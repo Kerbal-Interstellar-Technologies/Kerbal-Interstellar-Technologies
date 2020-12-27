@@ -82,7 +82,6 @@ namespace KIT.Powermanagement
         [KSPField] public bool fullPowerBuffer = false;
         [KSPField] public bool showSpecialisedUI = true;
         [KSPField] public bool showDetailedInfo = true;
-        [KSPField] public bool controlWasteHeatBuffer = true;
         [KSPField] public double rawPowerToMassDivider = 1000;
         [KSPField] public double massModifier = 1;
         [KSPField] public double rawMaximumPower;
