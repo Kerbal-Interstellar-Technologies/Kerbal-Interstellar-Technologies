@@ -113,6 +113,7 @@ namespace KIT.Resources
         IntakeAtmosphere,
         
         FusionPellets,
+        FissionParticles,
 
         EndResource,
     }
@@ -200,6 +201,8 @@ namespace KIT.Resources
         public static string XenonGas { get; private set; } = "XenonGas";
         public static string XenonLqd { get; private set; } = "LqdXenon";
         public static string FusionPellets { get; private set; } = "FusionPellets";
+        public static string FissionParticles { get; private set; } = "FissionParticles";
+
         #endregion
 
         #region Pseudo resources
@@ -303,6 +306,7 @@ namespace KIT.Resources
                 case ResourceName.WasteHeat: return WasteHeat;
 
                 case ResourceName.FusionPellets: return FusionPellets;
+                case ResourceName.FissionParticles: return FissionParticles;
                 case ResourceName.EndResource: return EndResource;
                 default: throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
             }
@@ -446,6 +450,7 @@ namespace KIT.Resources
             UpdatePropertyWithConfigNode(pluginSettings, nameof(AntiProtium), value => AntiProtium = value);
             UpdatePropertyWithConfigNode(pluginSettings, nameof(ExoticMatter), value => ExoticMatter = value);
             UpdatePropertyWithConfigNode(pluginSettings, nameof(VacuumPlasma), value => VacuumPlasma = value);
+            UpdatePropertyWithConfigNode(pluginSettings, nameof(FissionParticles), value => FissionParticles = value);
         }
 
     }
