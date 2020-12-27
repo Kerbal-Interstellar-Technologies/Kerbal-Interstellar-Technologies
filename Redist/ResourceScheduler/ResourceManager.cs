@@ -371,8 +371,47 @@ namespace KIT.ResourceScheduler
             RechargeBatteries(ref resourceAmounts, ref resourceMaxAmounts);
             vesselResources.OnKITProcessingFinished(this);
 
+            CheckIfEmergencyStopIsNeeded(ref resourceAmounts, ref resourceMaxAmounts);
+
             currentResources = null;
             inExecuteKITModules = false;
+        }
+
+        private void CheckIfEmergencyStopIsNeeded(ref Dictionary<ResourceName, double> resourceAmounts, ref Dictionary<ResourceName, double> resourceMaxAmounts)
+        {
+
+            if (resourceAmounts.TryGetValue(ResourceName.WasteHeat, out var wasteHeatAmount) && resourceMaxAmounts.TryGetValue(ResourceName.WasteHeat, out var wasteHeatMaxAmount))
+            {
+                var ratio = wasteHeatAmount / wasteHeatMaxAmount;
+                if (ratio > HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().emergencyShutdownTemperaturePercentage)
+                {
+                    overHeatingCounter++;
+
+                    ScreenMessages.PostScreenMessage(
+                        Localizer.Format("#LOC_KIT_EmergencyShutdownWasteHeat"),
+                        5.0f, ScreenMessageStyle.UPPER_CENTER
+                    );
+
+                    TimeWarp.SetRate(0, true);
+
+                    for (int i = 0; i < activeKITModules.Count; i++)
+                    {
+                        try
+                        {
+                            // activeKITModules[i].EmergencyStop(overHeatingCounter);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Log($"[CheckIfEmergencyStopIsNeeded] {activeKITModules[i].KITPartName()} threw an exception: {e.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    overHeatingCounter = 0;
+                }
+            }
+
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
