@@ -960,6 +960,9 @@ namespace KIT.Propulsion
             if (!vessel.packed && !_warpToReal)
                 storedThrottle = vessel.ctrlState.mainThrottle;
 
+            // XXX 
+            storedThrottle = vessel.ctrlState.mainThrottle;
+
             maxEffectivePower = MaxEffectivePower;
             currentPropellantEfficiency = CurrentPropellantEfficiency;
 

@@ -518,6 +518,8 @@ namespace KIT.Propulsion
             thrust_d = _thrustPersistent;
             isp_d = _realIsp;
             throttle_d = _throttlePersistent;
+
+            base.FixedUpdate();
         }
 
         public string KITPartName() => part.partInfo.title;

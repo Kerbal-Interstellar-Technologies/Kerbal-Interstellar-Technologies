@@ -186,9 +186,12 @@ namespace KIT.ResourceScheduler
                 return wanted;
             }
 
+            var surplusWanted = currentMaxResources[resource];
+            if (resource == ResourceName.ChargedParticle) surplusWanted = 0;
+
             // Convert to seconds
             obtainedAmount = wanted * (obtainedAmount / modifiedAmount);
-            obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted, currentMaxResources[resource]); ;
+            obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted, surplusWanted);
 
             // We do not need to account for _currentlySupplied here, as the modules called above will call
             // ProduceResource which credits the _currentlySupplied field here.
