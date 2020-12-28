@@ -111,6 +111,7 @@
     <Compile Include="Beamedpower\WaveLengthData.cs" />
     <Compile Include="ReplacementPartModules\KITModuleEnginesFX.cs" />
     <Compile Include="ResourceScheduler\Interface.cs" />
+    <Compile Include="ResourceScheduler\OverheatingResourceManager.cs" />
     <Compile Include="ResourceScheduler\VesselEvents.cs" />
     <Compile Include="ResourceScheduler\VesselModule.cs" />
     <Compile Include="Resources\DecayConfiguration.cs" />

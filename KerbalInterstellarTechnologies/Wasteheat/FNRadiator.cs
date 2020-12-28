@@ -748,8 +748,8 @@ namespace KIT.Wasteheat
         [KSPField] public double areaMultiplier = 1;
 
         // https://www.engineersedge.com/heat_transfer/convective_heat_transfer_coefficients__13378.htm
-        [KSPField] public double airHeatTransferCoefficient = 0.001; // 100W/m2/K, range: 10 - 100, "Air"
-        [KSPField] public double lqdHeatTransferCoefficient = 0.01; // 1000/m2/K, range: 100-1200, "Water in Free Convection"
+        static public double airHeatTransferCoefficient = 0.001; // 100W/m2/K, range: 10 - 100, "Air"
+        static public double lqdHeatTransferCoefficient = 0.01; // 1000/m2/K, range: 100-1200, "Water in Free Convection"
 
         [KSPField] public string kspShaderLocation = "KSP/Emissive/Bumped Specular";
         [KSPField] public int RADIATOR_DELAY = 20;
@@ -778,6 +778,8 @@ namespace KIT.Wasteheat
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "Atmosphere Density", guiFormat = "F2", guiUnits = "")]
         public double atmDensity;
 
+        public bool IsGraphene { get; private set; }
+
         private double _instantaneousRadTemp;
         private int nrAvailableUpgradeTechs;
         private bool hasSurfaceAreaUpgradeTechReq;
@@ -804,7 +806,6 @@ namespace KIT.Wasteheat
         private double _convectedThermalPower;
 
         private bool _active;
-        private bool _isGraphene;
 
         private int _radiatorDeployDelay;
         private int _explodeCounter;
@@ -839,8 +840,8 @@ namespace KIT.Wasteheat
         private double _intakeLqdDensity;
         private double _intakeAtmDensity;
 
-        private double _intakeAtmSpecificHeatCapacity;
-        private double _intakeLqdSpecificHeatCapacity;
+        static private double _intakeAtmSpecificHeatCapacity;
+        static private double _intakeLqdSpecificHeatCapacity;
 
 
         public GenerationType CurrentGenerationType { get; private set; }
@@ -1265,9 +1266,9 @@ namespace KIT.Wasteheat
         {
             var generation = (int)generationType;
 
-            if (generation >= (int)GenerationType.Mk6 && _isGraphene)
+            if (generation >= (int)GenerationType.Mk6 && IsGraphene)
                 return RadiatorProperties.RadiatorTemperatureMk6;
-            if (generation >= (int)GenerationType.Mk5 && _isGraphene)
+            if (generation >= (int)GenerationType.Mk5 && IsGraphene)
                 return RadiatorProperties.RadiatorTemperatureMk5;
             if (generation >= (int)GenerationType.Mk4)
                 return RadiatorProperties.RadiatorTemperatureMk4;
@@ -1557,7 +1558,7 @@ namespace KIT.Wasteheat
             UpdateAttachedPartsModifier();
             UpdateRadiatorArea();
 
-            _isGraphene = !string.IsNullOrEmpty(surfaceAreaUpgradeTechReq);
+            IsGraphene = !string.IsNullOrEmpty(surfaceAreaUpgradeTechReq);
             _maximumRadiatorTempInSpace = (float)RadiatorProperties.RadiatorTemperatureMk6;
             _maxSpaceTempBonus = _maximumRadiatorTempInSpace - maximumRadiatorTempAtOneAtmosphere;
             _temperatureRange = _maximumRadiatorTempInSpace - drapperPoint;
@@ -1694,8 +1695,8 @@ namespace KIT.Wasteheat
 
             radiatorTempStr = maxRadiatorTemperature + "K";
 
-            maxVacuumTemperature = _isGraphene ? Math.Min(maxVacuumTemperature, maxRadiatorTemperature) : Math.Min(RadiatorProperties.RadiatorTemperatureMk4, maxRadiatorTemperature);
-            maxAtmosphereTemperature = _isGraphene ? Math.Min(maxAtmosphereTemperature, maxRadiatorTemperature) : Math.Min(RadiatorProperties.RadiatorTemperatureMk3, maxRadiatorTemperature);
+            maxVacuumTemperature = IsGraphene ? Math.Min(maxVacuumTemperature, maxRadiatorTemperature) : Math.Min(RadiatorProperties.RadiatorTemperatureMk4, maxRadiatorTemperature);
+            maxAtmosphereTemperature = IsGraphene ? Math.Min(maxAtmosphereTemperature, maxRadiatorTemperature) : Math.Min(RadiatorProperties.RadiatorTemperatureMk3, maxRadiatorTemperature);
 
             UpdateMaxCurrentTemperature();
 
@@ -1904,7 +1905,7 @@ namespace KIT.Wasteheat
         protected virtual double AtmDensity()
         {
             // Another buff for titanium radiators - minimum of 50% effectiveness at the edge of space
-            return (_isGraphene ? 1 : 1.5) - (vessel.altitude / vessel.mainBody.atmosphereDepth);
+            return (IsGraphene ? 1 : 1.5) - (vessel.altitude / vessel.mainBody.atmosphereDepth);
         }
 
         private double CalculateInstantaneousRadTemp()
@@ -2161,12 +2162,16 @@ namespace KIT.Wasteheat
                     atmDensity = AtmDensity();
 
                     var convPowerDissipation = CalculateConvPowerDissipation(
+                        radiatorSurfaceArea: radiatorArea,
+                        radiatorConvectiveBonus: convectiveBonus,
                         radiatorTemperature: CurrentRadiatorTemperature,
                         externalTemperature: ExternalTemp(),
-                        effectiveVesselSpeed: vessel.speed.Sqrt(),
                         atmosphericDensity: atmDensity,
+                        grapheneRadiatorRatio: IsGraphene ? 1 : 0,
                         submergedPortion: part.submergedPortion,
-                        rotationModifier: PartRotationDistance().Sqrt());
+                        effectiveVesselSpeed: vessel.speed.Sqrt(),
+                        rotationModifier: PartRotationDistance().Sqrt()
+                        );
 
                     if (!radiatorIsEnabled)
                         convPowerDissipation *= 0.2;
@@ -2195,16 +2200,16 @@ namespace KIT.Wasteheat
         }
 
         public static double CalculateConvPowerDissipation(
-            double radiatorSurfaceArea,
-            double radiatorConvectiveBonus,
-            double radiatorTemperature,
-            double externalTemperature,
-            double atmosphericDensity = 0,
-            double grapheneRadiatorRatio = 0,
-            double submergedPortion = 0,
-            double effectiveVesselSpeed = 0,
-            double rotationModifier = 0
-        )
+           double radiatorSurfaceArea,
+           double radiatorConvectiveBonus,
+           double radiatorTemperature,
+           double externalTemperature,
+           double atmosphericDensity = 0,
+           double grapheneRadiatorRatio = 0,
+           double submergedPortion = 0,
+           double effectiveVesselSpeed = 0,
+           double rotationModifier = 0
+           )
         {
             if (radiatorTemperature.IsInfinityOrNaN())
                 return 0;

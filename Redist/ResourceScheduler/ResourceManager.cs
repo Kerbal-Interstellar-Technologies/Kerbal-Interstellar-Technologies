@@ -55,6 +55,9 @@ namespace KIT.ResourceScheduler
         public Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>> ModConsumption;
         public Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>> ModProduction;
 
+        private OverHeatingResourceManager overHeatingResourceManager;
+        private IResourceManager topLevelInterface;
+
         public ResourceManager(IVesselResources vesselResources, ICheatOptions cheatOptions)
         {
             this.vesselResources = vesselResources;
@@ -69,6 +72,8 @@ namespace KIT.ResourceScheduler
                 ModProduction[i] = new Dictionary<IKITMod, PerPartResourceInformation>();
                 ModConsumption[i] = new Dictionary<IKITMod, PerPartResourceInformation>();
             }
+
+            overHeatingResourceManager = new OverHeatingResourceManager(this);
         }
 
         #region IResourceManager implementation
@@ -89,33 +94,21 @@ namespace KIT.ResourceScheduler
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double ReduceConsumptionIfOverHeating(ResourceName resource, double requestedAmount)
+        private bool UseOverheatingResourceManager()
         {
-            // Allow full consumption of WasteHeat
-            if (resource == ResourceName.WasteHeat) return requestedAmount;
-
-            // We probably only want to reduce the top level requests
-            // Request EC -> Request TP -> Request Uranium <-- only target EC.
-            if (modsCurrentlyRunning.Count > 1) return requestedAmount;
-
             // If players don't want the requests scaled back, so be it
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().disableResourceConsumptionRateLimit) return requestedAmount;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().disableResourceConsumptionRateLimit) return false;
 
             var ratio = WasteHeatRatio();
-            if(ratio > 0.90)
-            {
-                // do any modules need exemptions? 
-                // emergency liquid -> gas converter would. can implement that easily enough.
-                // perhaps as a flag in the priority int?
+            if (ratio < 0.90) return false;
 
-                var reduction = (1 - Math.Min(1, ratio)) * 10;
+            var reduction = (ratio - 0.90) * 10;
 
-                Debug.Log($"[KIT ReduceConsumptionIfOverHeating] reducing consumption of {KITResourceSettings.ResourceToName(resource)} on {modsCurrentlyRunning.Last().KITPartName()} from {requestedAmount} by {Math.Round(reduction * 100, 2)}% to {requestedAmount * reduction}");
+            Debug.Log($"[UseOverheatingResourceManager] reducing consumption of resources by {Math.Round(reduction * 100, 2)}%");
 
-                requestedAmount = requestedAmount * reduction;
-            }
+            overHeatingResourceManager.consumptionReduction = reduction;
+            return true;
 
-            return requestedAmount;
         }
 
         /// <summary>
@@ -137,9 +130,6 @@ namespace KIT.ResourceScheduler
             }
 
             tmpPPRI.amount = tmpPPRI.maxAmount = 0;
-
-            // TODO - priorities, and where do they lie?
-            // wanted = ReduceConsumptionIfOverHeating(resource, wanted);
 
             var lastMod = modsCurrentlyRunning.Last();
 
@@ -181,7 +171,7 @@ namespace KIT.ResourceScheduler
             if (obtainedAmount >= modifiedAmount)
             {
                 tmpPPRI.amount += wanted;
-                if(trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
+                if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
 
                 return wanted;
             }
@@ -310,6 +300,8 @@ namespace KIT.ResourceScheduler
             tappedOutMods.Clear();
             fixedUpdateCalledMods.Clear();
 
+            topLevelInterface = UseOverheatingResourceManager() ? overHeatingResourceManager : (IResourceManager) this;
+
             if (modsCurrentlyRunning.Count > 0)
             {
                 if (complainedToWaiterAboutOrder == false)
@@ -328,7 +320,7 @@ namespace KIT.ResourceScheduler
                     Debug.Log($"No KIT Modules found");
                     return;
                 }
-                Debug.Log("[resource manager] got {activeKITModules.Count} modules and also {variableSupplierModules.Count} variable modules");
+                Debug.Log($"[resource manager] got {activeKITModules.Count} modules and also {variableSupplierModules.Count} variable modules");
             }
 
             if (activeKITModules.Count >= 1)
@@ -402,6 +394,7 @@ namespace KIT.ResourceScheduler
 
                     TimeWarp.SetRate(0, true);
 
+                    /*
                     for (int i = 0; i < activeKITModules.Count; i++)
                     {
                         try
@@ -413,6 +406,7 @@ namespace KIT.ResourceScheduler
                             Debug.Log($"[CheckIfEmergencyStopIsNeeded] {activeKITModules[i].KITPartName()} threw an exception: {e.Message}");
                         }
                     }
+                    */
                 }
                 else
                 {
@@ -450,7 +444,7 @@ namespace KIT.ResourceScheduler
 
                 try
                 {
-                    KITMod.KITFixedUpdate(this);
+                    KITMod.KITFixedUpdate(topLevelInterface);
                 }
                 catch (Exception ex)
                 {
