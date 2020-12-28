@@ -21,9 +21,11 @@ namespace KIT.ResourceScheduler
         private IResourceManager baseImpl;
         public double consumptionReduction = 1;
 
-        public OverHeatingResourceManager(IResourceManager root)
+        public IResourceManager SetBaseResourceManager(IResourceManager root)
         {
             baseImpl = root;
+
+            return this;
         }
 
         #region Proxy implementation functions

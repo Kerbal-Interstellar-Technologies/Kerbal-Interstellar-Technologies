@@ -56,6 +56,7 @@ namespace KIT.ResourceScheduler
         public Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>> ModProduction;
 
         private OverHeatingResourceManager overHeatingResourceManager;
+        private WasteHeatEquilibriumResourceManager wasteHeatEquilibriumResourceManager;
         private IResourceManager topLevelInterface;
 
         public ResourceManager(IVesselResources vesselResources, ICheatOptions cheatOptions)
@@ -73,7 +74,8 @@ namespace KIT.ResourceScheduler
                 ModConsumption[i] = new Dictionary<IKITMod, PerPartResourceInformation>();
             }
 
-            overHeatingResourceManager = new OverHeatingResourceManager(this);
+            wasteHeatEquilibriumResourceManager = new WasteHeatEquilibriumResourceManager(this);
+            overHeatingResourceManager = new OverHeatingResourceManager();
         }
 
         #region IResourceManager implementation
@@ -264,6 +266,53 @@ namespace KIT.ResourceScheduler
 
         private int overHeatingCounter;
 
+        private bool WasteHeatEquilibriumAchieved;
+
+        private double wasteHeatAtEndOfProcessing;
+        private double wasteHeatAtBeginningOfProcessing;
+
+        const double deltaTimeAt100x = 2;
+        const double equilibriumDifference = 0.0001;
+
+        private void PickTopLevelInterface()
+        {
+            topLevelInterface = WasteHeatEquilibriumAchieved ? wasteHeatEquilibriumResourceManager : (IResourceManager)this;
+
+            if (UseOverheatingResourceManager())
+                topLevelInterface = overHeatingResourceManager.SetBaseResourceManager(topLevelInterface);
+        }
+
+        private bool CheckForWasteHeatEquilibrium()
+        {
+            double larger, smaller;
+
+            if (wasteHeatAtEndOfProcessing > wasteHeatAtBeginningOfProcessing)
+            {
+                larger = wasteHeatAtEndOfProcessing;
+                smaller = wasteHeatAtBeginningOfProcessing;
+            }
+            else
+            {
+                larger = wasteHeatAtBeginningOfProcessing;
+                smaller = wasteHeatAtEndOfProcessing;
+            }
+
+            if (smaller == 0 || larger == 0)
+            {
+                WasteHeatEquilibriumAchieved = false;
+            }
+
+            var percentDifference = (larger - smaller) / larger;
+
+            WasteHeatEquilibriumAchieved = percentDifference <= equilibriumDifference;
+            if (WasteHeatEquilibriumAchieved)
+            {
+                Debug.Log($"[CheckForWasteHeatEquilibrium] WasteHeatEquilibriumAchieved - percentDifference is {percentDifference}, larger is {larger}, and smaller is {smaller}");
+            }
+
+            return WasteHeatEquilibriumAchieved;
+        }
+
         /// <summary>
         /// ExecuteKITModules() does the heavy work of executing all the IKITMod FixedUpdate() equiv. It needs to be careful to ensure
         /// it is using the most recent list of modules, hence the odd looping code. In the case of no part updates are needed, it's
@@ -277,12 +326,26 @@ namespace KIT.ResourceScheduler
 
             KITSteps++;
 
+            if (deltaTime < deltaTimeAt100x)
+            {
+                // is writing to memory cheaper than reading to it? (page faults, etc)
+                WasteHeatEquilibriumAchieved = false;
+            }
+            else if (deltaTime >= deltaTimeAt100x && !WasteHeatEquilibriumAchieved)
+            {
+                CheckForWasteHeatEquilibrium();
+            }
+
+            wasteHeatAtBeginningOfProcessing = wasteHeatAtEndOfProcessing;
+
             currentResources = resourceAmounts;
             currentMaxResources = resourceMaxAmounts;
 
             // Cycle the resource tracking data over.
             for (var i = 0; i < ResourceName.WasteHeat - ResourceName.ElectricCharge; i++)
             {
+                if (i == ResourceName.WasteHeat - ResourceName.ElectricCharge && WasteHeatEquilibriumAchieved) continue;
+
                 var currentResourceProduction = resourceProductionStats[i];
 
                 currentResourceProduction._previouslyRequested = currentResourceProduction._currentlyRequested;
@@ -293,6 +356,8 @@ namespace KIT.ResourceScheduler
 
             for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
             {
+                if (i == ResourceName.WasteHeat && WasteHeatEquilibriumAchieved == true) continue;
+
                 ModConsumption[i].Clear();
                 ModProduction[i].Clear();
             }
@@ -300,7 +365,7 @@ namespace KIT.ResourceScheduler
             tappedOutMods.Clear();
             fixedUpdateCalledMods.Clear();
 
-            topLevelInterface = UseOverheatingResourceManager() ? overHeatingResourceManager : (IResourceManager) this;
+            PickTopLevelInterface();
 
             if (modsCurrentlyRunning.Count > 0)
             {
@@ -370,6 +435,15 @@ namespace KIT.ResourceScheduler
 
             RechargeBatteries(ref resourceAmounts, ref resourceMaxAmounts);
             vesselResources.OnKITProcessingFinished(this);
+
+            if (!WasteHeatEquilibriumAchieved)
+            {
+                resourceAmounts.TryGetValue(ResourceName.WasteHeat, out wasteHeatAtEndOfProcessing);
+            }
+            else
+            {
+                resourceAmounts[ResourceName.WasteHeat] = wasteHeatAtEndOfProcessing;
+            }
 
             CheckIfEmergencyStopIsNeeded(ref resourceAmounts, ref resourceMaxAmounts);
 
@@ -464,6 +538,8 @@ namespace KIT.ResourceScheduler
             var reducedObtainedAmount = obtainedAmount * fixedDeltaTime;
             var reducedOriginalAmount = originalAmount * fixedDeltaTime;
 
+            IResourceManager secondaryInterface = WasteHeatEquilibriumAchieved ? wasteHeatEquilibriumResourceManager : (IResourceManager)this;
+
             foreach (var mod in variableSupplierModules[resource])
             {
                 var KITMod = mod as IKITMod;
@@ -481,7 +557,9 @@ namespace KIT.ResourceScheduler
                 {
                     UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{KITMod.KITPartName()}");
 
-                    var canContinue = mod.ProvideResource(this, resource, perSecondAmount + resourceFiller);
+
+
+                    var canContinue = mod.ProvideResource(secondaryInterface, resource, perSecondAmount + resourceFiller);
                     if (!canContinue) tappedOutMods.Add(mod);
                 }
                 catch (Exception ex)

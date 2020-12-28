@@ -114,6 +114,7 @@
     <Compile Include="ResourceScheduler\OverheatingResourceManager.cs" />
     <Compile Include="ResourceScheduler\VesselEvents.cs" />
     <Compile Include="ResourceScheduler\VesselModule.cs" />
+    <Compile Include="ResourceScheduler\WasteHeatEquilibriumResourceManager.cs" />
     <Compile Include="Resources\DecayConfiguration.cs" />
     <Compile Include="Resources\GasLiquidConverter.cs" />
     <Compile Include="Resources\KITCryostat.cs" />

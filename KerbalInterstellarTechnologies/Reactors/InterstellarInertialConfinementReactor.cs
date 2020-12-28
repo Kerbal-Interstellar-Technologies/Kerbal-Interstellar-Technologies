@@ -338,17 +338,12 @@ namespace KIT.Reactors
 
         private void ProcessCharging(IResourceManager resMan)
         {
-            throw new Exception("fix me");
-            /*
-            double timeWarpFixedDeltaTime = TimeWarp.fixedDeltaTime;
             if (!canJumpstart || !isChargingForJumpstart || !(part.vessel.geeForce < startupMaximumGeforce)) return;
 
             var neededPower = Math.Max(StartupPower - accumulatedElectricChargeInMW, 0);
 
             if (neededPower <= 0)
                 return;
-
-            var availableStablePower = getStableResourceSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
 
             var minimumChargingPower = startupMinimumChargePercentage * RawPowerOutput;
             if (startupCostGravityMultiplier > 0)
@@ -357,58 +352,20 @@ namespace KIT.Reactors
                 minimumChargingPower = gravityDivider > 0 ? minimumChargingPower / gravityDivider : minimumChargingPower;
             }
 
+            var availableStablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, neededPower);
+            resMan.ProduceResource(ResourceName.WasteHeat, 0.05 * availableStablePower);
+            accumulatedElectricChargeInMW += availableStablePower;
+
             if (availableStablePower < minimumChargingPower)
             {
                 if (startupCostGravityMultiplier > 0)
                     ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_InertialConfinementReactor_PostMsg1", minimumChargingPower.ToString("F0")), 1f, ScreenMessageStyle.UPPER_CENTER);//"Curent you need at least " +  + " MW to charge the reactor. Move closer to gravity well to reduce amount needed"
                 else
                     ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_InertialConfinementReactor_PostMsg2", minimumChargingPower.ToString("F0")), 5f, ScreenMessageStyle.UPPER_CENTER);//"You need at least " +  + " MW to charge the reactor"
-            }
-            else
-            {
-                var megaJouleRatio = usePowerManagerForPrimaryInputPower
-                    ? getResourceBarRatio(primaryInputResource)
-                    : part.GetResourceRatio(primaryInputResource);
 
-                var primaryPowerRequest = Math.Min(neededPower, availableStablePower * megaJouleRatio);
-
-                // verify we amount of power collected exceeds threshold
-                var returnedPrimaryPower = CheatOptions.InfiniteElectricity
-                    ? neededPower
-                    : usePowerManagerForPrimaryInputPower
-                        ? consumeFNResourcePerSecond(primaryPowerRequest, primaryInputResource)
-                        : part.RequestResource(primaryInputResource, primaryPowerRequest * timeWarpFixedDeltaTime);
-
-                var powerPerSecond = usePowerManagerForPrimaryInputPower ? returnedPrimaryPower : returnedPrimaryPower / timeWarpFixedDeltaTime;
-
-                if (!CheatOptions.IgnoreMaxTemperature && maintenancePowerWasteheatRatio > 0)
-                    //supplyFNResourcePerSecond(, ResourceSettings.Config.WasteHeatInMegawatt);
-                    resMan.ProduceResource(ResourceName.WasteHeat, 0.05 * powerPerSecond);
-
-                if (powerPerSecond >= minimumChargingPower)
-                    accumulatedElectricChargeInMW += returnedPrimaryPower * timeWarpFixedDeltaTime;
-                else
-                {
-                    if (startupCostGravityMultiplier > 0)
-                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_InertialConfinementReactor_PostMsg1", minimumChargingPower.ToString("F0")), 5f, ScreenMessageStyle.UPPER_CENTER);//"Curent you need at least " +  + " MW to charge the reactor. Move closer to gravity well to reduce amount needed"
-                    else
-                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_InertialConfinementReactor_PostMsg2", minimumChargingPower.ToString("F0")), 5f, ScreenMessageStyle.UPPER_CENTER);//"You need at least " +  + " MW to charge the reactor"
-                }
+                return;
             }
 
-            // secondary try to charge from secondary Power Storage
-            neededPower = StartupPower - accumulatedElectricChargeInMW;
-            if (secondaryInputMultiplier > 0 && neededPower > 0 && startupMinimumChargePercentage <= 0)
-            {
-                var requestedSecondaryPower = neededPower * secondaryInputMultiplier;
-
-                var secondaryPowerReceived = usePowerManagerForSecondaryInputPower
-                    ? consumeFNResource(requestedSecondaryPower, secondaryInputResource)
-                    : part.RequestResource(secondaryInputResource, requestedSecondaryPower);
-
-                accumulatedElectricChargeInMW += secondaryPowerReceived / secondaryInputMultiplier;
-            }
-            */
         }
     }
 }
