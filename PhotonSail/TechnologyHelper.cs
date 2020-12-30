@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PhotonSail
 {
-    class TechnologyHelper
+    static class TechnologyHelper
     {
         private static Dictionary<string, PartUpgradeHandler.Upgrade> _partUpgradeByName;
 

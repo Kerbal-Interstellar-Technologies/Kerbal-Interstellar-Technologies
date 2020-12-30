@@ -116,7 +116,7 @@ namespace KIT.Propulsion
         public double gravityAtSeaLevel;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityVesselPull", guiUnits = " m/s\xB2", guiFormat = "F5")]
         public double gravityPull;
-        [KSPField(groupName = GROUP, guiActive = false,  guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragRatio", guiFormat = "F5")]
+        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragRatio", guiFormat = "F5")]
         public double gravityDragRatio;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragPercentage", guiUnits = "%", guiFormat = "F3")]
         public double gravityDragPercentage;
@@ -281,7 +281,7 @@ namespace KIT.Propulsion
 
             if (warpToMassRatio < 1)
             {
-                Debug.Log("[KSPI]: warpToMassRatio: " + warpToMassRatio + " is less than 1" );
+                Debug.Log("[KSPI]: warpToMassRatio: " + warpToMassRatio + " is less than 1");
                 var message = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_warpStrenthToLowForVesselMass");
                 ScreenMessages.PostScreenMessage(message);
                 return;
@@ -503,7 +503,7 @@ namespace KIT.Propulsion
             // Disable sound
             _warpSound.Stop();
 
-            Vector3d reverseWarpHeading =  new Vector3d(-_headingAct.x, -_headingAct.y, -_headingAct.z);
+            Vector3d reverseWarpHeading = new Vector3d(-_headingAct.x, -_headingAct.y, -_headingAct.z);
 
             // prevent g-force effects for current and next frame
             PluginHelper.IgnoreGForces(part, 2);
@@ -566,7 +566,7 @@ namespace KIT.Propulsion
             if (KopernicusHelper.IsStar(part.vessel.mainBody)) return;
 
             if (!matchExitToDestinationSpeed && vessel.mainBody != _warpInitialMainBody)
-               Develocitize();
+                Develocitize();
         }
 
         [KSPAction("#LOC_KSPIE_AlcubierreDrive_increaseWarpSpeed")]
@@ -687,7 +687,7 @@ namespace KIT.Propulsion
         {
             Debug.Log("[KSPI]: 10x Speed Down pressed");
 
-            for (var i = 0; i  < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 selected_factor--;
 
@@ -917,12 +917,12 @@ namespace KIT.Propulsion
                 _warpEffect1Renderer.material.shader = Shader.Find(warpEffect1ShaderPath);
                 _warpEffect2Renderer.material.shader = Shader.Find(warpEffect2ShaderPath);
 
-                _warpWhiteFlash = GameDatabase.Instance.GetTexture("WarpPlugin/ParticleFX/warp10", false);
-                _warpRedFlash = GameDatabase.Instance.GetTexture("WarpPlugin/ParticleFX/warpr10", false);
+                _warpWhiteFlash = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/ParticleFX/warp10", false);
+                _warpRedFlash = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/ParticleFX/warpr10", false);
 
                 _warpTextures = new Texture[32];
 
-                const string warpTexturePath = "WarpPlugin/ParticleFX/warp";
+                const string warpTexturePath = "Kerbal-Interstellar-Technologies/ParticleFX/warp";
                 for (var i = 0; i < 16; i++)
                 {
                     _warpTextures[i] = GameDatabase.Instance.GetTexture(i > 0
@@ -1109,56 +1109,7 @@ namespace KIT.Propulsion
 
         public void FixedUpdate() // FixedUpdate is also called when not activated
         {
-            if (!IsSlave)
-                PluginHelper.UpdateIgnoredGForces();
 
-            if (vessel == null)
-                return;
-
-            warpEngineThrottle = _engineThrottle[selected_factor];
-
-            distanceToClosestBody = DistanceToClosestBody(vessel, out _closestCelestialBody, out _selectedTargetVesselIsClosest);
-
-            closestCelestrialBodyName = _closestCelestialBody.name;
-
-            gravityPull = FlightGlobals.getGeeForceAtPosition(vessel.GetWorldPos3D()).magnitude;
-            gravityAtSeaLevel = _closestCelestialBody.GeeASL * GameConstants.STANDARD_GRAVITY;
-            gravityRatio = gravityAtSeaLevel > 0 ? Math.Min(1, gravityPull / gravityAtSeaLevel) : 0;
-            gravityDragRatio = Math.Pow(Math.Min(1, 1 - gravityRatio), Math.Max(1, Math.Sqrt(gravityAtSeaLevel)));
-            gravityDragPercentage = (1 - gravityDragRatio) * 100;
-
-            maximumWarpForGravityPull = gravityPull > 0 ? 1 / gravityPull : 0;
-
-            cosineAngleToClosestBody = Vector3d.Dot(part.transform.up.normalized, (vessel.CoMD - _closestCelestialBody.position).normalized);
-
-            var cosineAngleModifier = _selectedTargetVesselIsClosest ? 0.25 : (1 + 0.5 * cosineAngleToClosestBody);
-
-            maximumWarpForAltitude = 0.1 * cosineAngleModifier * distanceToClosestBody / PluginSettings.Config.SpeedOfLight / TimeWarp.fixedDeltaTime;
-            maximumWarpWeighted = (gravityRatio * maximumWarpForGravityPull) + ((1 - gravityRatio) * maximumWarpForAltitude);
-            maximumWarpSpeed = Math.Min(maximumWarpWeighted, maximumWarpForAltitude);
-            _maximumWarpSpeedFactor = GetMaximumFactor(maximumWarpSpeed);
-            maximumAllowedWarpThrotle = _engineThrottle[_maximumWarpSpeedFactor];
-            _minimumPowerAllowedFactor = _maximumWarpSpeedFactor > _minimumSelectedFactor ? _maximumWarpSpeedFactor : _minimumSelectedFactor;
-
-            if (_alcubierreDrives != null)
-                totalWarpPower = _alcubierreDrives.Sum(p => p.warpStrength * (p.isupgraded ? warpPowerMultTech1 : warpPowerMultTech0));
-
-            vesselTotalMass = vessel.GetTotalMass();
-
-            if (_alcubierreDrives != null && totalWarpPower != 0 && vesselTotalMass != 0)
-            {
-                warpToMassRatio = totalWarpPower / vesselTotalMass;
-                exotic_power_required = (GameConstants.initial_alcubierre_megajoules_required * vesselTotalMass * powerRequirementMultiplier) / warpToMassRatio;
-
-                // spread exotic matter over all coils
-                var exoticMatterResource = part.Resources["ExoticMatter"];
-                exoticMatterResource.maxAmount = exotic_power_required / _alcubierreDrives.Count;
-            }
-
-            minPowerRequirementForLightSpeed = GetPowerRequirementForWarp(1);
-            powerRequirementForSlowedSubLightSpeed = GetPowerRequirementForWarp(_engineThrottle.First());
-            powerRequirementForMaximumAllowedLightSpeed = GetPowerRequirementForWarp(maximumAllowedWarpThrotle);
-            currentPowerRequirementForWarp = GetPowerRequirementForWarp(_engineThrottle[selected_factor]);
         }
 
 
@@ -1232,7 +1183,7 @@ namespace KIT.Propulsion
         //Computes the deltaV of the burn needed to circularize an orbit at a given UT.
         public static double DeltaVToCircularize(Orbit o, double UT)
         {
-            var desiredVelocity = CircularOrbitSpeed(o.referenceBody, o.radius) ;
+            var desiredVelocity = CircularOrbitSpeed(o.referenceBody, o.radius);
             var actualVelocity = o.getOrbitalVelocityAtUT(UT).magnitude;
             return desiredVelocity - actualVelocity;
         }
@@ -1269,7 +1220,7 @@ namespace KIT.Propulsion
 
             requiredExoticMaintenancePower = _exoticMatterRatio * _exoticMatterRatio * maximumExoticMaintenancePower;
 
-            var overheatingRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat); 
+            var overheatingRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
 
             var overheatModifier = overheatingRatio < 0.9 ? 1 : (1 - overheatingRatio) * 10;
 
@@ -1283,7 +1234,7 @@ namespace KIT.Propulsion
 
             ExoticMatterProduced = (1 - ExoticMatterMaintenanceRatio) * -_maxExoticMatter;
 
-            if ((IsCharging || antigravityPercentage > 0 || _exoticMatterRatio > 0 ) && !IsEnabled)
+            if ((IsCharging || antigravityPercentage > 0 || _exoticMatterRatio > 0) && !IsEnabled)
             {
                 availablePower = currentPowerRequirementForWarp;
 
@@ -1355,7 +1306,7 @@ namespace KIT.Propulsion
 
             if (holdAltitude)
             {
-                _orbitMultiplier = vessel.orbit.PeA > vessel.mainBody.atmosphereDepth ? 0 : 1 - Math.Min(1, vessel.horizontalSrfSpeed  /  CircularOrbitSpeed(vessel.mainBody, vessel.mainBody.Radius + vessel.altitude));
+                _orbitMultiplier = vessel.orbit.PeA > vessel.mainBody.atmosphereDepth ? 0 : 1 - Math.Min(1, vessel.horizontalSrfSpeed / CircularOrbitSpeed(vessel.mainBody, vessel.mainBody.Radius + vessel.altitude));
                 _responseFactor = responseMultiplier /* *  stablePowerSupply */ / exotic_power_required;
                 antigravityPercentage = (float)Math.Max(0, Math.Min(100 * _orbitMultiplier + (gravityAcceleration != 0 ? _responseFactor * -verticalSpeed / gravityAcceleration / resMan.FixedDeltaTime() : 0), 200));
             }
@@ -1400,7 +1351,7 @@ namespace KIT.Propulsion
 
             dropoutDistance = minimumSpaceAltitude + allowedWarpDistancePerFrame + safetyDistance;
 
-            if ((!CheatOptions.IgnoreMaxTemperature && vessel.atmDensity > 0) ||   distanceToClosestBody <= dropoutDistance)
+            if ((!CheatOptions.IgnoreMaxTemperature && vessel.atmDensity > 0) || distanceToClosestBody <= dropoutDistance)
             {
                 if (_vesselWasInOuterspace)
                 {
@@ -1627,7 +1578,7 @@ namespace KIT.Propulsion
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_currentWarpExitBurnToCircularize"), exitBurnCircularize.ToString("0.000") + " m/s", _boldBlackStyle, _textBlackStyle);
 
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_MaximumWarpForAltitude"), (maximumWarpForAltitude).ToString("0.000"), _boldBlackStyle, _textBlackStyle);//"Maximum Warp For Altitude"
-                PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Distancetoclosestbody"), (distanceToClosestBody * 0.001).ToString("0.000") + " km" , _boldBlackStyle, _textBlackStyle);//"Distance to closest body"
+                PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Distancetoclosestbody"), (distanceToClosestBody * 0.001).ToString("0.000") + " km", _boldBlackStyle, _textBlackStyle);//"Distance to closest body"
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Closestbody"), closestCelestrialBodyName, _boldBlackStyle, _textBlackStyle);//"Closest body"
 
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_CosineToClosestBody"), cosineAngleToClosestBody.ToString("0.000"), _boldBlackStyle, _textBlackStyle);//"Cosine To Closest Body"
@@ -1661,7 +1612,7 @@ namespace KIT.Propulsion
                 if (GUILayout.Button("(-) " + speedText + " MIN", GUILayout.MinWidth(150)))
                     MinimizeWarpSpeed();
                 if (GUILayout.Button("(+) " + speedText + " MAX", GUILayout.MinWidth(150)))
-                    MaximizeWarpSpeed ();
+                    MaximizeWarpSpeed();
                 GUILayout.EndHorizontal();
 
                 if (!IsEnabled && GUILayout.Button(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_activateWarpDrive"), GUILayout.ExpandWidth(true)))
@@ -1796,8 +1747,64 @@ namespace KIT.Propulsion
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
 
+        private void UpdateStats()
+        {
+            if (!IsSlave)
+                PluginHelper.UpdateIgnoredGForces();
+
+            if (vessel == null)
+                return;
+
+            warpEngineThrottle = _engineThrottle[selected_factor];
+
+            distanceToClosestBody = DistanceToClosestBody(vessel, out _closestCelestialBody, out _selectedTargetVesselIsClosest);
+
+            closestCelestrialBodyName = _closestCelestialBody.name;
+
+            gravityPull = FlightGlobals.getGeeForceAtPosition(vessel.GetWorldPos3D()).magnitude;
+            gravityAtSeaLevel = _closestCelestialBody.GeeASL * GameConstants.STANDARD_GRAVITY;
+            gravityRatio = gravityAtSeaLevel > 0 ? Math.Min(1, gravityPull / gravityAtSeaLevel) : 0;
+            gravityDragRatio = Math.Pow(Math.Min(1, 1 - gravityRatio), Math.Max(1, Math.Sqrt(gravityAtSeaLevel)));
+            gravityDragPercentage = (1 - gravityDragRatio) * 100;
+
+            maximumWarpForGravityPull = gravityPull > 0 ? 1 / gravityPull : 0;
+
+            cosineAngleToClosestBody = Vector3d.Dot(part.transform.up.normalized, (vessel.CoMD - _closestCelestialBody.position).normalized);
+
+            var cosineAngleModifier = _selectedTargetVesselIsClosest ? 0.25 : (1 + 0.5 * cosineAngleToClosestBody);
+
+            maximumWarpForAltitude = 0.1 * cosineAngleModifier * distanceToClosestBody / PluginSettings.Config.SpeedOfLight / TimeWarp.fixedDeltaTime;
+            maximumWarpWeighted = (gravityRatio * maximumWarpForGravityPull) + ((1 - gravityRatio) * maximumWarpForAltitude);
+            maximumWarpSpeed = Math.Min(maximumWarpWeighted, maximumWarpForAltitude);
+            _maximumWarpSpeedFactor = GetMaximumFactor(maximumWarpSpeed);
+            maximumAllowedWarpThrotle = _engineThrottle[_maximumWarpSpeedFactor];
+            _minimumPowerAllowedFactor = _maximumWarpSpeedFactor > _minimumSelectedFactor ? _maximumWarpSpeedFactor : _minimumSelectedFactor;
+
+            if (_alcubierreDrives != null)
+                totalWarpPower = _alcubierreDrives.Sum(p => p.warpStrength * (p.isupgraded ? warpPowerMultTech1 : warpPowerMultTech0));
+
+            vesselTotalMass = vessel.GetTotalMass();
+
+            if (_alcubierreDrives != null && totalWarpPower != 0 && vesselTotalMass != 0)
+            {
+                warpToMassRatio = totalWarpPower / vesselTotalMass;
+                exotic_power_required = (GameConstants.initial_alcubierre_megajoules_required * vesselTotalMass * powerRequirementMultiplier) / warpToMassRatio;
+
+                // spread exotic matter over all coils
+                var exoticMatterResource = part.Resources["ExoticMatter"];
+                exoticMatterResource.maxAmount = exotic_power_required / _alcubierreDrives.Count;
+            }
+
+            minPowerRequirementForLightSpeed = GetPowerRequirementForWarp(1);
+            powerRequirementForSlowedSubLightSpeed = GetPowerRequirementForWarp(_engineThrottle.First());
+            powerRequirementForMaximumAllowedLightSpeed = GetPowerRequirementForWarp(maximumAllowedWarpThrotle);
+            currentPowerRequirementForWarp = GetPowerRequirementForWarp(_engineThrottle[selected_factor]);
+        }
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
+            UpdateStats();
+
             distanceToClosestBody = DistanceToClosestBody(vessel, out _closestCelestialBody, out _selectedTargetVesselIsClosest);
 
             if (_initiateWarpTimeout > 0)
@@ -1873,23 +1880,18 @@ namespace KIT.Propulsion
             {
                 driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Active");//"Active."
             }
-            else
+            else if (!IsSlave)
             {
-                if (!IsSlave)
+                part.GetConnectedResourceTotals(_exoticResourceDefinition.id, out _currentExoticMatter, out _maxExoticMatter);
+
+                if (_currentExoticMatter < exotic_power_required * 0.999 * 0.5)
                 {
-                    part.GetConnectedResourceTotals(_exoticResourceDefinition.id, out _currentExoticMatter, out _maxExoticMatter);
-
-                    if (_currentExoticMatter < exotic_power_required * 0.999 * 0.5)
-                    {
-                        var electricalCurrentPct = Math.Min(100, 100 * _currentExoticMatter / (exotic_power_required * 0.5));
-                        driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Charging") + electricalCurrentPct.ToString("0.00") + "%";//String.Format("Charging: ")
-                    }
-                    else
-                        driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Ready");//"Ready."
+                    var electricalCurrentPct = Math.Min(100, 100 * _currentExoticMatter / (exotic_power_required * 0.5));
+                    driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Charging") + electricalCurrentPct.ToString("0.00") + "%";//String.Format("Charging: ")
                 }
+                else
+                    driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Ready");//"Ready."
             }
-
-
 
             if (_activeTrail && !hideTrail && _warpTrailTimeout == 0)
             {

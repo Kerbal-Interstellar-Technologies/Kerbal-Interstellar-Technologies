@@ -414,7 +414,7 @@ namespace KIT.Propulsion
                 // allow throttle to be used up to Geeforce threshold
                 TimeWarp.GThreshold = GThreshold;
 
-                demandMass = requestedFlow * (double)(decimal)resMan.FixedDeltaTime();
+                demandMass = requestedFlow; // * (double)(decimal)resMan.FixedDeltaTime();
 
                 // if not transitioning from warp to real
                 // Update values to use during timewarp
@@ -517,8 +517,6 @@ namespace KIT.Propulsion
             thrust_d = _thrustPersistent;
             isp_d = _realIsp;
             throttle_d = _throttlePersistent;
-
-            base.FixedUpdate();
         }
 
         public string KITPartName() => part.partInfo.title;

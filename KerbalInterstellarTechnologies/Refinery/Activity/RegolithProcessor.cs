@@ -19,7 +19,6 @@ namespace KIT.Refinery.Activity
             EnergyPerTon = PluginSettings.Config.ElectrolysisEnergyPerTon;
         }
 
-        private double _dFixedDeltaTime;
         private double _dFixedConsumptionRate;
         private double _dConsumptionStorageRatio;
 

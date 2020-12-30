@@ -16,23 +16,23 @@ namespace KIT.Resources
         struct Conversion // Software version 7.0
         {
             // Primary is liquid, secondary is gas
-            double maxPowerPrimary;
-            double maxPowerSecondary;
-            double primaryConversionEnergyCost;
-            double secondaryConversionEnergyCost;
+            double _maxPowerPrimary;
+            double _maxPowerSecondary;
+            double _primaryConversionEnergyCost;
+            double _secondaryConversionEnergyCost;
 
-            double primaryConversionRatio;
-            double secondaryConversionRatio;
+            double _primaryConversionRatio;
+            double _secondaryConversionRatio;
 
             public Conversion(double maxPowerPrimary, double maxPowerSecondary, double primaryConversionEnergyCost, double secondaryConversionEnergyCost, PartResourceDefinition primaryDefinition, PartResourceDefinition secondaryDefinition)
             {
-                this.maxPowerPrimary = maxPowerPrimary;
-                this.maxPowerSecondary = maxPowerSecondary;
-                this.primaryConversionEnergyCost = primaryConversionEnergyCost;
-                this.secondaryConversionEnergyCost = secondaryConversionEnergyCost;
+                this._maxPowerPrimary = maxPowerPrimary;
+                this._maxPowerSecondary = maxPowerSecondary;
+                this._primaryConversionEnergyCost = primaryConversionEnergyCost;
+                this._secondaryConversionEnergyCost = secondaryConversionEnergyCost;
 
-                primaryConversionRatio = secondaryDefinition.density / primaryDefinition.density;
-                secondaryConversionRatio = primaryDefinition.density / secondaryDefinition.density;
+                _primaryConversionRatio = secondaryDefinition.density / primaryDefinition.density;
+                _secondaryConversionRatio = primaryDefinition.density / secondaryDefinition.density;
             }
         }
 
@@ -54,21 +54,14 @@ namespace KIT.Resources
 
             foreach (var node in nodeList)
             {
-                string primaryResourceName, secondaryResourceName;
+                string secondaryResourceName;
 
-                double maxPowerPrimary, maxPowerSecondary, primaryConversionEnergyCost, secondaryConversionEnergyCost;
-                bool failed;
-                ResourceName primaryID, secondaryID;
+                double maxPowerSecondary, primaryConversionEnergyCost, secondaryConversionEnergyCost;
+                
+                var primaryResourceName = secondaryResourceName = "";
+                var maxPowerPrimary = maxPowerSecondary = primaryConversionEnergyCost = secondaryConversionEnergyCost = 0;
+                var failed = node.TryGetValue(nameof(primaryResourceName), ref primaryResourceName) == false;
 
-                PartResourceDefinition primaryDefinition;
-                PartResourceDefinition secondaryDefinition;
-
-
-                primaryResourceName = secondaryResourceName = "";
-                maxPowerPrimary = maxPowerSecondary = primaryConversionEnergyCost = secondaryConversionEnergyCost = 0;
-                failed = false;
-
-                if (node.TryGetValue(nameof(primaryResourceName), ref primaryResourceName) == false) failed = true;
                 if (node.TryGetValue(nameof(secondaryResourceName), ref secondaryResourceName) == false) failed = true;
                 if (node.TryGetValue(nameof(maxPowerPrimary), ref maxPowerPrimary) == false) failed = true;
                 if (node.TryGetValue(nameof(maxPowerSecondary), ref maxPowerSecondary) == false) failed = true;
@@ -81,8 +74,8 @@ namespace KIT.Resources
                     continue;
                 }
 
-                primaryID = KITResourceSettings.NameToResource(primaryResourceName);
-                secondaryID = KITResourceSettings.NameToResource(secondaryResourceName);
+                var primaryID = KITResourceSettings.NameToResource(primaryResourceName);
+                var secondaryID = KITResourceSettings.NameToResource(secondaryResourceName);
 
                 if (primaryID == ResourceName.Unknown || secondaryID == ResourceName.Unknown)
                 {
@@ -90,8 +83,8 @@ namespace KIT.Resources
                     continue;
                 }
 
-                primaryDefinition = PartResourceLibrary.Instance.GetDefinition(primaryResourceName);
-                secondaryDefinition = PartResourceLibrary.Instance.GetDefinition(secondaryResourceName);
+                var primaryDefinition = PartResourceLibrary.Instance.GetDefinition(primaryResourceName);
+                var secondaryDefinition = PartResourceLibrary.Instance.GetDefinition(secondaryResourceName);
 
                 if (primaryDefinition == null || secondaryDefinition == null)
                 {

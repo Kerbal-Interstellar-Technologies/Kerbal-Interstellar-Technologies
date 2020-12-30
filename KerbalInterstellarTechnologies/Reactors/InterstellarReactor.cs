@@ -1866,7 +1866,7 @@ namespace KIT.Reactors
                 return;
 
             // calculate current maximum lithium consumption
-            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * neutronPowerReceivedEachSecond *  lithiumNeutronAbsorption;
+            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * neutronPowerReceivedEachSecond * lithiumNeutronAbsorption;
             var lithiumRate = breedRate / _lithium6Density;
 
             // get spare room tritium
@@ -3011,7 +3011,7 @@ namespace KIT.Reactors
             */
 
             double tmp;
-            switch(resource)
+            switch (resource)
             {
                 case ResourceName.ThermalPower:
                     tmp = requestedAmount / ThermalPowerRatio;
