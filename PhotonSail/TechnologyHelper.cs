@@ -98,7 +98,7 @@ namespace PhotonSail
                 id = partUpgrade.techRequired;
 
             if (HighLogic.CurrentGame != null)
-                return !TechnologyIsInUse || HasTech(id);
+                return ResearchAndDevelopment.GetTechnologyState(id) == RDTech.State.Available;
 
             return false;
         }
@@ -140,18 +140,6 @@ namespace PhotonSail
                 }
                 return rdTechByName;
             }
-        }
-
-        public static bool TechnologyIsInUse => (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX);
-
-        public static int HasTech(string techid, int increase)
-        {
-            return ResearchAndDevelopment.Instance.GetTechState(techid) != null ? increase : 0;
-        }
-
-        public static bool HasTech(string techid)
-        {
-            return ResearchAndDevelopment.Instance.GetTechState(techid) != null;
         }
     }
 }

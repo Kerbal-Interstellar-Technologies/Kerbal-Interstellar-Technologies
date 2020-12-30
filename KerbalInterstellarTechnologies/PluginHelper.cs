@@ -187,11 +187,7 @@ namespace KIT
             if (ResearchAndDevelopment.Instance == null)
                 return HasTechFromSaveFile(id);
 
-            var techState = ResearchAndDevelopment.Instance.GetTechState(id);
-            if (techState != null)
-                return techState.state == RDTech.State.Available;
-            else
-                return false;
+            return ResearchAndDevelopment.GetTechnologyState(id) == RDTech.State.Available;
         }
 
         private static HashSet<string> _researchedTechs;
