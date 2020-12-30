@@ -17,16 +17,16 @@ namespace KIT
     {
         private const int LabelWidth = 300;
         private const int ValueWidth = 85;
+        private const float ExternalTemperatureInKelvin = 290;
 
         public static bool RenderWindow { get; set; }
 
         private int _maxIterations = 10;
         private int _bestScenarioPercentage;
-        private int _numberOfRadiators;
         private int _thermalWindowId = 825462;
         private bool _hasThermalGenerators;
 
-        private Rect windowPosition = new Rect(500, 500, LabelWidth + ValueWidth, 100);
+        private Rect _windowPosition = new Rect(500, 500, LabelWidth + ValueWidth, 100);
 
         private GUIStyle _boldLabel;
         private GUIStyle _blueLabel;
@@ -35,11 +35,10 @@ namespace KIT
         private GUIStyle _orangeLabel;
         private GUIStyle _radiatorLabel;
 
-        private float atmosphereDensity;
-        private float submergedPercentage;
-        private float externalTemperatureInKelvin = 290;
-        private float customScenarioPercentage = 100;
-        private float customScenarioFraction = 1;
+        private float _atmosphereDensity;
+        private float _submergedPercentage;
+        private float _customScenarioPercentage = 100;
+        private float _customScenarioFraction = 1;
 
         private double _wasteheatSourcePowerCustom;
         private double _wasteheatSourcePower100Pc;
@@ -112,6 +111,8 @@ namespace KIT
         private double _vesselMaxRadDissipation;
         private double _vesselMaxRadConvectionAndDissipation;
         private double _vesselBaseRadiatorArea;
+        private double _totalConvectiveBonusArea;
+        private double _vesselConvectiveRadiatorArea;
         private double _averageMaxRadTemp;
         private double _averageConvectiveBonus;
         private double _bestScenarioElectricPower;
@@ -142,7 +143,7 @@ namespace KIT
             _dryMass = 0;
             _wetMass = 0;
 
-            customScenarioFraction = customScenarioPercentage * 0.01f;
+            _customScenarioFraction = _customScenarioPercentage * 0.01f;
 
             foreach (var part in EditorLogic.fetch.ship.parts)
             {
@@ -212,7 +213,7 @@ namespace KIT
                 var connectedThermalPowerGenerator = (IFNElectricPowerGeneratorSource)powerSource.ConnectedThermalElectricGenerator;
                 var connectedChargedPowerGenerator = (IFNElectricPowerGeneratorSource)powerSource.ConnectedChargedParticleElectricGenerator;
 
-                // when connected to a Thermal source, assume most Thermal energy Thermal power can end up in the radiators
+                // when connected to a Thermal source, assume most thermal energy Thermal power can end up in the radiators
                 if (connectedThermalPowerGenerator != null)
                     combinedRawSourcePower += (1 - powerSource.ChargedPowerRatio) * connectedThermalPowerGenerator.RawGeneratorSourcePower;
                 else
@@ -249,7 +250,7 @@ namespace KIT
                 var coreTempAtRadiatorTempAt2Percent = powerSource.GetCoreTempAtRadiatorTemp(_restingRadiatorTempAt2Percent);
                 var coreTempAtRadiatorTempAtCustomPct = powerSource.GetCoreTempAtRadiatorTemp(_restingRadiatorTempAtCustomPct);
 
-                var combinedRawSourcePowerAtCustomPct = Math.Min(combinedRawSourcePower, powerSource.GetThermalPowerAtTemp(coreTempAtRadiatorTempAtCustomPct) * customScenarioFraction);
+                var combinedRawSourcePowerAtCustomPct = Math.Min(combinedRawSourcePower, powerSource.GetThermalPowerAtTemp(coreTempAtRadiatorTempAtCustomPct) * _customScenarioFraction);
                 var combinedRawSourcePowerAt100Percent = Math.Min(combinedRawSourcePower, powerSource.GetThermalPowerAtTemp(coreTempAtRadiatorTempAt100Percent));
                 var combinedRawSourcePowerAt90Percent = Math.Min(combinedRawSourcePower, powerSource.GetThermalPowerAtTemp(coreTempAtRadiatorTempAt90Percent) * 0.90);
                 var combinedRawSourcePowerAt80Percent = Math.Min(combinedRawSourcePower, powerSource.GetThermalPowerAtTemp(coreTempAtRadiatorTempAt80Percent) * 0.80);
@@ -428,7 +429,7 @@ namespace KIT
                 _wasteheatSourcePower6Pc += maxWasteheatProduction * 0.06;
                 _wasteheatSourcePower4Pc += maxWasteheatProduction * 0.04;
                 _wasteheatSourcePower2Pc += maxWasteheatProduction * 0.02;
-                _wasteheatSourcePowerCustom += maxWasteheatProduction * customScenarioFraction;
+                _wasteheatSourcePowerCustom += maxWasteheatProduction * _customScenarioFraction;
             }
 
             foreach (BeamedPowerTransmitter beamedPowerTransmitter in beamedTransmitter)
@@ -487,7 +488,7 @@ namespace KIT
                 _wasteheatSourcePower6Pc += maxWasteheatProduction * 0.06;
                 _wasteheatSourcePower4Pc += maxWasteheatProduction * 0.04;
                 _wasteheatSourcePower2Pc += maxWasteheatProduction * 0.02;
-                _wasteheatSourcePowerCustom += maxWasteheatProduction * customScenarioFraction;
+                _wasteheatSourcePowerCustom += maxWasteheatProduction * _customScenarioFraction;
             }
 
             foreach (FusionECU2 variableEngine in variableEngines)
@@ -512,7 +513,7 @@ namespace KIT
                 _wasteheatSourcePower6Pc += maxWasteheatProduction * 0.06;
                 _wasteheatSourcePower4Pc += maxWasteheatProduction * 0.04;
                 _wasteheatSourcePower2Pc += maxWasteheatProduction * 0.02;
-                _wasteheatSourcePowerCustom += maxWasteheatProduction * customScenarioFraction;
+                _wasteheatSourcePowerCustom += maxWasteheatProduction * _customScenarioFraction;
             }
 
             foreach (DaedalusEngineController fusionEngine in fusionEngines)
@@ -542,27 +543,26 @@ namespace KIT
                 _wasteheatSourcePower6Pc += maxWasteheatProduction * 0.06;
                 _wasteheatSourcePower4Pc += maxWasteheatProduction * 0.04;
                 _wasteheatSourcePower2Pc += maxWasteheatProduction * 0.02;
-                _wasteheatSourcePowerCustom += maxWasteheatProduction * customScenarioFraction;
+                _wasteheatSourcePowerCustom += maxWasteheatProduction * _customScenarioFraction;
             }
 
             CalculateGeneratedElectricPower(generators);
 
-            _numberOfRadiators = 0;
             _vesselMaxRadDissipation = 0;
             _vesselMaxRadConvection = 0;
             _vesselBaseRadiatorArea = 0;
+            _totalConvectiveBonusArea = 0;
+            _vesselConvectiveRadiatorArea = 0;
 
-            double totalMaxRadTempArea = 0;
+            double totalConvectiveTempArea = 0;
             double totalConvectiveBonusArea = 0;
-            double vesselConvectiveRadiatorArea = 0;
-            double submergedRatio = (double)(decimal)submergedPercentage * 0.01;
+            double submergedRatio = (double)(decimal)_submergedPercentage * 0.01;
 
             foreach (FNRadiator radiator in radiators)
             {
-                _numberOfRadiators++;
                 var baseRadiatorArea = radiator.BaseRadiatorArea;
                 _vesselBaseRadiatorArea += baseRadiatorArea;
-                vesselConvectiveRadiatorArea += radiator.radiatorArea;
+                _vesselConvectiveRadiatorArea += radiator.radiatorArea;
 
                 var maxRadTemperature = Math.Min(radiator.MaxRadiatorTemperature, _averageSourceCoreTempAt100Pc);
 
@@ -570,8 +570,8 @@ namespace KIT
                     radiatorSurfaceArea: radiator.radiatorArea,
                     radiatorConvectiveBonus: radiator.convectiveBonus,
                     radiatorTemperature: maxRadTemperature,
-                    externalTemperature: externalTemperatureInKelvin,
-                    atmosphericDensity: atmosphereDensity,
+                    externalTemperature: ExternalTemperatureInKelvin,
+                    atmosphericDensity: _atmosphereDensity,
                     grapheneRadiatorRatio: radiator.IsGraphene ? 1 : 0,
                     submergedPortion: submergedRatio);
 
@@ -579,14 +579,14 @@ namespace KIT
 
                 var tempToPowerFour = maxRadTemperature * maxRadTemperature * maxRadTemperature * maxRadTemperature;
                 _vesselMaxRadDissipation += GameConstants.stefan_const * radiator.EffectiveRadiatorArea * tempToPowerFour / 1e6;
-                totalMaxRadTempArea += maxRadTemperature * baseRadiatorArea;
-                totalConvectiveBonusArea += radiator.radiatorArea * radiator.convectiveBonus;
+                totalConvectiveTempArea += maxRadTemperature * baseRadiatorArea;
+                _totalConvectiveBonusArea += radiator.radiatorArea * radiator.convectiveBonus;
             }
 
             _vesselMaxRadConvectionAndDissipation = _vesselMaxRadConvection + _vesselMaxRadDissipation;
 
-            _averageConvectiveBonus = totalConvectiveBonusArea != 0 ? totalConvectiveBonusArea / vesselConvectiveRadiatorArea : 1;
-            _averageMaxRadTemp = totalMaxRadTempArea != 0 ? totalMaxRadTempArea / _vesselBaseRadiatorArea : double.NaN;
+            _averageConvectiveBonus = totalConvectiveBonusArea != 0 ? _totalConvectiveBonusArea / _vesselConvectiveRadiatorArea : 1;
+            _averageMaxRadTemp = _vesselBaseRadiatorArea != 0 ? totalConvectiveTempArea / _vesselBaseRadiatorArea : double.NaN;
 
             var radRatioConvectionCustom = _vesselMaxRadConvection > 0 && _wasteheatSourcePowerCustom < _vesselMaxRadConvection ? _wasteheatSourcePowerCustom / _vesselMaxRadConvection : double.NaN;
             var radRatioConvection100Pc = _vesselMaxRadConvection > 0 && _wasteheatSourcePower100Pc < _vesselMaxRadConvection ? _wasteheatSourcePower100Pc / _vesselMaxRadConvection : double.NaN;
@@ -608,67 +608,67 @@ namespace KIT
             var radRatioConvection4Pc = _vesselMaxRadConvection > 0 && _wasteheatSourcePower4Pc < _vesselMaxRadConvection ? _wasteheatSourcePower4Pc / _vesselMaxRadConvection : double.NaN;
             var radRatioConvection2Pc = _vesselMaxRadConvection > 0 && _wasteheatSourcePower2Pc < _vesselMaxRadConvection ? _wasteheatSourcePower2Pc / _vesselMaxRadConvection : double.NaN;
 
-            var maxRadTempAboveExternalTemp = _averageMaxRadTemp - externalTemperatureInKelvin;
+            var maxRadTempAboveExternalTemp = _averageMaxRadTemp - ExternalTemperatureInKelvin;
 
-            var restingConvectionTempAtCustomPct = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvectionCustom;
-            var restingConvectionTempAt100Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection100Pc;
-            var restingConvectionTempAt90Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection90Pc;
-            var restingConvectionTempAt80Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection80Pc;
-            var restingConvectionTempAt70Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection70Pc;
-            var restingConvectionTempAt60Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection60Pc;
-            var restingConvectionTempAt50Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection50Pc;
-            var restingConvectionTempAt45Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection45Pc;
-            var restingConvectionTempAt40Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection40Pc;
-            var restingConvectionTempAt35Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection35Pc;
-            var restingConvectionTempAt30Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection30Pc;
-            var restingConvectionTempAt25Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection25Pc;
-            var restingConvectionTempAt20Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection20Pc;
-            var restingConvectionTempAt15Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection15Pc;
-            var restingConvectionTempAt10Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection10Pc;
-            var restingConvectionTempAt8Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection8Pc;
-            var restingConvectionTempAt6Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection6Pc;
-            var restingConvectionTempAt4Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection4Pc;
-            var restingConvectionTempAt2Percent = externalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection2Pc;
+            var restingConvectionTempAtCustomPct = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvectionCustom;
+            var restingConvectionTempAt100Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection100Pc;
+            var restingConvectionTempAt90Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection90Pc;
+            var restingConvectionTempAt80Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection80Pc;
+            var restingConvectionTempAt70Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection70Pc;
+            var restingConvectionTempAt60Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection60Pc;
+            var restingConvectionTempAt50Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection50Pc;
+            var restingConvectionTempAt45Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection45Pc;
+            var restingConvectionTempAt40Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection40Pc;
+            var restingConvectionTempAt35Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection35Pc;
+            var restingConvectionTempAt30Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection30Pc;
+            var restingConvectionTempAt25Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection25Pc;
+            var restingConvectionTempAt20Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection20Pc;
+            var restingConvectionTempAt15Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection15Pc;
+            var restingConvectionTempAt10Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection10Pc;
+            var restingConvectionTempAt8Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection8Pc;
+            var restingConvectionTempAt6Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection6Pc;
+            var restingConvectionTempAt4Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection4Pc;
+            var restingConvectionTempAt2Percent = ExternalTemperatureInKelvin + maxRadTempAboveExternalTemp * radRatioConvection2Pc;
 
-            var convectedPowerAtCustomPct = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAtCustomPct, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt100Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt100Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt90Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt90Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt80Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt80Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt70Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt70Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt60Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt60Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt50Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt50Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt45Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt45Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt40Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt40Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt35Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt35Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt30Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt30Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt25Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt25Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt20Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt20Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt15Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt15Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt10Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt10Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt8Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt8Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt6Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt6Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt4Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt4Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
-            var convectedPowerAt2Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt2Percent, externalTemperatureInKelvin, atmosphereDensity, submergedRatio);
+            var convectedPowerAtCustomPct = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAtCustomPct, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt100Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt100Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt90Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt90Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt80Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt80Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt70Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt70Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt60Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt60Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt50Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt50Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt45Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt45Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt40Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt40Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt35Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt35Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt30Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt30Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt25Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt25Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt20Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt20Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt15Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt15Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt10Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt10Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt8Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt8Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt6Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt6Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt4Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt4Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
+            var convectedPowerAt2Percent = FNRadiator.CalculateConvPowerDissipation(totalConvectiveBonusArea, _averageConvectiveBonus, restingConvectionTempAt2Percent, ExternalTemperatureInKelvin, _atmosphereDensity, submergedRatio);
 
-            var convectionRestingTempAboveExternalAtCustomPct = Math.Max(0, restingConvectionTempAtCustomPct - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt100Percent = Math.Max(0, restingConvectionTempAt100Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt90Percent = Math.Max(0, restingConvectionTempAt90Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt80Percent = Math.Max(0, restingConvectionTempAt80Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt70Percent = Math.Max(0, restingConvectionTempAt70Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt60Percent = Math.Max(0, restingConvectionTempAt60Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt50Percent = Math.Max(0, restingConvectionTempAt50Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt45Percent = Math.Max(0, restingConvectionTempAt45Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt40Percent = Math.Max(0, restingConvectionTempAt40Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt35Percent = Math.Max(0, restingConvectionTempAt35Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt30Percent = Math.Max(0, restingConvectionTempAt30Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt25Percent = Math.Max(0, restingConvectionTempAt25Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt20Percent = Math.Max(0, restingConvectionTempAt20Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt15Percent = Math.Max(0, restingConvectionTempAt15Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt10Percent = Math.Max(0, restingConvectionTempAt10Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt8Percent = Math.Max(0, restingConvectionTempAt8Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt6Percent = Math.Max(0, restingConvectionTempAt6Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt4Percent = Math.Max(0, restingConvectionTempAt4Percent - externalTemperatureInKelvin);
-            var convectionRestingTempAboveExternalAt2Percent = Math.Max(0, restingConvectionTempAt2Percent - externalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAtCustomPct = Math.Max(0, restingConvectionTempAtCustomPct - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt100Percent = Math.Max(0, restingConvectionTempAt100Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt90Percent = Math.Max(0, restingConvectionTempAt90Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt80Percent = Math.Max(0, restingConvectionTempAt80Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt70Percent = Math.Max(0, restingConvectionTempAt70Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt60Percent = Math.Max(0, restingConvectionTempAt60Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt50Percent = Math.Max(0, restingConvectionTempAt50Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt45Percent = Math.Max(0, restingConvectionTempAt45Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt40Percent = Math.Max(0, restingConvectionTempAt40Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt35Percent = Math.Max(0, restingConvectionTempAt35Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt30Percent = Math.Max(0, restingConvectionTempAt30Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt25Percent = Math.Max(0, restingConvectionTempAt25Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt20Percent = Math.Max(0, restingConvectionTempAt20Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt15Percent = Math.Max(0, restingConvectionTempAt15Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt10Percent = Math.Max(0, restingConvectionTempAt10Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt8Percent = Math.Max(0, restingConvectionTempAt8Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt6Percent = Math.Max(0, restingConvectionTempAt6Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt4Percent = Math.Max(0, restingConvectionTempAt4Percent - ExternalTemperatureInKelvin);
+            var convectionRestingTempAboveExternalAt2Percent = Math.Max(0, restingConvectionTempAt2Percent - ExternalTemperatureInKelvin);
 
             var dissipationEnergyAtCustomPct = Math.Pow(Math.Pow(convectionRestingTempAboveExternalAtCustomPct, 4) * PhysicsGlobals.StefanBoltzmanConstant * _vesselBaseRadiatorArea, 0.25) * 1e-6;
             var dissipationEnergyAt100Pct = Math.Pow(Math.Pow(convectionRestingTempAboveExternalAt100Percent, 4) * PhysicsGlobals.StefanBoltzmanConstant * _vesselBaseRadiatorArea, 0.25) * 1e-6;
@@ -891,7 +891,7 @@ namespace KIT
                     _electricPowerAt6 += generatorMaximumGeneratorPower * hotColdBathEfficiencyAt6Percent * 0.06;
                     _electricPowerAt4 += generatorMaximumGeneratorPower * hotColdBathEfficiencyAt4Percent * 0.04;
                     _electricPowerAt2 += generatorMaximumGeneratorPower * hotColdBathEfficiencyAt2Percent * 0.02;
-                    _electricPowerAtCustom += generatorMaximumGeneratorPower * hotColdBathEfficiencyAtCustomPct * customScenarioFraction;
+                    _electricPowerAtCustom += generatorMaximumGeneratorPower * hotColdBathEfficiencyAtCustomPct * _customScenarioFraction;
                 }
             }
 
@@ -931,7 +931,7 @@ namespace KIT
         protected void OnGUI()
         {
             if (RenderWindow)
-                windowPosition = GUILayout.Window(_thermalWindowId, windowPosition, Window, Localizer.Format("#LOC_KSPIE_VABThermalUI_title"));//"Interstellar Thermal Mechanics Helper"
+                _windowPosition = GUILayout.Window(_thermalWindowId, _windowPosition, Window, Localizer.Format("#LOC_KSPIE_VABThermalUI_title"));//"Interstellar Thermal Mechanics Helper"
         }
 
         private void Window(int windowId)
@@ -947,21 +947,21 @@ namespace KIT
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_AtmosphereTitle"), GUILayout.ExpandWidth(false), GUILayout.ExpandWidth(true), guiLabelWidth);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            atmosphereDensity = GUILayout.HorizontalSlider(atmosphereDensity, 0, 4, GUILayout.ExpandWidth(true), guiLabelWidth);
-            GUILayout.Label(atmosphereDensity.ToString("0.00") + " " + Localizer.Format("#LOC_KSPIE_VABThermalUI_AtmosphereUnit"), GUILayout.ExpandWidth(false), guiValueWidth);
+            _atmosphereDensity = GUILayout.HorizontalSlider(_atmosphereDensity, 0, 4, GUILayout.ExpandWidth(true), guiLabelWidth);
+            GUILayout.Label(_atmosphereDensity.ToString("0.00") + " " + Localizer.Format("#LOC_KSPIE_VABThermalUI_AtmosphereUnit"), GUILayout.ExpandWidth(false), guiValueWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_RadiatorsSubmergedPercentage"), GUILayout.ExpandWidth(false), GUILayout.ExpandWidth(true), guiLabelWidth);//Submerged Radiators (Percentage):
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            submergedPercentage = GUILayout.HorizontalSlider(submergedPercentage, 0, 100, GUILayout.ExpandWidth(true), guiLabelWidth);
-            GUILayout.Label(submergedPercentage.ToString("0.0") + " %", GUILayout.ExpandWidth(false), guiValueWidth);
+            _submergedPercentage = GUILayout.HorizontalSlider(_submergedPercentage, 0, 100, GUILayout.ExpandWidth(true), guiLabelWidth);
+            GUILayout.Label(_submergedPercentage.ToString("0.0") + " %", GUILayout.ExpandWidth(false), guiValueWidth);
             GUILayout.EndHorizontal();
 
             // prevent non logical input
-            if (submergedPercentage > 0 && atmosphereDensity < 0.0313f)
-                atmosphereDensity = 0.0313f;
+            if (_submergedPercentage > 0 && _atmosphereDensity < 0.0313f)
+                _atmosphereDensity = 0.0313f;
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_VesselMass"), _boldLabel, GUILayout.ExpandWidth(true), guiLabelWidth);//"Vessel Mass:"
@@ -974,8 +974,13 @@ namespace KIT
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_TotalAreaRadiators") + " (" + _numberOfRadiators + ")", _boldLabel, GUILayout.ExpandWidth(true), guiLabelWidth);//"Total Area Radiators:"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_TotalAreaRadiators"), _boldLabel, GUILayout.ExpandWidth(true), guiLabelWidth);//"Total Area Radiators:"
             GUILayout.Label(_vesselBaseRadiatorArea.ToString("0.0") + " m\xB2", GUILayout.ExpandWidth(false), guiValueWidth);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_TotalAreaConvection"), _boldLabel, GUILayout.ExpandWidth(true), guiLabelWidth);//"Total Area Radiators:"
+            GUILayout.Label(_totalConvectiveBonusArea.ToString("0.0") + " m\xB2", GUILayout.ExpandWidth(false), guiValueWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -1002,8 +1007,8 @@ namespace KIT
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_VABThermalUI_CustomReactorPowerPercentage"), GUILayout.ExpandWidth(false), GUILayout.ExpandWidth(true), guiLabelWidth); // "Custom Reactor Power (Percentage)"
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            customScenarioPercentage = GUILayout.HorizontalSlider(customScenarioPercentage, 0, 100, GUILayout.ExpandWidth(true), guiLabelWidth);
-            string customPercentageText = " " + customScenarioPercentage.ToString("0.0") + "%";
+            _customScenarioPercentage = GUILayout.HorizontalSlider(_customScenarioPercentage, 0, 100, GUILayout.ExpandWidth(true), guiLabelWidth);
+            string customPercentageText = " " + _customScenarioPercentage.ToString("0.0") + "%";
             GUILayout.Label(customPercentageText, GUILayout.ExpandWidth(false), guiValueWidth);
             GUILayout.EndHorizontal();
 
@@ -1055,7 +1060,7 @@ namespace KIT
             if (_boldLabel == null)
                 _boldLabel = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
 
-            if (GUI.Button(new Rect(windowPosition.width - 20, 2, 18, 18), "x"))
+            if (GUI.Button(new Rect(_windowPosition.width - 20, 2, 18, 18), "x"))
                 RenderWindow = false;
 
             _radiatorLabel = _blueLabel;
