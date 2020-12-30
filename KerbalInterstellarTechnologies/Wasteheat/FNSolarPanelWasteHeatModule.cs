@@ -262,8 +262,8 @@ namespace KIT
             }
 
             resMan.ProduceResource(ResourceName.ElectricCharge, solarRate);
-            mjSolarSupply = PluginHelper.getFormattedPowerString(solarRate);
-            mjMaxSupply = PluginHelper.getFormattedPowerString(maxSupply);
+            mjSolarSupply = PluginHelper.GetFormattedPowerString(solarRate);
+            mjMaxSupply = PluginHelper.GetFormattedPowerString(maxSupply);
         }
 
         public string KITPartName() => part.partInfo.title;

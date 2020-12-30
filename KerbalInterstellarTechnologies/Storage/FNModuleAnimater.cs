@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using KSP.Localization;
 
 /* AdvancedAnimator was made by Christophe Savard (stupid_chris) and is licensed under CC-BY-SA. You are free to share and modify this code freely
@@ -39,7 +38,7 @@ namespace KIT
         [KSPField]
         public float unfocusedRange = 5f;
         [KSPField(isPersistant = true)]
-        new public bool enabled = false;
+        public new bool enabled = false;
         [KSPField(isPersistant = true)]
         public bool played = true;
         [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ModuleAnimater_Status")]//Status
@@ -170,8 +169,7 @@ namespace KIT
             if (!HighLogic.LoadedSceneIsFlight) { return; }
             if (CheckAnimationPlaying())
             {
-                if (this.enabled) { this.status = Localizer.Format("#LOC_KSPIE_ModuleAnimater_Deploying"); }//"Deploying..."
-                else { this.status = Localizer.Format("#LOC_KSPIE_ModuleAnimater_Retracting"); }//"Retracting..."
+                this.status = Localizer.Format(this.enabled ? "#LOC_KSPIE_ModuleAnimater_Deploying" : "#LOC_KSPIE_ModuleAnimater_Retracting");
             }
             else
             {

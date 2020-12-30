@@ -1,6 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
-using KIT.Powermanagement;
+﻿using KIT.Extensions;
 using KIT.ResourceScheduler;
 using System;
 using System.Linq;

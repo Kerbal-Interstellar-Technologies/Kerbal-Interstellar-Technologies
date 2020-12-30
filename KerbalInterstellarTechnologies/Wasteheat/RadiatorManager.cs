@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using KIT.Extensions;
-using KIT.Propulsion;
-using KIT.Resources;
-
-namespace KIT.Wasteheat
+﻿namespace KIT.Wasteheat
 {
     /*
 	class RadiatorManager

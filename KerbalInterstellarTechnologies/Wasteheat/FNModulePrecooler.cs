@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace KIT
 {
-    class FNModulePreecooler : PartModule
+    class FNModulePrecooler : PartModule
     {
         [KSPField(isPersistant = true)]
         public bool functional;
@@ -23,13 +23,13 @@ namespace KIT
 
         public override void OnStart(PartModule.StartState state)
         {
-            Debug.Log("[KSPI]: FNModulePreecooler - Onstart start search for Air Intake module to cool");
+            Debug.Log("[KSPI]: FNModulePrecooler - Onstart start search for Air Intake module to cool");
 
             // first check if part itself has an air intake
             attachedIntake = part.FindModulesImplementing<AtmosphericIntake>().FirstOrDefault();
 
             if (attachedIntake != null)
-                Debug.Log("[KSPI]: FNModulePreecooler - Found Airintake on self");
+                Debug.Log("[KSPI]: FNModulePrecooler - Found Airintake on self");
 
             if (state == StartState.Editor) return;
 
@@ -41,23 +41,23 @@ namespace KIT
                     .SelectMany(p => p.FindModulesImplementing<AtmosphericIntake>()).ToList();
 
                 Debug.Log(radialAttachedIntakes.Count > 0
-                    ? "[KSPI]: FNModulePreecooler - Found Airintake in children"
-                    : "[KSPI]: FNModulePreecooler - Did not find Airintake in children");
+                    ? "[KSPI]: FNModulePrecooler - Found Airintake in children"
+                    : "[KSPI]: FNModulePrecooler - Did not find Airintake in children");
             }
 
             // third look for stack attachable air intake
             if (attachedIntake == null && (radialAttachedIntakes == null || radialAttachedIntakes.Count == 0))
             {
-                Debug.Log("[KSPI]: FNModulePreecooler - looking at attached nodes");
+                Debug.Log("[KSPI]: FNModulePrecooler - looking at attached nodes");
 
                 foreach (var attachNode in part.attachNodes.Where(a => a.attachedPart != null))
                 {
                     var attachedPart = attachNode.attachedPart;
 
                     // skip any parts that contain a precooler
-                    if (attachedPart.FindModulesImplementing<FNModulePreecooler>().Any())
+                    if (attachedPart.FindModulesImplementing<FNModulePrecooler>().Any())
                     {
-                        Debug.Log("[KSPI]: FNModulePreecooler - skipping Module Implementing FNModulePreecooler");
+                        Debug.Log("[KSPI]: FNModulePrecooler - skipping Module Implementing FNModulePrecooler");
                         continue;
                     }
 
@@ -65,13 +65,13 @@ namespace KIT
 
                     if (attachedIntake == null) continue;
 
-                    Debug.Log("[KSPI]: FNModulePreecooler - found Airintake in attached part with name " + attachedIntake.name);
+                    Debug.Log("[KSPI]: FNModulePrecooler - found Airintake in attached part with name " + attachedIntake.name);
                     break;
                 }
 
                 if (attachedIntake == null)
                 {
-                    Debug.Log("[KSPI]: FNModulePreecooler - looking at deeper attached nodes");
+                    Debug.Log("[KSPI]: FNModulePrecooler - looking at deeper attached nodes");
 
                     // look for stack attacked parts one part further
                     foreach (var attachNode in part.attachNodes.Where(a => a.attachedPart != null))
@@ -83,21 +83,21 @@ namespace KIT
 
                         if (radialAttachedIntakes.Count > 0)
                         {
-                            Debug.Log("[KSPI]: FNModulePreecooler - Found " + radialAttachedIntakes.Count + " Airintake(s) in children in deeper node");
+                            Debug.Log("[KSPI]: FNModulePrecooler - Found " + radialAttachedIntakes.Count + " Airintake(s) in children in deeper node");
                             break;
                         }
 
-                        if (attachNode.attachedPart.FindModulesImplementing<FNModulePreecooler>().Any()) continue;
+                        if (attachNode.attachedPart.FindModulesImplementing<FNModulePrecooler>().Any()) continue;
 
                         foreach (var subAttachNode in attachNode.attachedPart.attachNodes.Where(a => a.attachedPart != null))
                         {
-                            Debug.Log("[KSPI]: FNModulePreecooler - look for Air intakes in part " + subAttachNode.attachedPart.name);
+                            Debug.Log("[KSPI]: FNModulePrecooler - look for Air intakes in part " + subAttachNode.attachedPart.name);
 
                             attachedIntake = subAttachNode.attachedPart.FindModulesImplementing<AtmosphericIntake>().FirstOrDefault();
 
                             if (attachedIntake != null)
                             {
-                                Debug.Log("[KSPI]: FNModulePreecooler - found Airintake in deeper attached part with name " + attachedIntake.name);
+                                Debug.Log("[KSPI]: FNModulePrecooler - found Airintake in deeper attached part with name " + attachedIntake.name);
                                 break;
                             }
 
@@ -108,7 +108,7 @@ namespace KIT
 
                             if (radialAttachedIntakes.Count <= 0) continue;
 
-                            Debug.Log("[KSPI]: FNModulePreecooler - Found " + radialAttachedIntakes.Count + " Airintake(s) in children in even deeper node");
+                            Debug.Log("[KSPI]: FNModulePrecooler - Found " + radialAttachedIntakes.Count + " Airintake(s) in children in even deeper node");
                             break;
                         }
                         if (attachedIntake != null)

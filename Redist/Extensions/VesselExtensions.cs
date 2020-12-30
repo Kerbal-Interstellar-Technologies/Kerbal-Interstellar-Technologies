@@ -1,7 +1,6 @@
-﻿using KIT.Redist;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using KIT.Interfaces;
 
 namespace KIT.Extensions
 {
@@ -10,18 +9,18 @@ namespace KIT.Extensions
 		/// <summary>Tests whether two vessels have line of sight to each other</summary>
 		/// <returns><c>true</c> if a straight line from a to b is not blocked by any celestial body; 
 		/// otherwise, <c>false</c>.</returns>
-		public static bool HasLineOfSightWith(this Vessel vessA, Vessel vessB, double freeDistance = 2500, double min_height = 5)
+		public static bool HasLineOfSightWith(this Vessel vesselA, Vessel vesselB, double freeDistance = 2500, double minHeight = 5)
 		{
-			Vector3d vesselA = vessA.transform.position;
-			Vector3d vesselB = vessB.transform.position;
+			Vector3d vesselAVector = vesselA.transform.position;
+			Vector3d vesselBVector = vesselB.transform.position;
 
-			if (freeDistance > 0 && Vector3d.Distance(vesselA, vesselB) < freeDistance)           // if both vessels are within active view
+			if (freeDistance > 0 && Vector3d.Distance(vesselAVector, vesselBVector) < freeDistance)           // if both vessels are within active view
 				return true;
 
 			foreach (CelestialBody referenceBody in FlightGlobals.Bodies)
 			{
-				Vector3d bodyFromA = referenceBody.position - vesselA;
-				Vector3d bFromA = vesselB - vesselA;
+				Vector3d bodyFromA = referenceBody.position - vesselAVector;
+				Vector3d bFromA = vesselBVector - vesselAVector;
 
 				// Is body at least roughly between satA and satB?
 				if (Vector3d.Dot(bodyFromA, bFromA) <= 0) continue;
@@ -34,7 +33,7 @@ namespace KIT.Extensions
 				// lies between the origin and bFromA
 				Vector3d lateralOffset = bodyFromA - Vector3d.Dot(bodyFromA, bFromANorm) * bFromANorm;
 
-				if (lateralOffset.magnitude < referenceBody.Radius - min_height) return false;
+				if (lateralOffset.magnitude < referenceBody.Radius - minHeight) return false;
 			}
 			return true;
 		}
@@ -84,24 +83,24 @@ namespace KIT.Extensions
                 : v.GetWorldPos3D();
         }
 
-        public static List<T> GetVesselAndModuleMass<T>(this Vessel vessel, out double totalmass, out double modulemass) where T : class
+        public static List<T> GetVesselAndModuleMass<T>(this Vessel vessel, out double totalMass, out double moduleMass) where T : class
         {
-            totalmass = 0;
-            modulemass = 0;
+            totalMass = 0;
+            moduleMass = 0;
 
-            var modulelist = new List<T>();
+            var moduleList = new List<T>();
 
             List<Part> parts = (HighLogic.LoadedSceneIsEditor ? EditorLogic.fetch.ship.parts : vessel.parts);
             foreach (var currentPart in parts)
             {
-                totalmass += currentPart.mass;
+                totalMass += currentPart.mass;
                 var module = currentPart.FindModuleImplementing<T>();
                 if (module == null) continue;
 
-                modulemass += currentPart.mass;
-                modulelist.Add(module);
+                moduleMass += currentPart.mass;
+                moduleList.Add(module);
             }
-            return modulelist;
+            return moduleList;
         }
 
         public static bool HasAnyModulesImplementing<T>(this Vessel vessel) where T: class
@@ -115,21 +114,21 @@ namespace KIT.Extensions
             return false;
         }
 
-        public static double GetTemperatureofColdestThermalSource(this Vessel vess)
+        public static double GetTemperatureOfColdestThermalSource(this Vessel vessel)
         {
-            List<IPowerSource> active_reactors = vess.FindPartModulesImplementing<IPowerSource>().Where(ts => ts.IsActive && ts.IsThermalSource).ToList();
-            return active_reactors.Any() ? active_reactors.Min(ts => ts.CoreTemperature) : double.MaxValue;
+            List<IPowerSource> activeReactors = vessel.FindPartModulesImplementing<IPowerSource>().Where(ts => ts.IsActive && ts.IsThermalSource).ToList();
+            return activeReactors.Any() ? activeReactors.Min(ts => ts.CoreTemperature) : double.MaxValue;
         }
 
-        public static double GetAverageTemperatureofOfThermalSource(this Vessel vess)
+        public static double GetAverageTemperatureOfThermalSource(this Vessel vessel)
         {
-            List<IPowerSource> active_reactors = vess.FindPartModulesImplementing<IPowerSource>().Where(ts => ts.IsActive && ts.IsThermalSource).ToList();
-            return active_reactors.Any() ? active_reactors.Sum(r => r.HotBathTemperature) / active_reactors.Count : 0;
+            List<IPowerSource> activeReactors = vessel.FindPartModulesImplementing<IPowerSource>().Where(ts => ts.IsActive && ts.IsThermalSource).ToList();
+            return activeReactors.Any() ? activeReactors.Sum(r => r.HotBathTemperature) / activeReactors.Count : 0;
         }
 
         public static bool HasAnyActiveThermalSources(this Vessel vess) 
         {
-            return vess.FindPartModulesImplementing<IPowerSource>().Where(ts => ts.IsActive).Any();
+            return vess.FindPartModulesImplementing<IPowerSource>().Any(ts => ts.IsActive);
         }
     }
 }

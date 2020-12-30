@@ -1,6 +1,6 @@
-﻿using KIT.Redist;
+﻿using KIT.Interfaces;
 
-namespace KIT.Powermanagement
+namespace KIT.Powermanagement.Interfaces
 {
     public interface IFNChargedParticleSource : IChargedParticleSource
     {

@@ -2,10 +2,7 @@
 using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace KIT.Reactors
@@ -15,7 +12,7 @@ namespace KIT.Reactors
         public const string GROUP_DISPLAY_NAME = "Radioisotope Generator";
         public const string GROUP_NAME = "KITRadioisotopeGenerator";
 
-        [KSPField(isPersistant = true)] public double peltierEfficency;
+        [KSPField(isPersistant = true)] public double peltierEfficiency;
         [KSPField(isPersistant = true)] public double wattsPerGram;
         [KSPField(isPersistant = true)] public double massInKilograms = 1;
         [KSPField(isPersistant = true)] public double halfLifeInSeconds;
@@ -66,9 +63,9 @@ namespace KIT.Reactors
         private void PowerGeneratedPerSecond(out double electricalCurrentInKW, out double wasteHeatInKW)
         {
             // convert kg to grams, then calculate the heat generated
-            var mass = Math.Max(massRemaining * 1000, massInKilograms * 1000 * HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().minimumRTGOutput);
+            var mass = Math.Max(massRemaining * 1000, massInKilograms * 1000 * HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().MinimumRtgOutput);
             var heatInWatts = mass * wattsPerGram;
-            var powerInWatts = heatInWatts * peltierEfficency;
+            var powerInWatts = heatInWatts * peltierEfficiency;
 
             var heatGeneratedInKW = heatInWatts / (1e+3);
             electricalCurrentInKW = powerInWatts / (1e+3);
@@ -82,7 +79,7 @@ namespace KIT.Reactors
 
         private void DecayFuel(IResourceManager resMan)
         {
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().preventRadioactiveDecay) return;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().PreventRadioactiveDecay) return;
 
             double halfLife = GameSettings.KERBIN_TIME ? halfLifeInKerbinSeconds : halfLifeInSeconds;
             double originalMassRemaining = massRemaining;
@@ -166,9 +163,7 @@ namespace KIT.Reactors
         {
             if (!HighLogic.LoadedSceneIsFlight) return;
 
-            double energyExtractedInKW, wasteHeatInKW;
-
-            PowerGeneratedPerSecond(out energyExtractedInKW, out wasteHeatInKW);
+            PowerGeneratedPerSecond(out var energyExtractedInKW, out var wasteHeatInKW);
             resMan.ProduceResource(ResourceName.ElectricCharge, energyExtractedInKW);
             resMan.ProduceResource(ResourceName.WasteHeat, wasteHeatInKW);
             

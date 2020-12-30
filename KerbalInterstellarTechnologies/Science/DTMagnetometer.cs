@@ -90,21 +90,21 @@ namespace KIT
 
         public override void OnUpdate()
         {
-            Events["ActivateMagnetometer"].active = !IsEnabled;
-            Events["DeactivateMagnetometer"].active = IsEnabled;
-            Fields["Bmag"].guiActive = IsEnabled;
-            Fields["Brad"].guiActive = IsEnabled;
-            Fields["Bthe"].guiActive = IsEnabled;
-            Fields["ParticleFlux"].guiActive = IsEnabled;
+            Events[nameof(ActivateMagnetometer)].active = !IsEnabled;
+            Events[nameof(DeactivateMagnetometer)].active = IsEnabled;
+            Fields[nameof(Bmag)].guiActive = IsEnabled;
+            Fields[nameof(Brad)].guiActive = IsEnabled;
+            Fields[nameof(Bthe)].guiActive = IsEnabled;
+            Fields[nameof(ParticleFlux)].guiActive = IsEnabled;
 
             var lat = vessel.mainBody.GetLatitude(this.vessel.GetWorldPos3D());
-            var Bmag = vessel.mainBody.GetBeltMagneticFieldMagnitude(homeworld, vessel.altitude, lat);
-            var Brad = vessel.mainBody.GetBeltMagneticFieldRadial(homeworld, vessel.altitude, lat);
-            var Bthe = vessel.mainBody.GetBeltMagneticFieldAzimuthal(homeworld, vessel.altitude, lat);
+            var bMag = vessel.mainBody.GetBeltMagneticFieldMagnitude(homeworld, vessel.altitude, lat);
+            var bRad = vessel.mainBody.GetBeltMagneticFieldRadial(homeworld, vessel.altitude, lat);
+            var bThe = vessel.mainBody.GetBeltMagneticFieldAzimuthal(homeworld, vessel.altitude, lat);
             var flux = vessel.mainBody.GetBeltAntiparticles(homeworld, vessel.altitude, lat);
-            this.Bmag = Bmag.ToString("E") + "T";
-            this.Brad = Brad.ToString("E") + "T";
-            this.Bthe = Bthe.ToString("E") + "T";
+            this.Bmag = bMag.ToString("E") + "T";
+            this.Brad = bRad.ToString("E") + "T";
+            this.Bthe = bThe.ToString("E") + "T";
             ParticleFlux = flux.ToString("E");
         }
 

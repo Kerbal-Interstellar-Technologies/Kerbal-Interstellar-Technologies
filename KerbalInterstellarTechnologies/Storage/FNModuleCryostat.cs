@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KSP.Localization;
+﻿using KSP.Localization;
 using System;
 using KIT.Resources;
 using UnityEngine;
@@ -57,8 +56,8 @@ namespace KIT
 
         private double environmentBoiloff;
         private double environmentFactor;
-        private double recievedPowerKW;
-        private double previousRecievedPowerKW;
+        private double receivedPowerKW;
+        private double previousReceivedPowerKW;
         private double currentPowerReq;
         private double previousPowerReq;
 
@@ -160,16 +159,16 @@ namespace KIT
 
         private void UpdatePowerStatusString()
         {
-            powerStatusStr = PluginHelper.getFormattedPowerString(recievedPowerKW) +
-                " / " + PluginHelper.getFormattedPowerString(currentPowerReq);
+            powerStatusStr = PluginHelper.GetFormattedPowerString(receivedPowerKW) +
+                " / " + PluginHelper.GetFormattedPowerString(currentPowerReq);
         }
 
         public override string GetInfo()
         {
             double envMod = ((convectionMod <= -1.0) ? 0.0 : convectionMod + 1.0 /
                 (convectionMod + 1.0)) * Math.Max(0.0, 300.0 - boilOffTemp) / 300.0;
-            return string.Format("{0} @ {1:F1} K\nPower Requirements: {2:F1} KW", resourceName,
-                boilOffTemp, powerReqKW * 0.2 * powerReqMult * envMod);
+            return
+                $"{resourceName} @ {boilOffTemp:F1} K\nPower Requirements: {powerReqKW * 0.2 * powerReqMult * envMod:F1} KW";
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Second;
@@ -185,14 +184,14 @@ namespace KIT
 
             if (!isDisabled && currentPowerReq > 0.0)
             {
-                recievedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq);
+                receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq);
             }
             else
-                recievedPowerKW = 0;
+                receivedPowerKW = 0;
 
-            bool hasExtraBoiloff = initializationCountdown == 0 && powerReqKW > 0 && currentPowerReq > 0 && recievedPowerKW < currentPowerReq && previousRecievedPowerKW < previousPowerReq;
+            bool hasExtraBoiloff = initializationCountdown == 0 && powerReqKW > 0 && currentPowerReq > 0 && receivedPowerKW < currentPowerReq && previousReceivedPowerKW < previousPowerReq;
 
-            var boiloffReduction = !hasExtraBoiloff ? boilOffRate : boilOffRate + (boilOffAddition * (1 - recievedPowerKW / currentPowerReq));
+            var boiloffReduction = !hasExtraBoiloff ? boilOffRate : boilOffRate + (boilOffAddition * (1 - receivedPowerKW / currentPowerReq));
 
             boiloff = CheatOptions.IgnoreMaxTemperature || boiloffReduction <= 0 ? 0 : boiloffReduction * environmentBoiloff;
 
@@ -219,7 +218,7 @@ namespace KIT
             }
 
             previousPowerReq = currentPowerReq;
-            previousRecievedPowerKW = recievedPowerKW;
+            previousReceivedPowerKW = receivedPowerKW;
         }
 
         public string KITPartName() => $"{resourceGUIName} {Localizer.Format("#LOC_KSPIE_ModuleCryostat_Cryostat")}"; //Cryostat

@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace KIT
+namespace KIT.Powermanagement.Interfaces
 {
     public interface IResourceSupplier
     {
         Guid Id { get; }
 
-        string getResourceManagerDisplayName();
+        string GetResourceManagerDisplayName();
 
     }
 }

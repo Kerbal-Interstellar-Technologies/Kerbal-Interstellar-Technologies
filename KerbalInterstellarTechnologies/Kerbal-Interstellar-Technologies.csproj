@@ -88,6 +88,7 @@
     <Compile Include="KITDifficultyConfig.cs" />
     <Compile Include="PluginSettings.cs" />
     <Compile Include="Powermanagement\Interfaces\IFNElectricPowerGeneratorSource.cs" />
+    <Compile Include="Propulsion\DaedalusEngineController.cs" />
     <Compile Include="Reactors\KITRadioisotopeGenerator.cs" />
     <Compile Include="Resources\RegolithCollector.cs" />
     <Compile Include="Resources\SolarWindCollector.cs" />
@@ -105,7 +106,7 @@
     <Compile Include="Powermanagement\Interfaces\IFNPowerSource.cs" />
     <Compile Include="Propulsion\FNPersistentRotation.cs" />
     <Compile Include="Propulsion\FNSimpleEngineIgnatorFX.cs" />
-    <Compile Include="Propulsion\IFNEngineNoozle.cs" />
+    <Compile Include="Propulsion\IFnEngineNozzle.cs" />
     <Compile Include="Propulsion\ThermalEngineFuel.cs" />
     <Compile Include="RDColoredUpgradeIcon.cs" />
     <Compile Include="Refinery\IRefineryActivity.cs" />
@@ -134,7 +135,6 @@
     <Compile Include="Propulsion\ModuleEnginesWarp.cs" />
     <Compile Include="Reactors\ThermalPowerTransport.cs" />
     <Compile Include="Propulsion\VistaECU2.cs" />
-    <Compile Include="Propulsion\DeadalusEngineController.cs" />
     <Compile Include="Reactors\InterstellarFissionDP.cs" />
     <Compile Include="Reactors\InterstellarFissionPB.cs" />
     <Compile Include="Refinery\Activity\AluminiumElectrolyzer.cs" />
@@ -177,7 +177,7 @@
     <Compile Include="Science\FNMassSpectrometer.cs" />
     <Compile Include="Storage\FNModuleCryostat.cs" />
     <Compile Include="Powermanagement\FNFissionGeneratorAdapter.cs" />
-    <Compile Include="Wasteheat\FNModulePreecooler.cs" />
+    <Compile Include="Wasteheat\FNModulePrecooler.cs" />
     <Compile Include="Science\DTMagnetometer.cs" />
     <Compile Include="Reactors\FNAntimatterReactor.cs" />
     <Compile Include="Science\FNSeismicProbe.cs" />
@@ -191,8 +191,7 @@
     <Compile Include="Reactors\InterstellarTokomakFusionReator.cs" />
     <Compile Include="Beamedpower\BeamedPowerReceiver.cs" />
     <Compile Include="Beamedpower\MicrowavePowerTransmitter.cs" />
-    <Compile Include="Science\ModableExperimentResultDialogPage.cs" />
-    <Compile Include="Science\ModuleModableScienceGenerator.cs" />
+    <Compile Include="Science\ModuleModdableScienceGenerator.cs" />
     <Compile Include="Storage\ModuleElementRadioactiveDecay.cs" />
     <Compile Include="Propulsion\ModuleSabreHeating.cs" />
     <Compile Include="PluginHelper.cs" />

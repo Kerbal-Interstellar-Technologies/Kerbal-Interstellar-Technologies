@@ -1,5 +1,5 @@
 ﻿using System;
-using KIT.Powermanagement;
+using KIT.Powermanagement.Interfaces;
 
 namespace KIT.Reactors
 {
@@ -11,20 +11,20 @@ namespace KIT.Reactors
         [KSPField]
         public double maximumChargedIspMult = 100;
         [KSPField]
-        public double minimumChargdIspMult = 10;
+        public double minimumChargedIspMult = 10;
         [KSPField]
         public double chargedProductMult = 1;
         [KSPField]
         public double chargedProductExp = 0;
 
-        public override string TypeName { get { return (isupgraded ? upgradedName != "" ? upgradedName : originalName : originalName) + " Antimatter Reactor"; } }
+        public override string TypeName => (isupgraded ? upgradedName != "" ? upgradedName : originalName : originalName) + " Antimatter Reactor";
 
-        public override double CurrentMeVPerChargedProduct { get { return CurrentFuelMode != null ? CurrentFuelMode.MeVPerChargedProduct * chargedProductMult * Math.Pow(massDifference, chargedProductExp) : 0; } }
+        public override double CurrentMeVPerChargedProduct => CurrentFuelMode != null ? CurrentFuelMode.MeVPerChargedProduct * chargedProductMult * Math.Pow(massDifference, chargedProductExp) : 0;
 
-        public double MaximumChargedIspMult { get { return maximumChargedIspMult; } }
+        public double MaximumChargedIspMult => maximumChargedIspMult;
 
-        public double MinimumChargdIspMult { get { return minimumChargdIspMult; } }
+        public double MinimumChargedIspMult => minimumChargedIspMult;
 
-        public override double MagneticNozzlePowerMult { get { return magneticNozzlePowerMult; } }
+        public override double MagneticNozzlePowerMult => magneticNozzlePowerMult;
     }
 }

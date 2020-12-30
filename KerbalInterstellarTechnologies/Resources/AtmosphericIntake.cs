@@ -9,7 +9,7 @@ namespace KIT.Resources
         public const string GROUP = "AtmosphericIntake";
         public const string GROUP_TITLE = "#LOC_KSPIE_AtmosphericIntake_groupName";
 
-        // persistents
+        // persistent
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiName = "#LOC_KSPIE_AtmosphericIntake_Airrate", guiActiveEditor = false, guiActive = true, guiFormat = "F5")]//Air / sec
         public double finalAir;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AtmosphericIntake_AtmosphericIntake"), UI_Toggle(disabledText = "#LOC_KSPIE_AtmosphericIntake_AtmosphericIntake_Closed", enabledText = "#LOC_KSPIE_AtmosphericIntake_AtmosphericIntake_Open", affectSymCounterparts = UI_Scene.None)] //Atmospheric Intake   Closed  Open                                                          //Mass Ratio
@@ -77,16 +77,10 @@ namespace KIT.Resources
         ModuleResourceIntake _moduleResourceIntake;
 
         // this property will be accessed by the atmospheric extractor
-        public double FinalAir
-        {
-            get { return finalAir; }
-        }
+        public double FinalAir => finalAir;
 
         // property getter for the sake of seawater extractor
-        public bool IntakeEnabled
-        {
-            get { return intakeOpen && (_moduleResourceIntake != null ? _moduleResourceIntake.intakeEnabled : true); }
-        }
+        public bool IntakeEnabled => intakeOpen && (_moduleResourceIntake != null ? _moduleResourceIntake.intakeEnabled : true);
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -113,7 +107,7 @@ namespace KIT.Resources
             if (_moduleResourceIntake == null)
                 Debug.LogWarning("[KSPI]: ModuleResourceIntake with IntakeAir is missing on " + part.partInfo.title);
 
-            var field = Fields["intakeOpen"];
+            var field = Fields[nameof(intakeOpen)];
             var flightToggle = field.uiControlFlight as UI_Toggle;
             var editorToggle = field.uiControlEditor as UI_Toggle;
 

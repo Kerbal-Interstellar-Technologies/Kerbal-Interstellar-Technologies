@@ -31,40 +31,40 @@ namespace KIT.Propulsion
         protected string techRquirement;
         protected PartResourceDefinition resourceDefinition;
 
-        public PartResourceDefinition ResourceDefinition { get { return resourceDefinition; } }
+        public PartResourceDefinition ResourceDefinition => resourceDefinition;
 
-        public int SupportedEngines { get { return prop_type;} }
+        public int SupportedEngines => prop_type;
 
-        public double Efficiency { get { return efficiency; } }
+        public double Efficiency => efficiency;
 
-        public double IspMultiplier { get { return ispMultiplier; } }
+        public double IspMultiplier => ispMultiplier;
 
-        public double DecomposedIspMult { get { return decomposedIspMult; } }
+        public double DecomposedIspMult => decomposedIspMult;
 
-        public double ThrustMultiplier { get { return thrustMultiplier; } }
+        public double ThrustMultiplier => thrustMultiplier;
 
-        public double ThrustMultiplierCold { get { return thrustMultiplierCold; } }
+        public double ThrustMultiplierCold => thrustMultiplierCold;
 
-        public Propellant Propellant {  get { return propellant; } }
+        public Propellant Propellant => propellant;
 
-        public String PropellantName { get { return propellantname; } }
+        public String PropellantName => propellantname;
 
-        public String PropellantGUIName { get { return propellantguiname; } }
+        public String PropellantGUIName => propellantguiname;
 
-        public String ParticleFXName { get { return effectname; } }
+        public String ParticleFXName => effectname;
 
-        public double WasteHeatMultiplier { get { return wasteheatMultiplier; } }
+        public double WasteHeatMultiplier => wasteheatMultiplier;
 
-        public string TechRequirement { get { return techRquirement; } }
+        public string TechRequirement => techRquirement;
 
-        public bool IsInfinite { get { return isInfinite; } }
+        public bool IsInfinite => isInfinite;
 
         public ElectricEnginePropellant(ConfigNode node)
         {
             propellantname = node.GetValue("name");
 
             propellantguiname = node.HasValue("guiName") ? node.GetValue("guiName") : propellantname;
-            isInfinite = node.HasValue("isInfinite") ? Convert.ToBoolean(node.GetValue("isInfinite")) : false;
+            isInfinite = node.HasValue("isInfinite") && Convert.ToBoolean(node.GetValue("isInfinite"));
             ispMultiplier = node.HasValue("ispMultiplier") ? Convert.ToSingle(node.GetValue("ispMultiplier")) : 1;
             decomposedIspMult = node.HasValue("decomposedIspMult") ? Convert.ToDouble(node.GetValue("decomposedIspMult")) : ispMultiplier;
             thrustMultiplier = node.HasValue("thrustMultiplier") ? Convert.ToDouble(node.GetValue("thrustMultiplier")) : 1;
@@ -75,34 +75,34 @@ namespace KIT.Propulsion
             effectname = node.HasValue("effectName")  ? node.GetValue("effectName") : "none";
             techRquirement = node.HasValue("techRequirement") ? node.GetValue("techRequirement") : String.Empty;
 
-            ConfigNode propellantnode = node.GetNode("PROPELLANT");
+            ConfigNode propellantNode = node.GetNode("PROPELLANT");
             propellant = new Propellant();
-            propellant.Load(propellantnode);
+            propellant.Load(propellantNode);
         }
 
 
         public static List<ElectricEnginePropellant> GetPropellantsEngineForType(int type)
         {
-            ConfigNode[] propellantlist = GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT");
-            List<ElectricEnginePropellant> propellant_list;
-            if (propellantlist.Length == 0)
+            ConfigNode[] propellantListNode = GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT");
+            List<ElectricEnginePropellant> propellantList;
+            if (propellantListNode.Length == 0)
             {
                 PluginHelper.ShowInstallationErrorMessage();
-                propellant_list = new List<ElectricEnginePropellant>();
+                propellantList = new List<ElectricEnginePropellant>();
             }
             else
             {
-                propellant_list = propellantlist.Select(prop => new ElectricEnginePropellant(prop))
+                propellantList = propellantListNode.Select(prop => new ElectricEnginePropellant(prop))
                     .Where(eep => (eep.SupportedEngines & type) == type && PluginHelper.HasTechRequirementOrEmpty(eep.TechRequirement)).ToList();
             }
 
-            // initialize resource Defnitionions
-            foreach (var propellant in propellant_list)
+            // initialize resource Definitions
+            foreach (var propellant in propellantList)
             {
                 propellant.resourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellant.propellant.name);
             }
 
-            return propellant_list;
+            return propellantList;
         }
 
     }

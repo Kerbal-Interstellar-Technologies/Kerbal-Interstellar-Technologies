@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KIT.Powermanagement.Interfaces;
 
 namespace KIT.Powermanagement
 {
@@ -62,7 +63,7 @@ namespace KIT.Powermanagement
         public int CompareTo(PowerDistributionPair other)
         {
             // Larger suppliers go first
-            int priority = Key.getPowerPriority().CompareTo(other.Key.getPowerPriority());
+            int priority = Key.GetPowerPriority().CompareTo(other.Key.GetPowerPriority());
             return (priority == 0) ? Value.PowerMaximumRequest.CompareTo(other.Value.
                 PowerMaximumRequest) : priority;
         }

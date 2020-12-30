@@ -1,6 +1,4 @@
-﻿using KIT.Constants;
-
-namespace KIT.Refinery
+﻿namespace KIT.Refinery
 {
     class AntimatterGenerator : RefineryActivity
     {

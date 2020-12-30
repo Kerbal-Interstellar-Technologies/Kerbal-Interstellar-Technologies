@@ -1,5 +1,4 @@
-﻿using KIT.Powermanagement;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -32,7 +31,7 @@ namespace KIT.Resources
         [KSPField(isPersistant = true)]
         public float windowPositionY = 20;
 
-        // drill properties, need to be adressed in the cfg file of the part
+        // drill properties, need to be addressed in the cfg file of the part
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_Drillsize", guiUnits = " m\xB3")]//Drill size
         public double drillSize = 5; // Volume of the collector's drill. Raise in part config (for larger drills) to make collecting faster.
         [KSPField(groupName = GROUP, isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillEffectiveness", guiFormat = "P1")]//Drill effectiveness
@@ -217,7 +216,7 @@ namespace KIT.Resources
                 }
             }
 
-            ToggleEmmitters(false);
+            ToggleEmitters(false);
 
             // if the setup went well, do the offline collecting dance
             if (StartupSetup(state))
@@ -815,7 +814,7 @@ namespace KIT.Resources
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Size") + ": " + drillSize.ToString("#.#") + " m\xB3", _normal_label);//Size
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MWRequirements") + ": " + PluginHelper.getFormattedPowerString(mwRequirements), _normal_label);//MW Requirements
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MWRequirements") + ": " + PluginHelper.GetFormattedPowerString(mwRequirements), _normal_label);//MW Requirements
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_DrillEffectiveness") + ": " + effectiveness.ToString("P1"), _normal_label);//Drill effectiveness
@@ -902,11 +901,10 @@ namespace KIT.Resources
             GUI.DragWindow();
         }
 
-        private void ToggleEmmitters(bool state)
+        private void ToggleEmitters(bool state)
         {
-            for (int i = 0; i < _particleEmitters.Length; ++i)
+            foreach (var e in _particleEmitters)
             {
-                var e = _particleEmitters[i];
                 e.emit = state;
                 e.enabled = state;
             }
@@ -933,7 +931,7 @@ namespace KIT.Resources
         {
             if (bIsEnabled)
             {
-                ToggleEmmitters(true);
+                ToggleEmitters(true);
                 UpdateLoopingAnimation();
 
                 MineResources(resMan);

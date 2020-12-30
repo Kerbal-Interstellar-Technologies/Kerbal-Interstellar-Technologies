@@ -1,5 +1,4 @@
-﻿using KIT.Extensions;
-using KIT.Resources;
+﻿using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
@@ -25,8 +24,8 @@ namespace KIT.Reactors
     class InterstellarInertialConfinementReactor : InterstellarFusionReactor
     {
         // Configs
-        [KSPField] public bool canJumpstart = true;
-        [KSPField] public bool canChargeJumpstart = true;
+        [KSPField] public bool CanJumpStart = true;
+        [KSPField] public bool canChargeJumpStart = true;
         [KSPField] public float startupPowerMultiplier = 1;
         [KSPField] public float startupCostGravityMultiplier = 0;
         [KSPField] public float startupCostGravityExponent = 1;
@@ -45,14 +44,14 @@ namespace KIT.Reactors
         public bool powerControlAffectsMaintenance = true;
 
         // UI Display
-        [KSPField(groupName = GROUP, guiActive = false, guiUnits = "%", guiName = "#LOC_KSPIE_InertialConfinementReactor_MinimumThrotle", guiFormat = "F2")]//Minimum Throtle
+        [KSPField(groupName = GROUP, guiActive = false, guiUnits = "%", guiName = "#LOC_KSPIE_InertialConfinementReactor_MinimumThrotle", guiFormat = "F2")]//Minimum Throttle
         public double minimumThrottlePercentage;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Charge")]//Charge
         public string accumulatedChargeStr = string.Empty;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_InertialConfinementReactor_FusionPowerRequirement", guiFormat = "F2")]//Fusion Power Requirement
         public double currentLaserPowerRequirements = 0;
         [KSPField(groupName = GROUP, isPersistant = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Startup"), UI_Toggle(disabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Off", enabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Charging")]//Startup--Off--Charging
-        public bool isChargingForJumpstart;
+        public bool isChargingForJumpStart;
 
         private double _powerConsumed;
         private int jumpStartPowerTime;
@@ -68,8 +67,8 @@ namespace KIT.Reactors
 
         public override void OnStart(PartModule.StartState state)
         {
-            isChargingField = Fields["isChargingForJumpstart"];
-            accumulatedChargeStrField = Fields["accumulatedChargeStr"];
+            isChargingField = Fields[nameof(isChargingForJumpStart)];
+            accumulatedChargeStrField = Fields[nameof(accumulatedChargeStr)];
 
             Fields[nameof(maxSecondaryPowerUsage)].guiActive = showSecondaryPowerUsage;
             Fields[nameof(maxSecondaryPowerUsage)].guiActiveEditor = showSecondaryPowerUsage;
@@ -99,7 +98,7 @@ namespace KIT.Reactors
         public override void StartReactor()
         {
             // instead of starting the reactor right away, we always first have to charge it
-            isChargingForJumpstart = true;
+            isChargingForJumpStart = true;
         }
 
         public override double MinimumThrottle
@@ -149,7 +148,7 @@ namespace KIT.Reactors
             }
         }
 
-        public override bool shouldScaleDownJetISP()
+        public override bool ShouldScaleDownJetISP()
         {
             return !isupgraded;
         }
@@ -158,14 +157,14 @@ namespace KIT.Reactors
         {
             base.Update();
 
-            isChargingField.guiActive = !IsEnabled && HighLogic.LoadedSceneIsFlight && canChargeJumpstart && part.vessel.geeForce < startupMaximumGeforce;
+            isChargingField.guiActive = !IsEnabled && HighLogic.LoadedSceneIsFlight && canChargeJumpStart && part.vessel.geeForce < startupMaximumGeforce;
             isChargingField.guiActiveEditor = false;
         }
 
         public override void OnUpdate()
         {
             if (isChargingField.guiActive)
-                accumulatedChargeStr = PluginHelper.getFormattedPowerString(accumulatedElectricChargeInMW) + " / " + PluginHelper.getFormattedPowerString(StartupPower);
+                accumulatedChargeStr = PluginHelper.GetFormattedPowerString(accumulatedElectricChargeInMW) + " / " + PluginHelper.GetFormattedPowerString(StartupPower);
             else if (part.vessel.geeForce > startupMaximumGeforce)
                 accumulatedChargeStr = part.vessel.geeForce.ToString("F2") + "g > " + startupMaximumGeforce.ToString("F2") + "g";
             else
@@ -173,7 +172,7 @@ namespace KIT.Reactors
 
             accumulatedChargeStrField.guiActive = plasma_ratio < 1;
 
-            electricPowerMaintenance = PluginHelper.getFormattedPowerString(_powerConsumed) + " / " + PluginHelper.getFormattedPowerString(LaserPowerRequirements);
+            electricPowerMaintenance = PluginHelper.GetFormattedPowerString(_powerConsumed) + " / " + PluginHelper.GetFormattedPowerString(LaserPowerRequirements);
 
             if (startupAnimation != null && !initialized)
             {
@@ -214,7 +213,7 @@ namespace KIT.Reactors
 
             UpdateLoopingAnimation(ongoing_consumption_rate * powerPercentage / 100);
 
-            if (!IsEnabled && !isChargingForJumpstart)
+            if (!IsEnabled && !isChargingForJumpStart)
             {
                 plasma_ratio = 0;
                 _powerConsumed = 0;
@@ -252,7 +251,7 @@ namespace KIT.Reactors
             _powerConsumed = LaserPowerRequirements * powerRequirementMetRatio;
 
             // verify if we need startup with accumulated power
-            if (canJumpstart && accumulatedElectricChargeInMW > 0 && _powerConsumed < StartupPower && (accumulatedElectricChargeInMW + _powerConsumed) >= StartupPower)
+            if (CanJumpStart && accumulatedElectricChargeInMW > 0 && _powerConsumed < StartupPower && (accumulatedElectricChargeInMW + _powerConsumed) >= StartupPower)
             {
                 var shortage = StartupPower - _powerConsumed;
                 if (shortage <= accumulatedElectricChargeInMW)
@@ -288,7 +287,7 @@ namespace KIT.Reactors
             if (plasma_ratio > 0.999)
             {
                 plasma_ratio = 1;
-                isChargingForJumpstart = false;
+                isChargingForJumpStart = false;
                 IsEnabled = true;
                 if (_framesPlasmaRatioIsGood < 100)
                     _framesPlasmaRatioIsGood += 1;
@@ -338,7 +337,7 @@ namespace KIT.Reactors
 
         private void ProcessCharging(IResourceManager resMan)
         {
-            if (!canJumpstart || !isChargingForJumpstart || !(part.vessel.geeForce < startupMaximumGeforce)) return;
+            if (!CanJumpStart || !isChargingForJumpStart || !(part.vessel.geeForce < startupMaximumGeforce)) return;
 
             var neededPower = Math.Max(StartupPower - accumulatedElectricChargeInMW, 0);
 

@@ -1,66 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using KIT.Redist;
+﻿using System.Collections.Generic;
 
-namespace KIT.Beamedpower 
+namespace KIT.BeamedPower 
 {
     public class VesselRelayPersistence : IVesselRelayPersistence 
     {
-        Vessel vessel;
-        bool isActive;
-        double diameter;
-        double aperture;
-        double power_capacity;
-        double minimumRelayWavelenght;
-        double maximumRelayWavelenght;
+        double _diameter;
+        double _aperture;
+        double _powerCapacity;
+        double _minimumRelayWavelength;
+        double _maximumRelayWavelength;
 
         public VesselRelayPersistence(Vessel vessel) 
         {
-            this.vessel = vessel;
+            this.Vessel = vessel;
             SupportedTransmitWavelengths = new List<WaveLengthData>();
         }
 
-        public List<WaveLengthData> SupportedTransmitWavelengths { get; private set; }
+        public List<WaveLengthData> SupportedTransmitWavelengths { get; }
 
-        public Vessel Vessel
-        {
-            get { return vessel; }
-        }
+        public Vessel Vessel { get; }
 
-        public bool IsActive
-        {
-            get { return this.isActive; }
-            set { this.isActive = value; }
-        }
+        public bool IsActive { get; set; }
 
         public double Diameter
         {
-            get { return diameter != 0 ? this.diameter : Aperture; }    // fall back to aperture when diameter is not available
-            set { this.diameter = value; }
+            get => _diameter != 0 ? this._diameter : Aperture; // fall back to aperture when diameter is not available
+            set => this._diameter = value;
         }
 
         public double Aperture
         {
-            get { return aperture != 0 ? this.aperture : 1; }
-            set { this.aperture = value; }
+            get => _aperture != 0 ? this._aperture : 1;
+            set => this._aperture = value;
         }
 
         public double PowerCapacity
         {
-            get { return power_capacity != 0 ? this.power_capacity : 1000; }
-            set { this.power_capacity = value; }
+            get => _powerCapacity != 0 ? this._powerCapacity : 1000;
+            set => this._powerCapacity = value;
         }
 
-        public double MinimumRelayWavelenght
+        public double MinimumRelayWavelength
         {
-            get { return minimumRelayWavelenght != 0 ? minimumRelayWavelenght : 0.003189281; }
-            set { minimumRelayWavelenght = value; }
+            get => _minimumRelayWavelength != 0 ? _minimumRelayWavelength : 0.003189281;
+            set => _minimumRelayWavelength = value;
         }
 
-        public double MaximumRelayWavelenght
+        public double MaximumRelayWavelength
         {
-            get { return maximumRelayWavelenght != 0 ? maximumRelayWavelenght: 0.008565499 ; }
-            set { maximumRelayWavelenght = value; }
+            get => _maximumRelayWavelength != 0 ? _maximumRelayWavelength: 0.008565499;
+            set => _maximumRelayWavelength = value;
         }
     }
 }

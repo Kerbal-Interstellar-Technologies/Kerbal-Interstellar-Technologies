@@ -1,9 +1,7 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.External;
 using KIT.Powermanagement;
 using KIT.Propulsion;
-using KIT.Redist;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
@@ -12,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using KIT.Interfaces;
 using TweakScale;
 using UnityEngine;
 
@@ -120,13 +119,13 @@ namespace KIT.Reactors
         [KSPField] public double minimumThrottleMk6;
         [KSPField] public double minimumThrottleMk7;
 
-        [KSPField] public double fuelEfficencyMk1;
-        [KSPField] public double fuelEfficencyMk2;
-        [KSPField] public double fuelEfficencyMk3;
-        [KSPField] public double fuelEfficencyMk4;
-        [KSPField] public double fuelEfficencyMk5;
-        [KSPField] public double fuelEfficencyMk6;
-        [KSPField] public double fuelEfficencyMk7;
+        [KSPField] public double FuelEfficiencyMk1;
+        [KSPField] public double fuelEfficiencyMk2;
+        [KSPField] public double FuelEfficiencyMk3;
+        [KSPField] public double fuelEfficiencyMk4;
+        [KSPField] public double fuelEfficiencyMk5;
+        [KSPField] public double fuelEfficiencyMk6;
+        [KSPField] public double fuelEfficiencyMk7;
 
         [KSPField] public double hotBathTemperatureMk1 = 0;
         [KSPField] public double hotBathTemperatureMk2 = 0;
@@ -269,13 +268,13 @@ namespace KIT.Reactors
 
         [KSPField] public bool hasBuoyancyEffects = true;
         [KSPField] public double geeForceMultiplier = 0.1;
-        [KSPField] public double geeForceTreshHold = 9;
+        [KSPField] public double geeForceThreshHold = 9;
         [KSPField] public double geeForceExponent = 2;
         [KSPField] public double minGeeForceModifier = 0.01;
 
         [KSPField] public bool hasOverheatEffects = true;
         [KSPField] public double overheatMultiplier = 10;
-        [KSPField] public double overheatTreshHold = 0.95;
+        [KSPField] public double overheatThreshHold = 0.95;
         [KSPField] public double overheatExponent = 2;
         [KSPField] public double minOverheatModifier = 0.01;
 
@@ -293,7 +292,7 @@ namespace KIT.Reactors
         [KSPField] public double thermalProcessingModifier = 1;
         [KSPField] public int supportedPropellantAtoms = GameConstants.defaultSupportedPropellantAtoms;
         [KSPField] public int supportedPropellantTypes = GameConstants.defaultSupportedPropellantTypes;
-        [KSPField] public bool fullPowerForNonNeutronAbsorbants = true;
+        [KSPField] public bool fullPowerForNonNeutronAbsorbents = true;
         [KSPField] public bool showPowerPriority = true;
         [KSPField] public bool showSpecialisedUI = true;
         [KSPField] public bool canUseNeutronicFuels = true;
@@ -363,7 +362,7 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_OverheatFraction", guiFormat = "F4")]//Overheat Fraction
         public double overheatModifier = 1;
 
-        [KSPField] public double lithiumNeutronAbsorbtion = 1;
+        [KSPField] public double lithiumNeutronAbsorption = 1;
         [KSPField] public bool isConnectedToThermalGenerator;
         [KSPField] public bool isConnectedToChargedGenerator;
 
@@ -376,14 +375,14 @@ namespace KIT.Reactors
         // if the reactor can be refueled / decay has stopped, etc.
         [KSPField] public double last_active_time;
 
-        // shared variabels
+        // shared variables
         protected bool decay_ongoing;
         protected bool initialized;
         protected bool messagedRanOutOfFuel;
 
         protected double currentGeeForce;
         protected double animationStarted = 0;
-        protected double powerPcnt;
+        protected double PowerPercent;
         protected double totalAmountLithium = 0;
         protected double totalMaxAmountLithium = 0;
 
@@ -407,7 +406,7 @@ namespace KIT.Reactors
         private FNEmitterController emitterController;
 
         private readonly List<ReactorProduction> reactorProduction = new List<ReactorProduction>();
-        private readonly List<IFNEngineNoozle> connectedEngines = new List<IFNEngineNoozle>();
+        private readonly List<IFnEngineNozzle> connectedEngines = new List<IFnEngineNozzle>();
         private readonly Queue<double> averageGeeforce = new Queue<double>();
         private readonly Queue<double> averageOverheat = new Queue<double>();
 
@@ -457,13 +456,13 @@ namespace KIT.Reactors
 
         public int SupportedPropellantTypes => supportedPropellantTypes;
 
-        public bool FullPowerForNonNeutronAbsorbants => fullPowerForNonNeutronAbsorbants;
+        public bool FullPowerForNonNeutronAbsorbents => fullPowerForNonNeutronAbsorbents;
 
-        public double EfficencyConnectedThermalEnergyGenerator => storedIsThermalEnergyGeneratorEfficiency;
+        public double EfficiencyConnectedThermalEnergyGenerator => storedIsThermalEnergyGeneratorEfficiency;
 
-        public double EfficencyConnectedChargedEnergyGenerator => storedIsChargedEnergyGeneratorEfficiency;
+        public double EfficiencyConnectedChargedEnergyGenerator => storedIsChargedEnergyGeneratorEfficiency;
 
-        public double FuelRato => fuel_ratio;
+        public double FuelRatio => fuel_ratio;
 
         public virtual double MagneticNozzlePowerMult => 1;
 
@@ -489,7 +488,7 @@ namespace KIT.Reactors
 
         public double PlasmaWasteheatProductionMult => plasmaWasteheatProductionMult;
 
-        public double ThermalPropulsionWasteheatModifier => 1;
+        public double ThermalPropulsionWasteHeatModifier => 1;
 
         public double ConsumedFuelFixed => _consumedFuelTotalFixed;
 
@@ -702,14 +701,14 @@ namespace KIT.Reactors
             }
         }
 
-        public void ConnectWithEngine(IEngineNoozle engine)
+        public void ConnectWithEngine(IEngineNozzle engine)
         {
             Debug.Log("[KSPI]: ConnectWithEngine ");
 
-            var fnEngine = engine as IFNEngineNoozle;
+            var fnEngine = engine as IFnEngineNozzle;
             if (fnEngine == null)
             {
-                Debug.LogError("[KSPI]: engine is not a IFNEngineNoozle");
+                Debug.LogError("[KSPI]: engine is not a IFnEngineNozzle");
                 return;
             }
 
@@ -717,14 +716,14 @@ namespace KIT.Reactors
                 connectedEngines.Add(fnEngine);
         }
 
-        public void DisconnectWithEngine(IEngineNoozle engine)
+        public void DisconnectWithEngine(IEngineNozzle engine)
         {
             Debug.Log("[KSPI]: DisconnectWithEngine ");
 
-            var fnEngine = engine as IFNEngineNoozle;
+            var fnEngine = engine as IFnEngineNozzle;
             if (fnEngine == null)
             {
-                Debug.LogError("[KSPI]: engine is not a IFNEngineNoozle");
+                Debug.LogError("[KSPI]: engine is not a IFnEngineNozzle");
                 return;
             }
 
@@ -796,42 +795,42 @@ namespace KIT.Reactors
         }
 
 
-        public void NotifyActiveThermalEnergyGenerator(double efficency, double power_ratio, bool isMHD, double mass)
+        public void NotifyActiveThermalEnergyGenerator(double efficiency, double powerRatio, bool isMHD, double mass)
         {
             _currentThermalEnergyGeneratorMass = mass;
 
             if (isMHD)
             {
-                _currentIsPlasmaEnergyGeneratorEfficiency = efficency;
-                _currentGeneratorPlasmaEnergyRequestRatio = power_ratio;
+                _currentIsPlasmaEnergyGeneratorEfficiency = efficiency;
+                _currentGeneratorPlasmaEnergyRequestRatio = powerRatio;
             }
             else
             {
-                _currentIsThermalEnergyGeneratorEfficiency = efficency;
-                _currentGeneratorThermalEnergyRequestRatio = power_ratio;
+                _currentIsThermalEnergyGeneratorEfficiency = efficiency;
+                _currentGeneratorThermalEnergyRequestRatio = powerRatio;
             }
             isConnectedToThermalGenerator = true;
         }
 
-        public void NotifyActiveThermalEnergyGenerator(double efficency, double power_ratio)
+        public void NotifyActiveThermalEnergyGenerator(double efficiency, double powerRatio)
         {
-            _currentIsThermalEnergyGeneratorEfficiency = efficency;
-            _currentGeneratorThermalEnergyRequestRatio = power_ratio;
+            _currentIsThermalEnergyGeneratorEfficiency = efficiency;
+            _currentGeneratorThermalEnergyRequestRatio = powerRatio;
             isConnectedToThermalGenerator = true;
         }
 
-        public void NotifyActiveChargedEnergyGenerator(double efficency, double power_ratio)
+        public void NotifyActiveChargedEnergyGenerator(double efficiency, double powerRatio)
         {
-            _currentIsChargedEnergyGeneratorEfficiency = efficency;
-            _currentGeneratorChargedEnergyRequestRatio = power_ratio;
+            _currentIsChargedEnergyGeneratorEfficiency = efficiency;
+            _currentGeneratorChargedEnergyRequestRatio = powerRatio;
             isConnectedToChargedGenerator = true;
         }
 
-        public void NotifyActiveChargedEnergyGenerator(double efficency, double power_ratio, double mass)
+        public void NotifyActiveChargedEnergyGenerator(double efficiency, double powerRatio, double mass)
         {
             _currentChargedEnergyGeneratorMass = mass;
-            _currentIsChargedEnergyGeneratorEfficiency = efficency;
-            _currentGeneratorChargedEnergyRequestRatio = power_ratio;
+            _currentIsChargedEnergyGeneratorEfficiency = efficiency;
+            _currentGeneratorChargedEnergyRequestRatio = powerRatio;
             isConnectedToChargedGenerator = true;
         }
 
@@ -842,14 +841,14 @@ namespace KIT.Reactors
         }
 
         /*
-        public void AttachThermalReciever(Guid key, double radius)
+        public void AttachThermalReceiver(Guid key, double radius)
         {
             if (!connectedReceivers.ContainsKey(key))
                 connectedReceivers.Add(key, radius);
             UpdateConnectedReceiversStr();
         }
 
-        public void DetachThermalReciever(Guid key)
+        public void DetachThermalReceiver(Guid key)
         {
             if (connectedReceivers.ContainsKey(key))
                 connectedReceivers.Remove(key);
@@ -916,25 +915,25 @@ namespace KIT.Reactors
                 switch (CurrentGenerationType)
                 {
                     case GenerationType.Mk7:
-                        baseEfficiency = fuelEfficencyMk7;
+                        baseEfficiency = fuelEfficiencyMk7;
                         break;
                     case GenerationType.Mk6:
-                        baseEfficiency = fuelEfficencyMk6;
+                        baseEfficiency = fuelEfficiencyMk6;
                         break;
                     case GenerationType.Mk5:
-                        baseEfficiency = fuelEfficencyMk5;
+                        baseEfficiency = fuelEfficiencyMk5;
                         break;
                     case GenerationType.Mk4:
-                        baseEfficiency = fuelEfficencyMk4;
+                        baseEfficiency = fuelEfficiencyMk4;
                         break;
                     case GenerationType.Mk3:
-                        baseEfficiency = fuelEfficencyMk3;
+                        baseEfficiency = FuelEfficiencyMk3;
                         break;
                     case GenerationType.Mk2:
-                        baseEfficiency = fuelEfficencyMk2;
+                        baseEfficiency = fuelEfficiencyMk2;
                         break;
                     default:
-                        baseEfficiency = fuelEfficencyMk1;
+                        baseEfficiency = FuelEfficiencyMk1;
                         break;
                 }
 
@@ -1459,24 +1458,24 @@ namespace KIT.Reactors
         private void DetermineFuelEfficiency()
         {
             // if fuel efficiency is missing, try to use legacy value
-            if (fuelEfficencyMk1 <= 0)
-                fuelEfficencyMk1 = fuelEfficiency;
+            if (FuelEfficiencyMk1 <= 0)
+                FuelEfficiencyMk1 = fuelEfficiency;
 
             // prevent any initial values
-            if (fuelEfficencyMk1 <= 0)
-                fuelEfficencyMk1 = 1;
-            if (fuelEfficencyMk2 <= 0)
-                fuelEfficencyMk2 = fuelEfficencyMk1;
-            if (fuelEfficencyMk3 <= 0)
-                fuelEfficencyMk3 = fuelEfficencyMk2;
-            if (fuelEfficencyMk4 <= 0)
-                fuelEfficencyMk4 = fuelEfficencyMk3;
-            if (fuelEfficencyMk5 <= 0)
-                fuelEfficencyMk5 = fuelEfficencyMk4;
-            if (fuelEfficencyMk6 <= 0)
-                fuelEfficencyMk6 = fuelEfficencyMk5;
-            if (fuelEfficencyMk7 <= 0)
-                fuelEfficencyMk7 = fuelEfficencyMk6;
+            if (FuelEfficiencyMk1 <= 0)
+                FuelEfficiencyMk1 = 1;
+            if (fuelEfficiencyMk2 <= 0)
+                fuelEfficiencyMk2 = FuelEfficiencyMk1;
+            if (FuelEfficiencyMk3 <= 0)
+                FuelEfficiencyMk3 = fuelEfficiencyMk2;
+            if (fuelEfficiencyMk4 <= 0)
+                fuelEfficiencyMk4 = FuelEfficiencyMk3;
+            if (fuelEfficiencyMk5 <= 0)
+                fuelEfficiencyMk5 = fuelEfficiencyMk4;
+            if (fuelEfficiencyMk6 <= 0)
+                fuelEfficiencyMk6 = fuelEfficiencyMk5;
+            if (fuelEfficiencyMk7 <= 0)
+                fuelEfficiencyMk7 = fuelEfficiencyMk6;
         }
 
         private void DeterminePowerGenerationType()
@@ -1553,7 +1552,7 @@ namespace KIT.Reactors
             currentRawPowerOutput = RawPowerOutput;
             coretempStr = CoreTemperature.ToString("0") + " K";
 
-            Events[nameof(DeactivateReactor)].guiActive = HighLogic.LoadedSceneIsFlight && IsEnabled && (showShutDownInFlight || HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().extendedReactorControl);
+            Events[nameof(DeactivateReactor)].guiActive = HighLogic.LoadedSceneIsFlight && IsEnabled && (showShutDownInFlight || HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().ExtendedReactorControl);
 
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -1576,14 +1575,14 @@ namespace KIT.Reactors
             if (IsEnabled && CurrentFuelMode != null)
             {
                 if (CheatOptions.InfinitePropellant || stored_fuel_ratio > 0.99)
-                    statusStr = Localizer.Format("#LOC_KSPIE_Reactor_status1", powerPcnt.ToString("0.0000"));//"Active (" +  + "%)"
+                    statusStr = Localizer.Format("#LOC_KSPIE_Reactor_status1", PowerPercent.ToString("0.0000"));//"Active (" +  + "%)"
                 else if (currentFuelVariant != null)
                     statusStr = "this needs fixing..."; // currentFuelVariant.ReactorFuels.OrderBy(GetFuelAvailability).First().ResourceName + " " + Localizer.Format("#LOC_KSPIE_Reactor_status2");//"Deprived" // do without resource manager.
             }
             else
             {
-                statusStr = powerPcnt > 0
-                    ? Localizer.Format("#LOC_KSPIE_Reactor_status3", powerPcnt.ToString("0.0000"))
+                statusStr = PowerPercent > 0
+                    ? Localizer.Format("#LOC_KSPIE_Reactor_status3", PowerPercent.ToString("0.0000"))
                     : Localizer.Format("#LOC_KSPIE_Reactor_status4");
             }
         }
@@ -1688,7 +1687,7 @@ namespace KIT.Reactors
 
                 var geeforce = double.IsNaN(currentGeeForce) || double.IsInfinity(currentGeeForce) ? 0 : currentGeeForce;
 
-                var scaledGeeforce = Math.Pow(Math.Max(geeforce - geeForceTreshHold, 0) * geeForceMultiplier, geeForceExponent);
+                var scaledGeeforce = Math.Pow(Math.Max(geeforce - geeForceThreshHold, 0) * geeForceMultiplier, geeForceExponent);
 
                 geeForceModifier = Math.Min(Math.Max(1 - scaledGeeforce, minGeeForceModifier), 1);
             }
@@ -1861,13 +1860,13 @@ namespace KIT.Reactors
             if (totalAmountLithium.IsInfinityOrNaNorZero() || totalMaxAmountLithium.IsInfinityOrNaNorZero())
                 return;
 
-            lithiumNeutronAbsorbtion = CheatOptions.UnbreakableJoints ? 1 : Math.Max(0.01, Math.Sqrt(totalAmountLithium / totalMaxAmountLithium) - 0.0001);
+            lithiumNeutronAbsorption = CheatOptions.UnbreakableJoints ? 1 : Math.Max(0.01, Math.Sqrt(totalAmountLithium / totalMaxAmountLithium) - 0.0001);
 
-            if (lithiumNeutronAbsorbtion <= 0.01)
+            if (lithiumNeutronAbsorption <= 0.01)
                 return;
 
             // calculate current maximum lithium consumption
-            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * neutronPowerReceivedEachSecond *  lithiumNeutronAbsorbtion;
+            var breedRate = CurrentFuelMode.TritiumBreedModifier * CurrentFuelMode.NeutronsRatio * _staticBreedRate * neutronPowerReceivedEachSecond *  lithiumNeutronAbsorption;
             var lithiumRate = breedRate / _lithium6Density;
 
             // get spare room tritium
@@ -1907,7 +1906,7 @@ namespace KIT.Reactors
             return MaximumPower;
         }
 
-        public virtual bool shouldScaleDownJetISP()
+        public virtual bool ShouldScaleDownJetISP()
         {
             return false;
         }
@@ -1972,19 +1971,19 @@ namespace KIT.Reactors
             {
 
                 sb.Append(headerColor).Append(Localizer.Format("#LOC_KSPIE_Reactor_ReactorPower")).AppendLine(":</color><size=10>");
-                sb.Append("Mk1: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk1));
+                sb.Append("Mk1: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk1));
                 if (!string.IsNullOrEmpty(upgradeTechReqMk2))
-                    sb.Append("Mk2: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk2));
+                    sb.Append("Mk2: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk2));
                 if (!string.IsNullOrEmpty(upgradeTechReqMk3))
-                    sb.Append("Mk3: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk3));
+                    sb.Append("Mk3: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk3));
                 if (!string.IsNullOrEmpty(upgradeTechReqMk4))
-                    sb.Append("Mk4: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk4));
+                    sb.Append("Mk4: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk4));
                 if (!string.IsNullOrEmpty(upgradeTechReqMk5))
-                    sb.Append("Mk5: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk5));
+                    sb.Append("Mk5: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk5));
                 if (!string.IsNullOrEmpty(upgradeTechReqMk6))
-                    sb.Append("Mk6: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk6));
+                    sb.Append("Mk6: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk6));
                 if (!string.IsNullOrEmpty(upgradeTechReqMk7))
-                    sb.Append("Mk7: ").AppendLine(PluginHelper.getFormattedPowerString(powerOutputMk7));
+                    sb.Append("Mk7: ").AppendLine(PluginHelper.GetFormattedPowerString(powerOutputMk7));
                 sb.AppendLine("</size>");
             }
 
@@ -2375,7 +2374,7 @@ namespace KIT.Reactors
                 ResourceName resID = KITResourceSettings.NameToResource(product.Definition.name);
                 if (resID == ResourceName.Unknown)
                 {
-                    Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] unknown resource {product.Definition.name}");
+                    Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] Unknown resource {product.Definition.name}");
                     return 0;
                 }
                 return resMan.ResourceCurrentCapacity(resID) + resMan.ResourceSpareCapacity(resID);
@@ -2413,7 +2412,7 @@ namespace KIT.Reactors
                 ResourceName resID = KITResourceSettings.NameToResource(product.Definition.name);
                 if (resID == ResourceName.Unknown)
                 {
-                    Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] unknown resource {product.Definition.name}");
+                    Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] Unknown resource {product.Definition.name}");
                     return 0;
                 }
                 return resMan.ResourceCurrentCapacity(resID) + resMan.ResourceSpareCapacity(resID);
@@ -2452,7 +2451,7 @@ namespace KIT.Reactors
 
             emitterController.reactorActivityFraction = ongoing_consumption_rate;
             emitterController.fuelNeutronsFraction = CurrentFuelMode.NeutronsRatio;
-            emitterController.lithiumNeutronAbsorbtionFraction = lithiumNeutronAbsorbtion;
+            emitterController.lithiumNeutronAbsorbtionFraction = lithiumNeutronAbsorption;
             emitterController.exhaustActivityFraction = _propulsionRequestRatioSum;
             emitterController.radioactiveFuelLeakFraction = Math.Max(0, 1 - geeForceModifier);
 
@@ -2517,12 +2516,12 @@ namespace KIT.Reactors
 
                 WindowReactorControlSpecificOverride();
 
-                PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_CurrentMaxPowerOutputLabel"), PluginHelper.getFormattedPowerString(ongoing_total_power_generated) + " / " + PluginHelper.getFormattedPowerString(NormalisedMaximumPower), boldStyle, textStyle);//"Current/Max Power Output"
+                PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_CurrentMaxPowerOutputLabel"), PluginHelper.GetFormattedPowerString(ongoing_total_power_generated) + " / " + PluginHelper.GetFormattedPowerString(NormalisedMaximumPower), boldStyle, textStyle);//"Current/Max Power Output"
 
                 if (ChargedPowerRatio < 1.0)
-                    PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_CurrentMaxThermalPower"), PluginHelper.getFormattedPowerString(ongoing_thermal_power_generated) + " / " + PluginHelper.getFormattedPowerString(MaximumThermalPower), boldStyle, textStyle);//"Current/Max Thermal Power"
+                    PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_CurrentMaxThermalPower"), PluginHelper.GetFormattedPowerString(ongoing_thermal_power_generated) + " / " + PluginHelper.GetFormattedPowerString(MaximumThermalPower), boldStyle, textStyle);//"Current/Max Thermal Power"
                 if (ChargedPowerRatio > 0)
-                    PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_CurrentMaxChargedPower"), PluginHelper.getFormattedPowerString(ongoing_charged_power_generated) + " / " + PluginHelper.getFormattedPowerString(MaximumChargedPower), boldStyle, textStyle);//"Current/Max Charged Power"
+                    PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_CurrentMaxChargedPower"), PluginHelper.GetFormattedPowerString(ongoing_charged_power_generated) + " / " + PluginHelper.GetFormattedPowerString(MaximumChargedPower), boldStyle, textStyle);//"Current/Max Charged Power"
 
                 if (CurrentFuelMode != null && currentFuelVariant.ReactorFuels != null)
                 {
@@ -2551,9 +2550,9 @@ namespace KIT.Reactors
                         var lithiumLifetimeYearsRemainderInDays = lithiumLifetimeTotalDays % GameConstants.KERBIN_YEAR_IN_DAYS;
 
                         var lithiumLifetimeRemainingDays = Math.Floor(lithiumLifetimeYearsRemainderInDays);
-                        var lithiumLifetimeRemainingDaysRemainer = lithiumLifetimeYearsRemainderInDays % 1;
+                        var lithiumLifetimeRemainingDaysRemaining = lithiumLifetimeYearsRemainderInDays % 1;
 
-                        var lithiumLifetimeRemainingHours = lithiumLifetimeRemainingDaysRemainer * PluginHelper.SecondsInDay / GameConstants.SECONDS_IN_HOUR;
+                        var lithiumLifetimeRemainingHours = lithiumLifetimeRemainingDaysRemaining * PluginHelper.SecondsInDay / GameConstants.SECONDS_IN_HOUR;
 
                         if (lithiumLifetimeYears < 1e9)
                         {
@@ -2759,7 +2758,7 @@ namespace KIT.Reactors
                 ongoing_total_power_generated = 0;
                 reactor_power_ratio = 0;
                 PluginHelper.SetAnimationRatio(0, pulseAnimation);
-                powerPcnt = 0;
+                PowerPercent = 0;
             }
 
             // By default, this is IsEnabled == false and IsStarted == false, so enable them for now.
@@ -2784,7 +2783,7 @@ namespace KIT.Reactors
                 ongoing_total_power_generated = ongoing_thermal_power_generated;
                 BreedTritium(resMan, ongoing_thermal_power_generated);
                 ongoing_consumption_rate = MaximumPower > 0 ? ongoing_thermal_power_generated / MaximumPower : 0;
-                powerPcnt = 100 * ongoing_consumption_rate;
+                PowerPercent = 100 * ongoing_consumption_rate;
                 decay_ongoing = true;
 
                 return;
@@ -2814,7 +2813,7 @@ namespace KIT.Reactors
                 if (averageOverheat.Count > 10)
                     averageOverheat.Dequeue();
 
-                double scaledOverheating = Math.Pow(Math.Max(resMan.ResourceFillFraction(ResourceName.WasteHeat) - overheatTreshHold, 0) * overheatMultiplier, overheatExponent);
+                double scaledOverheating = Math.Pow(Math.Max(resMan.ResourceFillFraction(ResourceName.WasteHeat) - overheatThreshHold, 0) * overheatMultiplier, overheatExponent);
 
                 overheatModifier = Math.Min(Math.Max(1 - scaledOverheating, minOverheatModifier), 1);
             }
@@ -2930,19 +2929,19 @@ namespace KIT.Reactors
         protected readonly Dictionary<Guid, double> connectedReceivers = new Dictionary<Guid, double>();
         protected readonly Dictionary<Guid, double> connectedReceiversFraction = new Dictionary<Guid, double>();
 
-        public void AttachThermalReciever(Guid key, double radius)
+        public void AttachThermalReceiver(Guid key, double radius)
         {
             if (!connectedReceivers.ContainsKey(key))
                 connectedReceivers.Add(key, radius);
         }
 
-        public void DetachThermalReciever(Guid key)
+        public void DetachThermalReceiver(Guid key)
         {
             if (connectedReceivers.ContainsKey(key))
                 connectedReceivers.Remove(key);
         }
 
-        public double GetFractionThermalReciever(Guid key)
+        public double GetFractionThermalReceiver(Guid key)
         {
             if (connectedReceiversFraction.TryGetValue(key, out var result))
                 return result;
@@ -3078,8 +3077,8 @@ namespace KIT.Reactors
             }
 
 
-           BreedTritium(resMan, ongoing_thermal_power_generated);
-           return true;
+            BreedTritium(resMan, ongoing_thermal_power_generated);
+            return true;
         }
     }
 }

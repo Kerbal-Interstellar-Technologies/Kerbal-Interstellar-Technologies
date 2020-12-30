@@ -1,4 +1,4 @@
-﻿using KIT.Redist;
+﻿using KIT.Interfaces;
 
 namespace KIT.Powermanagement.Interfaces
 {

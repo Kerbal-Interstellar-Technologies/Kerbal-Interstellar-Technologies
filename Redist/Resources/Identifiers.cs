@@ -1,10 +1,7 @@
-﻿using KIT.ResourceScheduler;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace KIT.Resources
@@ -312,32 +309,32 @@ namespace KIT.Resources
             }
         }
 
-        private static Dictionary<string, ResourceName> nameToResourceMap;
+        private static Dictionary<string, ResourceName> _nameToResourceMap;
 
         /// <summary>
-        /// Converts a string to a given ResourceName identifer.
+        /// Converts a string to a given ResourceName identifier.
         /// </summary>
         /// <param name="name">Resource name to convert</param>
         /// <returns>Corresponding ResourceName identifier if found, otherwise Unknown.</returns>
         public static ResourceName NameToResource(string name)
         {
-            if (nameToResourceMap == null)
+            if (_nameToResourceMap == null)
             {
-                nameToResourceMap = new Dictionary<string, ResourceName>(64);
+                _nameToResourceMap = new Dictionary<string, ResourceName>(64);
 
                 for (var i = 0; i < (int)ResourceName.EndResource; i++)
                 {
-                    nameToResourceMap[ResourceToName((ResourceName)i)] = (ResourceName)i;
+                    _nameToResourceMap[ResourceToName((ResourceName)i)] = (ResourceName)i;
                 }
             }
 
-            if (nameToResourceMap.ContainsKey(name) == false)
+            if (_nameToResourceMap.ContainsKey(name) == false)
             {
-                // Debug.Log($"[ResourceSettings.ResourceName] requested to map unknown resource {name} - this will likely blow up");
+                // Debug.Log($"[ResourceSettings.ResourceName] requested to map Unknown resource {name} - this will likely blow up");
                 return ResourceName.Unknown;
             }
 
-            return nameToResourceMap[name];
+            return _nameToResourceMap[name];
         }
 
         /// <summary>
@@ -365,7 +362,7 @@ namespace KIT.Resources
         static KITResourceSettings()
         {
             var configRoot = GameDatabase.Instance.GetConfigNodes("KIT_PLUGIN_SETTINGS");
-            if (configRoot == null || configRoot.Count() == 0)
+            if (configRoot == null || !configRoot.Any())
             {
                 if (_warningDisplayed) return;
                 // Localizer.Format() does not work during game initialization, as Unity is not ready for it to call some functions that it does.
@@ -373,7 +370,8 @@ namespace KIT.Resources
                 PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "KIT Error", "Kerbal Interstellar Technologies Installation Error", errorMessage, "OK", false, HighLogic.UISkin);
 
                 _warningDisplayed = true;
-
+                
+                return;
             }
 
             var pluginSettings = configRoot[0];

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using UnityEngine;
 
@@ -41,7 +38,8 @@ namespace KIT
                     versionBuild = assemblyName.Version.Build;
                     versionRevision = assemblyName.Version.Revision;
 
-                    var kerbalismversionstr = string.Format("{0}.{1}.{2}.{3}.{4}.{5}", versionMajor, versionMinor, versionRevision, versionBuild, versionMajorRevision, versionMinorRevision);
+                    var kerbalismversionstr =
+                        $"{versionMajor}.{versionMinor}.{versionRevision}.{versionBuild}.{versionMajorRevision}.{versionMinorRevision}";
                     Debug.Log("[KSPI]: Found Kerbalism assemblyName Version " + kerbalismversionstr);
 
                     try { Sim = KerbalismAssembly.GetType("KERBALISM.Sim"); } catch (Exception e) { Debug.LogException(e); }
@@ -71,15 +69,9 @@ namespace KIT
             Debug.Log("[KSPI]: KERBALISM was not found");
         }
 
-        public static bool IsLoaded
-        {
-            get { return versionMajor > 0; }
-        }
+        public static bool IsLoaded => versionMajor > 0;
 
-        public static bool HasRadiationFixes
-        {
-            get { return versionMajor >= 3 && versionMinor >= 1; }
-        }
+        public static bool HasRadiationFixes => versionMajor >= 3 && versionMinor >= 1;
 
         // return proportion of ionizing radiation not blocked by atmosphere
         public static double GammaTransparency(CelestialBody body, double altitude)

@@ -1,16 +1,16 @@
 using System;
 
-namespace KIT.Redist
+namespace KIT.Interfaces
 {
-    public enum ElectricGeneratorType { unknown = 0, thermal = 1, charged_particle = 2 };
+    public enum ElectricGeneratorType { Unknown = 0, Thermal = 1, ChargedParticle = 2 };
 
-    public interface IThermalReciever
+    public interface IThermalReceiver
     {
-        void AttachThermalReciever(Guid key, double radius);
+        void AttachThermalReceiver(Guid key, double radius);
 
-        void DetachThermalReciever(Guid key);
+        void DetachThermalReceiver(Guid key);
 
-        double GetFractionThermalReciever(Guid key);
+        double GetFractionThermalReceiver(Guid key);
 
         double ThermalTransportationEfficiency { get; }
     }

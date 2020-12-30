@@ -1,6 +1,6 @@
 ﻿using KIT.ResourceScheduler;
 
-namespace KIT.Redist
+namespace KIT.Interfaces
 {
     public interface IChargedParticleSource : IPowerSource
     {
@@ -10,7 +10,7 @@ namespace KIT.Redist
 
         double MaximumChargedIspMult { get; }
 
-        double MinimumChargdIspMult { get; }
+        double MinimumChargedIspMult { get; }
 
         double MagneticNozzlePowerMult { get; }
     }

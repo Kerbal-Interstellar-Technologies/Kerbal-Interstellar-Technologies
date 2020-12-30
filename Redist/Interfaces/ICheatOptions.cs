@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KIT.Interfaces
+﻿namespace KIT.Interfaces
 {   
     /// <summary>
     /// ICheatOptions provides an interface the same as the CheatOptions static global class.
@@ -45,19 +39,8 @@ namespace KIT.Interfaces
         public bool NonStrictAttachmentOrientation => CheatOptions.NonStrictAttachmentOrientation;
         public bool IgnoreAgencyMindsetOnContracts => CheatOptions.IgnoreAgencyMindsetOnContracts;
 
-        private static RealCheatOptions instance;
-        public static RealCheatOptions Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new RealCheatOptions();
-                }
-
-                return instance;
-            }
-        }
+        private static RealCheatOptions _instance;
+        public static RealCheatOptions Instance => _instance ?? (_instance = new RealCheatOptions());
     }
 
     /// <summary>

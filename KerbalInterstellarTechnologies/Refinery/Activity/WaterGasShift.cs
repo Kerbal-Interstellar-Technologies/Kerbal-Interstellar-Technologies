@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
@@ -131,7 +130,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_WaterGasShift_Power"), _bold_label, GUILayout.Width(labelWidth));//"Power"
-            GUILayout.Label(PluginHelper.getFormattedPowerString(CurrentPower) + "/" + PluginHelper.getFormattedPowerString(PowerRequirements), _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(PluginHelper.GetFormattedPowerString(CurrentPower) + "/" + PluginHelper.GetFormattedPowerString(PowerRequirements), _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -191,13 +190,13 @@ namespace KIT.Refinery.Activity
                 _status = Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg1");//"Water Gas Swifting"
             else if (_fixedConsumptionRate <= 0.0000000001)
             {
-                if (_availableWaterMass <= 0.0000000001)
-                    _status = Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg2");//"Out of Water"
-                else
-                    _status = Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg3");//"Out of CarbonMonoxide"
+                _status = Localizer.Format(_availableWaterMass <= 0.0000000001 ? "#LOC_KSPIE_WaterGasShift_Statumsg2" : "#LOC_KSPIE_WaterGasShift_Statumsg3");
             }
             else if (_hydrogenProductionRate > 0)
-                _status = _allowOverflow ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4") : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5", KITResourceSettings.CarbonDioxideLqd);//"Overflowing ""Insufficient " +  + " Storage"
+                _status = _allowOverflow
+                    ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4")
+                    : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5",
+                        KITResourceSettings.CarbonDioxideLqd); //"Overflowing ""Insufficient " +  + " Storage"
             else if (_dioxideProductionRate > 0)
                 _status = _allowOverflow ? Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg4") : Localizer.Format("#LOC_KSPIE_WaterGasShift_Statumsg5", KITResourceSettings.HydrogenLqd);//"Overflowing ""Insufficient " +  + " Storage"
             else if (CurrentPower <= 0.01 * PowerRequirements)

@@ -4,101 +4,92 @@ namespace KIT.Propulsion
 {
     public class ThermalEngineFuel
     {
-        private int _index;
+        private readonly Part _part;
 
-        private string _guiName;
+        private readonly List<Propellant> list_of_propellants = new List<Propellant>();
 
-        private bool _isLFO;
-        private bool _is_jet;
+        public string TechRequirement { get; }
 
-        private int _atomType = 1;
-        private int _propType = 1;
+        public double CoolingFactor { get; }
 
-        private double _propellantSootFactorFullThrotle;
-        private double _propellantSootFactorMinThrotle;
-        private double _propellantSootFactorEquilibrium;
-        private double _minDecompositionTemp;
-        private double _maxDecompositionTemp;
-        private double _decompositionEnergy;
-        private double _baseIspMultiplier;
-        private double _toxicity;
-        private double _minimumCoreTemp;
-        private double _ispPropellantMultiplier;
-        private double _thrustPropellantMultiplier;
-        private string _techRequirement;
-        private double _coolingFactor;
-        private bool _requiresUpgrade;
+        public bool RequiresUpgrade { get; }
 
-        private Part _part;
+        public int Index { get; }
 
-        private List<Propellant> list_of_propellants = new List<Propellant>();
+        public string GuiName { get; }
 
-        public string TechRequirement { get { return _techRequirement; } }
-        public double CoolingFactor { get { return _coolingFactor; } }
-        public bool RequiresUpgrade { get { return _requiresUpgrade; } }
-        public int Index { get { return _index; } }
-        public string GuiName { get {return _guiName;}}
-        public double PropellantSootFactorFullThrotle { get { return _propellantSootFactorFullThrotle; } }
-        public double PropellantSootFactorMinThrotle { get { return _propellantSootFactorMinThrotle; } }
-        public double PropellantSootFactorEquilibrium { get { return _propellantSootFactorEquilibrium; } }
-        public double MinDecompositionTemp { get { return _minDecompositionTemp; } }
-        public double MaxDecompositionTemp { get { return _maxDecompositionTemp; } }
-        public double DecompositionEnergy { get { return _decompositionEnergy; } }
-        public double BaseIspMultiplier { get { return _baseIspMultiplier; } }
-        public double Toxicity { get { return _toxicity; } }
-        public double MinimumCoreTemp { get { return _minimumCoreTemp; } }
-        public bool IsLFO { get { return _isLFO; } }
-        public bool IsJet { get { return _is_jet; } }
-        public int AtomType { get { return _atomType; } }
-        public int PropType { get { return _propType; } }
+        public double PropellantSootFactorFullThrottle { get; }
 
-        public double IspPropellantMultiplier { get { return _ispPropellantMultiplier; } }
-        public double ThrustPropellantMultiplier { get { return _thrustPropellantMultiplier; } }
+        public double PropellantSootFactorMinThrottle { get; }
+
+        public double PropellantSootFactorEquilibrium { get; }
+
+        public double MinDecompositionTemp { get; }
+
+        public double MaxDecompositionTemp { get; }
+
+        public double DecompositionEnergy { get; }
+
+        public double BaseIspMultiplier { get; }
+
+        public double Toxicity { get; }
+
+        public double MinimumCoreTemp { get; }
+
+        public bool IsLFO { get; }
+
+        public bool IsJet { get; }
+
+        public int AtomType { get; } = 1;
+
+        public int PropType { get; } = 1;
+
+        public double IspPropellantMultiplier { get; }
+
+        public double ThrustPropellantMultiplier { get; }
 
         public ThermalEngineFuel(ConfigNode node, int index, Part part)
         {
             _part = part;
-            _index = index;
-            _guiName = node.GetValue("guiName");
-            _isLFO = node.HasValue("isLFO") ? bool.Parse(node.GetValue("isLFO")) : false;
-            _is_jet = node.HasValue("isJet") ? bool.Parse(node.GetValue("isJet")) : false;
+            Index = index;
+            GuiName = node.GetValue("guiName");
+            IsLFO = node.HasValue("isLFO") && bool.Parse(node.GetValue("isLFO"));
+            IsJet = node.HasValue("isJet") && bool.Parse(node.GetValue("isJet"));
 
-            _propellantSootFactorFullThrotle = node.HasValue("maxSootFactor") ? double.Parse(node.GetValue("maxSootFactor")) : 0;
-            _propellantSootFactorMinThrotle = node.HasValue("minSootFactor") ? double.Parse(node.GetValue("minSootFactor")) : 0;
-            _propellantSootFactorEquilibrium = node.HasValue("levelSootFraction") ? double.Parse(node.GetValue("levelSootFraction")) : 0;
-            _minDecompositionTemp = node.HasValue("MinDecompositionTemp") ? double.Parse(node.GetValue("MinDecompositionTemp")) : 0;
-            _maxDecompositionTemp = node.HasValue("MaxDecompositionTemp") ? double.Parse(node.GetValue("MaxDecompositionTemp")) : 0;
-            _decompositionEnergy = node.HasValue("DecompositionEnergy") ? double.Parse(node.GetValue("DecompositionEnergy")) : 0;
-            _baseIspMultiplier = node.HasValue("BaseIspMultiplier") ? double.Parse(node.GetValue("BaseIspMultiplier")) : 0;
-            _techRequirement = node.HasValue("TechRequirement") ? node.GetValue("TechRequirement") : string.Empty;
-            _coolingFactor = node.HasValue("coolingFactor") ? float.Parse(node.GetValue("coolingFactor")) : 1;
-            _toxicity = node.HasValue("Toxicity") ? double.Parse(node.GetValue("Toxicity")) : 0;
-            _minimumCoreTemp = node.HasValue("minimumCoreTemp") ? float.Parse(node.GetValue("minimumCoreTemp")) : 0;
+            PropellantSootFactorFullThrottle = node.HasValue("maxSootFactor") ? double.Parse(node.GetValue("maxSootFactor")) : 0;
+            PropellantSootFactorMinThrottle = node.HasValue("minSootFactor") ? double.Parse(node.GetValue("minSootFactor")) : 0;
+            PropellantSootFactorEquilibrium = node.HasValue("levelSootFraction") ? double.Parse(node.GetValue("levelSootFraction")) : 0;
+            MinDecompositionTemp = node.HasValue("MinDecompositionTemp") ? double.Parse(node.GetValue("MinDecompositionTemp")) : 0;
+            MaxDecompositionTemp = node.HasValue("MaxDecompositionTemp") ? double.Parse(node.GetValue("MaxDecompositionTemp")) : 0;
+            DecompositionEnergy = node.HasValue("DecompositionEnergy") ? double.Parse(node.GetValue("DecompositionEnergy")) : 0;
+            BaseIspMultiplier = node.HasValue("BaseIspMultiplier") ? double.Parse(node.GetValue("BaseIspMultiplier")) : 0;
+            TechRequirement = node.HasValue("TechRequirement") ? node.GetValue("TechRequirement") : string.Empty;
+            CoolingFactor = node.HasValue("coolingFactor") ? float.Parse(node.GetValue("coolingFactor")) : 1;
+            Toxicity = node.HasValue("Toxicity") ? double.Parse(node.GetValue("Toxicity")) : 0;
+            MinimumCoreTemp = node.HasValue("minimumCoreTemp") ? float.Parse(node.GetValue("minimumCoreTemp")) : 0;
 
-            _requiresUpgrade = node.HasValue("RequiresUpgrade") ? bool.Parse(node.GetValue("RequiresUpgrade")) : false;
-            _atomType = node.HasValue("atomType") ? int.Parse(node.GetValue("atomType")) : 1;
-            _propType = node.HasValue("propType") ? int.Parse(node.GetValue("propType")) : 1;
-            _ispPropellantMultiplier = node.HasValue("ispMultiplier") ? double.Parse(node.GetValue("ispMultiplier")) : 1;
-            _thrustPropellantMultiplier = node.HasValue("thrustMultiplier") ? double.Parse(node.GetValue("thrustMultiplier")) : 1;
+            RequiresUpgrade = node.HasValue("RequiresUpgrade") && bool.Parse(node.GetValue("RequiresUpgrade"));
+            AtomType = node.HasValue("atomType") ? int.Parse(node.GetValue("atomType")) : 1;
+            PropType = node.HasValue("propType") ? int.Parse(node.GetValue("propType")) : 1;
+            IspPropellantMultiplier = node.HasValue("ispMultiplier") ? double.Parse(node.GetValue("ispMultiplier")) : 1;
+            ThrustPropellantMultiplier = node.HasValue("thrustMultiplier") ? double.Parse(node.GetValue("thrustMultiplier")) : 1;
 
             ConfigNode[] propellantNodes = node.GetNodes("PROPELLANT");
 
             foreach (ConfigNode propNode in propellantNodes)
             {
-                var curprop = new ExtendedPropellant();
-                curprop.Load(propNode);
+                var currentPropellant = new ExtendedPropellant();
+                currentPropellant.Load(propNode);
 
-                list_of_propellants.Add(curprop);
+                list_of_propellants.Add(currentPropellant);
             }
         }
 
-        public bool hasAnyStorage()
+        public bool HasAnyStorage()
         {
             foreach (var extendedPropellant in list_of_propellants)
             {
-                double amount;
-                double maxAmount;
-                _part.GetConnectedResourceTotals(extendedPropellant.id, extendedPropellant.GetFlowMode(), out amount, out maxAmount);
+                _part.GetConnectedResourceTotals(extendedPropellant.id, extendedPropellant.GetFlowMode(), out _, out double maxAmount);
 
                 if (maxAmount <= 0)
                     return false;

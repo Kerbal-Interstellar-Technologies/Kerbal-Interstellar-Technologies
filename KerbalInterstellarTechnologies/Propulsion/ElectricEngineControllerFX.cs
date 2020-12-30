@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.Powermanagement;
 using KIT.Resources;
 using KIT.ResourceScheduler;
@@ -79,9 +78,9 @@ namespace KIT.Propulsion
         [KSPField]
         public double ionisationMultiplier = 0.5;
         [KSPField]
-        public double baseEfficency = 1;
+        public double baseEfficiency = 1;
         [KSPField]
-        public double variableEfficency = 0;
+        public double variableEfficiency = 0;
         [KSPField]
         public float storedThrottle;
         [KSPField]
@@ -360,7 +359,7 @@ namespace KIT.Propulsion
                 if (type == (int)ElectricEngineType.ARCJET)
                 {
                     // achieves higher efficiencies due to wasteheat preheating
-                    efficiency = (ionisationMultiplier * CurrentPropellant.Efficiency) + ((1 - ionisationMultiplier) * baseEfficency);
+                    efficiency = (ionisationMultiplier * CurrentPropellant.Efficiency) + ((1 - ionisationMultiplier) * baseEfficiency);
                 }
                 else if (type == (int)ElectricEngineType.VASIMR)
                 {
@@ -370,7 +369,7 @@ namespace KIT.Propulsion
 
                     ionizationEnergyRatio = Math.Min(1, ionizationEnergyRatio);
 
-                    efficiency = (ionizationEnergyRatio * CurrentPropellant.Efficiency) + ((1 - ionizationEnergyRatio) * (baseEfficency + ((1 - _attachedEngine.currentThrottle) * variableEfficency)));
+                    efficiency = (ionizationEnergyRatio * CurrentPropellant.Efficiency) + ((1 - ionizationEnergyRatio) * (baseEfficiency + ((1 - _attachedEngine.currentThrottle) * variableEfficiency)));
                 }
                 else if (type == (int)ElectricEngineType.VACUUMTHRUSTER)
                 {
@@ -382,7 +381,7 @@ namespace KIT.Propulsion
                     var ionizationEnergyRatio = Math.Min(1,  1 / (baseISP / baseIspIonisationDivider));
 
                     // achieve higher efficiencies at higher base isp
-                    efficiency = (ionizationEnergyRatio * CurrentPropellant.Efficiency) + ((1 - ionizationEnergyRatio) * baseEfficency);
+                    efficiency = (ionizationEnergyRatio * CurrentPropellant.Efficiency) + ((1 - ionizationEnergyRatio) * baseEfficiency);
                 }
 
                 return efficiency;
@@ -531,10 +530,8 @@ namespace KIT.Propulsion
 
                 if (CurrentPropellant == null && !string.IsNullOrEmpty(propellantGUIName))
                 {
-                    CurrentPropellant = _vesselPropellants.FirstOrDefault(m => m.PropellantName == propellantGUIName);
-
-                    if (CurrentPropellant == null)
-                        CurrentPropellant = _vesselPropellants.FirstOrDefault(m => m.PropellantGUIName == propellantGUIName);
+                    CurrentPropellant = _vesselPropellants.FirstOrDefault(m => m.PropellantName == propellantGUIName) ??
+                                        _vesselPropellants.FirstOrDefault(m => m.PropellantGUIName == propellantGUIName);
                 }
             }
 
@@ -674,7 +671,7 @@ namespace KIT.Propulsion
                 Fields[nameof(heatProductionStr)].guiActive = true;
                 Fields[nameof(efficiencyStr)].guiActive = true;
                 electricalPowerShareStr = _electricalShareF.ToString("P2");
-                heatProductionStr = PluginHelper.getFormattedPowerString(_heatProductionF);
+                heatProductionStr = PluginHelper.GetFormattedPowerString(_heatProductionF);
 
                 if (CurrentPropellant == null)
                     efficiencyStr = "";
@@ -744,7 +741,7 @@ namespace KIT.Propulsion
                 part.Effect(CurrentPropellant.ParticleFXName, 0, -1);
         }
 
-        private void CalculateTimeDialation()
+        public void CalculateTimeDilation()
         {
             var worldSpaceVelocity = vessel.orbit.GetFrameVel().magnitude;
 
@@ -798,7 +795,7 @@ namespace KIT.Propulsion
 
             if (thrust > 0.0000005 && fuelRatio < 0.999999 && _isFullyStarted)
             {
-                message = Localizer.Format("#LOC_KSPIE_ElectricEngineController_PostMsg2", fuelRatio, thrust);// "Thrust warp stopped - " + + " propellant depleted thust: " +
+                message = Localizer.Format("#LOC_KSPIE_ElectricEngineController_PostMsg2", fuelRatio, thrust);// "Thrust warp stopped - " + + " propellant depleted thrust: " +
                 ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                 Debug.Log("[KSPI]: " + message);
                 TimeWarp.SetRate(0, true);
@@ -825,7 +822,7 @@ namespace KIT.Propulsion
 
         public override string GetInfo()
         {
-            return Localizer.Format("#LOC_KSPIE_ElectricEngine_maxPowerConsumption") + ": " + PluginHelper.getFormattedPowerString(maxPower * powerReqMult);
+            return Localizer.Format("#LOC_KSPIE_ElectricEngine_maxPowerConsumption") + ": " + PluginHelper.GetFormattedPowerString(maxPower * powerReqMult);
         }
 
         private void TogglePropellant(bool next)
@@ -953,7 +950,7 @@ namespace KIT.Propulsion
             if (_vesselChangedSioCountdown > 0)
                 _vesselChangedSioCountdown--;
 
-            CalculateTimeDialation();
+            CalculateTimeDilation();
 
             if (CurrentPropellant == null) return;
 

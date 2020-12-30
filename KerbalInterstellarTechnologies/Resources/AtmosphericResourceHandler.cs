@@ -56,7 +56,7 @@ namespace KIT.Resources
             {
                 foreach (var atmosphericResourcePack in GameDatabase.Instance.GetConfigNodes("ATMOSPHERIC_RESOURCE_PACK_DEFINITION_KSPI"))
                 {
-                    Debug.Log("[KSPI]: Loading atmospheric data from pack: " + (atmosphericResourcePack.HasValue("name") ? atmosphericResourcePack.GetValue("name") : "unknown pack"));
+                    Debug.Log("[KSPI]: Loading atmospheric data from pack: " + (atmosphericResourcePack.HasValue("name") ? atmosphericResourcePack.GetValue("name") : "Unknown pack"));
 
                     var atmosphericResourceList = atmosphericResourcePack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestialBodyName).ToList();
                     if (atmosphericResourceList.Any())
@@ -104,7 +104,7 @@ namespace KIT.Resources
                     bodyAtmosphericComposition = GenerateCompositionFromCelestialBody(body);
 
                 // Add rare and isotopes resources
-                Debug.Log("[KSPI]: adding trace resources and isotopess to " + body.name);
+                Debug.Log("[KSPI]: adding trace resources and isotopes to " + body.name);
                 AddRaresAndIsotopesToAtmosphereComposition(bodyAtmosphericComposition, body);
 
                 // add missing stock resources

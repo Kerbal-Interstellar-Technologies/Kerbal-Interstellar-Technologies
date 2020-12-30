@@ -7,7 +7,7 @@ namespace KIT.External
 {
     public class FNEmitterController:  PartModule
     {
-        // Persistant input
+        // Persistent input
         [KSPField(isPersistant = true)]
         public double reactorActivityFraction;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_FNEmitterContoller_FuelNeutronsFraction")]//Fuel Neutrons Fraction
@@ -82,9 +82,9 @@ namespace KIT.External
         public double fissionFragmentRadiation;
 
         // Privates
-        PartModule emitterModule;
-        BaseField emitterRadiationField;
-        PartResource shieldingPartResource;
+        PartModule _emitterModule;
+        BaseField _emitterRadiationField;
+        PartResource _shieldingPartResource;
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -106,16 +106,16 @@ namespace KIT.External
 
             UnityEngine.Debug.Log("[KSPI]: FNEmitterController Initialize");
 
-            shieldingPartResource = part.Resources["Shielding"];
-            if (shieldingPartResource != null)
+            _shieldingPartResource = part.Resources["Shielding"];
+            if (_shieldingPartResource != null)
             {
                 var radius = diameter * 0.5;
                 if (height == 0)
                     height = diameter;
 
-                var ratio = shieldingPartResource.amount / shieldingPartResource.maxAmount;
-                shieldingPartResource.maxAmount = (2 * Math.PI * radius * radius) + (2 * Math.PI * radius * height);    // 2 π r2 + 2 π r h 
-                shieldingPartResource.amount = shieldingPartResource.maxAmount * ratio;
+                var ratio = _shieldingPartResource.amount / _shieldingPartResource.maxAmount;
+                _shieldingPartResource.maxAmount = (2 * Math.PI * radius * radius) + (2 * Math.PI * radius * height);    // 2 π r2 + 2 π r h 
+                _shieldingPartResource.amount = _shieldingPartResource.maxAmount * ratio;
             }
 
             if (HighLogic.LoadedSceneIsFlight == false)
@@ -126,9 +126,9 @@ namespace KIT.External
             {
                 if (module.moduleName == "Emitter")
                 {
-                    emitterModule = module;
+                    _emitterModule = module;
 
-                    emitterRadiationField = module.Fields["radiation"];
+                    _emitterRadiationField = module.Fields["radiation"];
 
                     found = true;
                     break;
@@ -143,10 +143,10 @@ namespace KIT.External
 
         private void UpdateKerbalismEmitter()
         {
-            if (emitterModule == null)
+            if (_emitterModule == null)
                 return;
 
-            if (emitterRadiationField == null)
+            if (_emitterRadiationField == null)
                 return;
 
             if (maxRadiation == 0)
@@ -181,7 +181,7 @@ namespace KIT.External
             averageCrewMassProtection = Math.Max(0, totalCrewMassShielding / totalCrew);
             averageCrewDistanceToEmitter = Math.Max(1, totalDistancePart / totalCrew);
 
-            reactorLeadShieldingThickness = shieldingPartResource != null ? (shieldingPartResource.info.density / 0.2268) * 20 * shieldingPartResource.amount / shieldingPartResource.maxAmount : 0;
+            reactorLeadShieldingThickness = _shieldingPartResource != null ? (_shieldingPartResource.info.density / 0.2268) * 20 * _shieldingPartResource.amount / _shieldingPartResource.maxAmount : 0;
             averageHabitatLeadEquivalantThickness = habitatMassMultiplier * averageCrewMassProtection / 0.2268;
             reactorShadowShieldLeadThickness = reactorMassMultiplier * reactorShadowShieldMassProtection;
 
@@ -223,7 +223,7 @@ namespace KIT.External
 
         public void SetRadiation(double radiation)
         {
-            if (emitterRadiationField == null || emitterModule == null)
+            if (_emitterRadiationField == null || _emitterModule == null)
                 return;
 
             if (double.IsInfinity(radiation) || double.IsNaN(radiation))
@@ -232,7 +232,7 @@ namespace KIT.External
                 return;
             }
 
-            emitterRadiationField.SetValue(radiation, emitterModule);
+            _emitterRadiationField.SetValue(radiation, _emitterModule);
         }
     }
 }

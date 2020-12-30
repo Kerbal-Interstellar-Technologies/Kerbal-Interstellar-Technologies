@@ -1,17 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using KSP.Localization;
+﻿using KSP.Localization;
 using PhotonSail;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
 
     [KSPModule("#LOC_PhotonSail_PhotonReflectionModuleName")]//Photon Reflection
     class PhotonReflectionDefinition : PartModule
     {
-        [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]
-        private string bandwidthName = Localizer.Format("#LOC_PhotonSail_missing");//"missing"
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double targetWavelength = 0;        
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
@@ -118,7 +113,8 @@ namespace KIT.Beamedpower
             }
         }
 
-        public string BandwidthName { get { return bandwidthName; } set { bandwidthName = value; } }
+        [field: KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]
+        public string BandwidthName { get; set; } = Localizer.Format("#LOC_PhotonSail_missing");
 
         public override string GetInfo()
         {

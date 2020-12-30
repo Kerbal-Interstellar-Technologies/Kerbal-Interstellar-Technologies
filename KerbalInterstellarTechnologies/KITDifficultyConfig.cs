@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static GameParameters;
+﻿using static GameParameters;
 
 namespace KIT
 {
@@ -21,44 +16,44 @@ namespace KIT
         public override int SectionOrder => 2;
 
         [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_DestructiveEngines", toolTip = "#LOC_KIT_DifficultyConfig_DestructiveEngines_tip")]
-        public bool allowDestructiveEngines;
+        public bool AllowDestructiveEngines;
 
         [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_PreventRadioactiveDecay", toolTip = "#LOC_KIT_DifficultyConfig_PreventRadioactiveDecay_tip")]
-        public bool preventRadioactiveDecay;
+        public bool PreventRadioactiveDecay;
 
         [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_ReconfigureAntennas", toolTip = "#LOC_KIT_DifficultyConfig_ReconfigureAntennas_tip")]
-        public bool reconfigureAntennas;
+        public bool ReconfigureAntennas;
 
         [GameParameters.CustomFloatParameterUI("#LOC_KIT_DifficultyConfig_MinimumRTGOutput", toolTip = "#LOC_KIT_DifficultyConfig_MinimumRTGOutput_tip", minValue = 0.0f, maxValue = 0.10f, displayFormat = "F2", asPercentage = true)]
-        public float minimumRTGOutput;
+        public float MinimumRtgOutput;
 
         [GameParameters.CustomParameterUI("#LOC_KIT_DifficultyConfig_ExtendedReactorControl", toolTip = "#LOC_KIT_DifficultyConfig_ExtendedReactorControl_tip")]
-        public bool extendedReactorControl;
+        public bool ExtendedReactorControl;
 
         public override void SetDifficultyPreset(Preset preset)
         {
             switch (preset)
             {
                 case Preset.Easy:
-                    allowDestructiveEngines = reconfigureAntennas = true;
-                    preventRadioactiveDecay = true;
-                    extendedReactorControl = false;
-                    minimumRTGOutput = 0.1f;
+                    AllowDestructiveEngines = ReconfigureAntennas = true;
+                    PreventRadioactiveDecay = true;
+                    ExtendedReactorControl = false;
+                    MinimumRtgOutput = 0.1f;
                     break;
                 case Preset.Moderate:
-                    reconfigureAntennas = true;
-                    minimumRTGOutput = 0.05f;
-                    extendedReactorControl = allowDestructiveEngines = preventRadioactiveDecay = false;
+                    ReconfigureAntennas = true;
+                    MinimumRtgOutput = 0.05f;
+                    ExtendedReactorControl = AllowDestructiveEngines = PreventRadioactiveDecay = false;
                     break;
                 case Preset.Normal:
-                    allowDestructiveEngines = reconfigureAntennas = preventRadioactiveDecay = false;
-                    extendedReactorControl = false;
-                    minimumRTGOutput = 0;
+                    AllowDestructiveEngines = ReconfigureAntennas = PreventRadioactiveDecay = false;
+                    ExtendedReactorControl = false;
+                    MinimumRtgOutput = 0;
                     break;
                 case Preset.Hard:
-                    allowDestructiveEngines = reconfigureAntennas = preventRadioactiveDecay = false;
-                    extendedReactorControl = false;
-                    minimumRTGOutput = 0;
+                    AllowDestructiveEngines = ReconfigureAntennas = PreventRadioactiveDecay = false;
+                    ExtendedReactorControl = false;
+                    MinimumRtgOutput = 0;
                     break;
             }
         }

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using KIT.Extensions;
-using KIT.Constants;
 using KIT.Resources;
 using KSP.Localization;
 
 namespace KIT
 {
-    class InterstellarTelescope : ModuleModableScienceGenerator
+    class InterstellarTelescope : ModuleModdableScienceGenerator
     {
         // Persistent True
         [KSPField(isPersistant = true)]

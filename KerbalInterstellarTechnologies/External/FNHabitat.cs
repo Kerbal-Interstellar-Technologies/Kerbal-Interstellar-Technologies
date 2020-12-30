@@ -120,7 +120,7 @@ namespace KIT
         }
 
         [KSPAction("Reverse Module")]
-        public void ReversetAction(KSPActionParam param)
+        public void ReverseAction(KSPActionParam param)
         {
             ReverseSecondary();
         }
@@ -138,10 +138,7 @@ namespace KIT
             }
         }
 
-        public Animation DeployAnimation
-        {
-            get { return part.FindModelAnimators(deployAnimationName)[0]; }
-        }
+        public Animation DeployAnimation => part.FindModelAnimators(deployAnimationName)[0];
 
         public override void OnStart(StartState state)
         {
@@ -286,7 +283,7 @@ namespace KIT
         private void DisplayMessage(string header, double resourcesPercentage)
         {
             var resourcesText = String.Join(", ",
-                ResCosts.Select(r => String.Format("{0:0} {1}", r.Ratio * resourcesPercentage, r.ResourceName)).ToArray());
+                ResCosts.Select(r => $"{r.Ratio * resourcesPercentage:0} {r.ResourceName}").ToArray());
             ScreenMessages.PostScreenMessage(header + resourcesText, 5f, ScreenMessageStyle.UPPER_CENTER);
         }
 
@@ -444,10 +441,10 @@ namespace KIT
             var modList = new List<ModuleResourceConverter>();
             var modNames = new List<string> { "ModuleResourceConverter", "ModuleLifeSupportRecycler" };
 
-            for (int i = 0; i < part.Modules.Count; i++)
+            foreach (var t in part.Modules)
             {
-                if (modNames.Contains(part.Modules[i].moduleName))
-                    modList.Add((ModuleResourceConverter)part.Modules[i]);
+                if (modNames.Contains(t.moduleName))
+                    modList.Add((ModuleResourceConverter)t);
             }
             return modList;
         }
@@ -534,18 +531,14 @@ namespace KIT
                     comfortModule = module;
 
                     comfortBonusField = module.Fields["bonus"];
-                    if (comfortBonusField != null)
-                        comfortBonusField.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, comfortModule);
+                    comfortBonusField?.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, comfortModule);
 
                     found = true;
                     break;
                 }
             }
 
-            if (found)
-                UnityEngine.Debug.Log("[KSPI]: Found Comfort");
-            else
-                UnityEngine.Debug.Log("[KSPI]: No Comfort Found");
+            UnityEngine.Debug.Log(found ? "[KSPI]: Found Comfort" : "[KSPI]: No Comfort Found");
         }
 
         private void UpdateKerbalismComfort()
@@ -553,8 +546,7 @@ namespace KIT
             if (comfortModule == null)
                 return;
 
-            if (comfortBonusField != null)
-                comfortBonusField.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, comfortModule);
+            comfortBonusField?.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, comfortModule);
         }
 
         private void InitializeKerbalismHabitat()
@@ -566,12 +558,10 @@ namespace KIT
                     habitatModule = module;
 
                     habitatVolumeField = module.Fields["volume"];
-                    if (habitatVolumeField != null)
-                        habitatVolumeField.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, habitatModule);
+                    habitatVolumeField?.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, habitatModule);
 
                     habitatSurfaceField = module.Fields["surface"];
-                    if (habitatSurfaceField != null)
-                        habitatSurfaceField.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, habitatModule);
+                    habitatSurfaceField?.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, habitatModule);
 
                     break;
                 }
@@ -617,11 +607,8 @@ namespace KIT
             if (habitatModule == null)
                 return;
 
-            if (habitatVolumeField != null)
-                habitatVolumeField.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, habitatModule);
-
-            if (habitatSurfaceField != null)
-                habitatSurfaceField.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, habitatModule);
+            habitatVolumeField?.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, habitatModule);
+            habitatSurfaceField?.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, habitatModule);
         }
 
         private void UpdatemenuNames()

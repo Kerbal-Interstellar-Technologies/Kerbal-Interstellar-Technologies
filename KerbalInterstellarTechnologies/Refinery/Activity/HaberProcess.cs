@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Resources;
+﻿using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
@@ -57,8 +56,7 @@ namespace KIT.Refinery.Activity
 
         private bool HasSpareCapacityAmmonia()
         {
-            double tmp, tmp1;
-            part.GetConnectedResourceTotals(_definitionAmmonia.GetHashCode(), out tmp, out tmp1);
+            part.GetConnectedResourceTotals(_definitionAmmonia.GetHashCode(), out var tmp, out var tmp1);
             _spareCapacityAmmonia = tmp1 - tmp;
             return _spareCapacityAmmonia > 0;
         }
@@ -131,7 +129,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_HaberProcess_Power"), _bold_label, GUILayout.Width(labelWidth));//"Power"
-            GUILayout.Label(PluginHelper.getFormattedPowerString(CurrentPower) + "/" + PluginHelper.getFormattedPowerString(_effectiveMaxPowerRequirements), _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(PluginHelper.GetFormattedPowerString(CurrentPower) + "/" + PluginHelper.GetFormattedPowerString(_effectiveMaxPowerRequirements), _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();

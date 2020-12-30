@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KIT.Wasteheat;
@@ -39,15 +38,12 @@ namespace KIT.Powermanagement
 
         // reference types
         private List<Part> _stackAttachedParts;
-        private double timeWarpModifer;
-        private double spaceTemperature;
-        private double hotColdBathRatio;
-        private double thermalConversionEfficiency;
+        private double _timeWarpModifer;
+        private double _spaceTemperature;
+        private double _hotColdBathRatio;
+        private double _thermalConversionEfficiency;
 
-        public Part Part
-        {
-            get { return this.part; }
-        }
+        public Part Part => this.part;
 
 
         public override void OnStart(PartModule.StartState state)
@@ -66,13 +62,13 @@ namespace KIT.Powermanagement
 
         public override void OnUpdate()
         {
-            maximumPowerSupply = PluginHelper.getFormattedPowerString(maximumPowerSupplyInMegaWatt);
-            currentPowerSupply = PluginHelper.getFormattedPowerString(currentPowerSupplyInMegaWatt);
+            maximumPowerSupply = PluginHelper.GetFormattedPowerString(maximumPowerSupplyInMegaWatt);
+            currentPowerSupply = PluginHelper.GetFormattedPowerString(currentPowerSupplyInMegaWatt);
         }
 
         public override string GetInfo()
         {
-            return "Maximum Power: " + PluginHelper.getFormattedPowerString(maximumPowerCapacity) + "<br>Requires radiators to work.<br>";
+            return "Maximum Power: " + PluginHelper.GetFormattedPowerString(maximumPowerCapacity) + "<br>Requires radiators to work.<br>";
         }
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
@@ -80,7 +76,7 @@ namespace KIT.Powermanagement
         public void KITFixedUpdate(IResourceManager resMan)
         {
 
-            spaceTemperature = FlightIntegrator.ActiveVesselFI == null ? 4 : FlightIntegrator.ActiveVesselFI.backgroundRadiationTemp;
+            _spaceTemperature = FlightIntegrator.ActiveVesselFI == null ? 4 : FlightIntegrator.ActiveVesselFI.backgroundRadiationTemp;
             hotBathTemperature = Math.Max(4, Math.Max(part.temperature, part.skinTemperature));
 
             var hasRadiators = FNRadiator.HasRadiatorsForVessel(vessel);
@@ -94,15 +90,15 @@ namespace KIT.Powermanagement
             }
 
             radiatorTemperature = FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel);
-            timeWarpModifer = PluginHelper.GetTimeWarpModifer();
+            _timeWarpModifer = PluginHelper.GetTimeWarpModifer();
 
-            hotColdBathRatio = 1 - Math.Min(1, radiatorTemperature / hotBathTemperature);
-            thermalConversionEfficiency = maxConversionEfficiency * hotColdBathRatio;
+            _hotColdBathRatio = 1 - Math.Min(1, radiatorTemperature / hotBathTemperature);
+            _thermalConversionEfficiency = maxConversionEfficiency * _hotColdBathRatio;
 
-            maximumPowerSupplyInMegaWatt = hotColdBathRatio > requiredTemperatureRatio
-                ? thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency)
-                : thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency) *
-                  Math.Pow(hotColdBathRatio * (1 / requiredTemperatureRatio), hotColdBathRatioExponent);
+            maximumPowerSupplyInMegaWatt = _hotColdBathRatio > requiredTemperatureRatio
+                ? _thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency)
+                : _thermalConversionEfficiency * maximumPowerCapacity * (1 / maxConversionEfficiency) *
+                  Math.Pow(_hotColdBathRatio * (1 / requiredTemperatureRatio), hotColdBathRatioExponent);
         }
 
         public string KITPartName() => part.partInfo.title;
@@ -116,7 +112,7 @@ namespace KIT.Powermanagement
 
             currentPowerSupplyInMegaWatt += tmp;
 
-            var wasteheatInMegaJoules = (1 - thermalConversionEfficiency) * tmp;
+            var wasteheatInMegaJoules = (1 - _thermalConversionEfficiency) * tmp;
 
             resMan.ProduceResource(ResourceName.WasteHeat, wasteheatInMegaJoules);
             resMan.ProduceResource(ResourceName.ElectricCharge, tmp);

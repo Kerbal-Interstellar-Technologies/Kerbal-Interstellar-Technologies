@@ -27,7 +27,7 @@ namespace KIT.Reactors
         [KSPField]
         public double actinidesModifer = 1;
         [KSPField]
-        public double temperatureThrotleExponent = 0.5;
+        public double temperatureThrottleExponent = 0.5;
         [KSPField(guiActive = false)]
         public double temp_scale;
         [KSPField(guiActive = false)]
@@ -46,8 +46,8 @@ namespace KIT.Reactors
 
         double fluorineDepletedFuelVolumeMultiplier;
         double enrichedUraniumVolumeMultiplier;
-        double depletedToEnrichVolumeMultplier;
-        double oxygenDepletedUraniumVolumeMultipler;
+        double depletedToEnrichVolumeMultiplier;
+        double oxygenDepletedUraniumVolumeMultiplier;
         double reactorFuelMaxAmount;
 
         public override bool IsFuelNeutronRich => !CurrentFuelMode.Aneutronic;
@@ -116,7 +116,7 @@ namespace KIT.Reactors
             var startFirstFuelType = CurrentFuelMode.Variants.First().ReactorFuels.First();
             var currentFirstFuelType = startFirstFuelType;
 
-            // repeat until found same or differnt fuelmode with same kind of primary fuel
+            // repeat until found same or different fuelmode with same kind of primary fuel
             do
             {
                 fuel_mode++;
@@ -218,7 +218,7 @@ namespace KIT.Reactors
         {
             get
             {
-                if (!CheatOptions.IgnoreMaxTemperature && HighLogic.LoadedSceneIsFlight && !isupgraded && powerPcnt >= minThrottle * 100)
+                if (!CheatOptions.IgnoreMaxTemperature && HighLogic.LoadedSceneIsFlight && !isupgraded && PowerPercent >= minThrottle * 100)
                 {
                     var baseCoreTemperature = base.CoreTemperature;
 
@@ -229,7 +229,7 @@ namespace KIT.Reactors
                     else
                         temp_scale = baseCoreTemperature / 2;
 
-                    temp_diff = (baseCoreTemperature - temp_scale) * Math.Pow(powerPcnt / 100, temperatureThrotleExponent);
+                    temp_diff = (baseCoreTemperature - temp_scale) * Math.Pow(PowerPercent / 100, temperatureThrottleExponent);
                     return Math.Min(temp_scale + temp_diff, actinidesModifer * baseCoreTemperature);
                 }
                 else
@@ -280,10 +280,10 @@ namespace KIT.Reactors
             depletedFuelDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.DepletedFuel);
             enrichedUraniumDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.EnrichedUranium);
 
-            depletedToEnrichVolumeMultplier = enrichedUraniumDefinition.density / depletedFuelDefinition.density;
+            depletedToEnrichVolumeMultiplier = enrichedUraniumDefinition.density / depletedFuelDefinition.density;
             fluorineDepletedFuelVolumeMultiplier = ((19 * 4) / 232d) * (depletedFuelDefinition.density / fluorineGasDefinition.density);
             enrichedUraniumVolumeMultiplier = (232d / (16 * 2 + 232d)) * (depletedFuelDefinition.density / enrichedUraniumDefinition.density);
-            oxygenDepletedUraniumVolumeMultipler = ((16 * 2) / (16 * 2 + 232d)) * (depletedFuelDefinition.density / oxygenGasDefinition.density);
+            oxygenDepletedUraniumVolumeMultiplier = ((16 * 2) / (16 * 2 + 232d)) * (depletedFuelDefinition.density / oxygenGasDefinition.density);
 
             var mainReactorFuel = part.Resources.Get(CurrentFuelMode.Variants.First().ReactorFuels.First().ResourceName);
             if (mainReactorFuel != null)
@@ -320,7 +320,7 @@ namespace KIT.Reactors
             base.OnFixedUpdate();
         }
 
-        public override bool shouldScaleDownJetISP()
+        public override bool ShouldScaleDownJetISP()
         {
             return true;
         }
@@ -343,7 +343,7 @@ namespace KIT.Reactors
                 var receivedEnrichedUraniumFraction = enrichedUraniumRequest > 0 ? enrichedUraniumRetrieved / enrichedUraniumRequest : 0;
 
                 // if missing fluorine is dumped
-                var oxygenChange = -Part.RequestResource(oxygenGasDefinition.id, -depletedFuelsProduced * oxygenDepletedUraniumVolumeMultipler * receivedEnrichedUraniumFraction, ResourceFlowMode.STAGE_PRIORITY_FLOW);
+                var oxygenChange = -Part.RequestResource(oxygenGasDefinition.id, -depletedFuelsProduced * oxygenDepletedUraniumVolumeMultiplier * receivedEnrichedUraniumFraction, ResourceFlowMode.STAGE_PRIORITY_FLOW);
                 var fluorineChange = -Part.RequestResource(fluorineGasDefinition.id, -depletedFuelsProduced * fluorineDepletedFuelVolumeMultiplier * (1 - receivedEnrichedUraniumFraction), ResourceFlowMode.STAGE_PRIORITY_FLOW);
 
                 var reactorFuels = CurrentFuelMode.Variants.First().ReactorFuels;
@@ -353,7 +353,7 @@ namespace KIT.Reactors
                 {
                     var fuelResource = part.Resources[fuel.ResourceName];
                     var powerFraction = sumUsagePerMw > 0.0 ? fuel.AmountFuelUsePerMJ * fuelUsePerMJMult / sumUsagePerMw : 1;
-                    var newFuelAmount = Math.Min(fuelResource.amount + ((depletedFuelsProduced * 4) + (depletedFuelsProduced * receivedEnrichedUraniumFraction)) * powerFraction * depletedToEnrichVolumeMultplier, fuelResource.maxAmount);
+                    var newFuelAmount = Math.Min(fuelResource.amount + ((depletedFuelsProduced * 4) + (depletedFuelsProduced * receivedEnrichedUraniumFraction)) * powerFraction * depletedToEnrichVolumeMultiplier, fuelResource.maxAmount);
                     fuelResource.amount = newFuelAmount;
                 }
 
@@ -474,7 +474,7 @@ namespace KIT.Reactors
             base.Update();
 
             if (_manualRestartEvent != null)
-                _manualRestartEvent.externalToEVAOnly = !HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().extendedReactorControl;
+                _manualRestartEvent.externalToEVAOnly = !HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().ExtendedReactorControl;
         }
     }
 }

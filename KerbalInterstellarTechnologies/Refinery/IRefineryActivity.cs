@@ -4,8 +4,8 @@ namespace KIT.Refinery
 {
     interface IRefineryActivity
     {
-        // 1 seperation
-        // 2 desconstrution
+        // 1 separation
+        // 2 deconstruction
         // 3 construction
 
         RefineryType RefineryType { get; }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace KIT.Microwave
+namespace KIT.BeamedPower
 {
     [KSPModule("#LOC_KSPIE_BeamConfiguration_MouduleName")]//Beamed Power Transmit Configuration
     public class BeamConfiguration
@@ -30,8 +30,8 @@ namespace KIT.Microwave
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_BeamConfiguration_TechRequirement3")]//Tech Requirement 3
         public string techRequirement3 = "";
 
-        public bool isValid;
-        public int techLevel = -1;
+        public bool IsValid;
+        public int TechLevel = -1;
 
         public BeamConfiguration() { }
         public BeamConfiguration(ConfigNode node, string partTitle)
@@ -58,27 +58,27 @@ namespace KIT.Microwave
             {
                 this.techRequirement3 = "";
                 this.efficiencyPercentage3 = 0;
-            } else techLevel++;
+            } else TechLevel++;
 
             if (! PluginHelper.HasTechRequirementAndNotEmpty(this.techRequirement2))
             {
                 this.techRequirement3 = "";
                 this.efficiencyPercentage2 = 0;
-            } else techLevel++;
+            } else TechLevel++;
 
             if (! PluginHelper.HasTechRequirementAndNotEmpty(this.techRequirement1))
             {
                 this.techRequirement1 = "";
                 this.efficiencyPercentage1 = 0;
-            } else techLevel++;
+            } else TechLevel++;
 
             if (! PluginHelper.HasTechRequirementAndNotEmpty(this.techRequirement0))
             {
                 this.techRequirement0 = "";
                 this.efficiencyPercentage0 = 0;
-            } else techLevel++;
+            } else TechLevel++;
 
-            if (techLevel != -1) isValid = true;
+            if (TechLevel != -1) IsValid = true;
         }
 
         public void Save(ConfigNode node)

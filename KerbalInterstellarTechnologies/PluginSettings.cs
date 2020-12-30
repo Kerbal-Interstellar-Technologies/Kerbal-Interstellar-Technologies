@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace KIT

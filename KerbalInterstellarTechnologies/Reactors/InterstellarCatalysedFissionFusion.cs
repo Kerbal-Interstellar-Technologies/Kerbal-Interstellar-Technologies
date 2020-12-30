@@ -1,4 +1,4 @@
-﻿using KIT.Powermanagement;
+﻿using KIT.Powermanagement.Interfaces;
 
 namespace KIT.Reactors
 {
@@ -8,13 +8,12 @@ namespace KIT.Reactors
 		[KSPField]
 		public double magneticNozzlePowerMult = 1;
 
-        public override bool IsFuelNeutronRich { get { return CurrentFuelMode != null ? !CurrentFuelMode.Aneutronic : false; } }
+        public override bool IsFuelNeutronRich => CurrentFuelMode != null && !CurrentFuelMode.Aneutronic;
 
-        public double MaximumChargedIspMult { get { return 1; } }
+        public double MaximumChargedIspMult => 1;
 
-        public double MinimumChargdIspMult { get { return 100; } }
+        public double MinimumChargedIspMult => 100;
 
-		public override double MagneticNozzlePowerMult { get { return magneticNozzlePowerMult; } }
-
+        public override double MagneticNozzlePowerMult => magneticNozzlePowerMult;
     }
 }

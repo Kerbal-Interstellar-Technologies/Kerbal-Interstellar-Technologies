@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace KIT
+﻿namespace KIT.Powermanagement.Interfaces
 {
     public interface IResourceSuppliable
     {
-        string getResourceManagerDisplayName();
-        int getPowerPriority();
+        string GetResourceManagerDisplayName();
+        int GetPowerPriority();
     }
 }

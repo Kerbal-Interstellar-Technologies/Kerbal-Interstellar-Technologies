@@ -1,9 +1,7 @@
-﻿using KIT.Constants;
-using KIT.Refinery.Activity;
+﻿using KIT.Refinery.Activity;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -180,14 +178,7 @@ namespace KIT.Refinery
 
         public override void OnUpdate()
         {
-            if (_current_activity == null)
-            {
-                status_str = Localizer.Format("#LOC_KSPIE_Refinery_Offline");//"Offline"
-            }
-            else
-            {
-                status_str = _current_activity.Status;
-            }
+            status_str = _current_activity == null ? Localizer.Format("#LOC_KSPIE_Refinery_Offline") : _current_activity.Status;
         }
 
         public override string GetInfo()

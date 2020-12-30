@@ -1,5 +1,4 @@
-﻿using KIT.Powermanagement;
-using KIT.Resources;
+﻿using KIT.Resources;
 using KIT.ResourceScheduler;
 using System;
 using System.Collections.Generic;
@@ -170,7 +169,7 @@ namespace KIT.Propulsion
         public void TogglePropellantAction(KSPActionParam param)
         {
             Debug.Log("[KSPI]: Next Propellant called") ;
-            var chooseField = Fields["selectedFuel"];
+            var chooseField = Fields[nameof(selectedFuel)];
 
             var names = _activeConfigurations.Select(m => m.fuelConfigurationName).ToArray();
 
@@ -189,7 +188,7 @@ namespace KIT.Propulsion
         public void PreviousPropellant(KSPActionParam param)
         {
             Debug.Log("[KSPI]: Previous Propellant called");
-            var chooseField = Fields["selectedFuel"];
+            var chooseField = Fields[nameof(selectedFuel)];
 
             var names = _activeConfigurations.Select(m => m.fuelConfigurationName).ToArray();
 
@@ -208,7 +207,7 @@ namespace KIT.Propulsion
         {
             Debug.Log("[KSPI]: InitializeFuelSelector Setup Fuels Configurations for " + part.partInfo.title);
 
-            var chooseField = Fields["selectedFuel"];
+            var chooseField = Fields[nameof(selectedFuel)];
 
             chooseOptionEditor = chooseField.uiControlEditor as UI_ChooseOption;
             chooseOptionFlight = chooseField.uiControlFlight as UI_ChooseOption;
@@ -522,7 +521,7 @@ namespace KIT.Propulsion
 
             if (curEngineT != null)
             {
-                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * Constants.GameConstants.STANDARD_GRAVITY / 2e6;
+                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * GameConstants.STANDARD_GRAVITY / 2e6;
                 UpdateEngineWarpFuels();
             }
 
@@ -690,8 +689,8 @@ namespace KIT.Propulsion
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (_fuelConfigurationWithEffect != null)
-                _fuelConfigurationWithEffect.ForEach(prop => part.Effect(prop.effectname, 0, -1));
+            _fuelConfigurationWithEffect?.ForEach(prop => part.Effect(prop.effectname, 0, -1));
+            
             if (_currentActiveConfiguration != null && !string.IsNullOrEmpty(_currentActiveConfiguration.effectname))
                 part.Effect(_currentActiveConfiguration.effectname, (float)(curEngineT.currentThrottle * fusionRatio), -1);
         }

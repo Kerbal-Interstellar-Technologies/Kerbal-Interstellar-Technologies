@@ -3,7 +3,7 @@ using KSP.Localization;
 
 namespace KIT
 {
-    class FNSeismicProbe : ModuleModableScienceGenerator
+    class FNSeismicProbe : ModuleModdableScienceGenerator
     {
         // Persistent True
         [KSPField(isPersistant = true)]

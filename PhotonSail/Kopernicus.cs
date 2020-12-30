@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace PhotonSail
@@ -20,15 +19,7 @@ namespace PhotonSail
         /// <summary>
         /// Retrieves list of Starlight data
         /// </summary>
-        static public List<StarLight> Stars
-        {
-            get
-            {
-                if (stars == null)
-                    stars = ExtractStarData(moduleName);
-                return stars;
-            }
-        }
+        static public List<StarLight> Stars => stars ?? (stars = ExtractStarData(moduleName));
 
         public static bool IsStar(CelestialBody body)
         {
@@ -42,8 +33,7 @@ namespace PhotonSail
             if (starsByBody == null)
                 starsByBody = stars.ToDictionary(m => m.star);
 
-            StarLight starlight;
-            if (starsByBody.TryGetValue(body, out starlight))
+            if (starsByBody.TryGetValue(body, out StarLight starlight))
                 return starlight.relativeLuminocity;
             else
                 return 0;
@@ -77,16 +67,14 @@ namespace PhotonSail
             else
                 Debug.LogWarning(debugPrefix + "Failed to find Kopernicus Configuration Data");
 
-            for (int i = 0; i < kopernicusNodes.Length; i++)
+            foreach (var t in kopernicusNodes)
             {
-                ConfigNode[] bodies = kopernicusNodes[i].GetNodes("Body");
+                ConfigNode[] bodies = t.GetNodes("Body");
 
-                Debug.Log(debugPrefix + "Found " + bodies.Length + " celestrial bodies");
+                Debug.Log(debugPrefix + "Found " + bodies.Length + " celestial bodies");
 
-                for (int j = 0; j < bodies.Length; j++)
+                foreach (var currentBody in bodies)
                 {
-                    ConfigNode currentBody = bodies[j];
-
                     string bodyName = currentBody.GetValue("name");
 
                     CelestialBody celestialBody = null;
@@ -94,7 +82,7 @@ namespace PhotonSail
                     celestrialBodiesByName.TryGetValue(bodyName, out celestialBody);
                     if (celestialBody == null)
                     {
-                        Debug.LogWarning(debugPrefix + "Failed to find celestrialbody " + bodyName);
+                        Debug.LogWarning(debugPrefix + "Failed to find celestialbody " + bodyName);
                         continue;
                     }
 
@@ -175,7 +163,6 @@ namespace PhotonSail
                         Debug.Log(debugPrefix + "Added Star " + celestialBody.name + " with default luminocity of 1");
                         stars.Add(new StarLight() { star = celestialBody, relativeLuminocity = 1 });
                     }
-
                 }
             }
 

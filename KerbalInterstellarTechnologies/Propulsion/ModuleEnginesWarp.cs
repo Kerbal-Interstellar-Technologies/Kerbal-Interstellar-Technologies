@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
@@ -303,7 +302,7 @@ namespace KIT.Propulsion
             var overalAmountNeeded = propellantWithMassNeededInLiter / massPropellantRatio;
             var masslessResourceNeeded = overalAmountNeeded - propellantWithMassNeededInLiter;
 
-            // first determine lowest availalable resource ratio
+            // first determine lowest available resource ratio
             double availableRatio = 1;
             if (propellantResourceDefinition1 != null && ratio1 > 0)
             {
@@ -335,29 +334,29 @@ namespace KIT.Propulsion
             consumedPropellant3 = 0;
             consumedPropellant4 = 0;
 
-            double recievedRatio = 1;
+            double receivedRatio = 1;
             if (fuelRequestAmount1 > 0 && !double.IsNaN(fuelRequestAmount1) && !double.IsInfinity(fuelRequestAmount1))
             {
                 consumedPropellant1 = resMan.ConsumeResource(propellantResourceID1, fuelRequestAmount1 * availableRatio);
-                recievedRatio = Math.Min(recievedRatio, fuelRequestAmount1 > 0 ? consumedPropellant1 / fuelRequestAmount1 : 0);
+                receivedRatio = Math.Min(receivedRatio, fuelRequestAmount1 > 0 ? consumedPropellant1 / fuelRequestAmount1 : 0);
             }
             if (fuelRequestAmount2 > 0 && !double.IsNaN(fuelRequestAmount2) && !double.IsInfinity(fuelRequestAmount2))
             {
                 consumedPropellant2 = resMan.ConsumeResource(propellantResourceID2, fuelRequestAmount2 * availableRatio);
-                recievedRatio = Math.Min(recievedRatio, fuelRequestAmount2 > 0 ? consumedPropellant2 / fuelRequestAmount2 : 0);
+                receivedRatio = Math.Min(receivedRatio, fuelRequestAmount2 > 0 ? consumedPropellant2 / fuelRequestAmount2 : 0);
             }
             if (fuelRequestAmount3 > 0 && !double.IsNaN(fuelRequestAmount3) && !double.IsInfinity(fuelRequestAmount3))
             {
                 consumedPropellant3 = resMan.ConsumeResource(propellantResourceID3, fuelRequestAmount3 * availableRatio);
-                recievedRatio = Math.Min(recievedRatio, fuelRequestAmount3 > 0 ? consumedPropellant3 / fuelRequestAmount3 : 0);
+                receivedRatio = Math.Min(receivedRatio, fuelRequestAmount3 > 0 ? consumedPropellant3 / fuelRequestAmount3 : 0);
             }
             if (fuelRequestAmount4 > 0 && !double.IsNaN(fuelRequestAmount4) && !double.IsInfinity(fuelRequestAmount4))
             {
                 consumedPropellant4 = resMan.ConsumeResource(propellantResourceID4, fuelRequestAmount4 * availableRatio);
-                recievedRatio = Math.Min(recievedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
+                receivedRatio = Math.Min(receivedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
             }
 
-            return Math.Min(recievedRatio, 1);
+            return Math.Min(receivedRatio, 1);
         }
 
         // Physics update
@@ -366,9 +365,9 @@ namespace KIT.Propulsion
             // deliberately empty
         }
 
-        private bool IsPositiveValidNumber(double vaiable)
+        private bool IsPositiveValidNumber(double variable)
         {
-            return !double.IsNaN(vaiable) && !double.IsInfinity(vaiable) && vaiable > 0;
+            return !double.IsNaN(variable) && !double.IsInfinity(variable) && variable > 0;
         }
 
         // Format thrust into mN, N, kN
@@ -412,7 +411,7 @@ namespace KIT.Propulsion
             // Check if we are in time warp mode
             if (!vessel.packed)
             {
-                // allow throtle to be used up to Geeforce treshold
+                // allow throttle to be used up to Geeforce threshold
                 TimeWarp.GThreshold = GThreshold;
 
                 demandMass = requestedFlow * (double)(decimal)resMan.FixedDeltaTime();
@@ -444,11 +443,11 @@ namespace KIT.Propulsion
                     ratioHeadingVersusRequest = vessel.PersistHeading(vesselChangedSIOCountdown > 0, ratioHeadingVersusRequest == 1);
                     if (ratioHeadingVersusRequest != 1)
                     {
-                        //UnityEngine.Debug.Log("[KSPI]: " + "quit persistant heading: " + ratioHeadingVersusRequest);
+                        //UnityEngine.Debug.Log("[KSPI]: " + "quit persistent heading: " + ratioHeadingVersusRequest);
                         return;
                     }
 
-                    // determine maximum deltaV durring this frame
+                    // determine maximum deltaV during this frame
                     demandMass = requestedFlow * resMan.FixedDeltaTime();
                     remainingMass = totalmassVessel - demandMass;
 

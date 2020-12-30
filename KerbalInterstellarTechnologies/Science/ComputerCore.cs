@@ -1,5 +1,4 @@
 using CommNet;
-using KIT.Constants;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
@@ -49,7 +48,7 @@ namespace KIT
             // Destroying peoples homes is never a good look.
 
             Reputation.Instance.AddReputation(-penalty, TransactionReasons.VesselLoss);
-            Debug.Log(String.Format("DestroyAIsHOME: removing {0} points of reputation", penalty));
+            Debug.Log($"DestroyAIsHOME: removing {penalty} points of reputation");
         }
 
         public void NewHome()
@@ -59,7 +58,7 @@ namespace KIT
         }
     }
 
-    class ComputerCore : ModuleModableScienceGenerator, ITelescopeController, IUpgradeableModule, CommNet.ICommNetControlSource, IRelayEnabler
+    class ComputerCore : ModuleModdableScienceGenerator, ITelescopeController, IUpgradeableModule, CommNet.ICommNetControlSource, IRelayEnabler
     {
         // Persistent
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Name")]//Name
@@ -71,7 +70,7 @@ namespace KIT
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_IsPowered", guiActive = true, guiActiveEditor = false)]//Powered
         public bool IsPowered;
         [KSPField(isPersistant = true, guiActiveEditor = true)]
-        public bool isupgraded;
+        public bool isUpgraded;
         [KSPField(isPersistant = true)]
         public double electrical_power_ratio;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_Datastored", guiActive = true, guiActiveEditor = false)]//Data stored
@@ -85,7 +84,7 @@ namespace KIT
         [KSPField] public float megajouleRate = 1;
         [KSPField] public float upgradedMegajouleRate = 10;
         [KSPField] public double powerReqMult = 1;
-        [KSPField] public double activeAIControlDistance = 1.0e+13; // Distance from the Large Multi Bandwidth Dish Transciever
+        [KSPField] public double activeAIControlDistance = 1.0e+13; // Distance from the Large Multi Bandwidth Dish Transceiver
         [KSPField] public double inactiveAIControlDistance = 100000;
 
         //Gui
@@ -110,14 +109,14 @@ namespace KIT
 
         //Properties
         public string UpgradeTechnology => upgradeTechReq;
-        public bool CanProvideTelescopeControl => isupgraded && IsEnabled && IsPowered;
+        public bool CanProvideTelescopeControl => isUpgraded && IsEnabled && IsPowered;
 
         // Events
         [KSPEvent(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Retrofit", active = true)]//Retrofit
         public void RetrofitCore()
         {
             if (ResearchAndDevelopment.Instance == null) return;
-            if (isupgraded || ResearchAndDevelopment.Instance.Science < upgradeCost) return;
+            if (isUpgraded || ResearchAndDevelopment.Instance.Science < upgradeCost) return;
 
             if (_moduleAIHome != null)
                 _moduleAIHome.NewHome();
@@ -143,7 +142,7 @@ namespace KIT
             {
                 if (!this.HasTechsRequiredToUpgrade()) return;
 
-                isupgraded = true;
+                isUpgraded = true;
                 upgradePartModule();
                 return;
             }
@@ -155,12 +154,12 @@ namespace KIT
             _moduleCommand = part.FindModuleImplementing<ModuleCommand>();
             _moduleAIHome = part.FindModuleImplementing<AIHome>();
 
-            if (isupgraded || !PluginHelper.TechnologyIsInUse)
+            if (isUpgraded || !PluginHelper.TechnologyIsInUse)
                 upgradePartModule();
             else
                 computercoreType = originalName;
 
-            _effectivePowerRequirement = (isupgraded ? upgradedMegajouleRate : megajouleRate) * powerReqMult;
+            _effectivePowerRequirement = (isUpgraded ? upgradedMegajouleRate : megajouleRate) * powerReqMult;
         }
 
         public override void OnUpdate()
@@ -171,14 +170,14 @@ namespace KIT
                 _moduleDataTransmitter.antennaPower = IsEnabled && IsPowered ? activeAIControlDistance : inactiveAIControlDistance;
 
             if (ResearchAndDevelopment.Instance != null)
-                _retrofitCoreEvent.active = !isupgraded && ResearchAndDevelopment.Instance.Science >= upgradeCost;
+                _retrofitCoreEvent.active = !isUpgraded && ResearchAndDevelopment.Instance.Science >= upgradeCost;
             else
                 _retrofitCoreEvent.active = false;
 
-            var isUpgradedOrNoActiveScience = isupgraded || !PluginHelper.TechnologyIsInUse;
+            var isUpgradedOrNoActiveScience = isUpgraded || !PluginHelper.TechnologyIsInUse;
 
             _isEnabledField.guiActive = isUpgradedOrNoActiveScience;
-            _upgradeCostStrField.guiActive = !isupgraded;
+            _upgradeCostStrField.guiActive = !isUpgraded;
             _nameStrField.guiActive = isUpgradedOrNoActiveScience;
             _scienceRateField.guiActive = isUpgradedOrNoActiveScience;
             _isPoweredField.guiActive = isUpgradedOrNoActiveScience;
@@ -231,8 +230,8 @@ namespace KIT
 
         public override string GetInfo()
         {
-            return Localizer.Format("#LOC_KSPIE_ComputerCore_getInfo1") + " " + PluginHelper.getFormattedPowerString(megajouleRate) + "\n" +
-                Localizer.Format("#LOC_KSPIE_ComputerCore_getInfo2") + PluginHelper.getFormattedPowerString(upgradedMegajouleRate);//"Upgraded Power Requirements: "
+            return Localizer.Format("#LOC_KSPIE_ComputerCore_getInfo1") + " " + PluginHelper.GetFormattedPowerString(megajouleRate) + "\n" +
+                Localizer.Format("#LOC_KSPIE_ComputerCore_getInfo2") + PluginHelper.GetFormattedPowerString(upgradedMegajouleRate);//"Upgraded Power Requirements: "
         }
 
         // IUpgradeableModule
@@ -246,7 +245,7 @@ namespace KIT
                 nameStr = myName.GetValue("name");
             }
 
-            isupgraded = true;
+            isUpgraded = true;
             canDeploy = true;
 
             _experimentNode = GameDatabase.Instance.GetConfigNodes("EXPERIMENT_DEFINITION").FirstOrDefault(nd => nd.GetValue("id") == experimentID);
@@ -308,7 +307,7 @@ namespace KIT
         {
             base.KITFixedUpdate(resMan);
 
-            if (!isupgraded || !IsEnabled)
+            if (!isUpgraded || !IsEnabled)
             {
                 IsPowered = false;
                 _scienceRateF = 0;

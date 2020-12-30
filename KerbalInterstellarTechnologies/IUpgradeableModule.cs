@@ -10,9 +10,9 @@ namespace KIT
 
     public static class UpgradeableModuleExtensions 
     {
-        public static bool HasTechsRequiredToUpgrade(this IUpgradeableModule upg_module)
+        public static bool HasTechsRequiredToUpgrade(this IUpgradeableModule upgModule)
         {
-            return PluginHelper.UpgradeAvailable(upg_module.UpgradeTechnology);
+            return PluginHelper.UpgradeAvailable(upgModule.UpgradeTechnology);
         }
     }
 }

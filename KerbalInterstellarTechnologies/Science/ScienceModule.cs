@@ -1,8 +1,6 @@
-﻿using KIT.Constants;
-using KIT.Refinery;
+﻿using KIT.Refinery;
 using System;
 using System.Linq;
-using KIT.Powermanagement;
 using KIT.Refinery.Activity;
 using KIT.Resources;
 using UnityEngine;
@@ -104,7 +102,7 @@ namespace KIT
         protected float electrolysis_rate_f = 0;
         protected double deut_rate_f = 0;
         protected bool play_down = true;
-        protected bool hasrequiredupgrade = false;
+        protected bool hasRequiredUpgrade = false;
 
         protected Animation anim;
         protected Animation anim2;
@@ -114,10 +112,7 @@ namespace KIT
         protected ModuleScienceLab moduleScienceLab;
 
 
-        public bool CanProvideTelescopeControl
-        {
-            get { return part.protoModuleCrew.Count > 0; }
-        }
+        public bool CanProvideTelescopeControl => part.protoModuleCrew.Count > 0;
 
         /*
         [KSPEvent(guiActive = true, guiName = "Begin Scanning", active = true)]
@@ -257,7 +252,7 @@ namespace KIT
             ResearchAndDevelopment.Instance.AddScience(-upgradeCost, TransactionReasons.RnDPartPurchase);
         }
 
-        public String UpgradeTechnology { get { return upgradeTechReq; } }
+        public String UpgradeTechnology => upgradeTechReq;
 
         public void upgradePartModule()
         {
@@ -300,7 +295,7 @@ namespace KIT
             else
             {
                 if (this.HasTechsRequiredToUpgrade())
-                    hasrequiredupgrade = true;
+                    hasRequiredUpgrade = true;
             }
 
             // update gui names
@@ -350,13 +345,13 @@ namespace KIT
 
             try
             {
-                //Events["BeginResearch"].active = isupgraded && !IsEnabled;
-                Events["ReprocessFuel"].active = !IsEnabled;
-                Events["ActivateFactory"].active = isupgraded && !IsEnabled;
-                Events["ActivateElectrolysis"].active = false;
-                Events["ActivateCentrifuge"].active = isupgraded && !IsEnabled && vessel.Splashed;
-                Events["StopActivity"].active = isupgraded && IsEnabled;
-                Fields["statusTitle"].guiActive = isupgraded;
+                //Events["BeginResearch"].active = isUpgraded && !IsEnabled;
+                Events[nameof(ReprocessFuel)].active = !IsEnabled;
+                Events[nameof(ActivateFactory)].active = isupgraded && !IsEnabled;
+                Events[nameof(ActivateElectrolysis)].active = false;
+                Events[nameof(ActivateCentrifuge)].active = isupgraded && !IsEnabled && vessel.Splashed;
+                Events[nameof(StopActivity)].active = isupgraded && IsEnabled;
+                Fields[nameof(statusTitle)].guiActive = isupgraded;
             }
             catch (Exception e)
             {
@@ -365,8 +360,8 @@ namespace KIT
 
             try
             {
-                // only show retrofit btoon if we can actualy upgrade
-                Events["RetrofitEngine"].active = ResearchAndDevelopment.Instance == null ? false : !isupgraded && ResearchAndDevelopment.Instance.Science >= upgradeCost && hasrequiredupgrade;
+                // only show retrofit button if we can actually upgrade
+                Events[nameof(RetrofitEngine)].active = ResearchAndDevelopment.Instance != null && (!isupgraded && ResearchAndDevelopment.Instance.Science >= upgradeCost && hasRequiredUpgrade);
             }
             catch (Exception e)
             {
@@ -391,12 +386,12 @@ namespace KIT
                     Fields["scienceRate"].guiActive = false;
                     Fields["collectedScience"].guiActive = false;
                     */
-                    Fields["reprocessingRate"].guiActive = false;
-                    Fields["antimatterRate"].guiActive = false;
-                    Fields["electrolysisRate"].guiActive = false;
-                    Fields["centrifugeRate"].guiActive = false;
-                    Fields["antimatterProductionEfficiency"].guiActive = false;
-                    Fields["powerStr"].guiActive = true;
+                    Fields[nameof(reprocessingRate)].guiActive = false;
+                    Fields[nameof(antimatterRate)].guiActive = false;
+                    Fields[nameof(electrolysisRate)].guiActive = false;
+                    Fields[nameof(centrifugeRate)].guiActive = false;
+                    Fields[nameof(antimatterProductionEfficiency)].guiActive = false;
+                    Fields[nameof(powerStr)].guiActive = true;
                 }
                 catch (Exception e)
                 {
@@ -429,7 +424,7 @@ namespace KIT
                 {
                     try
                     {
-                        Fields["reprocessingRate"].guiActive = true;
+                        Fields[nameof(reprocessingRate)].guiActive = true;
                         reprocessingRate = Localizer.Format("#LOC_KSPIE_ScienceModule_Reprocessing", reprocessing_rate_f.ToString("0.0"));// + " Hours Remaining"
                     }
                     catch (Exception e)
@@ -442,20 +437,20 @@ namespace KIT
                     try
                     {
                         currentpowertmp = electrical_power_ratio * PluginSettings.Config.BaseAMFPowerConsumption * powerReqMult;
-                        Fields["antimatterRate"].guiActive = true;
-                        Fields["antimatterProductionEfficiency"].guiActive = true;
+                        Fields[nameof(antimatterRate)].guiActive = true;
+                        Fields[nameof(antimatterProductionEfficiency)].guiActive = true;
                         powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption).ToString("0.00") + "MW";
                         antimatterProductionEfficiency = (antimatterGenerator.Efficiency * 100).ToString("0.0000") + "%";
-                        double antimatter_rate_per_day = antimatter_rate_f * PluginSettings.Config.SecondsInDay;
+                        double antimatterRatePerDay = antimatter_rate_f * PluginSettings.Config.SecondsInDay;
 
-                        if (antimatter_rate_per_day > 0.1)
-                            antimatterRate = (antimatter_rate_per_day).ToString("0.0000") + " mg/day";
+                        if (antimatterRatePerDay > 0.1)
+                            antimatterRate = (antimatterRatePerDay).ToString("0.0000") + " mg/day";
                         else
                         {
-                            if (antimatter_rate_per_day > 0.1e-3)
-                                antimatterRate = (antimatter_rate_per_day * 1e3).ToString("0.0000") + " ug/day";
+                            if (antimatterRatePerDay > 0.1e-3)
+                                antimatterRate = (antimatterRatePerDay * 1e3).ToString("0.0000") + " ug/day";
                             else
-                                antimatterRate = (antimatter_rate_per_day * 1e6).ToString("0.0000") + " ng/day";
+                                antimatterRate = (antimatterRatePerDay * 1e6).ToString("0.0000") + " ng/day";
                         }
                     }
                     catch (Exception e)
@@ -466,7 +461,7 @@ namespace KIT
                 else if (active_mode == 3) // Electrolysis
                 {
                     currentpowertmp = electrical_power_ratio * PluginSettings.Config.BaseELCPowerConsumption * powerReqMult;
-                    Fields["electrolysisRate"].guiActive = true;
+                    Fields[nameof(electrolysisRate)].guiActive = true;
                     double electrolysisratetmp = -electrolysis_rate_f * PluginSettings.Config.SecondsInDay;
                     electrolysisRate = electrolysisratetmp.ToString("0.0") + "mT/day";
                     powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginSettings.Config.BaseELCPowerConsumption).ToString("0.00") + "MW";
@@ -474,7 +469,7 @@ namespace KIT
                 else if (active_mode == 4) // Centrifuge
                 {
                     currentpowertmp = electrical_power_ratio * PluginSettings.Config.BaseCentriPowerConsumption * powerReqMult;
-                    Fields["centrifugeRate"].guiActive = true;
+                    Fields[nameof(centrifugeRate)].guiActive = true;
                     powerStr = currentpowertmp.ToString("0.00") + "MW / " + (powerReqMult * PluginSettings.Config.BaseCentriPowerConsumption).ToString("0.00") + "MW";
                     double deut_per_hour = deut_rate_f * 3600;
                     centrifugeRate = Localizer.Format("#LOC_KSPIE_ScienceModule_Centrifuge", deut_per_hour.ToString("0.00"));// + " Kg Deuterium/Hour"
@@ -514,22 +509,19 @@ namespace KIT
                     */
 
 
-                    Fields["reprocessingRate"].guiActive = false;
-                    Fields["antimatterRate"].guiActive = false;
-                    Fields["powerStr"].guiActive = false;
-                    Fields["centrifugeRate"].guiActive = false;
-                    Fields["electrolysisRate"].guiActive = false;
-                    Fields["antimatterProductionEfficiency"].guiActive = false;
+                    Fields[nameof(reprocessingRate)].guiActive = false;
+                    Fields[nameof(antimatterRate)].guiActive = false;
+                    Fields[nameof(powerStr)].guiActive = false;
+                    Fields[nameof(centrifugeRate)].guiActive = false;
+                    Fields[nameof(electrolysisRate)].guiActive = false;
+                    Fields[nameof(antimatterProductionEfficiency)].guiActive = false;
                 }
                 catch (Exception e)
                 {
                     Debug.LogError("[KSPI]: OnUpdate Else " + e.Message);
                 }
 
-                if (crew_capacity_ratio > 0)
-                    statusTitle = Localizer.Format("#LOC_KSPIE_ScienceModule_Idle");//"Idle"
-                else
-                    statusTitle = Localizer.Format("#LOC_KSPIE_ScienceModule_Notenoughcrew");//"Not enough crew"
+                statusTitle = Localizer.Format(crew_capacity_ratio > 0 ? "#LOC_KSPIE_ScienceModule_Idle" : "#LOC_KSPIE_ScienceModule_Notenoughcrew");
             }
         }
 

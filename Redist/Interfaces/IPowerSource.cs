@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using KIT.Propulsion;
+﻿using KIT.Propulsion;
 
-namespace KIT.Redist
+namespace KIT.Interfaces
 {
-    public interface IPowerSource : IThermalReciever
+    public interface IPowerSource : IThermalReceiver
     {
         Part Part { get; }
 
         int ProviderPowerPriority { get; }
 
         /// <summary>
-        /// // The absolute maximum amount of power the thermalsource can possbly produce
+        /// // The absolute maximum amount of power the thermalSource can possibly produce
         /// </summary>
         double RawMaximumPower { get; }
 
@@ -32,7 +28,7 @@ namespace KIT.Redist
 
         int SupportedPropellantTypes { get; }
 
-        bool FullPowerForNonNeutronAbsorbants { get; }
+        bool FullPowerForNonNeutronAbsorbents { get; }
 
         double ProducedThermalHeat { get; }
 
@@ -76,7 +72,7 @@ namespace KIT.Redist
 
         void EnableIfPossible();
 
-        bool shouldScaleDownJetISP();
+        bool ShouldScaleDownJetISP();
 
         double GetCoreTempAtRadiatorTemp(double radTemp);
 
@@ -86,7 +82,7 @@ namespace KIT.Redist
 
         double ConsumedFuelFixed { get; }
 
-        double ThermalPropulsionWasteheatModifier { get; }
+        double ThermalPropulsionWasteHeatModifier { get; }
 
         double ThermalPropulsionEfficiency { get; }
         double PlasmaPropulsionEfficiency { get; }
@@ -96,9 +92,9 @@ namespace KIT.Redist
         double PlasmaEnergyEfficiency { get; }
         double ChargedParticleEnergyEfficiency { get; }
 
-        double EfficencyConnectedThermalEnergyGenerator { get; }
+        double EfficiencyConnectedThermalEnergyGenerator { get; }
 
-        double EfficencyConnectedChargedEnergyGenerator { get; }
+        double EfficiencyConnectedChargedEnergyGenerator { get; }
 
         double ReactorSpeedMult { get; }
 
@@ -106,14 +102,14 @@ namespace KIT.Redist
 
         IElectricPowerGeneratorSource ConnectedChargedParticleElectricGenerator { get; set; }
 
-        void NotifyActiveThermalEnergyGenerator(double efficency, double power_ratio);
+        void NotifyActiveThermalEnergyGenerator(double efficiency, double powerRatio);
 
-        void NotifyActiveChargedEnergyGenerator(double efficency, double power_ratio);
+        void NotifyActiveChargedEnergyGenerator(double efficiency, double powerRatio);
 
         bool ShouldApplyBalance(ElectricGeneratorType generatorType);
 
-        void ConnectWithEngine(IEngineNoozle engine);
+        void ConnectWithEngine(IEngineNozzle engine);
 
-        void DisconnectWithEngine(IEngineNoozle engine);
+        void DisconnectWithEngine(IEngineNozzle engine);
     }
 }

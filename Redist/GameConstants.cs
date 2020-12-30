@@ -1,4 +1,4 @@
-﻿namespace KIT.Constants 
+﻿namespace KIT
 {
     public class GameConstants
     {

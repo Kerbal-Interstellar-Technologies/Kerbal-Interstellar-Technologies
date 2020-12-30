@@ -48,8 +48,7 @@ namespace KIT
 
         private void Window(int windowID) 
         {
-            bold_label = new GUIStyle(GUI.skin.label);
-            bold_label.fontStyle = FontStyle.Bold;
+            bold_label = new GUIStyle(GUI.skin.label) {fontStyle = FontStyle.Bold};
 
             if (GUI.Button(new Rect(windowPosition.width - 20, 2, 18, 18), "x")) 
                 render_window = false;

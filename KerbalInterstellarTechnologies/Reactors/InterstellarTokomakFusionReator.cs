@@ -11,7 +11,7 @@ namespace KIT.Reactors
     [KSPModule("Magnetic Confinement Fusion Reactor")]
     class InterstellarTokamakFusionReactor : InterstellarFusionReactor
     {
-        // persistants
+        // persistents
         [KSPField(isPersistant = true)]
         public double storedPlasmaEnergyRatio;
 
@@ -23,7 +23,7 @@ namespace KIT.Reactors
         [KSPField]
         public double heatingRequestExponent = 1.5;
 
-        // help varaiables
+        // help variables
         public bool fusion_alert;
         public int jumpstartPowerTime;
         public int fusionAlertFrames;
@@ -66,7 +66,7 @@ namespace KIT.Reactors
                 fusion_alert = true;
             }
 
-            electricPowerMaintenance = PluginHelper.getFormattedPowerString(power_consumed) + " / " + PluginHelper.getFormattedPowerString(heatingPowerRequirements);
+            electricPowerMaintenance = PluginHelper.GetFormattedPowerString(power_consumed) + " / " + PluginHelper.GetFormattedPowerString(heatingPowerRequirements);
             
         }
 

@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Resources;
+﻿using KIT.Resources;
 using KIT.ResourceScheduler;
 using UnityEngine;
 
@@ -77,11 +76,11 @@ namespace KIT.Refinery
             double capacity = sizeModifier * PowerRequirements;
             if (capacity > 0)
             {
-                sb.Append("Power: ").AppendLine(PluginHelper.getFormattedPowerString(capacity));
+                sb.Append("Power: ").AppendLine(PluginHelper.GetFormattedPowerString(capacity));
 
                 if (EnergyPerTon > 0.0)
                 {
-                    sb.Append("Energy: ").Append(PluginHelper.getFormattedPowerString(EnergyPerTon)).AppendLine("/t");
+                    sb.Append("Energy: ").Append(PluginHelper.GetFormattedPowerString(EnergyPerTon)).AppendLine("/t");
                     sb.Append("Energy: ").Append((1.0 / EnergyPerTon).ToString("F3")).AppendLine(" t/MW");
 
                     double production = capacity / EnergyPerTon;

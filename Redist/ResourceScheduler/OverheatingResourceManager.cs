@@ -1,12 +1,6 @@
 using KIT.Interfaces;
 using KIT.Resources;
-using KSP.Localization;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace KIT.ResourceScheduler
@@ -18,40 +12,40 @@ namespace KIT.ResourceScheduler
     /// </summary>
     public class OverHeatingResourceManager : IResourceManager
     {
-        private IResourceManager baseImpl;
-        public double consumptionReduction = 1;
+        private IResourceManager _baseImpl;
+        public double ConsumptionReduction = 1;
 
         public IResourceManager SetBaseResourceManager(IResourceManager root)
         {
-            baseImpl = root;
+            _baseImpl = root;
 
             return this;
         }
 
         #region Proxy implementation functions
-        public ICheatOptions CheatOptions() => baseImpl.CheatOptions();
-        public double FixedDeltaTime() => baseImpl.FixedDeltaTime();
-        public double ProduceResource(ResourceName resource, double amount, double max = -1) => baseImpl.ProduceResource(resource, amount, max);
-        public double ResourceCurrentCapacity(ResourceName resourceIdentifier) => baseImpl.ResourceCurrentCapacity(resourceIdentifier);
-        public double ResourceFillFraction(ResourceName resourceIdentifier) => baseImpl.ResourceFillFraction(resourceIdentifier);
-        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier) => baseImpl.ResourceProductionStats(resourceIdentifier);
-        public double ResourceSpareCapacity(ResourceName resourceIdentifier) => baseImpl.ResourceSpareCapacity(resourceIdentifier);
+        public ICheatOptions CheatOptions() => _baseImpl.CheatOptions();
+        public double FixedDeltaTime() => _baseImpl.FixedDeltaTime();
+        public double ProduceResource(ResourceName resource, double amount, double max = -1) => _baseImpl.ProduceResource(resource, amount, max);
+        public double ResourceCurrentCapacity(ResourceName resourceIdentifier) => _baseImpl.ResourceCurrentCapacity(resourceIdentifier);
+        public double ResourceFillFraction(ResourceName resourceIdentifier) => _baseImpl.ResourceFillFraction(resourceIdentifier);
+        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier) => _baseImpl.ResourceProductionStats(resourceIdentifier);
+        public double ResourceSpareCapacity(ResourceName resourceIdentifier) => _baseImpl.ResourceSpareCapacity(resourceIdentifier);
         #endregion
 
         public double ConsumeResource(ResourceName resource, double wanted)
         {
-            if(consumptionReduction < 0 || consumptionReduction > 1)
+            if(ConsumptionReduction < 0 || ConsumptionReduction > 1)
             {
-                Debug.Log($"[OverHeatingResourceManager] Invalid consumptionReduction, got {consumptionReduction}, wanted between 0 and 1");
+                Debug.Log($"[OverHeatingResourceManager] Invalid consumptionReduction, got {ConsumptionReduction}, wanted between 0 and 1");
                 return 0;
             }
 
             if (resource != ResourceName.WasteHeat)
             {
-                wanted = Math.Max(0, wanted * consumptionReduction);
+                wanted = Math.Max(0, wanted * ConsumptionReduction);
             }
 
-            return baseImpl.ConsumeResource(resource, wanted);
+            return _baseImpl.ConsumeResource(resource, wanted);
         }
     }
 

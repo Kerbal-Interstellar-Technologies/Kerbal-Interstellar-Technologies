@@ -6,15 +6,15 @@ namespace KIT.Resources
 {
     class CrustalResource
     {
-        public CrustalResource(string resourcename, double abundance, string displayname)
+        public CrustalResource(string resourceName, double abundance, string displayName)
         {
-            if (!String.IsNullOrEmpty(resourcename))
-                this.Definition = PartResourceLibrary.Instance.GetDefinition(resourcename);
+            if (!String.IsNullOrEmpty(resourceName))
+                this.Definition = PartResourceLibrary.Instance.GetDefinition(resourceName);
 
-            this.ResourceName = resourcename;
+            this.ResourceName = resourceName;
             this.ResourceAbundance = abundance;
-            this.DisplayName = displayname;
-            this.Synonyms = new[] { resourcename }.ToList();
+            this.DisplayName = displayName;
+            this.Synonyms = new[] { resourceName }.ToList();
 
 
         }
@@ -28,14 +28,14 @@ namespace KIT.Resources
             this.Synonyms = new[] { ResourceName, DisplayName }.Distinct().ToList();
         }
 
-        public CrustalResource(string resourcename, double abundance, string displayname, string[] synonyms)
+        public CrustalResource(string resourceName, double abundance, string displayName, string[] synonyms)
         {
-            if (!String.IsNullOrEmpty(resourcename))
-                this.Definition = PartResourceLibrary.Instance.GetDefinition(resourcename);
+            if (!String.IsNullOrEmpty(resourceName))
+                this.Definition = PartResourceLibrary.Instance.GetDefinition(resourceName);
 
-            this.ResourceName = resourcename;
+            this.ResourceName = resourceName;
             this.ResourceAbundance = abundance;
-            this.DisplayName = displayname;
+            this.DisplayName = displayName;
             this.Synonyms = synonyms.ToList();
         }
 

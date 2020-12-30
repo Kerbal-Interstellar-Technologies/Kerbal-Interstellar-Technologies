@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
 
 namespace KIT.Extensions
 {
@@ -36,7 +32,7 @@ namespace KIT.Extensions
 		// x - a number, from which we need to calculate the square root
 		// epsilon - an accuracy of calculation of the root from our number.
 		// The result of the calculations will differ from an actual value
-		// of the root on less than epslion.
+		// of the root on less than epsilon.
 		public static decimal Sqrt(this decimal x, decimal epsilon = 0.0M)
 		{
 			if (x < 0)
@@ -56,7 +52,7 @@ namespace KIT.Extensions
 
 
 		// Adjust this to modify the precision
-		public const int ITERATIONS = 27;
+		public const int Iterations = 27;
 
 		public static int Factorial(int n)
 		{
@@ -68,12 +64,12 @@ namespace KIT.Extensions
 		// power series
 		public static decimal DecimalExp(decimal power)
 		{
-			int iteration = ITERATIONS;
+			int iteration = Iterations;
 			decimal result = 1;
 			while (iteration > 0)
 			{
-				decimal fatorial = Factorial(iteration);
-				result += Pow(power, iteration) / fatorial;
+				decimal factorial = Factorial(iteration);
+				result += Pow(power, iteration) / factorial;
 				iteration--;
 			}
 			return result;
@@ -84,7 +80,7 @@ namespace KIT.Extensions
 		{
 			decimal aux = (number - 1);
 			decimal result = 0;
-			uint iteration = ITERATIONS;
+			uint iteration = Iterations;
 			while (iteration > 0)
 			{
 				result += Pow(aux, iteration) / iteration;
@@ -97,19 +93,19 @@ namespace KIT.Extensions
 		// Left to Right Binary Exponentiation
 		public static decimal Pow(this decimal x, uint y)
 		{
-			decimal A = 1m;
+			decimal a = 1m;
 			BitArray e = new BitArray(BitConverter.GetBytes(y));
 			int t = e.Count;
 
 			for (int i = t - 1; i >= 0; --i)
 			{
-				A *= A;
+				a *= a;
 				if (e[i] == true)
 				{
-					A *= x;
+					a *= x;
 				}
 			}
-			return A;
+			return a;
 		}
 
 		// from https://pastebin.com/ZXpn4cvh

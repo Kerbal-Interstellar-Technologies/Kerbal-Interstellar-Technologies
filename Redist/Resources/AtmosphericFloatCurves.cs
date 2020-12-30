@@ -1,5 +1,4 @@
 ﻿using System;
-using KIT.Constants;
 using UnityEngine;
 
 namespace KIT.Resources
@@ -9,17 +8,14 @@ namespace KIT.Resources
         public AnimationCurve MassDensityAtmosphereGramPerCubeCm { get; private set; }
         public AnimationCurve ParticlesAtmosphereCubePerMeter { get; private set; }
         public FloatCurve ParticlesHydrogenCubePerMeter { get; private set; }
-        public FloatCurve ParticlesHeliumnPerCubePerCm { get; private set; }
+        public FloatCurve ParticlesHeliumPerCubePerCm { get; private set; }
         public FloatCurve HydrogenIonsPerCubeCm { get; private set; }
         public FloatCurve InterstellarDensityRatio { get; private set; }
         public FloatCurve IonSolarMinimumDayTimeCubeCm { get; private set; }
 
         private static AtmosphericFloatCurves _instance;
 
-        public static AtmosphericFloatCurves Instance
-        {
-            get { return _instance ?? (_instance = new AtmosphericFloatCurves()); }
-        }
+        public static AtmosphericFloatCurves Instance => _instance ?? (_instance = new AtmosphericFloatCurves());
 
         private AtmosphericFloatCurves()
         {
@@ -36,7 +32,7 @@ namespace KIT.Resources
 
             InitializeParticlesHydrogenCubeM();
 
-            InitialiseParticlesHeliumnCubePerMeter();
+            InitialiseParticlesHeliumCubePerMeter();
 
             InitializeHydrogenIonsCubeCm();
 
@@ -170,50 +166,50 @@ namespace KIT.Resources
             HydrogenIonsPerCubeCm.Add(1240, 6.46e+9f);
         }
 
-        private void InitialiseParticlesHeliumnCubePerMeter()
+        private void InitialiseParticlesHeliumCubePerMeter()
         {
-            if (ParticlesHeliumnPerCubePerCm != null) return;
+            if (ParticlesHeliumPerCubePerCm != null) return;
 
-            ParticlesHeliumnPerCubePerCm = new FloatCurve();
+            ParticlesHeliumPerCubePerCm = new FloatCurve();
 
-            ParticlesHeliumnPerCubePerCm.Add(0.0f, 1.462E+14f);
-            ParticlesHeliumnPerCubePerCm.Add(10, 4.503E+13f);
-            ParticlesHeliumnPerCubePerCm.Add(20, 9.351E+12f);
-            ParticlesHeliumnPerCubePerCm.Add(30, 1.757E+12f);
-            ParticlesHeliumnPerCubePerCm.Add(40, 3.558E+11f);
-            ParticlesHeliumnPerCubePerCm.Add(50, 9.383E+10f);
-            ParticlesHeliumnPerCubePerCm.Add(60, 2.611E+10f);
-            ParticlesHeliumnPerCubePerCm.Add(70, 6.625E+09f);
-            ParticlesHeliumnPerCubePerCm.Add(80, 1.626E+09f);
-            ParticlesHeliumnPerCubePerCm.Add(90, 3.918E+08f);
-            ParticlesHeliumnPerCubePerCm.Add(100, 1.087E+08f);
-            ParticlesHeliumnPerCubePerCm.Add(110, 4.820E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(120, 3.060E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(130, 3.344E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(140, 3.566E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(150, 3.257E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(160, 2.933E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(170, 2.675E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(180, 2.467E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(190, 2.296E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(200, 2.150E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(210, 2.021E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(220, 1.909E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(230, 1.809E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(240, 1.717E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(250, 1.633E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(260, 1.555E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(270, 1.483E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(280, 1.415E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(290, 1.352E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(300, 1.292E+07f);
-            ParticlesHeliumnPerCubePerCm.Add(400, 8.365E+06f);
-            ParticlesHeliumnPerCubePerCm.Add(500, 5.518E+06f);
-            ParticlesHeliumnPerCubePerCm.Add(600, 3.687E+06f);
-            ParticlesHeliumnPerCubePerCm.Add(700, 2.491E+06f);
-            ParticlesHeliumnPerCubePerCm.Add(800, 1.702E+06f);
-            ParticlesHeliumnPerCubePerCm.Add(900, 1.175E+06f);
-            ParticlesHeliumnPerCubePerCm.Add(1000, 8.196E+05f);
+            ParticlesHeliumPerCubePerCm.Add(0.0f, 1.462E+14f);
+            ParticlesHeliumPerCubePerCm.Add(10, 4.503E+13f);
+            ParticlesHeliumPerCubePerCm.Add(20, 9.351E+12f);
+            ParticlesHeliumPerCubePerCm.Add(30, 1.757E+12f);
+            ParticlesHeliumPerCubePerCm.Add(40, 3.558E+11f);
+            ParticlesHeliumPerCubePerCm.Add(50, 9.383E+10f);
+            ParticlesHeliumPerCubePerCm.Add(60, 2.611E+10f);
+            ParticlesHeliumPerCubePerCm.Add(70, 6.625E+09f);
+            ParticlesHeliumPerCubePerCm.Add(80, 1.626E+09f);
+            ParticlesHeliumPerCubePerCm.Add(90, 3.918E+08f);
+            ParticlesHeliumPerCubePerCm.Add(100, 1.087E+08f);
+            ParticlesHeliumPerCubePerCm.Add(110, 4.820E+07f);
+            ParticlesHeliumPerCubePerCm.Add(120, 3.060E+07f);
+            ParticlesHeliumPerCubePerCm.Add(130, 3.344E+07f);
+            ParticlesHeliumPerCubePerCm.Add(140, 3.566E+07f);
+            ParticlesHeliumPerCubePerCm.Add(150, 3.257E+07f);
+            ParticlesHeliumPerCubePerCm.Add(160, 2.933E+07f);
+            ParticlesHeliumPerCubePerCm.Add(170, 2.675E+07f);
+            ParticlesHeliumPerCubePerCm.Add(180, 2.467E+07f);
+            ParticlesHeliumPerCubePerCm.Add(190, 2.296E+07f);
+            ParticlesHeliumPerCubePerCm.Add(200, 2.150E+07f);
+            ParticlesHeliumPerCubePerCm.Add(210, 2.021E+07f);
+            ParticlesHeliumPerCubePerCm.Add(220, 1.909E+07f);
+            ParticlesHeliumPerCubePerCm.Add(230, 1.809E+07f);
+            ParticlesHeliumPerCubePerCm.Add(240, 1.717E+07f);
+            ParticlesHeliumPerCubePerCm.Add(250, 1.633E+07f);
+            ParticlesHeliumPerCubePerCm.Add(260, 1.555E+07f);
+            ParticlesHeliumPerCubePerCm.Add(270, 1.483E+07f);
+            ParticlesHeliumPerCubePerCm.Add(280, 1.415E+07f);
+            ParticlesHeliumPerCubePerCm.Add(290, 1.352E+07f);
+            ParticlesHeliumPerCubePerCm.Add(300, 1.292E+07f);
+            ParticlesHeliumPerCubePerCm.Add(400, 8.365E+06f);
+            ParticlesHeliumPerCubePerCm.Add(500, 5.518E+06f);
+            ParticlesHeliumPerCubePerCm.Add(600, 3.687E+06f);
+            ParticlesHeliumPerCubePerCm.Add(700, 2.491E+06f);
+            ParticlesHeliumPerCubePerCm.Add(800, 1.702E+06f);
+            ParticlesHeliumPerCubePerCm.Add(900, 1.175E+06f);
+            ParticlesHeliumPerCubePerCm.Add(1000, 8.196E+05f);
         }
 
         private void InitializeParticlesHydrogenCubeM()
@@ -469,14 +465,14 @@ namespace KIT.Resources
             if (!vessel.mainBody.atmosphere || vessel.mainBody.atmosphereDepth <= 0)
                 return 0;
 
-            var comparibleEarthAltitudeInKm = vessel.altitude / vessel.mainBody.atmosphereDepth * 85;
+            var comparableEarthAltitudeInKm = vessel.altitude / vessel.mainBody.atmosphereDepth * 85;
             var atmosphereMultiplier = vessel.altitude > vessel.mainBody.atmosphereDepth ? 1
                 : Math.Max(0, vessel.altitude / vessel.mainBody.atmosphereDepth) * (vessel.mainBody.atmospherePressureSeaLevel / GameConstants.EarthAtmospherePressureAtSeaLevel);
 
-            var atmosphereParticlesPerCubM = comparibleEarthAltitudeInKm > 64000 ? 0
-                : comparibleEarthAltitudeInKm <= 1000
-                    ? Math.Max(0, AtmosphericFloatCurves.Instance.ParticlesAtmosphereCubePerMeter.Evaluate((float)comparibleEarthAltitudeInKm))
-                    : 2.06e+11f * (1 / (Math.Pow(20, (comparibleEarthAltitudeInKm - 1000) / 1000)));
+            var atmosphereParticlesPerCubM = comparableEarthAltitudeInKm > 64000 ? 0
+                : comparableEarthAltitudeInKm <= 1000
+                    ? Math.Max(0, AtmosphericFloatCurves.Instance.ParticlesAtmosphereCubePerMeter.Evaluate((float)comparableEarthAltitudeInKm))
+                    : 2.06e+11f * (1 / (Math.Pow(20, (comparableEarthAltitudeInKm - 1000) / 1000)));
 
 			var atmosphereConcentration = atmosphereMultiplier * atmosphereParticlesPerCubM * vessel.obt_speed / PhysicsGlobals.AvogadroConstant;
 
@@ -493,14 +489,14 @@ namespace KIT.Resources
             if (!celestialBody.atmosphere)
                 return 0;
 
-            var comparibleEarthAltitudeInKm = altitude / celestialBody.atmosphereDepth * 85;
+            var comparableEarthAltitudeInKm = altitude / celestialBody.atmosphereDepth * 85;
             var atmosphereMultiplier = altitude > celestialBody.atmosphereDepth ? 1
                 : Math.Max(0, altitude / celestialBody.atmosphereDepth) * (celestialBody.atmospherePressureSeaLevel / GameConstants.EarthAtmospherePressureAtSeaLevel);
 
-            var atmosphericDensityGramPerSquareCm = comparibleEarthAltitudeInKm > 64000 ? 0
-                : comparibleEarthAltitudeInKm <= 1000
-                    ? Math.Max(0, AtmosphericFloatCurves.Instance.MassDensityAtmosphereGramPerCubeCm.Evaluate((float)comparibleEarthAltitudeInKm))
-                    : 5.849E-18f * (1 / (Math.Pow(20, (comparibleEarthAltitudeInKm - 1000) / 1000)));
+            var atmosphericDensityGramPerSquareCm = comparableEarthAltitudeInKm > 64000 ? 0
+                : comparableEarthAltitudeInKm <= 1000
+                    ? Math.Max(0, AtmosphericFloatCurves.Instance.MassDensityAtmosphereGramPerCubeCm.Evaluate((float)comparableEarthAltitudeInKm))
+                    : 5.849E-18f * (1 / (Math.Pow(20, (comparableEarthAltitudeInKm - 1000) / 1000)));
 
             var atmosphereConcentration = 1e+3 * atmosphereMultiplier * atmosphericDensityGramPerSquareCm;
 

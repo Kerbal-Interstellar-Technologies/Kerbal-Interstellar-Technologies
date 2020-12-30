@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KSP.Localization;
 using System;
 using System.Linq;
@@ -63,7 +62,7 @@ namespace KIT.Propulsion
 
             try
             {
-                var activePreCoolers =  vessel.FindPartModulesImplementing<FNModulePreecooler>().Where(prc => prc.functional).ToList();
+                var activePreCoolers =  vessel.FindPartModulesImplementing<FNModulePrecooler>().Where(prc => prc.functional).ToList();
                 _preCoolersActiveArea = activePreCoolers.Any() ? activePreCoolers.Sum(prc => prc.area) : 0;
 
                 var openIntakes = vessel.FindPartModulesImplementing<AtmosphericIntake>().Where(mre => mre.intakeOpen).ToList();

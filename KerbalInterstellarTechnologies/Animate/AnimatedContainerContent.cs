@@ -24,11 +24,11 @@ namespace KIT.Animate
         [KSPField(isPersistant = false, guiName = "#LOC_IFS_AnimatedContainerContent_AnimationRatio", guiActiveEditor = false, guiActive = false, guiFormat = "F3")]//Animation Ratio
         public float animationRatio;
 
-        private AnimationState[] containerStates;
+        private AnimationState[] _containerStates;
 
         public override void OnStart(PartModule.StartState state)
         {
-            containerStates = SetUpAnimation(animationName, this.part);
+            _containerStates = SetUpAnimation(animationName, this.part);
         }
 
         void Update()
@@ -54,12 +54,12 @@ namespace KIT.Animate
             }
 
             var multiplier = maximumRatio == 1 ? 1 : maximumRatio > 0 ? 1 / maximumRatio : 1;
-            var multipledRatio = multiplier == 1 ? resourceRatio : Math.Min(multiplier * resourceRatio, 1);
-            var manipulatedRatio = animationExponent == 1 ? multipledRatio : Math.Pow(multipledRatio, animationExponent);
+            var multipliedRatio = multiplier == 1 ? resourceRatio : Math.Min(multiplier * resourceRatio, 1);
+            var manipulatedRatio = animationExponent == 1 ? multipliedRatio : Math.Pow(multipliedRatio, animationExponent);
 
             animationRatio = (float)Math.Round(manipulatedRatio, 3);
 
-            foreach (var cs in containerStates)
+            foreach (var cs in _containerStates)
             {
                 cs.normalizedTime = animationRatio;
             }

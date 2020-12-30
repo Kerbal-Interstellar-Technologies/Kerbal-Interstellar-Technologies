@@ -1,6 +1,5 @@
 using KIT.Extensions;
 using KIT.Reactors;
-using KIT.Redist;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KIT.Wasteheat;
@@ -8,6 +7,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KIT.Interfaces;
 using KIT.Powermanagement.Interfaces;
 using TweakScale;
 using UnityEngine;
@@ -188,7 +188,7 @@ namespace KIT.Powermanagement
         private Animation anim;
         private Queue<double> averageRadiatorTemperatureQueue = new Queue<double>();
 
-        public String UpgradeTechnology { get { return upgradeTechReq; } }
+        public String UpgradeTechnology => upgradeTechReq;
 
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_activateGenerator", active = true)]
         public void ActivateGenerator()
@@ -320,7 +320,7 @@ namespace KIT.Powermanagement
             }
             catch (Exception e)
             {
-                Debug.LogError("[KSPI]: Exception on " + part.name + " durring FNGenerator.OnDestroyed with message " + e.Message);
+                Debug.LogError("[KSPI]: Exception on " + part.name + " during FNGenerator.OnDestroyed with message " + e.Message);
             }
         }
 
@@ -342,7 +342,7 @@ namespace KIT.Powermanagement
 
             InitializeEfficiency();
 
-            var powerCapacityField = Fields["powerCapacity"];
+            var powerCapacityField = Fields[nameof(powerCapacity)];
             powerCapacityField.guiActiveEditor = !isLimitedByMinThrottle;
 
             var powerCapacityFloatRange = powerCapacityField.uiControlEditor as UI_FloatRange;
@@ -356,9 +356,9 @@ namespace KIT.Powermanagement
                 powerCapacity = Math.Min(powerCapacityMaxValue, powerCapacity);
             }
 
-            Fields["partMass"].guiActive = Fields["partMass"].guiActiveEditor = calculatedMass;
-            Fields["powerPercentage"].guiActive = Fields["powerPercentage"].guiActiveEditor = showSpecialisedUI;
-            Fields["radius"].guiActiveEditor = showSpecialisedUI;
+            Fields[nameof(partMass)].guiActive = Fields[nameof(partMass)].guiActiveEditor = calculatedMass;
+            Fields[nameof(powerPercentage)].guiActive = Fields[nameof(powerPercentage)].guiActiveEditor = showSpecialisedUI;
+            Fields[nameof(radius)].guiActiveEditor = showSpecialisedUI;
 
             if (state == StartState.Editor)
             {
@@ -382,7 +382,7 @@ namespace KIT.Powermanagement
             if (this.HasTechsRequiredToUpgrade())
                 hasrequiredupgrade = true;
 
-            // only force activate if no certain partmodules are not present and not limited by minimum throtle
+            // only force activate if no certain Part Modules are not present and not limited by minimum throttle
             if (!isLimitedByMinThrottle && part.FindModuleImplementing<BeamedPowerReceiver>() == null && part.FindModuleImplementing<InterstellarReactor>() == null)
             {
                 Debug.Log("[KSPI]: Generator on " + part.name + " was Force Activated");
@@ -482,7 +482,7 @@ namespace KIT.Powermanagement
         }
 
         /// <summary>
-        /// Finds the nearest available thermal source and update effective part mass
+        /// Finds the nearest available Thermal source and update effective part mass
         /// </summary>
         public void FindAndAttachToPowerSource()
         {
@@ -497,12 +497,12 @@ namespace KIT.Powermanagement
                     attachedPowerSource.ConnectedThermalElectricGenerator = null;
             }
 
-            // first look if part contains an thermal source
+            // first look if part contains an Thermal source
             attachedPowerSource = part.FindModulesImplementing<IFNPowerSource>().FirstOrDefault();
             if (attachedPowerSource != null)
             {
                 ConnectToPowerSource();
-                Debug.Log("[KSPI]: Found power source localy");
+                Debug.Log("[KSPI]: Found power source locally");
                 return;
             }
 
@@ -514,7 +514,7 @@ namespace KIT.Powermanagement
             }
 
             Debug.Log("[KSPI]: generator is currently connected to " + part.attachNodes.Count + " parts");
-            // otherwise look for other non self contained thermal sources that is not already connected
+            // otherwise look for other non self contained Thermal sources that is not already connected
 
             var searchResult = chargedParticleMode
                 ? FindChargedParticleSource()
@@ -537,10 +537,10 @@ namespace KIT.Powermanagement
                 return;
             }
 
-            // update attached thermal source
+            // update attached Thermal source
             attachedPowerSource = searchResult.Source;
 
-            Debug.Log("[KSPI]: succesfully connected to " + attachedPowerSource.Part.partInfo.title);
+            Debug.Log("[KSPI]: successfully connected to " + attachedPowerSource.Part.partInfo.title);
 
             ConnectToPowerSource();
         }
@@ -614,7 +614,7 @@ namespace KIT.Powermanagement
                     powerUsageEfficiency = 1;
 
                 rawMaximumPower = attachedPowerSource.RawMaximumPowerForPowerGeneration * powerUsageEfficiency;
-                maximumTheoreticalPower = PluginHelper.getFormattedPowerString(rawMaximumPower * CapacityRatio * maxEfficiency);
+                maximumTheoreticalPower = PluginHelper.GetFormattedPowerString(rawMaximumPower * CapacityRatio * maxEfficiency);
 
                 // verify if mass calculation is active
                 if (!calculatedMass)
@@ -729,7 +729,7 @@ namespace KIT.Powermanagement
                 var percentOutputPower = _totalEff * 100.0;
                 var outputPowerReport = -outputPower;
 
-                OutputPower = PluginHelper.getFormattedPowerString(outputPowerReport);
+                OutputPower = PluginHelper.GetFormattedPowerString(outputPowerReport);
                 overallEfficiencyStr = percentOutputPower.ToString("0.00") + "%";
 
                 maximumElectricPower = (_totalEff >= 0)
@@ -738,7 +738,7 @@ namespace KIT.Powermanagement
                         : PowerRatio * _totalEff * maxChargedPowerForChargedGenerator
                     : 0;
 
-                MaxPowerStr = PluginHelper.getFormattedPowerString(maximumElectricPower);
+                MaxPowerStr = PluginHelper.GetFormattedPowerString(maximumElectricPower);
             }
             else
                 OutputPower = Localizer.Format("#LOC_KSPIE_Generator_Offline");//"Generator Offline"
@@ -792,7 +792,7 @@ namespace KIT.Powermanagement
         {
             if (attachedPowerSource == null) return;
 
-            if (!chargedParticleMode) // thermal or plasma mode
+            if (!chargedParticleMode) // Thermal or plasma mode
             {
                 averageRadiatorTemperatureQueue.Enqueue(FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel));
 
@@ -959,7 +959,7 @@ namespace KIT.Powermanagement
                 return;
             }
 
-            applies_balance = attachedPowerSource.ShouldApplyBalance(chargedParticleMode ? ElectricGeneratorType.charged_particle : ElectricGeneratorType.thermal);
+            applies_balance = attachedPowerSource.ShouldApplyBalance(chargedParticleMode ? ElectricGeneratorType.ChargedParticle : ElectricGeneratorType.Thermal);
 
             UpdateGeneratorPower();
 
@@ -986,7 +986,7 @@ namespace KIT.Powermanagement
             thermalPowerRatio = 1 - attachedPowerSource.ChargedPowerRatio;
             chargedPowerRatio = attachedPowerSource.ChargedPowerRatio;
 
-            if (!chargedParticleMode) // thermal mode
+            if (!chargedParticleMode) // Thermal mode
             {
                 hotColdBathRatio = Math.Max(Math.Min(1 - coldBathTemp / hotBathTemp, 1), 0);
 
@@ -1101,7 +1101,7 @@ namespace KIT.Powermanagement
 
                 totalPowerReceived += chargedPowerReceived;
 
-                // any shortage should be consumed again from remaining thermalpower
+                // any shortage should be consumed again from remaining ThermalPower
                 if (shouldUseChargedPower && chargedPowerRatio != 1 && totalPowerReceived < reactorPowerRequested)
                 {
                     finalRequest = Math.Max(0, reactorPowerRequested - totalPowerReceived);

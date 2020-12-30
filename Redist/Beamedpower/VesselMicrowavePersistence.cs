@@ -1,31 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using KIT.Redist;
 using KIT.Extensions;
-using UnityEngine;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     public class VesselMicrowavePersistence : IVesselMicrowavePersistence
     {
-        Vessel vessel;
-        private bool isactive;
+        readonly Vessel vessel;
 
-        private double aperture;
-        private double nuclear_power;
-        private double solar_power;
-        private double power_capacity;
+        private double _aperture;
+        private double _nuclearPower;
+        private double _solarPower;
+        private double _powerCapacity;
 
-        private CelestialBody localStar;
+        private CelestialBody _localStar;
         public CelestialBody LocalStar
         {
             get
             {
-                if (localStar == null)
+                if (_localStar == null)
                 {
-                    localStar = vessel.GetLocalStar();
+                    _localStar = vessel.GetLocalStar();
                 }
-                return localStar;
+                return _localStar;
             }
         }
 
@@ -35,71 +32,58 @@ namespace KIT.Beamedpower
             SupportedTransmitWavelengths = new List<WaveLengthData>();
         }
 
-        public bool HasPower
-        {
-            get
-            {
-                return nuclear_power > 0 || solar_power > 0;
-            }
-        }
+        public bool HasPower => _nuclearPower > 0 || _solarPower > 0;
 
-        public double getAvailablePowerInKW()
+        public double GetAvailablePowerInKW()
         {
             double power = 0;
-            if (solar_power > 0.001 && vessel.LineOfSightToSun(LocalStar))
+            if (_solarPower > 0.001 && vessel.LineOfSightToSun(LocalStar))
             {
                 var distanceBetweenVesselAndSun = Vector3d.Distance(vessel.GetVesselPos(), LocalStar.position);
-                double inv_square_mult = Math.Pow(distanceBetweenVesselAndSun, 2) / Math.Pow(Constants.GameConstants.kerbin_sun_distance, 2);
-                power = solar_power / inv_square_mult;
+                double invSquareMult = Math.Pow(distanceBetweenVesselAndSun, 2) / Math.Pow(GameConstants.kerbin_sun_distance, 2);
+                power = _solarPower / invSquareMult;
             }
 
-            power += nuclear_power;
+            power += _nuclearPower;
 
-            var finalpower = Math.Min(1000 * power_capacity, power);
+            var finalPower = Math.Min(1000 * _powerCapacity, power);
 
-            return finalpower;
+            return finalPower;
         }
 
-        public double getAvailablePowerInMW()
+        public double GetAvailablePowerInMW()
         {
-            return getAvailablePowerInKW()/1000;
+            return GetAvailablePowerInKW()/1000;
         }
 
-        public Vessel Vessel
-        {
-            get { return this.vessel; }
-        }
+        public Vessel Vessel => this.vessel;
 
-        public bool IsActive
-        {
-            get { return this.isactive; }
-            set { this.isactive = value; }
-        }
+        public bool IsActive { get; set; }
 
         public double SolarPower
         {
-            get { return this.solar_power; }
-            set { this.solar_power = value; }
+            get => this._solarPower;
+            set => this._solarPower = value;
         }
 
         public double NuclearPower
         {
-            get { return this.nuclear_power; }
-            set { this.nuclear_power = value; }
+            get => this._nuclearPower;
+            set => this._nuclearPower = value;
         }
 
         public double Aperture
         {
-            get { return aperture != 0 ? this.aperture : 5; }
-            set { this.aperture = value; }
+            get => _aperture != 0 ? this._aperture : 5;
+            set => this._aperture = value;
         }
 
         public double PowerCapacity
         {
-            get { return power_capacity != 0 ? this.power_capacity : 2; }
-            set { this.power_capacity = value; }
+            get => _powerCapacity != 0 ? this._powerCapacity : 2;
+            set => this._powerCapacity = value;
         }
 
-        public List<WaveLengthData> SupportedTransmitWavelengths { get; private set; }
+        public List<WaveLengthData> SupportedTransmitWavelengths { get; }
     }
 }

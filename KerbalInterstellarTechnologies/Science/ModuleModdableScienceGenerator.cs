@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using KIT.Powermanagement;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.UI.Screens.Flight.Dialogs;
@@ -8,7 +7,7 @@ using KSP.UI.Screens.Flight.Dialogs;
 namespace KIT
 {
 
-    class ModuleModableScienceGenerator : PartModule, IKITMod, IScienceDataContainer
+    class ModuleModdableScienceGenerator : PartModule, IKITMod, IScienceDataContainer
     {
         [KSPField(isPersistant = false)]
         public bool canDeploy = false;
@@ -98,21 +97,6 @@ namespace KIT
                         this.keepData,
                         this.sendDataToComms,
                         this.sendDataToLab);
-
-                    //merdp = new ModableExperimentResultDialogPage(
-                    //		base.part,
-                    //		this.science_data,
-                    //		this.science_data.baseTransmitValue,
-                    //		0,
-                    //		false,
-                    //		"",
-                    //		true,
-                    //		false,
-                    //		new Callback<ScienceData>(this.endExperiment),
-                    //		new Callback<ScienceData>(this.keepData),
-                    //		new Callback<ScienceData>(this.sendDataToComms),
-                    //		new Callback<ScienceData>(this.sendDataToLab));
-                    //merdp.setUpScienceData(result_title, result_string, (float)transmit_value, (float)recovery_value, (float)data_size, xmit_scalar, ref_value);
                 }
                 ExperimentsResultDialog.DisplayResult(merdp);
             }
@@ -192,7 +176,7 @@ namespace KIT
             this.science_data = null;
             merdp = null;
             result_string = ""; // null causes error in save process
-            result_title = ""; // null causes error in save proccess
+            result_title = ""; // null causes error in save process
             transmit_value = 0;
             recovery_value = 0;
             Deployed = false;

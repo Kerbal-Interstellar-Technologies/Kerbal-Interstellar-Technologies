@@ -13,11 +13,10 @@ namespace KIT.Extensions
             var array = stringOfDoubles.Trim().Split(';');
             foreach (var arrayItem in array)
             {
-                double item;
-                if (Double.TryParse(arrayItem.Trim(), out item))
+                if (Double.TryParse(arrayItem.Trim(), out var item))
                     list.Add(item);
                 else
-                    Debug.Log("InsterstellarFuelSwitch parseDoubles: invalid float: [len:" + arrayItem.Length + "] '" + arrayItem + "']");
+                    Debug.Log("InterstellarFuelSwitch parseDoubles: invalid float: [len:" + arrayItem.Length + "] '" + arrayItem + "']");
             }
             return list;
         }

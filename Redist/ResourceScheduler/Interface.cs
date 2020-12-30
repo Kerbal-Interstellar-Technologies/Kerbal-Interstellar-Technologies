@@ -1,10 +1,6 @@
 ﻿using KIT.Interfaces;
 using KIT.Resources;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KIT.ResourceScheduler
 {
@@ -58,6 +54,7 @@ namespace KIT.ResourceScheduler
         double CurrentSupplied();
     }
 
+    /// <summary>
     /// This interface is passed to the part modules in IKITMod.KITFixedUpdate. It allows the 
     /// production and consumption of resources, and access to some wrapper variables to avoid global
     /// variable access.
@@ -68,7 +65,7 @@ namespace KIT.ResourceScheduler
         /// Consumes resources from the resource pool. It automatically converts your request to per-seconds,
         /// so you do not need to account for that yourself.
         /// </summary>
-        /// <param name="name">Resource Name</param>
+        /// <param name="resource">Resource Name</param>
         /// <param name="wanted">Requested amount of resource to consume per second</param>
         /// <returns>Amount of resource that there is to consume (per second)</returns>
         double ConsumeResource(ResourceName resource, double wanted);
@@ -77,7 +74,7 @@ namespace KIT.ResourceScheduler
         /// Adds resources to the resource pool. It automatically converts your request to per-seconds,
         /// so you do not need to account for that yourself.
         /// </summary>
-        /// <param name="name">Resource Name</param>
+        /// <param name="resource">Resource Name</param>
         /// <param name="amount">Amount of resource to produce per second</param>
         /// <param name="max">The maximum that this part can produce of this resource, in total. If -1, then it will add up all the times the resource has been produced.</param>
         double ProduceResource(ResourceName resource, double amount, double max = -1);
@@ -103,7 +100,7 @@ namespace KIT.ResourceScheduler
         /// <returns></returns>
         double ResourceFillFraction(ResourceName resourceIdentifier);
 
-        /// <summary>Provides access to the (equivilient) of TimeWarp.fixedDeltaTime.</summary>
+        /// <summary>Provides access to the (equivalent) of TimeWarp.fixedDeltaTime.</summary>
         /// <remarks>
         /// The resource interface automatically converts everything to per-second values for you. You only need
         /// access to this in special cases.
@@ -170,14 +167,16 @@ namespace KIT.ResourceScheduler
         /// <summary>
         /// Checks to see if the requested resource can be provided.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="resMan">resource manager object</param>
+        /// <param name="resource"></param>
         /// <param name="requestedAmount"></param>
         /// <returns>bool - indicating if this module should be called again this KITFixedUpdate() cycle.</returns>
         bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount);
     }
 
+    // ReSharper disable once InconsistentNaming
     public interface IDCElectricalSystem
     {
-        double unallocatedElectricChargeConsumption();
+        double UnallocatedElectricChargeConsumption();
     }
 }

@@ -1,24 +1,24 @@
 ﻿using System;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     public class WaveLengthData
     {
-        public Guid partId { get; set; }
-        public bool isMirror { get; set; }
-        public int count { get; set; }
-        public double apertureSum { get; set; }
-        public double wavelength { get; set; }
-        public double minWavelength { get; set; }
-        public double maxWavelength { get; set; }
-        public double atmosphericAbsorption { get; set; }
-        public double nuclearPower { get; set; }
-        public double solarPower { get; set; }
-        public double powerCapacity { get; set; }
+        public Guid PartId { get; set; }
+        public bool IsMirror { get; set; }
+        public int Count { get; set; }
+        public double ApertureSum { get; set; }
+        public double Wavelength { get; set; }
+        public double MinWavelength { get; set; }
+        public double MaxWavelength { get; set; }
+        public double AtmosphericAbsorption { get; set; }
+        public double NuclearPower { get; set; }
+        public double SolarPower { get; set; }
+        public double PowerCapacity { get; set; }
 
         public override int GetHashCode()
         {
-            return this.wavelength.GetHashCode();
+            return this.Wavelength.GetHashCode();
         }
     }
 }

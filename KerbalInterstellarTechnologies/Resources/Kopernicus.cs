@@ -33,8 +33,8 @@ namespace KIT.Resources
         }
 
 
-        static private double astronomicalUnit;
-        static public double AstronomicalUnit
+        private static double astronomicalUnit;
+        public static double AstronomicalUnit
         {
             get
             {
@@ -47,24 +47,11 @@ namespace KIT.Resources
         /// <summary>
         /// Retrieves list of Starlight data
         /// </summary>
-        static public List<StarLight> Stars
-        {
-            get
-            {
-                if (stars == null)
-                    stars = ExtractStarData(moduleName);
-                return stars;
-            }
-        }
+        public static List<StarLight> Stars => stars ?? (stars = ExtractStarData(moduleName));
 
-        static public Dictionary<CelestialBody, StarLight> StarsByBody
+        public static Dictionary<CelestialBody, StarLight> StarsByBody
         {
-            get
-            {
-                if (starsByBody == null)
-                    starsByBody = Stars.ToDictionary(m => m.star);
-                return starsByBody;
-            }
+            get { return starsByBody ?? (starsByBody = Stars.ToDictionary(m => m.star)); }
         }
 
         public static bool IsStar(CelestialBody body)
@@ -74,8 +61,7 @@ namespace KIT.Resources
 
         public static double GetLuminocity(CelestialBody body)
         {
-            StarLight starlight;
-            if (StarsByBody.TryGetValue(body, out starlight))
+            if (StarsByBody.TryGetValue(body, out StarLight starlight))
                 return starlight.relativeLuminocity;
             else
                 return 0;
@@ -107,24 +93,20 @@ namespace KIT.Resources
             else
                 Debug.LogWarning(debugPrefix + "Failed to find Kopernicus Configuration Data");
 
-            for (int i = 0; i < kopernicusNodes.Length; i++)
+            foreach (var t in kopernicusNodes)
             {
-                ConfigNode[] bodies = kopernicusNodes[i].GetNodes("Body");
+                ConfigNode[] bodies = t.GetNodes("Body");
 
-                Debug.Log(debugPrefix + "Found " + bodies.Length + " celestrial bodies");
+                Debug.Log(debugPrefix + "Found " + bodies.Length + " celestial bodies");
 
-                for (int j = 0; j < bodies.Length; j++)
+                foreach (var currentBody in bodies)
                 {
-                    ConfigNode currentBody = bodies[j];
-
                     string bodyName = currentBody.GetValue("name");
 
-                    CelestialBody celestialBody = null;
-
-                    celestrialBodiesByName.TryGetValue(bodyName, out celestialBody);
+                    celestrialBodiesByName.TryGetValue(bodyName, out CelestialBody celestialBody);
                     if (celestialBody == null)
                     {
-                        Debug.LogWarning(debugPrefix + "Failed to find celestrialbody " + bodyName);
+                        Debug.LogWarning(debugPrefix + "Failed to find celestial body " + bodyName);
                         continue;
                     }
 
@@ -205,7 +187,6 @@ namespace KIT.Resources
                         Debug.Log(debugPrefix + "Added Star " + celestialBody.name + " with default luminocity of 1");
                         stars.Add(new StarLight() { star = celestialBody, relativeLuminocity = 1 });
                     }
-
                 }
             }
 

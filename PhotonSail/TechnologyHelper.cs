@@ -21,10 +21,8 @@ namespace PhotonSail
                 ConfigNode[] partUpgradeNodes = GameDatabase.Instance.GetConfigNodes("PARTUPGRADE");
                 Debug.Log("[PhotonSail]: PartUpgradeByName found: " + partUpgradeNodes.Count() + " Part upgrades");
 
-                for (int i = 0; i < partUpgradeNodes.Length; i++)
+                foreach (var partUpgradeConfig in partUpgradeNodes)
                 {
-                    var partUpgradeConfig = partUpgradeNodes[i];
-
                     var partUpgrade = new PartUpgradeHandler.Upgrade
                     {
                         name = partUpgradeConfig.GetValue("name"),
@@ -144,10 +142,7 @@ namespace PhotonSail
             }
         }
 
-        public static bool TechnologyIsInUse
-        {
-            get { return (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX); }
-        }
+        public static bool TechnologyIsInUse => (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX);
 
         public static int HasTech(string techid, int increase)
         {

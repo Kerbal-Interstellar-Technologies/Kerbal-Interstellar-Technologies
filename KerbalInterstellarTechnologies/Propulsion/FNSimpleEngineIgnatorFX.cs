@@ -13,7 +13,7 @@ namespace KIT.Propulsion
         public int remainingIgnitions = -1;
         [KSPField(isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadRequiredExperienceLevel")]//Reload required experience level
         public int reloadRequiresExperienceLevel = 1;
-        [KSPField(isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadRequiresEngeneer")]//Reload requires Engeneer
+        [KSPField(isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadRequiresEngeneer")]//Reload requires Engineer
         public bool reloadRequiresEngineer = true;
         [KSPField(isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadRequiresLandedVessel")]//Reload requires landed vessel
         public bool reloadRequiresLandedVessel = true;
@@ -27,7 +27,7 @@ namespace KIT.Propulsion
         public override void OnStart(StartState state)
         {
             _engineFX = part.FindModuleImplementing<ModuleEnginesFX>();
-            _reloadIgnitorEvent = Events["ReloadIgnitor"];
+            _reloadIgnitorEvent = Events[nameof(ReloadIgniter)];
             maxFuelFlow = _engineFX.maxFuelFlow;
 
             if (remainingIgnitions == 0 && _engineFX != null)
@@ -37,8 +37,8 @@ namespace KIT.Propulsion
                 remainingIgnitions = initialIgnitions;
         }
 
-        [KSPEvent(name = "ReloadIgnitor", guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadIgnitors", active = true, externalToEVAOnly = true, guiActive = false, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Reload Ignitors
-        public void ReloadIgnitor()
+        [KSPEvent(name = "ReloadIgniter", guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadIgnitors", active = true, externalToEVAOnly = true, guiActive = false, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Reload Ignitors
+        public void ReloadIgniter()
         {
             var kervalOnEva = FlightGlobals.ActiveVessel.GetVesselCrew().First();
 
@@ -76,7 +76,7 @@ namespace KIT.Propulsion
                 return;
 
             if (previousThrottle == 0 && _engineFX.requestedThrottle > 0)
-                AttempToIgniteEngine();
+                AttemptToIgniteEngine();
 
             if (remainingIgnitions == 0 && _engineFX.currentThrottle == 0)
                 _engineFX.maxFuelFlow = 1e-10f;
@@ -84,7 +84,7 @@ namespace KIT.Propulsion
             previousThrottle = _engineFX.requestedThrottle;
         }
 
-        private void AttempToIgniteEngine()
+        private void AttemptToIgniteEngine()
         {
             if (initialIgnitions < 0)
                 return;

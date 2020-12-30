@@ -1,10 +1,8 @@
 ﻿// This code is released under the [unlicense](http://unlicense.org/).
 using KSP.UI.Screens;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace KIT

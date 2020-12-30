@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     public class ReceivedPowerData
     {
         public IBeamedPowerReceiver Receiver { get; set; }
-        public double CurrentRecievedPower { get; set; }
+        public double CurrentReceivedPower { get; set; }
         public double MaximumReceivedPower { get; set; }
         public double AvailablePower { get; set; }
         public double ConsumedPower { get; set; }

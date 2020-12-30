@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KIT.Extensions
+﻿namespace KIT.Extensions
 {
     public static class Calculations
     {

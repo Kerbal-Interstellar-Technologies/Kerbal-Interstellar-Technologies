@@ -1,13 +1,13 @@
-﻿using KIT.Redist;
+﻿using KIT.Interfaces;
 using KIT.ResourceScheduler;
 
 namespace KIT.Powermanagement
 {
     public interface IFNPowerSource : IPowerSource
     {
-        void NotifyActiveThermalEnergyGenerator(double efficency, double power_ratio, bool isMHD, double mass);
+        void NotifyActiveThermalEnergyGenerator(double efficiency, double powerRatio, bool isMHD, double mass);
 
-        void NotifyActiveChargedEnergyGenerator(double efficency, double power_ratio, double mass);
+        void NotifyActiveChargedEnergyGenerator(double efficiency, double powerRatio, double mass);
 
         double EngineHeatProductionMult { get; }
 
@@ -21,7 +21,7 @@ namespace KIT.Powermanagement
 
         bool CanProducePower { get; }
 
-        double FuelRato { get; }
+        double FuelRatio { get; }
 
         double MinThermalNozzleTempRequired { get; }
 

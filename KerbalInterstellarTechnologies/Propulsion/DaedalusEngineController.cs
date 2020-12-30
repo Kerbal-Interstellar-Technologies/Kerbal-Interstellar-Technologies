@@ -1,7 +1,5 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.External;
-using KIT.Powermanagement;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
@@ -21,7 +19,7 @@ namespace KIT.Propulsion
     [KSPModule("Confinement Fusion Engine")]
     class DaedalusEngineController : PartModule, IKITMod, IUpgradeableModule , IRescalable<DaedalusEngineController>
     {
-        const string LIGHTBLUE = "#7fdfffff";
+        const string LightBlue = "#7fdfffff";
         const string GROUP = "FusionEngine";
         const string GROUP_TITLE = "#LOC_KSPIE_FusionEngine_groupName";
 
@@ -75,7 +73,7 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_timeDilation", guiFormat = "F10")]
         public double timeDilation;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_radhazardstr")]
-        public string radhazardstr = "";
+        public string radiationHazardString = "";
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_partMass", guiFormat = "F3", guiUnits = " t")]
         public float partMass = 1;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fusionRatio", guiFormat = "F3")]
@@ -182,8 +180,8 @@ namespace KIT.Propulsion
         [KSPField] public double fuelNeutronsFraction = 0.005;
         [KSPField] public double ratioHeadingVersusRequest;
 
-        [KSPField] public string originalName = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_originalName");//"Prototype Deadalus IC Fusion Engine"
-        [KSPField] public string upgradedName = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_upgradedName");//"Deadalus IC Fusion Engine"
+        [KSPField] public string originalName = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_originalName");//"Prototype Daedalus IC Fusion Engine"
+        [KSPField] public string upgradedName = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_upgradedName");//"Daedalus IC Fusion Engine"
 
         [KSPField] public string upgradeTechReq1 = null;
         [KSPField] public string upgradeTechReq2 = null;
@@ -233,13 +231,13 @@ namespace KIT.Propulsion
             private set => _engineGenerationType = (int) value;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DeadalusEngineController_DeactivateRadSafety", active = true)]//Disable Radiation Safety
+        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DaedalusEngineController_DeactivateRadSafety", active = true)]//Disable Radiation Safety
         public void DeactivateRadSafety()
         {
             radiationSafetyFeatures = false;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DeadalusEngineController_ActivateRadSafety", active = false)]//Activate Radiation Safety
+        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DaedalusEngineController_ActivateRadSafety", active = false)]//Activate Radiation Safety
         public void ActivateRadSafety()
         {
             radiationSafetyFeatures = true;
@@ -367,7 +365,7 @@ namespace KIT.Propulsion
 
         public void upgradePartModule()
         {
-            //isupgraded = true;
+            //isUpgraded = true;
         }
 
         #endregion
@@ -397,7 +395,7 @@ namespace KIT.Propulsion
             // bind with fields and events
             deactivateRadSafetyEvent = Events[nameof(DeactivateRadSafety)];
             activateRadSafetyEvent = Events[nameof(ActivateRadSafety)];
-            radhazardstrField = Fields[nameof(radhazardstr)];
+            radhazardstrField = Fields[nameof(radiationHazardString)];
 
             translatedTechMk1 = PluginHelper.DisplayTech(upgradeTechReq1);
             translatedTechMk2 = PluginHelper.DisplayTech(upgradeTechReq2);
@@ -533,7 +531,7 @@ namespace KIT.Propulsion
 
             if (HighLogic.LoadedSceneIsEditor)
             {
-                // configure engine for Kerbal Engeneer support
+                // configure engine for Kerbal Engineer support
                 UpdateAtmosphericCurve(EngineIsp);
                 effectiveMaxThrustInKiloNewton = MaximumThrust;
                 calculatedFuelflow = effectiveMaxThrustInKiloNewton / EngineIsp / GameConstants.STANDARD_GRAVITY;
@@ -571,7 +569,7 @@ namespace KIT.Propulsion
             return "<color=" + color + ">" + result + "</color>";
         }
 
-        // Note: we assume OnRescale is called at load and after any time tweakscale changes the size of an part
+        // Note: we assume OnRescale is called at load and after any time tweak scale changes the size of an part
         public void OnRescale(TweakScale.ScalingFactor factor)
         {
             UnityEngine.Debug.Log("[KSPI]: DaedalusEngineController OnRescale was called with factor " + factor.absolute.linear);
@@ -609,13 +607,13 @@ namespace KIT.Propulsion
             if (curEngineT.isOperational && !IsEnabled)
             {
                 IsEnabled = true;
-                Debug.Log("[KSPI]: DeadalusEngineController on " + part.name + " was Force Activated");
+                Debug.Log("[KSPI]: DaedalusEngineController on " + part.name + " was Force Activated");
                 part.force_activate();
             }
 
             radhazard = false;
 
-            if (!HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines)
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().AllowDestructiveEngines)
             {
                 var kerbalHazardCount = 0;
                 foreach (var currentVessel in FlightGlobals.Vessels)
@@ -628,9 +626,9 @@ namespace KIT.Propulsion
                 if (kerbalHazardCount > 0)
                 {
                     radhazard = true;
-                    radhazardstr = Localizer.Format(kerbalHazardCount > 1
-                        ? "#LOC_KSPIE_DeadalusEngineController_radhazardstr2"
-                        : "#LOC_KSPIE_DeadalusEngineController_radhazardstr1", kerbalHazardCount);
+                    radiationHazardString = Localizer.Format(kerbalHazardCount > 1
+                        ? "#LOC_KSPIE_DaedalusEngineController_radhazardstr2"
+                        : "#LOC_KSPIE_DaedalusEngineController_radhazardstr1", kerbalHazardCount);
 
                     radhazardstrField.guiActive = true;
                 }
@@ -640,7 +638,7 @@ namespace KIT.Propulsion
             {
                 radhazardstrField.guiActive = false;
                 radhazard = false;
-                radhazardstr = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_radhazardstr3");//"None."
+                radiationHazardString = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_radhazardstr3");//"None."
             }
 
             Fields[nameof(powerUsage)].guiActive = EffectiveMaxPowerRequirement > 0;
@@ -716,7 +714,7 @@ namespace KIT.Propulsion
             double persistentThrustDot = Vector3d.Dot(this.part.transform.up, vessel.obt_velocity);
             if (persistentThrustDot < 0 && (vessel.obt_velocity.magnitude <= deltaVv.magnitude * 2))
             {
-                var message = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg4");//"Thrust warp stopped - orbital speed too low"
+                var message = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg4");//"Thrust warp stopped - orbital speed too low"
                 ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                 UnityEngine.Debug.Log("[KSPI]: " + message);
                 TimeWarp.SetRate(0, true);
@@ -837,12 +835,12 @@ namespace KIT.Propulsion
 
                     if (!currentVessel.isEVA)
                     {
-                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg5", crewMember.name), 5f, ScreenMessageStyle.UPPER_CENTER);// + " was killed by Radiation!"
+                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg5", crewMember.name), 5f, ScreenMessageStyle.UPPER_CENTER);// + " was killed by Radiation!"
                         crewToRemove.Add(crewMember);
                     }
                     else
                     {
-                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg5", crewMember.name), 5f, ScreenMessageStyle.UPPER_CENTER);// + " was killed by Radiation!"
+                        ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg5", crewMember.name), 5f, ScreenMessageStyle.UPPER_CENTER);// + " was killed by Radiation!"
                         vesselsToRemove.Add(currentVessel);
                     }
                 }
@@ -947,10 +945,10 @@ namespace KIT.Propulsion
             if (throttle > 0)
             {
                 if (vessel.atmDensity > maxAtmosphereDensity)
-                    ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason1"));//"Inertial Fusion cannot operate in atmosphere!"
+                    ShutDown(Localizer.Format("#LOC_KSPIE_DaedalusEngineController_Shutdownreason1"));//"Inertial Fusion cannot operate in atmosphere!"
 
                 if (radhazard && radiationSafetyFeatures)
-                    ShutDown(Localizer.Format("#LOC_KSPIE_DeadalusEngineController_Shutdownreason2"));//"Engines throttled down as they presently pose a radiation hazard"
+                    ShutDown(Localizer.Format("#LOC_KSPIE_DaedalusEngineController_Shutdownreason2"));//"Engines throttled down as they presently pose a radiation hazard"
             }
 
             KillKerbalsWithRadiation(throttle);
@@ -985,7 +983,7 @@ namespace KIT.Propulsion
 
                 if (!curEngineT.getFlameoutState && fusionRatio < 0.01)
                 {
-                    curEngineT.status = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_curEngineTstatus1");//"Insufficient Electricity"
+                    curEngineT.status = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_curEngineTstatus1");//"Insufficient Electricity"
                 }
 
                 ratioHeadingVersusRequest = 0;
@@ -1002,7 +1000,7 @@ namespace KIT.Propulsion
 
                 if (fusionRatio <= 0.01)
                 {
-                    var message = Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg1");//"Thrust warp stopped - insufficient power"
+                    var message = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg1");//"Thrust warp stopped - insufficient power"
                     UnityEngine.Debug.Log("[KSPI]: " + message);
                     ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                     // Return to realtime
@@ -1029,7 +1027,7 @@ namespace KIT.Propulsion
 
                 if (fuelRatio < 0.999)
                 {
-                    var message = (fuelRatio <= 0) ? Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg2") : Localizer.Format("#LOC_KSPIE_DeadalusEngineController_PostMsg3");//"Thrust warp stopped - propellant depleted" : "Thrust warp stopped - running out of propellant"
+                    var message = (fuelRatio <= 0) ? Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg2") : Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg3");//"Thrust warp stopped - propellant depleted" : "Thrust warp stopped - running out of propellant"
                     UnityEngine.Debug.Log("[KSPI]: " + message);
                     ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                     // Return to realtime

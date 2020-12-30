@@ -97,7 +97,7 @@ namespace KIT.Resources
 
             ConfigNode oceanicResourcePack = GameDatabase.Instance.GetConfigNodes("OCEANIC_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
 
-            Debug.Log("[KSPI] Loading oceanic data from pack: " + (oceanicResourcePack.HasValue("name") ? oceanicResourcePack.GetValue("name") : "unknown pack"));
+            Debug.Log("[KSPI] Loading oceanic data from pack: " + (oceanicResourcePack.HasValue("name") ? oceanicResourcePack.GetValue("name") : "Unknown pack"));
             if (oceanicResourcePack != null)
             {
                 Debug.Log("[KSPI]: searching for ocean definition for " + celestialBody.name);

@@ -1,4 +1,4 @@
-﻿using KIT.Powermanagement;
+﻿using KIT.Powermanagement.Interfaces;
 
 namespace KIT.Reactors
 {
@@ -8,10 +8,10 @@ namespace KIT.Reactors
         [KSPField]
         public double magneticNozzlePowerMult = 1;
 
-        public double MaximumChargedIspMult { get { return (float)maximumChargedIspMult; } }
+        public double MaximumChargedIspMult => (float)maximumChargedIspMult;
 
-        public double MinimumChargdIspMult { get { return (float)minimumChargdIspMult; } }
+        public double MinimumChargedIspMult => (float)minimumChargdIspMult;
 
-        public override double MagneticNozzlePowerMult { get { return magneticNozzlePowerMult; } }
+        public override double MagneticNozzlePowerMult => magneticNozzlePowerMult;
     }
 }

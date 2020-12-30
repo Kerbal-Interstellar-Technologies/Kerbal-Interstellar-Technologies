@@ -1,4 +1,3 @@
-using KIT.Constants;
 using KIT.Extensions;
 using System.Linq;
 using UnityEngine;
@@ -28,7 +27,7 @@ namespace KIT.Propulsion
         protected Transform surfaceTransform = null;
         protected Animation solarSailAnim = null;
 
-        const double thrust_coeff = 9.08e-6;
+        const double ThrustCoefficient = 9.08e-6;
 
         protected double solar_force_d = 0;
         protected double solar_acc_d = 0;
@@ -64,7 +63,7 @@ namespace KIT.Propulsion
                 {
                     solarSailAnim = part.FindModelAnimators(animName).FirstOrDefault();
                 }
-                if (IsEnabled)
+                if (IsEnabled && solarSailAnim != null)
                 {
                     solarSailAnim[animName].speed = 1;
                     solarSailAnim[animName].normalizedTime = 0;
@@ -200,7 +199,7 @@ namespace KIT.Propulsion
         private double solarForceAtDistance()
         {
             double distance_from_sun = Vector3.Distance(LocalStar.position, vessel.CoMD);
-            double force_to_return = thrust_coeff * GameConstants.kerbin_sun_distance * GameConstants.kerbin_sun_distance / distance_from_sun / distance_from_sun;
+            double force_to_return = ThrustCoefficient * GameConstants.kerbin_sun_distance * GameConstants.kerbin_sun_distance / distance_from_sun / distance_from_sun;
             return force_to_return;
         }
 

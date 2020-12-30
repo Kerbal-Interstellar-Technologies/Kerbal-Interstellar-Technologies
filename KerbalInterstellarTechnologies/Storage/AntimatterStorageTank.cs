@@ -1,4 +1,3 @@
-using KIT.Constants;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
@@ -493,7 +492,7 @@ namespace KIT
             else if (chargeStatus <= 0)
                 DoExplode(Localizer.Format("#LOC_KSPIE_AntimatterStorageTank_Postmsg4"));//"Antimatter container exploded because containment was unpowered"
             else
-                DoExplode(Localizer.Format("#LOC_KSPIE_AntimatterStorageTank_Postmsg5"));//"Antimatter container exploded for unknown reason"
+                DoExplode(Localizer.Format("#LOC_KSPIE_AntimatterStorageTank_Postmsg5"));//"Antimatter container exploded for Unknown reason"
 
             part.OnJustAboutToBeDestroyed -= OnJustAboutToBeDestroyed;
 

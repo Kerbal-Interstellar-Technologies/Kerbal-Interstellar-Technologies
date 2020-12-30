@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
@@ -72,7 +71,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_Power"), _bold_label, GUILayout.Width(labelWidth));//"Power"
-            GUILayout.Label(PluginHelper.getFormattedPowerString(CurrentPower) + "/" + PluginHelper.getFormattedPowerString(PowerRequirements), _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(PluginHelper.GetFormattedPowerString(CurrentPower) + "/" + PluginHelper.GetFormattedPowerString(PowerRequirements), _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_AluminaConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Alumina Consumption Rate"

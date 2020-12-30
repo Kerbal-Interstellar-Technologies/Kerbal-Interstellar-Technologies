@@ -1,4 +1,4 @@
-﻿using KIT.Beamedpower;
+﻿using KIT.BeamedPower;
 using KIT.Propulsion;
 using KIT.Wasteheat;
 using System.Linq;
@@ -11,10 +11,10 @@ namespace KIT
     {
         void Start()
         {
-            BeamedPowerSources.getVesselMicrowavePersistanceForProtoVesselCallback = BeamedPowerTransmitter.GetVesselMicrowavePersistanceForProtoVessel;
-            BeamedPowerSources.getVesselRelayPersistanceForProtoVesselCallback = BeamedPowerTransmitter.GetVesselRelayPersistanceForProtoVessel;
-            BeamedPowerSources.getVesselMicrowavePersistanceForVesselCallback = BeamedPowerTransmitter.getVesselMicrowavePersistanceForVessel;
-            BeamedPowerSources.getVesselRelayPersistenceForVesselCallback = BeamedPowerTransmitter.getVesselRelayPersistenceForVessel;
+            BeamedPowerSources.GetVesselMicrowavePersistenceForProtoVesselCallback = BeamedPowerTransmitter.GetVesselMicrowavePersistenceForProtoVessel;
+            BeamedPowerSources.GetVesselRelayPersistenceForProtoVesselCallback = BeamedPowerTransmitter.GetVesselRelayPersistenceForProtoVessel;
+            BeamedPowerSources.GetVesselMicrowavePersistenceForVesselCallback = BeamedPowerTransmitter.GetVesselMicrowavePersistenceForVessel;
+            BeamedPowerSources.GetVesselRelayPersistenceForVesselCallback = BeamedPowerTransmitter.GetVesselRelayPersistenceForVessel;
 
             GameEvents.onGameStateSaved.Add(OnGameStateSaved);
             GameEvents.onDockingComplete.Add(OnDockingComplete);

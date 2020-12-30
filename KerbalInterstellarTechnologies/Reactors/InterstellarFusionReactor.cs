@@ -1,7 +1,7 @@
-﻿using KIT.Powermanagement;
-using KSP.Localization;
+﻿using KSP.Localization;
 using System;
 using System.Linq;
+using KIT.Powermanagement.Interfaces;
 using UnityEngine;
 using KIT.ResourceScheduler;
 using KIT.Resources;
@@ -21,7 +21,7 @@ namespace KIT.Reactors
         [KSPField] public double maximumLithiumModifier = 1;
         [KSPField] public double lithiumModifierExponent = 0.5;
         [KSPField] public double maximumChargedIspMult = 100;
-        [KSPField] public double minimumChargdIspMult = 1;
+        [KSPField] public double minimumChargedIspMult = 1;
         [KSPField] public double maintenancePowerWasteheatRatio = 0.1;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_FissionPB_Maintance")]//Maintance
@@ -43,7 +43,7 @@ namespace KIT.Reactors
 
         public double MaximumChargedIspMult => maximumChargedIspMult;
 
-        public double MinimumChargdIspMult => minimumChargdIspMult;
+        public double MinimumChargedIspMult => minimumChargedIspMult;
 
         public override double MaximumThermalPower => Math.Max(base.MaximumThermalPower * PlasmaModifier * lithium_modifier, 0);
 
@@ -110,7 +110,7 @@ namespace KIT.Reactors
             InitialiseGainFactors();
 
             base.OnStart(state);
-            Fields["lithium_modifier"].guiActive = powerIsAffectedByLithium;
+            Fields[nameof(lithium_modifier)].guiActive = powerIsAffectedByLithium;
         }
 
         [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_FissionPB_NextFusionMode", active = true)]//Next Fusion Mode

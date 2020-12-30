@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KIT.Storage
+﻿namespace KIT.Storage
 {
     [KSPModule("Kerbalism Habitat Controller")]
 	class KerbalismHabitatController : PartModule
@@ -31,10 +26,7 @@ namespace KIT.Storage
 				if (isInitialized == false)
 					InitializeKerbalismHabitat();
 
-				if (habitatVolumeField == null)
-					return;
-
-				habitatVolumeField.SetValue(value, habitatModule);
+                habitatVolumeField?.SetValue(value, habitatModule);
 			}
 		}
 
@@ -55,10 +47,7 @@ namespace KIT.Storage
 				if (isInitialized == false)
 					InitializeKerbalismHabitat();
 
-				if (habitatSurfaceField == null)
-					return;
-
-				habitatSurfaceField.SetValue(value, habitatModule);
+                habitatSurfaceField?.SetValue(value, habitatModule);
 			}
 		}
 

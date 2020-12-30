@@ -1,12 +1,5 @@
-﻿using KIT.Constants;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 using KSP.Localization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace KIT.Resources
 {
@@ -37,7 +30,7 @@ namespace KIT.Resources
 
     */
 
-    class VesselHeatDissipation : IKITMod
+    public class VesselHeatDissipation : IKITMod
     {
         public Vessel Vessel;
 
@@ -53,13 +46,13 @@ namespace KIT.Resources
         }
 
         // I have no idea where this value came from, or how it was calculated.
-        private const double PASSIVE_TEMP_P4 = 2947.295521;
+        private const double PassiveTempP4 = 2947.295521;
 
         private double AdjustSupplyComplete(double powerToExtract)
         {
-            // passive dissip of waste heat - a little bit of this
+            // passive dissipation of waste heat - a little bit of this
             double vesselMass = Vessel.totalMass;
-            powerToExtract += 2.0 * PASSIVE_TEMP_P4 * GameConstants.stefan_const * vesselMass;
+            powerToExtract += 2.0 * PassiveTempP4 * GameConstants.stefan_const * vesselMass;
 
             if (Vessel.mainBody.atmosphere && Vessel.altitude <= Vessel.mainBody.atmosphereDepth)
             {

@@ -193,55 +193,55 @@ namespace KIT.Reactors
             _gigawattPerGram = 1 / (totalTonsFuelUsePerMJ * 1e9);
         }
 
-        public string AlternativeFuelType1 { get { return _alternativeFuelType1; } }
-        public string AlternativeFuelType2 { get { return _alternativeFuelType2; } }
-        public string AlternativeFuelType3 { get { return _alternativeFuelType3; } }
-        public string AlternativeFuelType4 { get { return _alternativeFuelType4; } }
-        public string AlternativeFuelType5 { get { return _alternativeFuelType5; } }
+        public string AlternativeFuelType1 => _alternativeFuelType1;
+        public string AlternativeFuelType2 => _alternativeFuelType2;
+        public string AlternativeFuelType3 => _alternativeFuelType3;
+        public string AlternativeFuelType4 => _alternativeFuelType4;
+        public string AlternativeFuelType5 => _alternativeFuelType5;
 
-        public int SupportedReactorTypes { get { return _reactor_type; } }
+        public int SupportedReactorTypes => _reactor_type;
 
-        public int Index { get { return _index; } }
+        public int Index => _index;
 
-        public string Name { get { return _name; } }
+        public string Name => _name;
 
-        public string ModeGUIName { get { return _mode_gui_name; } }
+        public string ModeGUIName => _mode_gui_name;
 
-        public string TechRequirement { get { return _techRequirement; } }
+        public string TechRequirement => _techRequirement;
 
-        public IList<ReactorFuel> ReactorFuels { get { return _fuels; } }
+        public IList<ReactorFuel> ReactorFuels => _fuels;
 
-        public IList<ReactorProduct> ReactorProducts { get { return _products; } }
+        public IList<ReactorProduct> ReactorProducts => _products;
 
-        public bool Aneutronic { get { return _aneutronic; } }
+        public bool Aneutronic => _aneutronic;
 
-        public double GammaRayEnergy { get { return _gammaRayEnergy; } }
+        public double GammaRayEnergy => _gammaRayEnergy;
 
-        public bool RequiresLab { get { return _requires_lab; } }
+        public bool RequiresLab => _requires_lab;
 
-        public bool RequiresUpgrade { get { return _requires_upgrade; } }
+        public bool RequiresUpgrade => _requires_upgrade;
 
-        public float ChargedPowerRatio { get { return _charged_power_ratio; } }
+        public float ChargedPowerRatio => _charged_power_ratio;
 
-        public double MeVPerChargedProduct { get { return _mev_per_charged_product; } }
+        public double MeVPerChargedProduct => _mev_per_charged_product;
 
-        public float NormalisedReactionRate { get { return _reactionRate * _powerMultiplier; } }
+        public float NormalisedReactionRate => _reactionRate * _powerMultiplier;
 
-        public float NormalisedPowerRequirements { get { return _normpowerrequirements; } }
+        public float NormalisedPowerRequirements => _normpowerrequirements;
 
-        public int TechLevel { get { return _techLevel; } }
+        public int TechLevel => _techLevel;
 
-        public int MinimumFusionGainFactor { get { return _minimumQ; } }
+        public int MinimumFusionGainFactor => _minimumQ;
 
-        public float NeutronsRatio { get { return _neutrons_ratio; } }
+        public float NeutronsRatio => _neutrons_ratio;
 
-        public float TritiumBreedModifier { get { return _tritium_breed_multiplier; } }    // calcula
+        public float TritiumBreedModifier => _tritium_breed_multiplier;
 
-        public double FuelEfficencyMultiplier { get { return _fuel_efficency_multiplier; } }
+        public double FuelEfficencyMultiplier => _fuel_efficency_multiplier;
 
-        public double FuelUseInGramPerTeraJoule { get { return _fuelUseInGramPerTeraJoule; } }
+        public double FuelUseInGramPerTeraJoule => _fuelUseInGramPerTeraJoule;
 
-        public double GigawattPerGram { get { return _gigawattPerGram; } }
+        public double GigawattPerGram => _gigawattPerGram;
 
         public int Position { get; set; }
 

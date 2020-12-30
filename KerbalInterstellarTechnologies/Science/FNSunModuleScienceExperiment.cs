@@ -1,5 +1,4 @@
 ﻿using KIT.Resources;
-using System.Text;
 
 namespace KIT.Science
 {

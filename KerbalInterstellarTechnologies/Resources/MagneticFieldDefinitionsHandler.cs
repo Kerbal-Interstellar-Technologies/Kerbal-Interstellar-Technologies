@@ -19,7 +19,7 @@ namespace KIT.Resources
             MagneticFieldDefinition magneticFieldDefinition;
             try
             {
-                LoadMagneticfiedDefinition();
+                LoadMagneticFieldDefinition();
 
                 // check if there's a composition for this body
                 if (!magneticFieldDefinitions_by_name.TryGetValue(celestialBodyName, out magneticFieldDefinition))
@@ -38,7 +38,7 @@ namespace KIT.Resources
             return magneticFieldDefinition;
         }
 
-        private static void LoadMagneticfiedDefinition()
+        private static void LoadMagneticFieldDefinition()
         {
             try
             {

@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace KIT.Resources
 {
     public struct DecayConfiguration
     {
-        public bool valid;
+        public bool Valid;
 
         // Provided in the configuration file
-        public ResourceName resourceID;
-        public ResourceName decayProduct;
-        public double decayConstant;
+        public ResourceName ResourceId;
+        public ResourceName DecayProduct;
+        public double DecayConstant;
 
         // Calculated at run time
-        public double densityRatio;
+        public double DensityRatio;
     }
 
     static class ResourceDecayConfiguration
     {
-        public static bool disabled;
+        public static bool Disabled;
 
         private static DecayConfiguration ParseConfig(ConfigNode node)
         {
@@ -34,10 +30,10 @@ namespace KIT.Resources
                 Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. Error getting decayProduct");
                 return ret;
             }
-            ret.decayProduct = KITResourceSettings.NameToResource(tmpStr);
-            if (ret.decayProduct == ResourceName.Unknown)
+            ret.DecayProduct = KITResourceSettings.NameToResource(tmpStr);
+            if (ret.DecayProduct == ResourceName.Unknown)
             {
-                Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. Unable to convert decayProduct to a resource identifer");
+                Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. Unable to convert decayProduct to a resource identifier");
                 return ret;
             }
             if (!PartResourceLibrary.Instance.resourceDefinitions.Contains(tmpStr))
@@ -45,9 +41,9 @@ namespace KIT.Resources
                 Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. {tmpStr} is an undefined resource");
                 return ret;
             }
-            ret.densityRatio = PartResourceLibrary.Instance.GetDefinition(node.name).density / PartResourceLibrary.Instance.GetDefinition(tmpStr).density;
+            ret.DensityRatio = PartResourceLibrary.Instance.GetDefinition(node.name).density / PartResourceLibrary.Instance.GetDefinition(tmpStr).density;
 
-            if (node.TryGetValue("decayConstant", ref ret.decayConstant) == false)
+            if (node.TryGetValue("decayConstant", ref ret.DecayConstant) == false)
             {
                 Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. Error getting decayConstant");
                 return ret;
@@ -59,25 +55,25 @@ namespace KIT.Resources
                 return ret;
             }
 
-            ret.resourceID = KITResourceSettings.NameToResource(node.name);
-            if (ret.resourceID == ResourceName.Unknown)
+            ret.ResourceId = KITResourceSettings.NameToResource(node.name);
+            if (ret.ResourceId == ResourceName.Unknown)
             {
-                Debug.Log($"[VesselDecay.ParseConfig] missing resource definition for either {ret.decayProduct} or {node.name}");
+                Debug.Log($"[VesselDecay.ParseConfig] missing resource definition for either {ret.DecayProduct} or {node.name}");
                 return ret;
             }
 
-            ret.valid = true;
+            ret.Valid = true;
 
             return ret;
         }
 
         public static void Initialize()
         {
-            configuration = new Dictionary<string, DecayConfiguration>(16);
+            _configuration = new Dictionary<string, DecayConfiguration>(16);
             var decayConfigs = GameDatabase.Instance.GetConfigNodes("KIT_DECAY_CONFIG");
             if (decayConfigs == null || decayConfigs.Length == 0)
             {
-                disabled = true;
+                Disabled = true;
                 return;
             }
 
@@ -85,22 +81,22 @@ namespace KIT.Resources
             foreach (var v in decayConfig.GetNodes())
             {
                 var c = ParseConfig(v);
-                if (c.valid == false)
+                if (c.Valid == false)
                 {
                     Debug.Log($"[VesselDecayConfiguration.Initialize] ignoring invalid configuration entry {v.name}");
                     continue;
                 }
 
-                configuration[v.name] = c;
+                _configuration[v.name] = c;
             }
         }
 
-        private static Dictionary<string, DecayConfiguration> configuration;
+        private static Dictionary<string, DecayConfiguration> _configuration;
 
         public static Dictionary<string, DecayConfiguration> Instance()
         {
-            if (configuration == null && !disabled) Initialize();
-            return configuration;
+            if (_configuration == null && !Disabled) Initialize();
+            return _configuration;
         }
     }
 }

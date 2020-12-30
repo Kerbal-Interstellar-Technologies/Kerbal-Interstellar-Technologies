@@ -1,4 +1,4 @@
-﻿namespace KIT.Redist
+﻿namespace KIT.Interfaces
 {
     public interface IElectricPowerGeneratorSource
     {

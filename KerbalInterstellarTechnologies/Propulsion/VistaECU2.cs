@@ -37,14 +37,14 @@
 
         protected override FloatCurve BaseFloatCurve
         {
-            get { return _atmosphereCurve ?? curEngineT.atmosphereCurve; }
-            set { _atmosphereCurve = value; }
+            get => _atmosphereCurve ?? curEngineT.atmosphereCurve;
+            set => _atmosphereCurve = value;
         }
 
         protected override bool ShowIspThrottle
         {
-            get { return Fields["localIsp"].guiActive; }
-            set { Fields["localIsp"].guiActive = value; }
+            get => Fields[nameof(localIsp)].guiActive;
+            set => Fields[nameof(localIsp)].guiActive = value;
         }
 
         protected override float InitialGearRatio => initialGearRatio;

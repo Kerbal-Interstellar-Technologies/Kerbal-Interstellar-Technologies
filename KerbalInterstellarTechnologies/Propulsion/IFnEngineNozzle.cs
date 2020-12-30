@@ -1,7 +1,7 @@
 ﻿
 namespace KIT.Propulsion
 {
-    public interface IFNEngineNoozle : IEngineNoozle
+    public interface IFnEngineNozzle : IEngineNozzle
     {
         Part part { get; }
         bool RequiresPlasmaHeat { get; }

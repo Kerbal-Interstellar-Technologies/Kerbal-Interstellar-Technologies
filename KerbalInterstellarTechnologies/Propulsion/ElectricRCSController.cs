@@ -1,6 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
-using KIT.Powermanagement;
+﻿using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using System;
@@ -391,8 +389,8 @@ namespace KIT.Propulsion
                 }
                 storedPower = totalPower;
             }
-            powerConsumptionStr = PluginHelper.getFormattedPowerString(received) + " / " +
-                PluginHelper.getFormattedPowerString(requested);
+            powerConsumptionStr = PluginHelper.GetFormattedPowerString(received) + " / " +
+                PluginHelper.GetFormattedPowerString(requested);
 
             if (hasSufficientPower != powerConsumed)
             {

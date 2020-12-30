@@ -1,6 +1,4 @@
-using KIT.Constants;
 using KIT.Extensions;
-using KIT.Powermanagement;
 using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
@@ -530,7 +528,7 @@ namespace KIT.Resources
             var radiusModifier = vessel.mainBody.Radius / GameConstants.EarthRadius;
 
             var atmosphereParticlesPerCubM = comparableEarthAltitudeInKm > (64000 * radiusModifier) ? 0 : comparableEarthAltitudeInKm <= 1000
-                ? Math.Max(0, AtmosphericFloatCurves.Instance.ParticlesHeliumnPerCubePerCm.Evaluate((float)comparableEarthAltitudeInKm))
+                ? Math.Max(0, AtmosphericFloatCurves.Instance.ParticlesHeliumPerCubePerCm.Evaluate((float)comparableEarthAltitudeInKm))
                 : 8.196E+05f * (1 / (Math.Pow(20 / radiusModifier, (comparableEarthAltitudeInKm - 1000) / 1000)));
 
             var atmosphereConcentration = 1e+6 * atmosphereMultiplier * atmosphereParticlesPerCubM * vessel.obt_speed / PhysicsGlobals.AvogadroConstant;
@@ -661,8 +659,8 @@ namespace KIT.Resources
                 dPowerRequirementsMw = 0;
             }
 
-            strReceivedPower = PluginHelper.getFormattedPowerString(dLastPowerRatio * dPowerRequirementsMw) + " / " +
-                PluginHelper.getFormattedPowerString(dPowerRequirementsMw);
+            strReceivedPower = PluginHelper.GetFormattedPowerString(dLastPowerRatio * dPowerRequirementsMw) + " / " +
+                PluginHelper.GetFormattedPowerString(dPowerRequirementsMw);
 
             // get the shielding effect provided by the magnetosphere
             magnetoSphereStrengthRatio = GetMagnetosphereRatio(vessel.altitude, PluginHelper.GetMaxAtmosphericAltitude(vessel.mainBody));

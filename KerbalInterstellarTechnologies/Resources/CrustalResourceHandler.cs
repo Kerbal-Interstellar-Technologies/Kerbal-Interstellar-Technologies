@@ -10,23 +10,23 @@ namespace KIT.Resources
         protected static Dictionary<int, List<CrustalResource>> body_Crustal_resource_list = new Dictionary<int, List<CrustalResource>>();
         protected static Dictionary<string, List<CrustalResource>> body_Crustal_resource_by_name = new Dictionary<string, List<CrustalResource>>();
 
-        public static double getCrustalResourceContent(int refBody, string resourcename)
+        public static double GetCrustalResourceContent(int refBody, string resourceName)
         {
             List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
 
-            CrustalResource resource = bodyCrustalComposition.FirstOrDefault(oor => oor.ResourceName == resourcename);
+            CrustalResource resource = bodyCrustalComposition.FirstOrDefault(oor => oor.ResourceName == resourceName);
 
             return resource?.ResourceAbundance ?? 0;
         }
 
-        public static double getCrustalResourceContent(int refBody, int resource)
+        public static double GetCrustalResourceContent(int refBody, int resource)
         {
             List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
             if (bodyCrustalComposition.Count > resource) return bodyCrustalComposition[resource].ResourceAbundance;
             return 0;
         }
 
-        public static string getCrustalResourceName(int refBody, int resource)
+        public static string GetCrustalResourceName(int refBody, int resource)
         {
             List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
             if (bodyCrustalComposition.Count > resource)
@@ -36,7 +36,7 @@ namespace KIT.Resources
             return null;
         }
 
-        public static string getCrustalResourceDisplayName(int refBody, int resource)
+        public static string GetCrustalResourceDisplayName(int refBody, int resource)
         {
             List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
             if (bodyCrustalComposition.Count > resource)
@@ -53,11 +53,9 @@ namespace KIT.Resources
 
         public static List<CrustalResource> GetCrustalCompositionForBody(string celestrialBodyName) // function for getting or creating Crustal composition
         {
-            List<CrustalResource> bodyCrustalComposition;
-
-            if (!body_Crustal_resource_by_name.TryGetValue(celestrialBodyName, out bodyCrustalComposition))
+            if (!body_Crustal_resource_by_name.TryGetValue(celestrialBodyName, out var bodyCrustalComposition))
             {
-                // try to find celestrial body id it exists in this universe
+                // try to find celestial body id it exists in this universe
                 CelestialBody celestialBody = FlightGlobals.Bodies.FirstOrDefault(m => m.name == celestrialBodyName);
 
                 if (celestialBody != null)
@@ -139,7 +137,7 @@ namespace KIT.Resources
             //CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI
             ConfigNode Crustal_resource_pack = GameDatabase.Instance.GetConfigNodes("CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
 
-            //Debug.Log("[KSPI]: Loading Crustal data from pack: " + (Crustal_resource_pack.HasValue("name") ? Crustal_resource_pack.GetValue("name") : "unknown pack"));
+            //Debug.Log("[KSPI]: Loading Crustal data from pack: " + (Crustal_resource_pack.HasValue("name") ? Crustal_resource_pack.GetValue("name") : "Unknown pack"));
             if (Crustal_resource_pack != null)
             {
                 Debug.Log("[KSPI]: searching for crustal definition for " + celestialBody.name);
@@ -162,7 +160,7 @@ namespace KIT.Resources
             //CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI
             ConfigNode Crustal_resource_pack = GameDatabase.Instance.GetConfigNodes("CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
 
-            //Debug.Log("[KSPI]: Loading Crustal data from pack: " + (Crustal_resource_pack.HasValue("name") ? Crustal_resource_pack.GetValue("name") : "unknown pack"));
+            //Debug.Log("[KSPI]: Loading Crustal data from pack: " + (Crustal_resource_pack.HasValue("name") ? Crustal_resource_pack.GetValue("name") : "Unknown pack"));
             if (Crustal_resource_pack != null)
             {
                 Debug.Log("[KSPI]: searching for crustal definition for " + celestrialBodyName);
@@ -206,27 +204,13 @@ namespace KIT.Resources
                     {
                         // it is Earth-like, use Earth as a template
                         bool hasEarth = FlightGlobals.Bodies.Any(b => b.name == "Earth"); // is there a planet called Earth present in KSP?
-                        if (hasEarth)
-                        {
-                            bodyCrustalComposition = GetCrustalCompositionForBody("Earth");
-                        }
-                        else // if there is not, use the definition for Kerbin
-                        {
-                            bodyCrustalComposition = GetCrustalCompositionForBody("Kerbin");
-                        }
+                        bodyCrustalComposition = GetCrustalCompositionForBody(hasEarth ? "Earth" : "Kerbin");
                     }
                     else
                     {
                         // it is a Mars-like, use Mars as template
                         bool hasMars = FlightGlobals.Bodies.Any(b => b.name == "Mars"); // is there a planet called Mars present in KSP?
-                        if (hasMars)
-                        {
-                            bodyCrustalComposition = GetCrustalCompositionForBody("Mars");
-                        }
-                        else // if there is not, use the definition for Duna
-                        {
-                            bodyCrustalComposition = GetCrustalCompositionForBody("Duna");
-                        }
+                        bodyCrustalComposition = GetCrustalCompositionForBody(hasMars ? "Mars" : "Duna");
                     }
                 }
 

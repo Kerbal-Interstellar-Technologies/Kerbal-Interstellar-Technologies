@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Resources;
+﻿using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -218,7 +217,7 @@ namespace PhotonSail
 
                 // calculate effective radiation pressure on solarSail
                 var energyOnSailInWatt = starLight.solarFlux * vesselData.ModulePhotonSail.surfaceArea;
-                var reflectedRadiationPressureOnSail = 2 * energyOnSailInWatt / GameConstants.speedOfLight * cosConeAngle;
+                var reflectedRadiationPressureOnSail = 2 * energyOnSailInWatt / KIT.GameConstants.speedOfLight * cosConeAngle;
                 var reflectedPhotonForceVector = vesselNormal * reflectedRadiationPressureOnSail * cosConeAngle;
 
                 // calculate acceleration

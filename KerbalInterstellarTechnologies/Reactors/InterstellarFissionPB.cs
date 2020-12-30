@@ -81,7 +81,7 @@ namespace KIT.Reactors
             base.OnUpdate();
         }
 
-        public override bool shouldScaleDownJetISP()
+        public override bool ShouldScaleDownJetISP()
         {
             return true;
         }

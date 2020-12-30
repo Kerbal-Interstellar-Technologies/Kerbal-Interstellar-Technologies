@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.External;
+﻿using KIT.External;
 using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
@@ -117,17 +116,6 @@ namespace KIT.Propulsion
         protected float curveMaxISP; // ToDo: make sure it is properly initialized after  comming from assembly
         [KSPField]
         public double radius = 1;
-
-        /*
-        [KSPField]
-        public double requiredPowerPerSecond;
-        [KSPField]
-        public double producedPowerPerSecond;
-        [KSPField]
-        public double requestedPowerPerSecond;
-        [KSPField]
-        public double recievedPowerPerSecond;
-        */
 
         // abstracts
         protected abstract float InitialGearRatio { get; }
@@ -452,7 +440,7 @@ namespace KIT.Propulsion
 
             radhazard = false;
 
-            if (!HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines)
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().AllowDestructiveEngines)
             {
 
                 var kerbalHazardCount = 0;

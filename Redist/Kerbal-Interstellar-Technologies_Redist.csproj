@@ -85,30 +85,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AtmosphericFloatCurves.cs" />
-    <Compile Include="Beamedpower\BeamedPowerHelper.cs" />
+    <Compile Include="Resources\AtmosphericFloatCurves.cs" />
+    <Compile Include="BeamedPower\BeamedPowerHelper.cs" />
     <Compile Include="Extensions\OrbitExtensions.cs" />
     <Compile Include="GameConstants.cs" />
-    <Compile Include="Beamedpower\IBeamedPowerReceiver.cs" />
+    <Compile Include="BeamedPower\IBeamedPowerReceiver.cs" />
     <Compile Include="Interfaces\ICheatOptions.cs" />
-    <Compile Include="Interfaces\IEngineNoozle.cs" />
+    <Compile Include="Interfaces\IEngineNozzle.cs" />
     <Compile Include="Interfaces\IChargedParticleSource.cs" />
     <Compile Include="Interfaces\IElectricPowerSource.cs" />
-    <Compile Include="Beamedpower\IMicrowavePowerTransmitter.cs" />
+    <Compile Include="BeamedPower\IMicrowavePowerTransmitter.cs" />
     <Compile Include="Interfaces\IPowerSource.cs" />
     <Compile Include="Interfaces\IThermalSource.cs" />
     <Compile Include="Interfaces\INuclearFuelReprocessable.cs" />
-    <Compile Include="Beamedpower\BeamedPowerSources.cs" />
-    <Compile Include="Beamedpower\MicrowaveRoute.cs" />
+    <Compile Include="BeamedPower\BeamedPowerSources.cs" />
+    <Compile Include="BeamedPower\MicrowaveRoute.cs" />
     <Compile Include="Extensions\Numbers.cs" />
     <Compile Include="Extensions\Vector3dExtension.cs" />
     <Compile Include="Extensions\VesselExtensions.cs" />
-    <Compile Include="Beamedpower\ReceivedPowerData.cs" />
-    <Compile Include="Beamedpower\VesselMicrowavePersistence.cs" />
-    <Compile Include="Beamedpower\VesselRelayPersistence.cs" />
+    <Compile Include="BeamedPower\ReceivedPowerData.cs" />
+    <Compile Include="BeamedPower\VesselMicrowavePersistence.cs" />
+    <Compile Include="BeamedPower\VesselRelayPersistence.cs" />
     <Compile Include="KITResourceConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Beamedpower\WaveLengthData.cs" />
+    <Compile Include="BeamedPower\WaveLengthData.cs" />
     <Compile Include="ReplacementPartModules\KITModuleEnginesFX.cs" />
     <Compile Include="ResourceScheduler\Interface.cs" />
     <Compile Include="ResourceScheduler\OverheatingResourceManager.cs" />

@@ -1,6 +1,5 @@
 ﻿using KSP.Localization;
 using System;
-using KIT.Powermanagement;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 
@@ -46,7 +45,7 @@ namespace KIT.Refinery
 
             _disabledText = Localizer.Format("#LOC_KSPIE_AntimatterFactory_disabled");
 
-            Fields["isActive"].guiName = Localizer.Format(activateTitle);
+            Fields[nameof(isActive)].guiName = Localizer.Format(activateTitle);
         }
 
         public override void OnUpdate()

@@ -15,21 +15,20 @@ namespace KIT.Animate
         [KSPField(isPersistant = true)]
         public bool LightsAreOn = true;
 
-        private Light myLight = null;
+        private Light _myLight = null;
 
         public void SetLightState(bool toggle)
         {
-            if (!myLight)
-                myLight = part.FindModelComponent<Light>();
+            if (!_myLight)
+                _myLight = part.FindModelComponent<Light>();
 
             if (toggle)
                 LightsAreOn = !LightsAreOn;
-            myLight.enabled = LightsAreOn;
+            _myLight.enabled = LightsAreOn;
 
             List<MeshRenderer> pRenderers = part.FindModelComponents<MeshRenderer>();
-            for (var i = 0; i < pRenderers.Count; i++)
+            foreach (var mr in pRenderers)
             {
-                MeshRenderer mr = pRenderers[i];
                 if (mr.gameObject.name == Emissive)
                 {
                     float lightAlpha = 1f;

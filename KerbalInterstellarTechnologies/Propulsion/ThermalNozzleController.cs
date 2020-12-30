@@ -1,5 +1,4 @@
-﻿using KIT.Constants;
-using KIT.Extensions;
+﻿using KIT.Extensions;
 using KIT.Interfaces;
 using KIT.Powermanagement;
 using KIT.Resources;
@@ -57,7 +56,7 @@ namespace KIT.Propulsion
     class PlasmaNozzleController : ThermalEngineController { }
 
     [KSPModule("Thermal Engine")]
-    class ThermalEngineController : PartModule, IKITMod, IFNEngineNoozle, IUpgradeableModule, IRescalable<ThermalEngineController>
+    class ThermalEngineController : PartModule, IKITMod, IFnEngineNozzle, IUpgradeableModule, IRescalable<ThermalEngineController>
     {
         public const string GROUP = "ThermalEngineController";
         public const string GROUP_TITLE = "#LOC_KSPIE_ThermalNozzleController_groupName";
@@ -425,9 +424,9 @@ namespace KIT.Propulsion
         private ConfigNode[] fuelConfigNodes;
 
         private readonly List<Propellant> _listOfPropellants = new List<Propellant>();
-        private List<FNModulePreecooler> _vesselPrecoolers;
+        private List<FNModulePrecooler> _vesselPrecoolers;
         private List<AtmosphericIntake> _vesselResourceIntakes;
-        private List<IFNEngineNoozle> _vesselThermalNozzles;
+        private List<IFnEngineNozzle> _vesselThermalNozzles;
         private List<ThermalEngineFuel> _allThermalEngineFuels;
         private List<ThermalEngineFuel> _compatibleThermalEngineFuels;
 
@@ -440,7 +439,7 @@ namespace KIT.Propulsion
             private set
             {
                 _myAttachedReactor = value;
-                _myAttachedReactor?.AttachThermalReciever(id, radius);
+                _myAttachedReactor?.AttachThermalReceiver(id, radius);
             }
         }
 
@@ -610,7 +609,7 @@ namespace KIT.Propulsion
             if (AttachedReactor == null)
                 return;
 
-            AttachedReactor.DetachThermalReciever(id);
+            AttachedReactor.DetachThermalReceiver(id);
 
             AttachedReactor.DisconnectWithEngine(this);
         }
@@ -644,7 +643,7 @@ namespace KIT.Propulsion
 
             ScaleParameters();
 
-            // make sure thermal values are fixed and not screwed up by Deadly Reentry
+            // make sure Thermal values are fixed and not screwed up by Deadly Reentry
             part.maxTemp = maxTemp;
             part.emissiveConstant = emissiveConstant;
             part.heatConductivity = heatConductivity;
@@ -683,7 +682,7 @@ namespace KIT.Propulsion
             else
                 Debug.LogError("[KSPI]: ThermalNozzleController - failed to find engine!");
 
-            // find attached thermal source
+            // find attached Thermal source
             ConnectToThermalSource();
 
             maxPressureThresholdAtKerbinSurface = scaledExitArea * GameConstants.EarthAtmospherePressureAtSeaLevel;
@@ -737,9 +736,9 @@ namespace KIT.Propulsion
             UpdateIspEngineParams(tzrmi);
 
             // research all available pre-coolers, intakes and nozzles on the vessel
-            _vesselPrecoolers = vessel.FindPartModulesImplementing<FNModulePreecooler>();
+            _vesselPrecoolers = vessel.FindPartModulesImplementing<FNModulePrecooler>();
             _vesselResourceIntakes = vessel.FindPartModulesImplementing<AtmosphericIntake>();
-            _vesselThermalNozzles = vessel.FindPartModulesImplementing<IFNEngineNoozle>();
+            _vesselThermalNozzles = vessel.FindPartModulesImplementing<IFnEngineNozzle>();
 
             // if we can upgrade, let's do so
             if (isupgraded)
@@ -838,7 +837,7 @@ namespace KIT.Propulsion
 
             if (source?.Source == null)
             {
-                Debug.LogWarning("[KSPI]: ThermalNozzleController - Failed to find thermal source");
+                Debug.LogWarning("[KSPI]: ThermalNozzleController - Failed to find Thermal source");
                 return;
             }
 
@@ -859,7 +858,7 @@ namespace KIT.Propulsion
                 }
             }
 
-            Debug.Log("[KSPI]: ThermalNozzleController - Found thermal source with distance " + partDistance);
+            Debug.Log("[KSPI]: ThermalNozzleController - Found Thermal source with distance " + partDistance);
         }
 
         // Is called in the VAB
@@ -945,7 +944,7 @@ namespace KIT.Propulsion
 
         private bool AllowedExhaust()
         {
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines) return true;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().AllowDestructiveEngines) return true;
 
             var homeworld = FlightGlobals.GetHomeBody();
             var toHomeworld = vessel.CoMD - homeworld.position;
@@ -1454,7 +1453,7 @@ namespace KIT.Propulsion
             myAttachedEngine.maxThrust = maxThrustOnEngine;
             UpdateAtmosphericPressureThreshold();
 
-            // update engine thrust/ISP for thermal nozzle
+            // update engine thrust/ISP for Thermal nozzle
             if (!_currentPropellantIsJet)
             {
                 var maxThrustInCurrentAtmosphere = Math.Max(maxThrustInSpace - pressureThreshold, minimumThrust);
@@ -1577,7 +1576,7 @@ namespace KIT.Propulsion
         {
             // shutdown engine when connected heatSource cannot produce power
             if (!AttachedReactor.CanProducePower)
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ThermalNozzleController_PostMsg5"), 0.02f, ScreenMessageStyle.UPPER_CENTER);//"no power produced by thermal source!"
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ThermalNozzleController_PostMsg5"), 0.02f, ScreenMessageStyle.UPPER_CENTER);//"no power produced by Thermal source!"
 
             // consume power when plasma nozzle
             if (requiredMegajouleRatio > 0)
@@ -1673,7 +1672,7 @@ namespace KIT.Propulsion
 
             UpdateAtmosphericPressureThreshold();
 
-            // update engine thrust/ISP for thermal nozzle
+            // update engine thrust/ISP for Thermal nozzle
             if (!_currentPropellantIsJet)
             {
                 max_thrust_in_current_atmosphere = Math.Max(max_thrust_in_space - pressureThreshold, 1e-10);
@@ -1755,8 +1754,8 @@ namespace KIT.Propulsion
             }
 
             // set engines maximum fuel flow
-            if (IsPositiveValidNumber(maxFuelFlowRate) && IsPositiveValidNumber(adjustedFuelFlowMult) && IsPositiveValidNumber(AttachedReactor.FuelRato))
-                maxFuelFlowOnEngine = (float)Math.Max(maxFuelFlowRate * adjustedFuelFlowMult * AttachedReactor.FuelRato * AttachedReactor.FuelRato, 1e-10);
+            if (IsPositiveValidNumber(maxFuelFlowRate) && IsPositiveValidNumber(adjustedFuelFlowMult) && IsPositiveValidNumber(AttachedReactor.FuelRatio))
+                maxFuelFlowOnEngine = (float)Math.Max(maxFuelFlowRate * adjustedFuelFlowMult * AttachedReactor.FuelRatio * AttachedReactor.FuelRatio, 1e-10);
             else
                 maxFuelFlowOnEngine = 1e-10f;
             myAttachedEngine.maxFuelFlow = maxFuelFlowOnEngine;
@@ -1925,8 +1924,8 @@ namespace KIT.Propulsion
 
             baseMaxIsp = Math.Sqrt(coreTemperature) * EffectiveCoreTempIspMult;
 
-            if (IsPositiveValidNumber(AttachedReactor.FuelRato))
-                baseMaxIsp *= AttachedReactor.FuelRato;
+            if (IsPositiveValidNumber(AttachedReactor.FuelRatio))
+                baseMaxIsp *= AttachedReactor.FuelRatio;
 
             if (baseMaxIsp > maxJetModeBaseIsp && _currentPropellantIsJet)
                 baseMaxIsp = maxJetModeBaseIsp;
@@ -2033,8 +2032,8 @@ namespace KIT.Propulsion
             if (_myAttachedReactor != null)
             {
                 // re-attach with updated radius
-                _myAttachedReactor.DetachThermalReciever(id);
-                _myAttachedReactor.AttachThermalReciever(id, radius);
+                _myAttachedReactor.DetachThermalReceiver(id);
+                _myAttachedReactor.AttachThermalReceiver(id, radius);
 
                 Fields[nameof(vacuumPerformance)].guiActiveEditor = true;
                 Fields[nameof(radiusModifier)].guiActiveEditor = true;
@@ -2081,7 +2080,7 @@ namespace KIT.Propulsion
         {
             if (AttachedReactor == null || AttachedReactor.Radius == 0 || radius == 0) return 0;
 
-            var currentFraction = _myAttachedReactor.GetFractionThermalReciever(id);
+            var currentFraction = _myAttachedReactor.GetFractionThermalReceiver(id);
 
             if (currentFraction == 0) return storedFractionThermalReciever;
 
@@ -2125,7 +2124,7 @@ namespace KIT.Propulsion
             {
                 foreach (var fuel in _compatibleThermalEngineFuels)
                 {
-                    if (!HighLogic.LoadedSceneIsEditor && !fuel.hasAnyStorage()) continue;
+                    if (!HighLogic.LoadedSceneIsEditor && !fuel.HasAnyStorage()) continue;
 
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button(fuel.GuiName, GUILayout.ExpandWidth(true)))
@@ -2213,9 +2212,9 @@ namespace KIT.Propulsion
 
             // attach/detach with radius
             if (myAttachedEngine.isOperational)
-                AttachedReactor.AttachThermalReciever(id, radius);
+                AttachedReactor.AttachThermalReceiver(id, radius);
             else
-                AttachedReactor.DetachThermalReciever(id);
+                AttachedReactor.DetachThermalReceiver(id);
 
             bool canUseChargedPower = this.allowUseOfChargedPower && AttachedReactor.ChargedPowerRatio > 0;
 
@@ -2348,18 +2347,18 @@ namespace KIT.Propulsion
                     maxFuelFlowRate *= jetSpoolRatio;
                 }
 
-                // prevent too low number of maxthrust
+                // prevent too low number of max thrust
                 if (calculatedMaxThrust <= minimumThrust)
                 {
                     calculatedMaxThrust = minimumThrust;
                     maxFuelFlowRate = 0;
                 }
 
-                // attachedReactorFuelRato = AttachedReactor.FuelRato;
+                // attachedReactorFuelRatio = AttachedReactor.FuelRatio;
 
                 // set engines maximum fuel flow
-                if (IsPositiveValidNumber(maxFuelFlowRate) && IsPositiveValidNumber(AttachedReactor.FuelRato))
-                    maxFuelFlowOnEngine = (float)Math.Max(maxFuelFlowRate * AttachedReactor.FuelRato * AttachedReactor.FuelRato, 1e-10);
+                if (IsPositiveValidNumber(maxFuelFlowRate) && IsPositiveValidNumber(AttachedReactor.FuelRatio))
+                    maxFuelFlowOnEngine = (float)Math.Max(maxFuelFlowRate * AttachedReactor.FuelRatio * AttachedReactor.FuelRatio, 1e-10);
                 else
                     maxFuelFlowOnEngine = 1e-10f;
 

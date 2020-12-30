@@ -5,9 +5,9 @@ namespace KIT.Extensions
 {
     public static class VesselExtension
     {
-        //var vesselRegitBody = part.vessel.GetComponent<Rigidbody>();
-        //vesselRegitBody.AddForce(part.vessel.velocityD.normalized * -dEffectiveOrbitalVesselDragInNewton * 1e-3, ForceMode.Force);
-        //vesselRegitBody.AddForce(solarWindDirectionVector.normalized * -dSolarWindVesselForceInNewton * 1e-3, ForceMode.Force);
+        //var vesselRigidBody = part.vessel.GetComponent<RigidBody>();
+        //vesselRigidBody.AddForce(part.vessel.velocityD.normalized * -dEffectiveOrbitalVesselDragInNewton * 1e-3, ForceMode.Force);
+        //vesselRigidBody.AddForce(solarWindDirectionVector.normalized * -dSolarWindVesselForceInNewton * 1e-3, ForceMode.Force);
 
         public static double PersistHeading(this Vessel vessel, bool forceRotation = false, bool canDropOutOfTimeWarp = true, double tolerance = 0)
         {
@@ -81,7 +81,7 @@ namespace KIT.Extensions
             else
             {
                 var directionName = Enum.GetName(typeof(VesselAutopilot.AutopilotMode), vessel.Autopilot.Mode);
-                var message = "Persistant Thrust stopped - vessel is not facing " + directionName;
+                var message = "Persistent Thrust stopped - vessel is not facing " + directionName;
                 ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                 Debug.Log("[KSPI]: " + message);
                 TimeWarp.SetRate(0, true);

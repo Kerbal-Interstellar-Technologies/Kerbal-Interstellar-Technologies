@@ -1,15 +1,14 @@
-using KIT.Constants;
 using KIT.Resources;
 using KSP.Localization;
 using System;
 using System.Linq;
-using KIT.Powermanagement;
+using KIT.Powermanagement.Interfaces;
 using UnityEngine;
 using KIT.ResourceScheduler;
 
 namespace KIT.Propulsion
 {
-    class InterstellarMagneticNozzleControllerFX : PartModule, IKITMod, IFNEngineNoozle
+    class InterstellarMagneticNozzleControllerFX : PartModule, IKITMod, IFnEngineNozzle
     {
         public const string GROUP = "MagneticNozzleController";
         public const string GROUP_TITLE = "#LOC_KSPIE_MagneticNozzleControllerFX_groupName";
@@ -22,7 +21,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)]
         public bool exhaustAllowed = true;
 
-        // Non Persistant fields
+        // Non Persistent fields
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_ThermalNozzleController_Radius", guiActiveEditor = true, guiFormat = "F2", guiUnits = "m")]
         public double radius = 2.5;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FusionEngine_partMass", guiActiveEditor = true, guiFormat = "F3", guiUnits = " t")]
@@ -106,13 +105,11 @@ namespace KIT.Propulsion
 
         public IFNChargedParticleSource AttachedReactor
         {
-            get { return _attached_reactor; }
+            get => _attached_reactor;
             private set
             {
                 _attached_reactor = value;
-                if (_attached_reactor == null)
-                    return;
-                _attached_reactor.AttachThermalReciever(id, radius);
+                _attached_reactor?.AttachThermalReceiver(id, radius);
             }
         }
 
@@ -121,15 +118,15 @@ namespace KIT.Propulsion
             return _attached_engine.maxFuelFlow;
         }
 
-        public bool PropellantAbsorbsNeutrons { get { return false; } }
+        public bool PropellantAbsorbsNeutrons => false;
 
-        public bool RequiresPlasmaHeat { get { return false; } }
+        public bool RequiresPlasmaHeat => false;
 
-        public bool RequiresThermalHeat { get { return false; } }
+        public bool RequiresThermalHeat => false;
 
-        public float CurrentThrottle { get { return _attached_engine.currentThrottle > 0 ? (maximum_isp == minimum_isp ? _attached_engine.currentThrottle : 1) : 0; } }
+        public float CurrentThrottle => _attached_engine.currentThrottle > 0 ? (maximum_isp == minimum_isp ? _attached_engine.currentThrottle : 1) : 0;
 
-        public bool RequiresChargedPower { get { return true; } }
+        public bool RequiresChargedPower => true;
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -148,7 +145,7 @@ namespace KIT.Propulsion
 
             max_power_multiplier = Math.Log10(maximum_isp / minimum_isp);
 
-            throtleExponent = Math.Abs(Math.Log10(_attached_reactor.MinimumChargdIspMult / _attached_reactor.MaximumChargedIspMult));
+            throtleExponent = Math.Abs(Math.Log10(_attached_reactor.MinimumChargedIspMult / _attached_reactor.MaximumChargedIspMult));
 
             simulatedThrottleFloatRange = Fields["simulatedThrottle"].uiControlEditor as UI_FloatRange;
             simulatedThrottleFloatRange.onFieldChanged += UpdateFromGUI;
@@ -170,8 +167,8 @@ namespace KIT.Propulsion
                     part.Effect(powerEffectName, 0, -1);
             }
 
-            Fields["partMass"].guiActiveEditor = showPartMass;
-            Fields["partMass"].guiActive = showPartMass;
+            Fields[nameof(partMass)].guiActiveEditor = showPartMass;
+            Fields[nameof(partMass)].guiActive = showPartMass;
         }
 
         private void InitializesPropellantBuffer()
@@ -221,22 +218,18 @@ namespace KIT.Propulsion
 
         private void ConnectToReactor()
         {
-            // first try to look in part
-            _attached_reactor = this.part.FindModuleImplementing<IFNChargedParticleSource>();
-
-            // try to find nearest
-            if (_attached_reactor == null)
-                _attached_reactor = BreadthFirstSearchForChargedParticleSource(10, 1);
-
-            if (_attached_reactor != null)
-                _attached_reactor.ConnectWithEngine(this);
+            // first try to look in part, otherwise try to find the nearest source
+            _attached_reactor = this.part.FindModuleImplementing<IFNChargedParticleSource>() ??
+                                BreadthFirstSearchForChargedParticleSource(10, 1);
+            
+            _attached_reactor?.ConnectWithEngine(this);
         }
 
-        private IFNChargedParticleSource BreadthFirstSearchForChargedParticleSource(int stackdepth, int parentdepth)
+        private IFNChargedParticleSource BreadthFirstSearchForChargedParticleSource(int stackDepth, int parentDepth)
         {
-            for (int currentDepth = 0; currentDepth <= stackdepth; currentDepth++)
+            for (int currentDepth = 0; currentDepth <= stackDepth; currentDepth++)
             {
-                IFNChargedParticleSource particleSource = FindChargedParticleSource(part, currentDepth, parentdepth);
+                IFNChargedParticleSource particleSource = FindChargedParticleSource(part, currentDepth, parentDepth);
 
                 if (particleSource != null)
                 {
@@ -247,25 +240,25 @@ namespace KIT.Propulsion
             return null;
         }
 
-        private IFNChargedParticleSource FindChargedParticleSource(Part currentpart, int stackdepth, int parentdepth)
+        private IFNChargedParticleSource FindChargedParticleSource(Part currentPart, int stackDepth, int parentDepth)
         {
-            if (currentpart == null)
+            if (currentPart == null)
                 return null;
 
-            if (stackdepth == 0)
-                return currentpart.FindModulesImplementing<IFNChargedParticleSource>().FirstOrDefault();
+            if (stackDepth == 0)
+                return currentPart.FindModulesImplementing<IFNChargedParticleSource>().FirstOrDefault();
 
-            foreach (var attachNodes in currentpart.attachNodes.Where(atn => atn.attachedPart != null))
+            foreach (var attachNodes in currentPart.attachNodes.Where(atn => atn.attachedPart != null))
             {
-                IFNChargedParticleSource particleSource = FindChargedParticleSource(attachNodes.attachedPart, (stackdepth - 1), parentdepth);
+                IFNChargedParticleSource particleSource = FindChargedParticleSource(attachNodes.attachedPart, (stackDepth - 1), parentDepth);
 
                 if (particleSource != null)
                     return particleSource;
             }
 
-            if (parentdepth > 0)
+            if (parentDepth > 0)
             {
-                IFNChargedParticleSource particleSource = FindChargedParticleSource(currentpart.parent, (stackdepth - 1), (parentdepth - 1));
+                IFNChargedParticleSource particleSource = FindChargedParticleSource(currentPart.parent, (stackDepth - 1), (parentDepth - 1));
 
                 if (particleSource != null)
                     return particleSource;
@@ -279,12 +272,12 @@ namespace KIT.Propulsion
             if (_attached_reactor == null || _attached_engine == null)
                 return;
 
-             // set Isp
-            var joules_per_amu = _attached_reactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ELECTRON_CHARGE / GameConstants.dilution_factor;
-            var calculatedIsp = Math.Sqrt(joules_per_amu * 2 / GameConstants.ATOMIC_MASS_UNIT) / GameConstants.STANDARD_GRAVITY;
+            // set Isp
+            var joulesPerAmu = _attached_reactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ELECTRON_CHARGE / GameConstants.dilution_factor;
+            var calculatedIsp = Math.Sqrt(joulesPerAmu * 2 / GameConstants.ATOMIC_MASS_UNIT) / GameConstants.STANDARD_GRAVITY;
 
-            // calculte max and min isp
-            minimum_isp = calculatedIsp * _attached_reactor.MinimumChargdIspMult;
+            // calculate max and min isp
+            minimum_isp = calculatedIsp * _attached_reactor.MinimumChargedIspMult;
             maximum_isp = calculatedIsp * _attached_reactor.MaximumChargedIspMult;
 
             if (useThrustCurve)
@@ -302,8 +295,8 @@ namespace KIT.Propulsion
                 powerBufferMax = maximumChargedPower / 10000;
 
                 _engineMaxThrust = powerThrustModifier * maximumChargedPower / currentIsp / GameConstants.STANDARD_GRAVITY;
-                var max_fuel_flow_rate = _engineMaxThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
-                _attached_engine.maxFuelFlow = (float)max_fuel_flow_rate;
+                var maxFuelFlowRate = _engineMaxThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
+                _attached_engine.maxFuelFlow = (float)maxFuelFlowRate;
                 _attached_engine.maxThrust = (float)_engineMaxThrust;
 
                 FloatCurve newThrustCurve = new FloatCurve();
@@ -319,10 +312,7 @@ namespace KIT.Propulsion
         {
             partMass = part.mass;
 
-            if (HighLogic.LoadedSceneIsFlight)
-                UpdateEngineStats(false);
-            else
-                UpdateEngineStats(true);
+            UpdateEngineStats(!HighLogic.LoadedSceneIsFlight);
         }
 
         // FixedUpdate is also called in the Editor
@@ -393,7 +383,7 @@ namespace KIT.Propulsion
 
         private bool AllowedExhaust()
         {
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().allowDestructiveEngines) return true;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().AllowDestructiveEngines) return true;
 
             var homeworld = FlightGlobals.GetHomeBody();
             var toHomeworld = vessel.CoMD - homeworld.position;
@@ -465,7 +455,7 @@ namespace KIT.Propulsion
                     TimeWarp.SetRate(0, true);
             }
 
-            _chargedParticleMaximumPercentageUsage = _attached_reactor != null ? _attached_reactor.ChargedParticlePropulsionEfficiency : 0;
+            _chargedParticleMaximumPercentageUsage = _attached_reactor?.ChargedParticlePropulsionEfficiency ?? 0;
 
             if (_chargedParticleMaximumPercentageUsage > 0)
             {

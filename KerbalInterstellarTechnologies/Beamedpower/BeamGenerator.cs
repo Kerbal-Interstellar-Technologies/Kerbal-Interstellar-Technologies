@@ -1,12 +1,10 @@
-﻿using KIT.Beamedpower;
-using KSP.Localization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace KIT.Microwave
+namespace KIT.BeamedPower
 {
     [KSPModule("Integrated Beam Generator")]//#LOC_KSPIE_BeamGenerator_ModuleName1
     class IntegratedBeamGenerator : BeamGenerator { }
@@ -79,70 +77,70 @@ namespace KIT.Microwave
         [KSPField]
         public bool isInitialzed = false;
 
-        ConfigNode[] beamConfigurationNodes;
-        BeamConfiguration activeConfiguration;
-        BeamedPowerTransmitter transmitter;
-        BaseField chooseField;
+        ConfigNode[] _beamConfigurationNodes;
+        BeamConfiguration _activeConfiguration;
+        BeamedPowerTransmitter _transmitter;
+        BaseField _chooseField;
 
-        int techLevel;
+        int _techLevel;
 
         private void DetermineTechLevel()
         {
-            techLevel = 0;
+            _techLevel = 0;
             if (PluginHelper.UpgradeAvailable(techLevelMk2))
-                techLevel++;
+                _techLevel++;
             if (PluginHelper.UpgradeAvailable(techLevelMk3))
-                techLevel++;
+                _techLevel++;
             if (PluginHelper.UpgradeAvailable(techLevelMk4))
-                techLevel++;
+                _techLevel++;
             if (PluginHelper.UpgradeAvailable(techLevelMk5))
-                techLevel++;
+                _techLevel++;
             if (PluginHelper.UpgradeAvailable(techLevelMk6))
-                techLevel++;
+                _techLevel++;
             if (PluginHelper.UpgradeAvailable(techLevelMk7))
-                techLevel++;
+                _techLevel++;
         }
 
         public void Connect(BeamedPowerTransmitter transmitter)
         {
-            this.transmitter = transmitter;
+            this._transmitter = transmitter;
         }
 
-        private int GetTechLevelFromTechId(string techid)
+        private int GetTechLevelFromTechId(string techID)
         {
-            if (techid == techLevelMk7)
+            if (techID == techLevelMk7)
                 return 7;
-            else if (techid == techLevelMk6)
+            else if (techID == techLevelMk6)
                 return 6;
-            else if (techid == techLevelMk5)
+            else if (techID == techLevelMk5)
                 return 5;
-            else if (techid == techLevelMk4)
+            else if (techID == techLevelMk4)
                 return 4;
-            else if (techid == techLevelMk3)
+            else if (techID == techLevelMk3)
                 return 3;
-            else if (techid == techLevelMk2)
+            else if (techID == techLevelMk2)
                 return 2;
-            else if (techid == techLevelMk1)
+            else if (techID == techLevelMk1)
                 return 1;
             else 
                 return 7;
         }
 
-        private string GetColorCodeFromTechId(string techid)
+        private string GetColorCodeFromTechId(string techID)
         {
-            if (techid == techLevelMk7)
+            if (techID == techLevelMk7)
                 return "<color=#ee8800ff>";
-            else if (techid == techLevelMk6)
+            else if (techID == techLevelMk6)
                 return "<color=#ee9900ff>";
-            else if (techid == techLevelMk5)
+            else if (techID == techLevelMk5)
                 return "<color=#ffaa00ff>";
-            else if (techid == techLevelMk4)
+            else if (techID == techLevelMk4)
                 return "<color=#ffbb00ff>";
-            else if (techid == techLevelMk3)
+            else if (techID == techLevelMk3)
                 return "<color=#ffcc00ff>";
-            else if (techid == techLevelMk2)
+            else if (techID == techLevelMk2)
                 return "<color=#ffdd00ff>";
-            else if (techid == techLevelMk1)
+            else if (techID == techLevelMk1)
                 return "<color=#ffff00ff>";
             else
                 return "<color=#ffff00ff>";
@@ -204,7 +202,7 @@ namespace KIT.Microwave
             if(BeamConfigurations == null)
             {
                 var rootNode = GameDatabase.Instance.GetConfigNodes("KIT_BeamConfiguration");
-                if (rootNode == null || rootNode.Count() == 0)
+                if (rootNode == null || !rootNode.Any())
                 {
                     Debug.Log($"[KIT] Beamed Power Receiver OnStart, {(rootNode == null ? "can't find KIT_BandwidthConverters" : "it's empty")}");
                     return;
@@ -228,11 +226,11 @@ namespace KIT.Microwave
         {
             Debug.Log("[KSPI]: Setup Transmit Beams Configurations for " + part.partInfo.title);
 
-            chooseField = Fields["selectedBeamConfiguration"];
-            chooseField.guiActive = BeamConfigurations.Count > 1 && (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().reconfigureAntennas || canSwitchWavelengthInFlight);
+            _chooseField = Fields[nameof(selectedBeamConfiguration)];
+            _chooseField.guiActive = BeamConfigurations.Count > 1 && (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().ReconfigureAntennas || canSwitchWavelengthInFlight);
 
-            var chooseOptionEditor = chooseField.uiControlEditor as UI_ChooseOption;
-            var chooseOptionFlight = chooseField.uiControlFlight as UI_ChooseOption;
+            var chooseOptionEditor = _chooseField.uiControlEditor as UI_ChooseOption;
+            var chooseOptionFlight = _chooseField.uiControlFlight as UI_ChooseOption;
 
             var names = BeamConfigurations.Select(m => m.beamWaveName).ToArray();
 
@@ -244,11 +242,11 @@ namespace KIT.Microwave
 
             if (!string.IsNullOrEmpty(beamWaveName))
             {
-                activeConfiguration = BeamConfigurations.FirstOrDefault(m => String.Equals(m.beamWaveName, beamWaveName, StringComparison.CurrentCultureIgnoreCase));
-                if (activeConfiguration != null)
+                _activeConfiguration = BeamConfigurations.FirstOrDefault(m => String.Equals(m.beamWaveName, beamWaveName, StringComparison.CurrentCultureIgnoreCase));
+                if (_activeConfiguration != null)
                 {
-                    selectedBeamConfiguration = BeamConfigurations.IndexOf(activeConfiguration);
-                    wavelength = activeConfiguration.wavelength;
+                    selectedBeamConfiguration = BeamConfigurations.IndexOf(_activeConfiguration);
+                    wavelength = _activeConfiguration.wavelength;
                     return;
                 }
             }
@@ -256,16 +254,16 @@ namespace KIT.Microwave
             if (wavelength != 0)
             {
                 // find first wavelength with equal or shorter wavelength
-                activeConfiguration = BeamConfigurations.FirstOrDefault(m => m.wavelength <= wavelength);
+                _activeConfiguration = BeamConfigurations.FirstOrDefault(m => m.wavelength <= wavelength);
 
-                if (activeConfiguration == null)
-                    activeConfiguration = selectedBeamConfiguration < BeamConfigurations.Count ? BeamConfigurations[selectedBeamConfiguration] : BeamConfigurations.FirstOrDefault();
+                if (_activeConfiguration == null)
+                    _activeConfiguration = selectedBeamConfiguration < BeamConfigurations.Count ? BeamConfigurations[selectedBeamConfiguration] : BeamConfigurations.FirstOrDefault();
 
-                if (activeConfiguration != null)
-                    selectedBeamConfiguration = BeamConfigurations.IndexOf(activeConfiguration);
+                if (_activeConfiguration != null)
+                    selectedBeamConfiguration = BeamConfigurations.IndexOf(_activeConfiguration);
             }
 
-            UpdateFromGUI(chooseField, selectedBeamConfiguration);
+            UpdateFromGUI(_chooseField, selectedBeamConfiguration);
 
             // connect on change event
             chooseOptionEditor.onFieldChanged = UpdateFromGUI;
@@ -274,7 +272,7 @@ namespace KIT.Microwave
 
         public override void OnUpdate()
         {
-            chooseField.guiActive = HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().reconfigureAntennas || (canSwitchWavelengthInFlight && BeamConfigurations.Count > 1);
+            _chooseField.guiActive = HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().ReconfigureAntennas || (canSwitchWavelengthInFlight && BeamConfigurations.Count > 1);
         }
 
         /// <summary>
@@ -298,35 +296,35 @@ namespace KIT.Microwave
             {
                 if (selectedBeamConfiguration < BeamConfigurations.Count)
                 {
-                    activeConfiguration = BeamConfigurations[selectedBeamConfiguration];
+                    _activeConfiguration = BeamConfigurations[selectedBeamConfiguration];
                 }
                 else
                 {
                     Debug.LogWarning("[KSPI]: selectedBeamConfiguration < " + BeamConfigurations.Count + ", selecting last");
                     selectedBeamConfiguration = BeamConfigurations.Count - 1;
-                    activeConfiguration = BeamConfigurations.Last();
+                    _activeConfiguration = BeamConfigurations.Last();
                 }
             }
 
-            if (activeConfiguration == null)
+            if (_activeConfiguration == null)
             {
                 Debug.Log("[KSPI]: UpdateFromGUI no activeConfiguration found");
                 return;
             }
 
-            beamWaveName = activeConfiguration.beamWaveName;
-            wavelength = activeConfiguration.wavelength;
-            wavelengthText = WavelenthToText(wavelength);
-            atmosphericAbsorptionPercentage = activeConfiguration.atmosphericAbsorptionPercentage;
-            waterAbsorptionPercentage = activeConfiguration.waterAbsorptionPercentage;
+            beamWaveName = _activeConfiguration.beamWaveName;
+            wavelength = _activeConfiguration.wavelength;
+            wavelengthText = WavelengthToText(wavelength);
+            atmosphericAbsorptionPercentage = _activeConfiguration.atmosphericAbsorptionPercentage;
+            waterAbsorptionPercentage = _activeConfiguration.waterAbsorptionPercentage;
 
             UpdateEfficiencyPercentage();
 
-            // synchronize with reciever;
-            if (transmitter != null && transmitter.part_receiver != null)
+            // synchronize with receiver;
+            if (_transmitter != null && _transmitter.part_receiver != null)
             {
                 Debug.Log("[KSPI]: Called SetActiveBandwidthConfigurationByWaveLength with wavelength " + wavelength);
-                transmitter.part_receiver.SetActiveBandwidthConfigurationByWaveLength(wavelength);
+                _transmitter.part_receiver.SetActiveBandwidthConfigurationByWaveLength(wavelength);
             }
             //else
             //{
@@ -334,7 +332,7 @@ namespace KIT.Microwave
             //}
         }
 
-        private static string WavelenthToText(double wavelength)
+        private static string WavelengthToText(double wavelength)
         {
             if (wavelength > 1.0e-3)
                 return (wavelength * 1.0e+3) + " mm";
@@ -348,23 +346,23 @@ namespace KIT.Microwave
 
         private void UpdateEfficiencyPercentage()
         {
-            techLevel = -1;
+            _techLevel = -1;
 
-            if (PluginHelper.HasTechRequirementAndNotEmpty(activeConfiguration.techRequirement3))
-                techLevel++;
-            if (PluginHelper.HasTechRequirementAndNotEmpty(activeConfiguration.techRequirement2))
-                techLevel++;
-            if (PluginHelper.HasTechRequirementAndNotEmpty(activeConfiguration.techRequirement1))
-                techLevel++;
-            if (PluginHelper.HasTechRequirementAndNotEmpty(activeConfiguration.techRequirement0))
-                techLevel++;
+            if (PluginHelper.HasTechRequirementAndNotEmpty(_activeConfiguration.techRequirement3))
+                _techLevel++;
+            if (PluginHelper.HasTechRequirementAndNotEmpty(_activeConfiguration.techRequirement2))
+                _techLevel++;
+            if (PluginHelper.HasTechRequirementAndNotEmpty(_activeConfiguration.techRequirement1))
+                _techLevel++;
+            if (PluginHelper.HasTechRequirementAndNotEmpty(_activeConfiguration.techRequirement0))
+                _techLevel++;
 
-            switch (techLevel)
+            switch (_techLevel)
             {
-                case 3: efficiencyPercentage = activeConfiguration.efficiencyPercentage3; break;
-                case 2: efficiencyPercentage = activeConfiguration.efficiencyPercentage2; break;
-                case 1: efficiencyPercentage = activeConfiguration.efficiencyPercentage1; break;
-                case 0: efficiencyPercentage = activeConfiguration.efficiencyPercentage0; break;
+                case 3: efficiencyPercentage = _activeConfiguration.efficiencyPercentage3; break;
+                case 2: efficiencyPercentage = _activeConfiguration.efficiencyPercentage2; break;
+                case 1: efficiencyPercentage = _activeConfiguration.efficiencyPercentage1; break;
+                case 0: efficiencyPercentage = _activeConfiguration.efficiencyPercentage0; break;
                 default:
                     efficiencyPercentage = 0; break;
             }
@@ -376,24 +374,24 @@ namespace KIT.Microwave
 
             if (!string.IsNullOrEmpty(beamWaveName))
             {
-                activeConfiguration = BeamConfigurations.FirstOrDefault(m => String.Equals(m.beamWaveName, beamWaveName, StringComparison.CurrentCultureIgnoreCase));
-                if (activeConfiguration != null)
+                _activeConfiguration = BeamConfigurations.FirstOrDefault(m => String.Equals(m.beamWaveName, beamWaveName, StringComparison.CurrentCultureIgnoreCase));
+                if (_activeConfiguration != null)
                 {
-                    selectedBeamConfiguration = BeamConfigurations.IndexOf(activeConfiguration);
-                    wavelength = activeConfiguration.wavelength;
+                    selectedBeamConfiguration = BeamConfigurations.IndexOf(_activeConfiguration);
+                    wavelength = _activeConfiguration.wavelength;
                     return;
                 }
             }
 
             var currentWavelength = wavelength != 0 ? wavelength : 1;
-            activeConfiguration = BeamConfigurations.FirstOrDefault();
+            _activeConfiguration = BeamConfigurations.FirstOrDefault();
 
             selectedBeamConfiguration = 0;
 
-            if (BeamConfigurations.Count <= 1 || activeConfiguration == null)
+            if (BeamConfigurations.Count <= 1 || _activeConfiguration == null)
                 return;
 
-            var lowestWavelengthDifference = Math.Abs(currentWavelength - activeConfiguration.wavelength);
+            var lowestWavelengthDifference = Math.Abs(currentWavelength - _activeConfiguration.wavelength);
 
             foreach (var currentConfig in BeamConfigurations)
             {
@@ -401,7 +399,7 @@ namespace KIT.Microwave
 
                 if (!(configWaveLengthDifference < lowestWavelengthDifference)) continue;
 
-                activeConfiguration = currentConfig;
+                _activeConfiguration = currentConfig;
                 lowestWavelengthDifference = configWaveLengthDifference;
                 selectedBeamConfiguration = BeamConfigurations.IndexOf(currentConfig);
             }
@@ -424,22 +422,22 @@ namespace KIT.Microwave
         {
             Debug.Log($"[KSPI Beam Generator] Load()ing");
            
-            beamConfigurationNodes = node.GetNodes("BeamConfiguration");
+            _beamConfigurationNodes = node.GetNodes("BeamConfiguration");
 
-            if (beamConfigurationNodes.Count() == 0)
+            if (!_beamConfigurationNodes.Any())
             {
                 Debug.Log("[KSPI]: OnLoad Found no BeamConfigurations - something is broken.");
                 return;
             }
 
             var inlineConfigurations = new  List<BeamConfiguration>();
-            foreach (var beamConfigurationNode in beamConfigurationNodes)
+            foreach (var beamConfigurationNode in _beamConfigurationNodes)
             {
                 var beamConfiguration = new BeamConfiguration(beamConfigurationNode, part.partInfo.title);
-                if (beamConfiguration.isValid)
+                if (beamConfiguration.IsValid)
                     inlineConfigurations.Add(beamConfiguration);
                 else
-                    Debug.Log($"[KSPI]: OnLoad discarding BeamConfiguration of {beamConfiguration.beamWaveName} / {beamConfiguration.techLevel}, it is not valid.");
+                    Debug.Log($"[KSPI]: OnLoad discarding BeamConfiguration of {beamConfiguration.beamWaveName} / {beamConfiguration.TechLevel}, it is not valid.");
             }
 
             _inlineConfigurations = inlineConfigurations.OrderByDescending(m => m.wavelength).ToList();
@@ -495,7 +493,7 @@ namespace KIT.Microwave
             foreach (var beamConfiguration in _inlineConfigurations)
             {
                 sb.Append("<color=#00ff00ff>").Append(beamConfiguration.beamWaveName).Append("</color>");
-                sb.Append("<color=#00e600ff> (").Append(WavelenthToText(beamConfiguration.wavelength)).AppendLine(")</color>  ");
+                sb.Append("<color=#00e600ff> (").Append(WavelengthToText(beamConfiguration.wavelength)).AppendLine(")</color>  ");
                 if (beamConfiguration.efficiencyPercentage0 > 0)
                     sb.Append(GetColorCodeFromTechId(beamConfiguration.techRequirement0)).Append("Mk").
                         Append(GetTechLevelFromTechId(beamConfiguration.techRequirement0)).Append(":</color> ").
@@ -520,9 +518,9 @@ namespace KIT.Microwave
             */
         }
 
-        private string ExtendWithSpace(string input, int targetlength)
+        private string ExtendWithSpace(string input, int targetLength)
         {
-            return input + AddSpaces(targetlength - input.Length);
+            return input + AddSpaces(targetLength - input.Length);
         }
 
         private static string AddSpaces(int length)

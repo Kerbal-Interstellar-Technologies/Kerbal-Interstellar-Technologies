@@ -1,10 +1,10 @@
-﻿using KIT.Constants;
-using KSP.Localization;
+﻿using KSP.Localization;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using KIT.Toolbar;
 using UnityEngine;
 
 namespace KIT
@@ -303,7 +303,7 @@ namespace KIT
                 return vessel.mainBody.scienceValues.InSpaceHighDataValue;
         }
 
-        public static string getFormattedPowerString(double power)
+        public static string GetFormattedPowerString(double power)
         {
             var absPower = Math.Abs(power);
             string suffix;
@@ -365,22 +365,22 @@ namespace KIT
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                ResourceManagerFlightUI.close_window = false;
-                ResourceManagerFlightUI.show_window = true;
+                ResourceManagerFlightUI.CloseWindow = false;
+                ResourceManagerFlightUI.ShowWindow = true;
                 VABThermalUI.RenderWindow = false;
             }
             else
             {
-                ResourceManagerFlightUI.close_window = false;
-                ResourceManagerFlightUI.show_window = false;
+                ResourceManagerFlightUI.CloseWindow = false;
+                ResourceManagerFlightUI.ShowWindow = false;
                 VABThermalUI.RenderWindow = true;
             }
         }
 
         void OnAppLauncherDeactivate()
         {
-            ResourceManagerFlightUI.close_window = true;
-            ResourceManagerFlightUI.show_window = false;
+            ResourceManagerFlightUI.CloseWindow = true;
+            ResourceManagerFlightUI.ShowWindow = false;
             VABThermalUI.RenderWindow = false;
         }
 

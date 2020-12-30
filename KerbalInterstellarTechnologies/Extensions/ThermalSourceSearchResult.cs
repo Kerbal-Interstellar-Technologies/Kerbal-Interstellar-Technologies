@@ -1,5 +1,4 @@
-﻿using KIT.Redist;
-using System;
+﻿using System;
 using System.Linq;
 using KIT.Powermanagement;
 using KIT.Reactors;
@@ -23,12 +22,12 @@ namespace KIT.Extensions
             return this;
         }
 
-        public static PowerSourceSearchResult BreadthFirstSearchForThermalSource(Part currentpart, Func<IFNPowerSource, bool> condition, int stackdepth, int parentdepth, int surfacedepth, bool skipSelfContained = false)
+        public static PowerSourceSearchResult BreadthFirstSearchForThermalSource(Part currentPart, Func<IFNPowerSource, bool> condition, int stackDepth, int parentDepth, int surfaceDepth, bool skipSelfContained = false)
         {
             // first search without parent search
-            for (int currentDepth = 0; currentDepth <= stackdepth; currentDepth++)
+            for (int currentDepth = 0; currentDepth <= stackDepth; currentDepth++)
             {
-                var source = FindThermalSource(null, currentpart, condition, currentDepth, parentdepth, surfacedepth, skipSelfContained);
+                var source = FindThermalSource(null, currentPart, condition, currentDepth, parentDepth, surfaceDepth, skipSelfContained);
 
                 if (source != null)
                     return source;
@@ -41,11 +40,11 @@ namespace KIT.Extensions
         {
             if (stackdepth <= 0)
             {
-                var thermalsources = currentpart.FindModulesImplementing<IFNPowerSource>().Where(condition);
+                var thermalSources = currentpart.FindModulesImplementing<IFNPowerSource>().Where(condition);
 
                 var source = skipSelfContained
-                    ? thermalsources.FirstOrDefault(s => !s.IsSelfContained)
-                    : thermalsources.FirstOrDefault();
+                    ? thermalSources.FirstOrDefault(s => !s.IsSelfContained)
+                    : thermalSources.FirstOrDefault();
 
                 if (source != null)
                     return new PowerSourceSearchResult(source, 0);
@@ -53,10 +52,10 @@ namespace KIT.Extensions
                     return null;
             }
 
-            var thermalcostModifier = currentpart.FindModuleImplementing<ThermalPowerTransport>();
+            var thermalCostModifier = currentpart.FindModuleImplementing<ThermalPowerTransport>();
 
-            double stackDepthCost = thermalcostModifier != null 
-                ? thermalcostModifier.thermalCost 
+            double stackDepthCost = thermalCostModifier != null 
+                ? thermalCostModifier.thermalCost 
                 : 1;
 
             // first look at docked parts

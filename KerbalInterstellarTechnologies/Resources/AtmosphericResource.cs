@@ -13,19 +13,19 @@ namespace KIT.Resources
             this.Synonyms = new[] { ResourceName, DisplayName }.Distinct().ToList();
         }
 
-        public AtmosphericResource(string resourcename, double abundance, string displayname)
+        public AtmosphericResource(string resourceName, double abundance, string displayName)
         {
-            this.ResourceName = resourcename;
+            this.ResourceName = resourceName;
             this.ResourceAbundance = abundance;
-            this.DisplayName = displayname;
-            this.Synonyms = new[] { resourcename }.ToList();
+            this.DisplayName = displayName;
+            this.Synonyms = new[] { resourceName }.ToList();
         }
 
-        public AtmosphericResource(string resourcename, double abundance, string displayname, string[] synonyms)
+        public AtmosphericResource(string resourceName, double abundance, string displayName, string[] synonyms)
         {
-            this.ResourceName = resourcename;
+            this.ResourceName = resourceName;
             this.ResourceAbundance = abundance;
-            this.DisplayName = displayname;
+            this.DisplayName = displayName;
             this.Synonyms = synonyms.ToList();
         }
 

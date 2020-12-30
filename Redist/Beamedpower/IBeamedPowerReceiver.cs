@@ -1,4 +1,4 @@
-﻿namespace KIT.Beamedpower
+﻿namespace KIT.BeamedPower
 {
     public interface IBeamedPowerReceiver
     {
@@ -20,7 +20,7 @@
 
         double FacingEfficiencyExponent { get; }
 
-        double SpotsizeNormalizationExponent { get; }
+        double SpotSizeNormalizationExponent { get; }
 
         bool CanBeActiveInAtmosphere { get; }
 
