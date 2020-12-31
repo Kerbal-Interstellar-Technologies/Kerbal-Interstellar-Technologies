@@ -86,7 +86,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.Log("[KSPI]: Exception while loading oceanic resources : " + ex.ToString());
+                Debug.Log("[KSPI]: Exception while loading oceanic resources : " + ex);
             }
             return bodyOceanicComposition;
         }
@@ -171,7 +171,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.LogError("[KSPI]: Exception while generating oceanic composition from celestial ocean properties : " + ex.ToString());
+                Debug.LogError("[KSPI]: Exception while generating oceanic composition from celestial ocean properties : " + ex);
             }
 
             return bodyOceanicComposition;
@@ -202,7 +202,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.LogError("[KSPI]: Exception while generating oceanic composition from defined abundances : " + ex.ToString());
+                Debug.LogError("[KSPI]: Exception while generating oceanic composition from defined abundances : " + ex);
             }
 
             return bodyComposition;

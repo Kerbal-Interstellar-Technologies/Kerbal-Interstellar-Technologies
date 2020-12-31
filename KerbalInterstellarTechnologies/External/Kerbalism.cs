@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 
-namespace KIT
+namespace KIT.External
 {
     public static class Kerbalism
     {
@@ -13,9 +13,8 @@ namespace KIT
         public static int versionBuild;
         public static int versionRevision;
 
-        static Assembly KerbalismAssembly;
-        static Type Sim;
-        static MethodInfo VesselTemperature;
+        static readonly Type Sim;
+        static readonly MethodInfo VesselTemperature;
 
         static Kerbalism()
         {
@@ -27,9 +26,9 @@ namespace KIT
                 {
                     Debug.Log("[KSPI]: Found " + loadedAssembly.name + " Assembly");
 
-                    KerbalismAssembly = loadedAssembly.assembly;
+                    var kerbalismAssembly = loadedAssembly.assembly;
 
-                    AssemblyName assemblyName = KerbalismAssembly.GetName();
+                    AssemblyName assemblyName = kerbalismAssembly.GetName();
 
                     versionMajor = assemblyName.Version.Major;
                     versionMinor = assemblyName.Version.Minor;
@@ -42,7 +41,7 @@ namespace KIT
                         $"{versionMajor}.{versionMinor}.{versionRevision}.{versionBuild}.{versionMajorRevision}.{versionMinorRevision}";
                     Debug.Log("[KSPI]: Found Kerbalism assemblyName Version " + kerbalismversionstr);
 
-                    try { Sim = KerbalismAssembly.GetType("KERBALISM.Sim"); } catch (Exception e) { Debug.LogException(e); }
+                    try { Sim = kerbalismAssembly.GetType("KERBALISM.Sim"); } catch (Exception e) { Debug.LogException(e); }
 
                     if (Sim != null)
                     {
@@ -80,11 +79,11 @@ namespace KIT
             altitude = Math.Abs(altitude);
 
             // get pressure
-            double static_pressure = body.GetPressure(altitude);
-            if (static_pressure > 0.0)
+            double staticPressure = body.GetPressure(altitude);
+            if (staticPressure > 0.0)
             {
                 // get density
-                double density = body.GetDensity(static_pressure, body.GetTemperature(altitude));
+                double density = body.GetDensity(staticPressure, body.GetTemperature(altitude));
 
                 // math, you know
                 double Ra = body.Radius + altitude;

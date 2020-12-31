@@ -31,7 +31,7 @@ namespace KIT.Resources
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_AirThisUpdate", guiActive = false, guiFormat ="F6")]//Air This Update
         public double airThisUpdate;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_IntakeAngle",  guiActive = true, guiFormat = "F3")]//Intake Angle
-        public float intakeAngle = 0;
+        public float intakeAngle;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_Area", guiActiveEditor = true, guiActive = true, guiFormat = "F4")]//Area
         public double area = 0.01;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_unitScalar", guiActive = false, guiActiveEditor = true)]//unitScalar
@@ -39,7 +39,7 @@ namespace KIT.Resources
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_storesResource", guiActive = false, guiActiveEditor = false)]//storesResource
         public bool storesResource = false;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_IntakeExposure", guiActive = false, guiActiveEditor = false, guiFormat = "F1")]//Intake Exposure
-        public double intakeExposure = 0;
+        public double intakeExposure;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_UpperAtmoDensity", guiActive = false, guiActiveEditor = false, guiFormat = "F3")]//Trace atmo. density
         public double upperAtmoDensity;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_AtmosphericIntake_AirDensity", guiActive = false,   guiFormat = "F3")]//Air Density
@@ -80,9 +80,9 @@ namespace KIT.Resources
         public double FinalAir => finalAir;
 
         // property getter for the sake of seawater extractor
-        public bool IntakeEnabled => intakeOpen && (_moduleResourceIntake != null ? _moduleResourceIntake.intakeEnabled : true);
+        public bool IntakeEnabled => intakeOpen && (_moduleResourceIntake == null || _moduleResourceIntake.intakeEnabled);
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             Debug.Log("[KSPI]: AtmosphericIntake OnStart Reading PluginHelper Upgrades");
 
@@ -101,18 +101,16 @@ namespace KIT.Resources
             var jetTech = Convert.ToInt32(hasJetUpgradeTech1) * 1.2f + 1.44f * Convert.ToInt32(hasJetUpgradeTech2) + 1.728f * Convert.ToInt32(hasJetUpgradeTech3) + 2.0736f * Convert.ToInt32(hasJetUpgradeTech4) + 2.48832f * Convert.ToInt32(hasJetUpgradeTech5);
             jetTechBonus = 5 * (1 + (jetTech / 9.92992f));
 
-            _moduleResourceIntake = this.part.FindModulesImplementing<ModuleResourceIntake>().FirstOrDefault(m => m.resourceName == KITResourceSettings.IntakeOxygenAir);
+            _moduleResourceIntake = part.FindModulesImplementing<ModuleResourceIntake>().FirstOrDefault(m => m.resourceName == KITResourceSettings.IntakeOxygenAir);
             _resourceAtmosphereDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeAtmosphere);
 
             if (_moduleResourceIntake == null)
                 Debug.LogWarning("[KSPI]: ModuleResourceIntake with IntakeAir is missing on " + part.partInfo.title);
 
             var field = Fields[nameof(intakeOpen)];
-            var flightToggle = field.uiControlFlight as UI_Toggle;
-            var editorToggle = field.uiControlEditor as UI_Toggle;
 
-            flightToggle.onFieldChanged = IntakeOpenChanged;
-            editorToggle.onFieldChanged = IntakeOpenChanged;
+            if(field.uiControlFlight is UI_Toggle flightToggle) flightToggle.onFieldChanged = IntakeOpenChanged;
+            if(field.uiControlEditor is UI_Toggle editorToggle) editorToggle.onFieldChanged = IntakeOpenChanged;
 
             UpdateResourceIntakeConfiguration();
 

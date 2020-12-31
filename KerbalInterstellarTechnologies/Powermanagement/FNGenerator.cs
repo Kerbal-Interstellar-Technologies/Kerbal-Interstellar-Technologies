@@ -7,6 +7,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KIT.Beamedpower;
 using KIT.Interfaces;
 using KIT.Powermanagement.Interfaces;
 using TweakScale;
@@ -186,7 +187,7 @@ namespace KIT.Powermanagement
         private IFNPowerSource attachedPowerSource;
 
         private Animation anim;
-        private Queue<double> averageRadiatorTemperatureQueue = new Queue<double>();
+        private readonly Queue<double> _averageRadiatorTemperatureQueue = new Queue<double>();
 
         public String UpgradeTechnology => upgradeTechReq;
 
@@ -231,7 +232,7 @@ namespace KIT.Powermanagement
             IsEnabled = !IsEnabled;
         }
 
-        public virtual void OnRescale(TweakScale.ScalingFactor factor)
+        public virtual void OnRescale(ScalingFactor factor)
         {
             try
             {
@@ -324,7 +325,7 @@ namespace KIT.Powermanagement
             }
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             // String[] resources_to_supply = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt, ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt };
             // this.resources_to_supply = resources_to_supply;
@@ -346,6 +347,8 @@ namespace KIT.Powermanagement
             powerCapacityField.guiActiveEditor = !isLimitedByMinThrottle;
 
             var powerCapacityFloatRange = powerCapacityField.uiControlEditor as UI_FloatRange;
+            System.Diagnostics.Debug.Assert(powerCapacityFloatRange != null, nameof(powerCapacityFloatRange) + " != null");
+            
             powerCapacityFloatRange.maxValue = powerCapacityMaxValue;
             powerCapacityFloatRange.minValue = powerCapacityMinValue;
             powerCapacityFloatRange.stepIncrement = powerCapacityStepIncrement;
@@ -794,12 +797,12 @@ namespace KIT.Powermanagement
 
             if (!chargedParticleMode) // Thermal or plasma mode
             {
-                averageRadiatorTemperatureQueue.Enqueue(FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel));
+                _averageRadiatorTemperatureQueue.Enqueue(FNRadiator.GetAverageRadiatorTemperatureForVessel(vessel));
 
-                while (averageRadiatorTemperatureQueue.Count > 10)
-                    averageRadiatorTemperatureQueue.Dequeue();
+                while (_averageRadiatorTemperatureQueue.Count > 10)
+                    _averageRadiatorTemperatureQueue.Dequeue();
 
-                coldBathTempDisplay = averageRadiatorTemperatureQueue.Average();
+                coldBathTempDisplay = _averageRadiatorTemperatureQueue.Average();
 
                 hotBathTemp = GetHotBathTemperature(coldBathTempDisplay);
 
@@ -995,7 +998,6 @@ namespace KIT.Powermanagement
                 if (hotColdBathRatio <= 0.01 || coldBathTemp <= 0 || hotBathTemp <= 0 || maxThermalPower <= 0)
                 {
                     requested_power_per_second = 0;
-                    return;
                 }
             }
             else
@@ -1027,7 +1029,7 @@ namespace KIT.Powermanagement
             return displayName;
         }
 
-        private ResourceName[] resourcesProvided = new ResourceName[] { ResourceName.ElectricCharge };
+        private ResourceName[] resourcesProvided = new[] { ResourceName.ElectricCharge };
         public ResourceName[] ResourcesProvided() => resourcesProvided;
 
         // todo - max power output limit

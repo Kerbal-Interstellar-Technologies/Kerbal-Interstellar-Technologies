@@ -131,7 +131,7 @@ namespace KIT.Propulsion
 
         // protected
         protected bool hasrequiredupgrade = false;
-        protected bool radhazard = false;
+        protected bool radhazard;
         protected double standard_tritium_rate = 0;
         protected string FuelConfigName = "Fusion Type";
         protected double Altitude;
@@ -167,7 +167,7 @@ namespace KIT.Propulsion
             emitterController = part.FindModuleImplementing<FNEmitterController>();
 
             if (emitterController == null)
-                UnityEngine.Debug.LogWarning("[KSPI]: No Emitter Found om " + part.partInfo.title);
+                Debug.LogWarning("[KSPI]: No Emitter Found om " + part.partInfo.title);
         }
 
         private void UpdateKerbalismEmitter()
@@ -180,7 +180,7 @@ namespace KIT.Propulsion
             emitterController.fuelNeutronsFraction = CurrentActiveConfiguration.neutronRatio;
         }
 
-        public double MaximumThrust => FullTrustMaximum * Math.Pow((MinIsp / SelectedIsp), MaxThrustEfficiencyByIspPower) * MinIsp / curveMaxISP;
+        public double MaximumThrust => FullThrustMaximum * Math.Pow((MinIsp / SelectedIsp), MaxThrustEfficiencyByIspPower) * MinIsp / curveMaxISP;
 
         public double FusionWasteHeat
         {
@@ -199,7 +199,7 @@ namespace KIT.Propulsion
             }
         }
 
-        public double FullTrustMaximum
+        public double FullThrustMaximum
         {
             get
             {
@@ -433,7 +433,7 @@ namespace KIT.Propulsion
             if (curEngineT.isOperational && !IsEnabled)
             {
                 IsEnabled = true;
-                UnityEngine.Debug.Log("[KSPI]: FusionECU2 on " + part.name + " was Force Activated");
+                Debug.Log("[KSPI]: FusionECU2 on " + part.name + " was Force Activated");
                 part.force_activate();
             }
 
@@ -551,10 +551,10 @@ namespace KIT.Propulsion
             currentIsp = hasIspThrottling ? SelectedIsp : MinIsp;
             UpdateAtmosphereCurveInVab(currentIsp);
 
-            maximumThrust = hasIspThrottling ? MaximumThrust : FullTrustMaximum;
+            maximumThrust = hasIspThrottling ? MaximumThrust : FullThrustMaximum;
 
             // Update FuelFlow
-            maxFuelFlow = maximumThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
+            maxFuelFlow = maximumThrust / currentIsp / GameConstants.StandardGravity;
 
             curEngineT.maxFuelFlow = (float)maxFuelFlow;
             curEngineT.maxThrust = (float)maximumThrust;
@@ -627,7 +627,7 @@ namespace KIT.Propulsion
 
                 currentIsp = hasIspThrottling ? SelectedIsp : MinIsp;
                 UpdateAtmosphereCurve(currentIsp);
-                maximumThrust = hasIspThrottling ? MaximumThrust : FullTrustMaximum;
+                maximumThrust = hasIspThrottling ? MaximumThrust : FullThrustMaximum;
 
                 // Update FuelFlow
                 maxFuelFlow = fusionRatio * maximumThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
@@ -666,7 +666,7 @@ namespace KIT.Propulsion
                 fusionRatio = requiredPowerPerSecond > 0 ? Math.Min(1, availablePower / requiredPowerPerSecond) : 1;
 
                 currentIsp = hasIspThrottling ? SelectedIsp : MinIsp;
-                maximumThrust = hasIspThrottling ? MaximumThrust : FullTrustMaximum;
+                maximumThrust = hasIspThrottling ? MaximumThrust : FullThrustMaximum;
 
                 UpdateAtmosphereCurve(currentIsp);
 
@@ -708,8 +708,8 @@ namespace KIT.Propulsion
             fuels = string.Join(" : ", CurrentActiveConfiguration.Fuels);
             ratios = string.Join(" : ", CurrentActiveConfiguration.Ratios.Select(m => m.ToString(CultureInfo.InvariantCulture)).ToArray());
 
-            var typeMaskCount = CurrentActiveConfiguration.TypeMasks.Count();
-            for (var i = 0; i < CurrentActiveConfiguration.Fuels.Count(); i++)
+            var typeMaskCount = CurrentActiveConfiguration.TypeMasks.Length;
+            for (var i = 0; i < CurrentActiveConfiguration.Fuels.Length; i++)
             {
                 if (i < typeMaskCount && (CurrentActiveConfiguration.TypeMasks[i] & 1) == 1)
                 {
@@ -733,7 +733,7 @@ namespace KIT.Propulsion
             {
                 var distance = Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
 
-                if (distance >= lethalDistance || currentVessel == this.vessel || currentVessel.GetCrewCount() <= 0) continue;
+                if (distance >= lethalDistance || currentVessel == vessel || currentVessel.GetCrewCount() <= 0) continue;
 
                 var invSqDistance = distance / killDivider;
                 var invSqMultiplier = 1.0 / invSqDistance / invSqDistance;

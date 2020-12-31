@@ -36,7 +36,7 @@ namespace KIT.Resources
 
         public VesselHeatDissipation(Vessel v)
         {
-            this.Vessel = v;
+            Vessel = v;
         }
 
         private static double GetMaxAtmosphericAltitude(CelestialBody body)
@@ -52,13 +52,13 @@ namespace KIT.Resources
         {
             // passive dissipation of waste heat - a little bit of this
             double vesselMass = Vessel.totalMass;
-            powerToExtract += 2.0 * PassiveTempP4 * GameConstants.stefan_const * vesselMass;
+            powerToExtract += 2.0 * PassiveTempP4 * GameConstants.StefanConst * vesselMass;
 
             if (Vessel.mainBody.atmosphere && Vessel.altitude <= Vessel.mainBody.atmosphereDepth)
             {
                 // passive convection - a lot of this
                 double pressure = FlightGlobals.getStaticPressure(Vessel.transform.position) / GameConstants.EarthAtmospherePressureAtSeaLevel;
-                powerToExtract += 40.0e-6 * GameConstants.rad_const_h * pressure * vesselMass;
+                powerToExtract += 40.0e-6 * GameConstants.RadConstH * pressure * vesselMass;
             }
 
             return powerToExtract;
@@ -67,8 +67,6 @@ namespace KIT.Resources
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            return;
-
             /*
             // substract available resource amount to get delta resource change
             double supply = current.Supply - Math.Max(availableAmount, 0);

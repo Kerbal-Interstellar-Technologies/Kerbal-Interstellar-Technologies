@@ -10,37 +10,37 @@ namespace KIT
         public static PluginSettings Config => _config ?? (_config = new PluginSettings(PluginHelper.PluginSettingsConfig));
 
         // integers
-        public int HoursInDay { get; private set; } = GameConstants.KERBIN_HOURS_DAY;
+        public int HoursInDay { get; private set; } = GameConstants.KerbinHoursDay;
         public int MicrowaveApertureDiameterMult { get; private set; } = 10;
         public int SpeedOfLight { get; private set; } = 299792458;
-        public int SecondsInDay { get; private set; } = GameConstants.KERBIN_DAY_SECONDS;
-        public int SecondsInHour => GameConstants.SECONDS_IN_HOUR;
+        public int SecondsInDay { get; private set; } = GameConstants.KerbinDaySeconds;
+        public int SecondsInHour => GameConstants.SecondsInHour;
 
 
         // doubles
         public double AirflowHeatMult { get; private set; } = GameConstants.AirflowHeatMultiplier;
-        public double AnthraquinoneEnergyPerTon { get; private set; } = GameConstants.anthraquinoneEnergyPerTon;
-        public double AluminiumElectrolysisEnergyPerTon { get; private set; } = GameConstants.aluminiumElectrolysisEnergyPerTon;
-        public double BaseAnthraquiononePowerConsumption { get; private set; } = GameConstants.baseAnthraquiononePowerConsumption;
-        public double BasePowerConsumption { get; private set; } = GameConstants.basePowerConsumption;
-        public double BaseAMFPowerConsumption { get; private set; } = GameConstants.baseAMFPowerConsumption;
-        public double BaseCentriPowerConsumption { get; private set; } = GameConstants.baseCentriPowerConsumption;
-        public double BaseELCPowerConsumption { get; private set; } = GameConstants.baseELCPowerConsumption;
-        public double BaseHaberProcessPowerConsumption { get; private set; } = GameConstants.baseHaberProcessPowerConsumption;
-        public double BasePechineyUgineKuhlmannPowerConsumption { get; private set; } = GameConstants.basePechineyUgineKuhlmannPowerConsumption;
-        public double BaseUraniumAmmonolysisPowerConsumption { get; private set; } = GameConstants.baseUraniumAmmonolysisPowerConsumption;
-        public double ElectrolysisEnergyPerTon { get; private set; } = GameConstants.waterElectrolysisEnergyPerTon;
+        public double AnthraquinoneEnergyPerTon { get; private set; } = GameConstants.AnthraquinoneEnergyPerTon;
+        public double AluminiumElectrolysisEnergyPerTon { get; private set; } = GameConstants.AluminiumElectrolysisEnergyPerTon;
+        public double BaseAnthraquiononePowerConsumption { get; private set; } = GameConstants.BaseAnthraquiononePowerConsumption;
+        public double BasePowerConsumption { get; private set; } = GameConstants.BasePowerConsumption;
+        public double BaseAMFPowerConsumption { get; private set; } = GameConstants.BaseAMFPowerConsumption;
+        public double BaseCentriPowerConsumption { get; private set; } = GameConstants.BaseCentriPowerConsumption;
+        public double BaseELCPowerConsumption { get; private set; } = GameConstants.BaseELCPowerConsumption;
+        public double BaseHaberProcessPowerConsumption { get; private set; } = GameConstants.BaseHaberProcessPowerConsumption;
+        public double BasePechineyUgineKuhlmannPowerConsumption { get; private set; } = GameConstants.BasePechineyUgineKuhlmannPowerConsumption;
+        public double BaseUraniumAmmonolysisPowerConsumption { get; private set; } = GameConstants.BaseUraniumAmmonolysisPowerConsumption;
+        public double ElectrolysisEnergyPerTon { get; private set; } = GameConstants.WaterElectrolysisEnergyPerTon;
         public double ElectricEngineIspMult { get; private set; } = 1;
         public double ElectricEngineAtmosphericDensityThrustLimiter { get; private set; }
         public double GlobalMagneticNozzlePowerMaxThrustMult { get; private set; } = 1;
         public double GlobalThermalNozzlePowerMaxThrustMult { get; private set; } = 1;
         public double GlobalElectricEnginePowerMaxThrustMult { get; private set; } = 1;
-        public double HaberProcessEnergyPerTon { get; private set; } = GameConstants.haberProcessEnergyPerTon;
+        public double HaberProcessEnergyPerTon { get; private set; } = GameConstants.HaberProcessEnergyPerTon;
         public double HighCoreTempThrustMult { get; private set; } = GameConstants.HighCoreTempThrustMultiplier;
         public double IspCoreTempMult { get; private set; } = GameConstants.IspCoreTemperatureMultiplier;
         public double LowCoreTempBaseThrust { get; private set; }
         public double MinAtmosphericAirDensity { get; private set; }
-        public double PechineyUgineKuhlmannEnergyPerTon { get; private set; } = GameConstants.pechineyUgineKuhlmannEnergyPerTon;
+        public double PechineyUgineKuhlmannEnergyPerTon { get; private set; } = GameConstants.PechineyUgineKuhlmannEnergyPerTon;
         public double PowerConsumptionMultiplier { get; private set; } = 1;
         public double RadiatorAreaMultiplier { get; private set; } = 2;
         public double MaxThermalNozzleIsp { get; private set; } = GameConstants.MaxThermalNozzleIsp;

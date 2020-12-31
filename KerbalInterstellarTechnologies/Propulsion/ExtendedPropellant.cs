@@ -13,7 +13,7 @@
         {
             base.Load(node);
 
-            _resourceDefinition = PartResourceLibrary.Instance.GetDefinition(base.name);
+            _resourceDefinition = PartResourceLibrary.Instance.GetDefinition(name);
 
             _secondaryPropellantName = node.HasValue("storageName") ? node.GetValue("storageName") : name;
         }

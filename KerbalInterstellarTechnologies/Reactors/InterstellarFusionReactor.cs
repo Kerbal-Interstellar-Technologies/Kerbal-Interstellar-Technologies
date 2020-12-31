@@ -105,7 +105,7 @@ namespace KIT.Reactors
                 fusionEnergyGainFactorMk7 = fusionEnergyGainFactorMk6;
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             InitialiseGainFactors();
 

@@ -3,6 +3,7 @@ using KSP.Localization;
 using System;
 using System.Linq;
 using KIT.Resources;
+using KIT.Wasteheat;
 using UnityEngine;
 
 namespace KIT.Propulsion
@@ -31,7 +32,7 @@ namespace KIT.Propulsion
         double _temp1;
         double _temp2;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor) return;
 
@@ -44,14 +45,14 @@ namespace KIT.Propulsion
             if (rapier_engine != null && rapier_engine.isOperational && !IsEnabled)
             {
                 IsEnabled = true;
-                UnityEngine.Debug.Log("[KSPI]: ModuleSableHeating on " + part.name + " was Force Activated");
+                Debug.Log("[KSPI]: ModuleSableHeating on " + part.name + " was Force Activated");
                 part.force_activate();
             }
 
             if (rapier_engine2 != null && rapier_engine2.isOperational && !IsEnabled)
             {
                 IsEnabled = true;
-                UnityEngine.Debug.Log("[KSPI]: ModuleSableHeating on " + part.name + " was Force Activated");
+                Debug.Log("[KSPI]: ModuleSableHeating on " + part.name + " was Force Activated");
                 part.force_activate();
             }
         }
@@ -75,7 +76,7 @@ namespace KIT.Propulsion
                 {
                     if (rapier_engine.isOperational && rapier_engine.currentThrottle > 0 && rapier_engine.useVelCurve)
                     {
-                        _temp1 = Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 10.0 / GameConstants.atmospheric_non_precooled_limit) * part.maxTemp * missingPrecoolerRatio, 1);
+                        _temp1 = Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 10.0 / GameConstants.AtmosphericNonPrecooledLimit) * part.maxTemp * missingPrecoolerRatio, 1);
                         if (_temp1 >= (part.maxTemp - 10))
                         {
                             ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ModuleSabreHeating_PostMsg"), 5.0f, ScreenMessageStyle.UPPER_CENTER);//"Engine Shutdown: Catastrophic overheating was imminent!"
@@ -94,7 +95,7 @@ namespace KIT.Propulsion
                 {
                     if (rapier_engine2.isOperational && rapier_engine2.currentThrottle > 0 && rapier_engine2.useVelCurve)
                     {
-                        _temp2 = Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 20.0 / GameConstants.atmospheric_non_precooled_limit) * part.maxTemp * missingPrecoolerRatio, 1);
+                        _temp2 = Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 20.0 / GameConstants.AtmosphericNonPrecooledLimit) * part.maxTemp * missingPrecoolerRatio, 1);
                         if (_temp2 >= (part.maxTemp - 10))
                         {
                             ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ModuleSabreHeating_PostMsg"), 5.0f, ScreenMessageStyle.UPPER_CENTER);//"Engine Shutdown: Catastrophic overheating was imminent!"

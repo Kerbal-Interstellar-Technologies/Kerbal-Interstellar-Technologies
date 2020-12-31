@@ -151,8 +151,6 @@ namespace KIT.ResourceScheduler
             sortedModules.Clear();
             tmpVariableSupplierModules.Clear();
 
-            List<IKITMod> KITMods;
-
             foreach (var part in vessel.parts)
             {
                 #region Loop over modules
@@ -166,7 +164,7 @@ namespace KIT.ResourceScheduler
                     var prepend = (priority & ResourcePriorityValue.SupplierOnlyFlag) == ResourcePriorityValue.SupplierOnlyFlag;
                     priority &= ~ResourcePriorityValue.SupplierOnlyFlag;
 
-                    if (sortedModules.TryGetValue(priority, out KITMods) == false)
+                    if (sortedModules.TryGetValue(priority, out _) == false)
                     {
                         sortedModules[priority] = new List<IKITMod>(32);
                     }
@@ -360,7 +358,7 @@ namespace KIT.ResourceScheduler
 
 
         private bool decayDisabled = false;
-        private static Dictionary<string, double> decayConfiguration = new Dictionary<string, double>();
+        private static Dictionary<string, double> _decayConfiguration = new Dictionary<string, double>();
 
         public static void PerformResourceDecayEffect(IResourceManager resourceManager, PartResourceList partResources, Dictionary<String, DecayConfiguration> decayConfiguration)
         {
@@ -369,20 +367,18 @@ namespace KIT.ResourceScheduler
 
             foreach (var resource in partResources)
             {
-                DecayConfiguration config;
-                
                 if (resource.amount == 0) continue;
-                if (decayConfiguration.TryGetValue(resource.resourceName, out config) == false) continue;
+                if (decayConfiguration.TryGetValue(resource.resourceName, out var config) == false) continue;
 
                 // Account for decay over time for the resource amount.
-                double n_0 = resource.amount;
-                resource.amount = n_0 * Math.Exp(-config.DecayConstant * fixedDeltaTime);
+                double n0 = resource.amount;
+                resource.amount = n0 * Math.Exp(-config.DecayConstant * fixedDeltaTime);
 
                 // As this uses the ProduceResource API, we get time handling done for free.
                 var decayAmount = Math.Exp(-config.DecayConstant);
-                var n_change = n_0 - (n_0 * decayAmount);
+                var nChange = n0 - (n0 * decayAmount);
 
-                resourceManager.ProduceResource(config.DecayProduct, n_change * config.DensityRatio);
+                resourceManager.ProduceResource(config.DecayProduct, nChange * config.DensityRatio);
             }
         }
 

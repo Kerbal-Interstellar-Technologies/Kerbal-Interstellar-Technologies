@@ -6,61 +6,52 @@ namespace KIT.Reactors
 {
     class ReactorFuel
     {
-        double _tons_fuel_usage_per_mw;
-        double _amountFuelUsePerMJ;
-        string _fuel_name;
-        string _resource_name;
-        double _density;
-        double _densityInKg;
-        double _ratio;
-        string _unit;
-        bool _consumeGlobal;
-        bool _simulate;
+        readonly double _tonsFuelUsagePerMW;
 
         public ReactorFuel(ConfigNode node)
         {
-            _fuel_name = node.GetValue("name");
-            _ratio = node.HasValue("ratio") ? Convert.ToDouble(node.GetValue("ratio")) : 1;
-            _simulate = node.HasValue("simulate") ? Boolean.Parse(node.GetValue("simulate")) : false;
-            _resource_name = node.HasValue("resource") ? node.GetValue("resource") : _fuel_name;
-            _tons_fuel_usage_per_mw = Convert.ToDouble(node.GetValue("UsagePerMW"));
-            _unit = node.GetValue("Unit");
-            _consumeGlobal = node.HasValue("consumeGlobal") ? Boolean.Parse(node.GetValue("consumeGlobal")) : true;
+            FuelName = node.GetValue("name");
+            Ratio = node.HasValue("ratio") ? Convert.ToDouble(node.GetValue("ratio")) : 1;
+            Simulate = node.HasValue("simulate") && Boolean.Parse(node.GetValue("simulate"));
+            ResourceName = node.HasValue("resource") ? node.GetValue("resource") : FuelName;
+            _tonsFuelUsagePerMW = Convert.ToDouble(node.GetValue("UsagePerMW"));
+            Unit = node.GetValue("Unit");
+            ConsumeGlobal = !node.HasValue("consumeGlobal") || Boolean.Parse(node.GetValue("consumeGlobal"));
 
-            Definition = PartResourceLibrary.Instance.GetDefinition(_resource_name);
+            Definition = PartResourceLibrary.Instance.GetDefinition(ResourceName);
             if (Definition == null)
-                Debug.LogError("[KSPI]: No definition found for resource '" + _resource_name + "' for ReactorFuel " + _fuel_name);
+                Debug.LogError("[KSPI]: No definition found for resource '" + ResourceName + "' for ReactorFuel " + FuelName);
             else
             {
-                _density = (double)(decimal)Definition.density;
-                _densityInKg = _density * 1000;
-                _amountFuelUsePerMJ = _tons_fuel_usage_per_mw / _density;
+                DensityInTon = (double)(decimal)Definition.density;
+                DensityInKg = DensityInTon * 1000;
+                AmountFuelUsePerMJ = _tonsFuelUsagePerMW / DensityInTon;
             }
         }
 
-        public PartResourceDefinition Definition { get; private set; }
+        public PartResourceDefinition Definition { get; }
 
-        public double Ratio => _ratio;
+        public double Ratio { get; }
 
-        public bool ConsumeGlobal => _consumeGlobal;
+        public bool ConsumeGlobal { get; }
 
-        public double DensityInTon => _density;
+        public double DensityInTon { get; }
 
-        public double DensityInKg => _densityInKg;
+        public double DensityInKg { get; }
 
-        public bool Simulate => _simulate;
+        public bool Simulate { get; }
 
-        public double AmountFuelUsePerMJ => _amountFuelUsePerMJ;
+        public double AmountFuelUsePerMJ { get; }
 
-        public double TonsFuelUsePerMJ => _tons_fuel_usage_per_mw;
+        public double TonsFuelUsePerMJ => _tonsFuelUsagePerMW;
 
-        public double EnergyDensity => _tons_fuel_usage_per_mw > 0 ?  0.001 / _tons_fuel_usage_per_mw : 0;
+        public double EnergyDensity => _tonsFuelUsagePerMW > 0 ?  0.001 / _tonsFuelUsagePerMW : 0;
 
-        public string FuelName => _fuel_name;
+        public string FuelName { get; }
 
-        public string ResourceName => _resource_name;
+        public string ResourceName { get; }
 
-        public string Unit => _unit;
+        public string Unit { get; }
 
         public double GetFuelRatio(Part part, double fuelEfficiency, double megajoules, double fuelUsePerMJMult, bool simulate)
         {
@@ -70,9 +61,9 @@ namespace KIT.Reactors
             if (simulate)
                 return 1;
 
-            var fuelUseForPower = this.GetFuelUseForPower(fuelEfficiency, megajoules, fuelUsePerMJMult);
+            var fuelUseForPower = GetFuelUseForPower(fuelEfficiency, megajoules, fuelUsePerMJMult);
 
-            return fuelUseForPower > 0 ?  Math.Min(this.GetFuelAvailability(part) / fuelUseForPower, 1) : 0;
+            return fuelUseForPower > 0 ?  Math.Min(GetFuelAvailability(part) / fuelUseForPower, 1) : 0;
         }
 
         public double GetFuelUseForPower(double efficiency, double megajoules, double fuelUsePerMJMult)
@@ -82,10 +73,10 @@ namespace KIT.Reactors
 
         public double GetFuelAvailability(Part part)
         {
-            if (!this.ConsumeGlobal)
+            if (!ConsumeGlobal)
             {
-                if (part.Resources.Contains(this.ResourceName))
-                    return part.Resources[this.ResourceName].amount;
+                if (part.Resources.Contains(ResourceName))
+                    return part.Resources[ResourceName].amount;
                 else
                     return 0;
             }
@@ -93,23 +84,23 @@ namespace KIT.Reactors
             if (HighLogic.LoadedSceneIsFlight)
             {
                 foreach (var t in part.Resources)
-                    if (t.resourceName == this.Definition.name)
+                    if (t.resourceName == Definition.name)
                         return t.amount;
 
                 return 0;
             }  
             else
-                return part.FindAmountOfAvailableFuel(this.ResourceName, 4);
+                return part.FindAmountOfAvailableFuel(ResourceName, 4);
         }
 
     }
 
     class ReactorProduct
     {
-        double _tonsProductUsagePerMw;
-        string _fuelName;
-        string _resourceName;
-        double _density;
+        readonly double _tonsProductUsagePerMw;
+        readonly string _fuelName;
+        readonly string _resourceName;
+        readonly double _density;
 
         public ReactorProduct(ConfigNode node)
         {
@@ -132,7 +123,7 @@ namespace KIT.Reactors
             }
         }
 
-        public PartResourceDefinition Definition { get; private set; }
+        public PartResourceDefinition Definition { get; }
 
         public bool ProduceGlobal { get; }
 

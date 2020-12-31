@@ -259,15 +259,15 @@ namespace PhotonSail
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_totalSolarFluxInWatt", guiFormat = "F3", guiUnits = " W/m\xB2")]//Solar Flux
         public double totalSolarFluxInWatt;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_totalForceInNewtonFromSolarEnergy", guiFormat = "F5", guiUnits = " N")]//Solar Force Max
-        public double totalForceInNewtonFromSolarEnergy = 0;
+        public double totalForceInNewtonFromSolarEnergy;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_TotalSolarEnergyReceivedInMJ", guiFormat = "F5", guiUnits = " MJ/s")]//Solar Energy Received
         public double totalSolarEnergyReceivedInMJ;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_solar_force_d", guiFormat = "F5", guiUnits = " N")]//Solar Force Sail
-        public double solar_force_d = 0;
+        public double solar_force_d;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_SolarAcc")]//Solar Acceleration
         public string solarAcc;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_SolarSailAngle", guiFormat = "F3", guiUnits = "°")]//Solar Pitch Angle
-        public double solarSailAngle = 0;
+        public double solarSailAngle;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_SolarfluxWasteheatInMegaJoules", guiFormat = "F3", guiUnits = " MJ/s")]//Solar Energy Absorbed
         public double solarfluxWasteheatInMegaJoules;
 
@@ -294,13 +294,13 @@ namespace PhotonSail
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_ConnectedTransmittersCount")]//Beamed Connections
         public int connectedTransmittersCount;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_TotalForceInNewtonFromBeamedPower", guiFormat = "F4", guiUnits = " N")]//Beamed Potential Force
-        public double totalForceInNewtonFromBeamedPower = 0;
+        public double totalForceInNewtonFromBeamedPower;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_WeightedBeamPowerPitch", guiFormat = "F3", guiUnits = "°")]//Beamed Pitch Angle
         public double weightedBeamPowerPitch;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_WeightedBeamedPowerSpotsize", guiFormat = "F3", guiUnits = " m")]//Beamed SpotSize
         public double weightedBeamedPowerSpotsize;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_BeamedSailForce", guiFormat = "F3", guiUnits = " N")]//Beamed Sail Force
-        public double beamedSailForce = 0;
+        public double beamedSailForce;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_BeamedAcc")]//Beamed Acceleration
         public string beamedAcc;
         [KSPField(guiActive = true, guiName = "#LOC_PhotonSail_BeamPowerWasteheatInMegaJoules", guiFormat = "F3", guiUnits = " MJ/s")]//Beamed Energy Absorbed
@@ -422,7 +422,7 @@ namespace PhotonSail
             IsEnabled = false;
         }
 
-        public virtual void OnRescale(TweakScale.ScalingFactor factor)
+        public virtual void OnRescale(ScalingFactor factor)
         {
             try
             {
@@ -437,7 +437,7 @@ namespace PhotonSail
         }
 
         // Initialization
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             diameter = Math.Sqrt(surfaceArea);
 
@@ -448,7 +448,7 @@ namespace PhotonSail
             if (animName != null)
             {
                 var animators = part.FindModelAnimators(animName);
-                var animatorsCount = animators.Count();
+                var animatorsCount = animators.Length;
                 solarSailAnim1 = animatorsCount > 0 ? animators[0] : null;
                 solarSailAnim2 = animatorsCount > 1 ? animators[1] : null;
             }
@@ -500,8 +500,8 @@ namespace PhotonSail
             if (state == StartState.None || state == StartState.Editor)
                 return;
 
-            UnityEngine.Debug.Log("[PhotonSailor]: ModulePhotonSail on " + part.name + " was Force Activated");
-            this.part.force_activate();
+            Debug.Log("[PhotonSailor]: ModulePhotonSail on " + part.name + " was Force Activated");
+            part.force_activate();
 
             CreateBeamArray();
         }
@@ -553,11 +553,11 @@ namespace PhotonSail
 
         private void DetermineKscLaserAperture()
         {
-            UnityEngine.Debug.Log("[KSPI]: ModulePhotonSail start DetermineKscLaserAperture");
+            Debug.Log("[KSPI]: ModulePhotonSail start DetermineKscLaserAperture");
 
             if (ResearchAndDevelopment.Instance == null)
             {
-                UnityEngine.Debug.Log("[KSPI]: ModulePhotonSail ResearchAndDevelopment.Instance == null");
+                Debug.Log("[KSPI]: ModulePhotonSail ResearchAndDevelopment.Instance == null");
                 return;
             }
 
@@ -751,7 +751,7 @@ namespace PhotonSail
             Fields[nameof(solarAcc)].guiActive = IsEnabled;
 
             solarAcc = solar_acc_d.ToString("E") + " m/s";
-            beamedAcc = beamed_acc_d.ToString("E") + " m/s"; ;
+            beamedAcc = beamed_acc_d.ToString("E") + " m/s";
         }
 
         public override void OnFixedUpdate()
@@ -801,9 +801,9 @@ namespace PhotonSail
                 {
                     connectedTransmittersCount++;
 
-                    var cosConeAngle = Vector3d.Dot(powerSourceToVesselVector.normalized, this.vessel.transform.up);
+                    var cosConeAngle = Vector3d.Dot(powerSourceToVesselVector.normalized, vessel.transform.up);
                     if (cosConeAngle < 0)
-                        cosConeAngle = Vector3d.Dot(powerSourceToVesselVector.normalized, -this.vessel.transform.up);
+                        cosConeAngle = Vector3d.Dot(powerSourceToVesselVector.normalized, -vessel.transform.up);
                     var effectiveDiameter = cosConeAngle * diameter;
 
                     var labdaSpotSize = powerSourceToVesselVector.magnitude * kscLaserWavelength / kscLaserAperture;
@@ -1032,7 +1032,7 @@ namespace PhotonSail
             photovoltaicFlowRate += doorsPhotovoltaicKiloWatt + maxSailPhotovoltaicEnergyInKiloWatt * cosConeAngle;
 
             // convert energy into momentum
-            var maxReflectedRadiationPressure = 2 * energyOnSailnWatt / KIT.GameConstants.speedOfLight;
+            var maxReflectedRadiationPressure = 2 * energyOnSailnWatt / GameConstants.SpeedOfLight;
 
             // calculate solar light force at current location
             var maximumPhotonForceInNewton = photonReflectionRatio * maxReflectedRadiationPressure;
@@ -1126,7 +1126,7 @@ namespace PhotonSail
             var totalAccelerationVector = vesselMassInKg > 0 ? totalForceVector / vesselMassInKg: Vector3d.zero;
 
             // all force
-            ChangeVesselVelocity(vessel.orbit, this.vessel, universalTime, totalAccelerationVector * TimeWarp.fixedDeltaTime);
+            ChangeVesselVelocity(vessel.orbit, vessel, universalTime, totalAccelerationVector * TimeWarp.fixedDeltaTime);
 
             // Update displayed force & acceleration
             var signedForce = totalForceVector.magnitude * Sign(cosConeAngleIsNegative);
@@ -1200,7 +1200,7 @@ namespace PhotonSail
             var scaledDistance = 1 + Math.Min(1, distanceToSurfaceStar / star.Radius);
             var nearStarDistance = star.Radius * 0.25 * scaledDistance * scaledDistance;
             var distanceForEffectiveDistance = Math.Max(distanceToSurfaceStar, nearStarDistance);
-            var kerbinSunDistance = distanceForEffectiveDistance / GameConstants.kerbin_sun_distance;
+            var kerbinSunDistance = distanceForEffectiveDistance / GameConstants.KerbinSunDistance;
             return luminosity * PhysicsGlobals.SolarLuminosityAtHome / (kerbinSunDistance * kerbinSunDistance);
         }
 

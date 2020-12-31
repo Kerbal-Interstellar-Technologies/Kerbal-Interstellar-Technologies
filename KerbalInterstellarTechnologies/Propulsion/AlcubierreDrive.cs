@@ -237,7 +237,7 @@ namespace KIT.Propulsion
         private GUIStyle _textBlackStyle;
 
         private int _windowID = 252824373;
-        private int _oldSelectedFactor = 0;
+        private int _oldSelectedFactor;
         private int _minimumSelectedFactor;
         private int _maximumWarpSpeedFactor;
         private int _minimumPowerAllowedFactor;
@@ -509,7 +509,7 @@ namespace KIT.Propulsion
             PluginHelper.IgnoreGForces(part, 2);
 
             // puts the ship back into a simulated orbit and re-enables physics
-            if (!this.vessel.packed)
+            if (!vessel.packed)
                 vessel.GoOnRails();
 
             if (controlled && matchExitToDestinationSpeed && _departureVelocity != null)
@@ -530,7 +530,7 @@ namespace KIT.Propulsion
             vessel.orbit.UpdateFromStateVectors(vessel.orbit.pos, vessel.orbit.vel + reverseWarpHeading, vessel.orbit.referenceBody, universalTime);
 
             // disables physics and puts the ship into a propagated orbit , is this still needed?
-            if (!this.vessel.packed)
+            if (!vessel.packed)
                 vessel.GoOffRails();
 
             if (controlled && matchExitToDestinationSpeed && vessel.atmDensity == 0)
@@ -783,7 +783,7 @@ namespace KIT.Propulsion
             return 0;
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state != StartState.Editor)
                 vesselTotalMass = vessel.GetTotalMass();
@@ -882,7 +882,7 @@ namespace KIT.Propulsion
                 }
 
                 Debug.Log("[KSPI]: AlcubierreDrive on " + part.name + " was Force Activated");
-                this.part.force_activate();
+                part.force_activate();
 
                 if (serialisedwarpvector != null)
                     _headingAct = ConfigNode.ParseVector3D(serialisedwarpvector);
@@ -1080,7 +1080,7 @@ namespace KIT.Propulsion
 
         private void UpdateEffect(bool isEnabled, bool isCharging, bool activeTrail, int selected_factor)
         {
-            this._activeTrail = activeTrail;
+            _activeTrail = activeTrail;
             this.selected_factor = selected_factor;
 
             if (_animationState == null) return;
@@ -1099,7 +1099,7 @@ namespace KIT.Propulsion
                 if (!isEnabled && !isCharging && anim.normalizedTime > 0)
                     anim.speed = -1;
 
-                if (isEnabled || isCharging || !(anim.normalizedTime <= 0))
+                if (isEnabled || isCharging || (anim.normalizedTime > 0))
                     continue;
 
                 anim.speed = 0;
@@ -1155,7 +1155,7 @@ namespace KIT.Propulsion
         {
             var slowestSublightSpeed = GetLowestThrottleForAvailablePower();
 
-            if (!(slowestSublightSpeed < warpEngineThrottle))
+            if (slowestSublightSpeed >= warpEngineThrottle)
                 return;
 
             selected_factor = _engineThrottle.IndexOf(slowestSublightSpeed);
@@ -1202,7 +1202,7 @@ namespace KIT.Propulsion
             if (totalWarpPower != 0 && vesselTotalMass != 0)
             {
                 warpToMassRatio = totalWarpPower / vesselTotalMass;
-                exotic_power_required = (GameConstants.initial_alcubierre_megajoules_required * vesselTotalMass * powerRequirementMultiplier) / warpToMassRatio;
+                exotic_power_required = (GameConstants.InitialAlcubierreMegajoulesRequired * vesselTotalMass * powerRequirementMultiplier) / warpToMassRatio;
                 _exoticMatterRatio = exotic_power_required > 0 ? Math.Min(1, _currentExoticMatter / exotic_power_required) : 0;
             }
             else
@@ -1710,7 +1710,7 @@ namespace KIT.Propulsion
                     var toMoon = vessel.CoMD - moon.position;
                     var distanceToSurfaceMoon = toMoon.magnitude - moon.Radius;
 
-                    if (!(distanceToSurfaceMoon < minimumDistance)) continue;
+                    if (distanceToSurfaceMoon >= minimumDistance) continue;
 
                     minimumDistance = distanceToSurfaceMoon;
                     closestBody = moon;
@@ -1734,7 +1734,7 @@ namespace KIT.Propulsion
                     var toMoon = vessel.CoMD - moon.position;
                     var distanceToSurfaceMoon = toMoon.magnitude - moon.Radius;
 
-                    if (!(distanceToSurfaceMoon < minimumDistance)) continue;
+                    if (distanceToSurfaceMoon >= minimumDistance) continue;
 
                     minimumDistance = distanceToSurfaceMoon;
                     closestBody = moon;
@@ -1762,7 +1762,7 @@ namespace KIT.Propulsion
             closestCelestrialBodyName = _closestCelestialBody.name;
 
             gravityPull = FlightGlobals.getGeeForceAtPosition(vessel.GetWorldPos3D()).magnitude;
-            gravityAtSeaLevel = _closestCelestialBody.GeeASL * GameConstants.STANDARD_GRAVITY;
+            gravityAtSeaLevel = _closestCelestialBody.GeeASL * GameConstants.StandardGravity;
             gravityRatio = gravityAtSeaLevel > 0 ? Math.Min(1, gravityPull / gravityAtSeaLevel) : 0;
             gravityDragRatio = Math.Pow(Math.Min(1, 1 - gravityRatio), Math.Max(1, Math.Sqrt(gravityAtSeaLevel)));
             gravityDragPercentage = (1 - gravityDragRatio) * 100;
@@ -1788,7 +1788,7 @@ namespace KIT.Propulsion
             if (_alcubierreDrives != null && totalWarpPower != 0 && vesselTotalMass != 0)
             {
                 warpToMassRatio = totalWarpPower / vesselTotalMass;
-                exotic_power_required = (GameConstants.initial_alcubierre_megajoules_required * vesselTotalMass * powerRequirementMultiplier) / warpToMassRatio;
+                exotic_power_required = (GameConstants.InitialAlcubierreMegajoulesRequired * vesselTotalMass * powerRequirementMultiplier) / warpToMassRatio;
 
                 // spread exotic matter over all coils
                 var exoticMatterResource = part.Resources["ExoticMatter"];

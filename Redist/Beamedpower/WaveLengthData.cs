@@ -18,7 +18,7 @@ namespace KIT.BeamedPower
 
         public override int GetHashCode()
         {
-            return this.Wavelength.GetHashCode();
+            return Wavelength.GetHashCode();
         }
     }
 }

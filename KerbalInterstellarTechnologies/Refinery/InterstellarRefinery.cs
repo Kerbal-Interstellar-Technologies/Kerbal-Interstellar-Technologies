@@ -45,7 +45,7 @@ namespace KIT.Refinery
         [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_Refinery_ConsumedPower", guiFormat = "F3", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Consumed Power
         public double consumedPowerMW;
 
-        protected IRefineryActivity _current_activity = null;
+        protected IRefineryActivity _current_activity;
 
         private List<IRefineryActivity> availableRefineries;
         private Rect _window_position = new Rect(50, 50, RefineryActivity.labelWidth * 4, 150);

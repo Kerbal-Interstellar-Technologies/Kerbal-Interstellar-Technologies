@@ -89,15 +89,15 @@ namespace KIT.Resources
 
         protected string strRegolithResourceName;
         //protected double dDistanceFromStar = 0; // distance of the current vessel from the system's star
-        protected double dConcentrationRegolith = 0; // regolith concentration at the current location
-        protected double dRegolithSpareCapacity = 0; // spare capacity for the regolith on the vessel
+        protected double dConcentrationRegolith; // regolith concentration at the current location
+        protected double dRegolithSpareCapacity; // spare capacity for the regolith on the vessel
         protected double dRegolithDensity; // 'density' of regolith at the current spot
-        protected double dTotalWasteHeatProduction = 0; // total waste heat produced in the cycle
+        protected double dTotalWasteHeatProduction; // total waste heat produced in the cycle
         //protected double dAltitude = 0; // current terrain altitude
         protected bool bTouchDown; // helper bool, is the part touching the ground
 
-        uint _counter = 0; // helper counter for update cycles, so that we can only do some calculations once in a while
-        uint _anotherCounter = 0; // helper counter for fixedupdate cycles, so that we can only do some calculations once in a while (I don't want to add complexity by using the previous counter in two places - also update and fixedupdate cycles can be out of sync, apparently)
+        uint _counter; // helper counter for update cycles, so that we can only do some calculations once in a while
+        uint _anotherCounter; // helper counter for fixedupdate cycles, so that we can only do some calculations once in a while (I don't want to add complexity by using the previous counter in two places - also update and fixedupdate cycles can be out of sync, apparently)
         protected double dFinalConcentration;
 
         AbundanceRequest _regolithRequest = new AbundanceRequest // create a new request object that we'll reuse to get the current stock-system resource concentration
@@ -112,7 +112,7 @@ namespace KIT.Resources
         };
         protected CelestialBody localStar;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor) return; // collecting won't work in editor
 
@@ -166,7 +166,7 @@ namespace KIT.Resources
         // checks if the vessel is not in atmosphere and if it can therefore collect regolith. Also checks if the vessel is landed and if it is not splashed (not sure if non atmospheric bodies can have oceans in KSP or modded galaxies, let's put this in to be sure)
         private bool IsCollectLegal()
         {
-            if (vessel.checkLanded() == false || vessel.checkSplashed() == true)
+            if (vessel.checkLanded() == false || vessel.checkSplashed())
             {
                 strStarDist = UpdateDistanceInGUI();
                 strRegolithConc = "0";
@@ -230,7 +230,7 @@ namespace KIT.Resources
         // calculates regolith concentration - right now just based on the distance of the planet from the sun, so planets will have uniform distribution. We might add latitude as a factor etc.
         private static double CalculateRegolithConcentration(Vector3d planetPosition, Vector3d sunPosition, double altitude)
         {
-            double dAvgMunDistance = GameConstants.kerbin_sun_distance; // if my reasoning is correct, this is not only the average distance of Kerbin, but also for the Mun. Maybe this is obvious to everyone else or wrong, but I'm tired, so there.
+            double dAvgMunDistance = GameConstants.KerbinSunDistance; // if my reasoning is correct, this is not only the average distance of Kerbin, but also for the Mun. Maybe this is obvious to everyone else or wrong, but I'm tired, so there.
 
              /* I decided to incorporate an altitude modifier. According to https://curator.jsc.nasa.gov/lunar/letss/regolith.pdf, most regolith on Moon is deposited in
              * higher altitudes. This is great from a gameplay perspective, because it makes an incentive for players to collect regolith in more difficult circumstances

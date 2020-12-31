@@ -1,10 +1,10 @@
-﻿using KSP.Localization;
-using System;
+﻿using System;
 using KIT.Resources;
-using UnityEngine;
 using KIT.ResourceScheduler;
+using KSP.Localization;
+using UnityEngine;
 
-namespace KIT
+namespace KIT.Storage
 {
     [KSPModule("Cryostat")]
     class ModuleStorageCryostat: FNModuleCryostat {}
@@ -20,7 +20,7 @@ namespace KIT
         public bool isDisabled = false;
 
         [KSPField(isPersistant = true)]
-        public double storedTemp = 0;
+        public double storedTemp;
 
         // Confiration
         [KSPField] public string resourceName = "";
@@ -63,7 +63,7 @@ namespace KIT
 
         private bool requiresPower;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             enabled = true;
 
@@ -84,7 +84,7 @@ namespace KIT
             // if electricCharge buffer is missing, add it.
             if (!part.Resources.Contains(KITResourceSettings.ElectricCharge))
             {
-                Debug.Log($"{part.ClassName} with {this.moduleName} is missing an Electric Charge Resource. Please fix.");
+                Debug.Log($"{part.ClassName} with {moduleName} is missing an Electric Charge Resource. Please fix.");
             }
         }
 
@@ -94,9 +94,9 @@ namespace KIT
             if (initializationCountdown > 0)
                 initializationCountdown--;
 
-            var cryostat_resource = part.Resources[resourceName];
+            var cryostatResource = part.Resources[resourceName];
 
-            if (cryostat_resource != null)
+            if (cryostatResource != null)
             {
                 if (HighLogic.LoadedSceneIsEditor)
                 {
@@ -106,7 +106,7 @@ namespace KIT
 
                 isDisabledField.guiActive = requiresPower;
 
-                bool coolingIsRelevant = cryostat_resource.amount > 0.0000001 && (boilOffRate > 0 || requiresPower);
+                bool coolingIsRelevant = cryostatResource.amount > 0.0000001 && (boilOffRate > 0 || requiresPower);
 
                 powerStatusStrField.guiActive = showPower && requiresPower && coolingIsRelevant;
                 boiloffStrField.guiActive = showBoiloff && boiloff > 0.00001;

@@ -5,7 +5,7 @@ using KIT.Extensions;
 using KIT.Resources;
 using KSP.Localization;
 
-namespace KIT
+namespace KIT.Science
 {
     class InterstellarTelescope : ModuleModdableScienceGenerator
     {
@@ -34,10 +34,10 @@ namespace KIT
         public string gLensStr = "";
 
         //Internal
-        protected double perform_factor_d = 0;
-        protected double perform_exponent = 0;
-        protected double science_rate = 0;
-        protected double helium_time_scale = 0;
+        protected double perform_factor_d;
+        protected double perform_exponent;
+        protected double science_rate;
+        protected double helium_time_scale;
 
         [KSPEvent(guiActive = true, guiName = "#LOC_KSPIE_Telescope_DeepFieldSurvey", active = false)]//Deep Field Survey
         public void beginOberservations()
@@ -65,11 +65,11 @@ namespace KIT
             lastMaintained = Planetarium.GetUniversalTime();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor) return;
 
-            base.canDeploy = true;
+            canDeploy = true;
 
             if (telescopeInit == false || lastMaintained == 0)
             {
@@ -85,8 +85,8 @@ namespace KIT
                 double t1 = Math.Min(Planetarium.GetUniversalTime(), helium_depleted_time) - lastMaintained;
                 if (t1 > t0)
                 {
-                    double a = -GameConstants.telescopePerformanceTimescale;
-                    double base_science = dpo ? GameConstants.telescopeGLensScience : GameConstants.telescopeBaseScience;
+                    double a = -GameConstants.TelescopePerformanceTimescale;
+                    double base_science = dpo ? GameConstants.TelescopeGLensScience : GameConstants.TelescopeBaseScience;
                     double time_diff = Math.Min(Planetarium.GetUniversalTime(), helium_depleted_time) - lastActiveTime;
                     double avg_science_rate = 0.5*base_science * ( Math.Exp(a * t1)  + Math.Exp(a * t0) );
                     double science_to_add = avg_science_rate / 28800 * time_diff;
@@ -219,12 +219,12 @@ namespace KIT
                 {
                     if (helium_time_scale <= 0) telescopeIsEnabled = false;
 
-                    perform_exponent = -(Planetarium.GetUniversalTime() - lastMaintained) * GameConstants.telescopePerformanceTimescale;
+                    perform_exponent = -(Planetarium.GetUniversalTime() - lastMaintained) * GameConstants.TelescopePerformanceTimescale;
                     perform_factor_d = Math.Exp(perform_exponent);
 
                     if (telescopeIsEnabled)
                     {
-                        double base_science = dpo ? GameConstants.telescopeGLensScience : GameConstants.telescopeBaseScience;
+                        double base_science = dpo ? GameConstants.TelescopeGLensScience : GameConstants.TelescopeBaseScience;
                         science_rate = base_science * perform_factor_d / 28800;
                         if (!double.IsNaN(science_rate) && !double.IsInfinity(science_rate))
                             science_awaiting_addition += science_rate * TimeWarp.fixedDeltaTime;
@@ -241,7 +241,7 @@ namespace KIT
             var max_helium = helium_resources.Sum(hr => hr.maxAmount);
             var cur_helium = helium_resources.Sum(hr => hr.amount);
             var helium_fraction = (max_helium > 0) ? cur_helium / max_helium : cur_helium;
-            helium_time_scale = 1.0 / GameConstants.helium_boiloff_fraction * helium_fraction;
+            helium_time_scale = 1.0 / GameConstants.HeliumBoilOffFraction * helium_fraction;
             helium_depleted_time = helium_time_scale + Planetarium.GetUniversalTime();
         }
     }

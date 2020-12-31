@@ -133,7 +133,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_CarbonDioxideElectroliser_CarbonDioxideConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"CarbonDioxide Consumption Rate"
-            GUILayout.Label((_dioxideConsumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.0000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_dioxideConsumptionRate * GameConstants.SecondsInHour).ToString("0.0000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -143,7 +143,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_CarbonDioxideElectroliser_CarbonMonoxideProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"CarbonMonoxide Production Rate"
-            GUILayout.Label((_monoxideProductionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.0000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_monoxideProductionRate * GameConstants.SecondsInHour).ToString("0.0000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -153,7 +153,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_CarbonDioxideElectroliser_OxygenProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Oxygen Production Rate"
-            GUILayout.Label((_oxygenProductionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.0000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_oxygenProductionRate * GameConstants.SecondsInHour).ToString("0.0000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
         }
 

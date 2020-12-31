@@ -174,7 +174,7 @@ namespace KIT.Propulsion
             var names = _activeConfigurations.Select(m => m.fuelConfigurationName).ToArray();
 
             int newValue = selectedFuel + 1;
-            if (newValue >= names.Count())
+            if (newValue >= names.Length)
                 newValue = 0;
 
             chooseField.SetValue(newValue, this);
@@ -194,7 +194,7 @@ namespace KIT.Propulsion
 
             int newValue = selectedFuel - 1;
             if (newValue < 0)
-                newValue = names.Count() - 1;
+                newValue = names.Length - 1;
 
             chooseField.SetValue(newValue, this);
 
@@ -345,7 +345,6 @@ namespace KIT.Propulsion
             var akPropellants = new ConfigNode();
 
             int I = 0;
-            int N = 0;
             while (I < CurrentActiveConfiguration.Fuels.Length)
             {
                 if (CurrentActiveConfiguration.Ratios[I] > 0)
@@ -355,7 +354,9 @@ namespace KIT.Propulsion
                     akPropellants.AddNode(propellantConfig);
                 }
                 else
-                    N++;
+                {
+                }
+
                 I++;
             }
 
@@ -413,9 +414,9 @@ namespace KIT.Propulsion
             var ratios = CurrentActiveConfiguration.Ratios;
             var fuels = CurrentActiveConfiguration.Fuels;
 
-            var ratiosCount = fuels.Count();
-            var fuelCount = fuels.Count();
-            var typeMasksCount = typeMasks.Count();
+            var ratiosCount = fuels.Length;
+            var fuelCount = fuels.Length;
+            var typeMasksCount = typeMasks.Length;
 
             curEngineWarp.propellant1 = fuelCount > 0 ? fuels[0] : null;
             curEngineWarp.ratio1 = ratiosCount > 0 ? (double)(decimal)ratios[0] : 0;
@@ -521,7 +522,7 @@ namespace KIT.Propulsion
 
             if (curEngineT != null)
             {
-                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * GameConstants.STANDARD_GRAVITY / 2e6;
+                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * GameConstants.StandardGravity / 2e6;
                 UpdateEngineWarpFuels();
             }
 
@@ -544,11 +545,11 @@ namespace KIT.Propulsion
             // String[] resources_to_supply = { ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
             // this.resources_to_supply = resources_to_supply;
 
-            Debug.Log("[KSPI]: Start Current State: " + (int)state + " " + state.ToString());
+            Debug.Log("[KSPI]: Start Current State: " + (int)state + " " + state);
             Debug.Log("[KSPI]: OnStart Already Launched: " + Launched);
 
-            curEngineT = this.part.FindModuleImplementing<ModuleEngines>();
-            curEngineWarp = this.part.FindModuleImplementing<ModuleEnginesWarp>();
+            curEngineT = part.FindModuleImplementing<ModuleEngines>();
+            curEngineWarp = part.FindModuleImplementing<ModuleEnginesWarp>();
 
             if ((state & StartState.PreLaunch) == StartState.PreLaunch)
                 hideEmpty = true;
@@ -635,14 +636,11 @@ namespace KIT.Propulsion
             {
                 if (akConfig.Ratios[I] > 0)
                 {
-                    double akAmount = 0;
-                    double akMaxAmount = 0;
-
                     var akResource = PartResourceLibrary.Instance.GetDefinition(akConfig.Fuels[I]);
 
                     if (akResource != null)
                     {
-                        part.GetConnectedResourceTotals(akResource.id, out akAmount, out akMaxAmount);
+                        part.GetConnectedResourceTotals(akResource.id, out var akAmount, out var akMaxAmount);
 
                         if (akAmount == 0)
                         {
@@ -692,7 +690,7 @@ namespace KIT.Propulsion
             _fuelConfigurationWithEffect?.ForEach(prop => part.Effect(prop.effectname, 0, -1));
             
             if (_currentActiveConfiguration != null && !string.IsNullOrEmpty(_currentActiveConfiguration.effectname))
-                part.Effect(_currentActiveConfiguration.effectname, (float)(curEngineT.currentThrottle * fusionRatio), -1);
+                part.Effect(_currentActiveConfiguration.effectname, (float)(curEngineT.currentThrottle * fusionRatio));
         }
 
         public string KITPartName() => part.partInfo.title;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KIT.Resources;
+using KIT.Science;
 
 namespace KIT.Extensions
 {

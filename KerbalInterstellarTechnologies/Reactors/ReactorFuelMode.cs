@@ -14,18 +14,18 @@ namespace KIT.Reactors
     {
         public FuelResourceMetaData(PartResourceDefinition resourceDefinition, double ratio)
         {
-            this.resourceDefinition = resourceDefinition;
-            this.ratio = ratio;
+            this.ResourceDefinition = resourceDefinition;
+            this.Ratio = ratio;
         }
 
-        public PartResourceDefinition resourceDefinition;
-        public double ratio = 1;
+        public PartResourceDefinition ResourceDefinition;
+        public double Ratio;
     }
 
     class ResourceGroupMetaData
     {
-        public string name;
-        public List<FuelResourceMetaData> resourceVariantsMetaData;
+        public string Name;
+        public List<FuelResourceMetaData> ResourceVariantsMetaData;
     }
 
 
@@ -40,8 +40,8 @@ namespace KIT.Reactors
             {
                 ResourceGroups.Add(new ResourceGroupMetaData()
                 {
-                    name = group.Key,
-                    resourceVariantsMetaData = group.Select(m => new FuelResourceMetaData(m.Definition, m.Ratio)).Distinct().ToList()
+                    Name = group.Key,
+                    ResourceVariantsMetaData = group.Select(m => new FuelResourceMetaData(m.Definition, m.Ratio)).Distinct().ToList()
                 });
             }
 
@@ -69,42 +69,42 @@ namespace KIT.Reactors
             NormalisedPowerRequirements = first.NormalisedPowerRequirements;
             NeutronsRatio = first.NeutronsRatio;
             TritiumBreedModifier = first.TritiumBreedModifier;
-            FuelEfficencyMultiplier = first.FuelEfficencyMultiplier;
+            FuelEfficiencyMultiplier = first.FuelEfficencyMultiplier;
         }
 
-        public int SupportedReactorTypes { get; private set; }
-        public int Index { get; private set; }
-        public string ModeGUIName { get; private set; }
-        public string TechRequirement { get; private set; }
-        public bool Aneutronic { get; private set; }
-        public double GammaRayEnergy { get; private set; }
-        public bool RequiresLab { get; private set; }
-        public bool RequiresUpgrade { get; private set; }
-        public float ChargedPowerRatio { get; private set; }
-        public double MeVPerChargedProduct { get; private set; }
-        public float NormalisedReactionRate { get; private set; }
-        public float NormalisedPowerRequirements { get; private set; }
-        public int TechLevel { get; private set; }
-        public int MinimumFusionGainFactor { get; private set; }
-        public float NeutronsRatio { get; private set; }
-        public float TritiumBreedModifier { get; private set; }
-        public double FuelEfficencyMultiplier { get; private set; }
+        public int SupportedReactorTypes { get; }
+        public int Index { get; }
+        public string ModeGUIName { get; }
+        public string TechRequirement { get; }
+        public bool Aneutronic { get; }
+        public double GammaRayEnergy { get; }
+        public bool RequiresLab { get; }
+        public bool RequiresUpgrade { get; }
+        public float ChargedPowerRatio { get; }
+        public double MeVPerChargedProduct { get; }
+        public float NormalisedReactionRate { get; }
+        public float NormalisedPowerRequirements { get; }
+        public int TechLevel { get; }
+        public int MinimumFusionGainFactor { get; }
+        public float NeutronsRatio { get; }
+        public float TritiumBreedModifier { get; }
+        public double FuelEfficiencyMultiplier { get; }
 
-        public string AlternativeFuelType1 { get; private set; }
-        public string AlternativeFuelType2 { get; private set; }
-        public string AlternativeFuelType3 { get; private set; }
-        public string AlternativeFuelType4 { get; private set; }
-        public string AlternativeFuelType5 { get; private set; }
+        public string AlternativeFuelType1 { get; set; }
+        public string AlternativeFuelType2 { get; }
+        public string AlternativeFuelType3 { get; }
+        public string AlternativeFuelType4 { get; }
+        public string AlternativeFuelType5 { get; }
 
-        public List<ReactorFuelMode> Variants { get; private set; }
-        public List<ResourceGroupMetaData> ResourceGroups { get; private set; }
+        public List<ReactorFuelMode> Variants { get; }
+        public List<ResourceGroupMetaData> ResourceGroups { get; }
 
         // Methods
         public List<ReactorFuelMode> GetVariantsOrderedByFuelRatio(Part part, double fuelEfficiency, double powerToSupply, double fuelUsePerMjMult, bool allowSimulate = true)
         {
             foreach (var fuelMode in Variants)
             {
-                fuelMode.FuelRatio = fuelMode.ReactorFuels.Min(fuel => fuel.GetFuelRatio(part, fuelEfficiency, powerToSupply, fuelUsePerMjMult, allowSimulate ? fuel.Simulate : false));
+                fuelMode.FuelRatio = fuelMode.ReactorFuels.Min(fuel => fuel.GetFuelRatio(part, fuelEfficiency, powerToSupply, fuelUsePerMjMult, allowSimulate && fuel.Simulate));
             }
 
             return Variants.OrderByDescending(m => m.FuelRatio).ThenBy(m => m.Position).ToList();
@@ -169,11 +169,11 @@ namespace KIT.Reactors
             _tritium_breed_multiplier = node.HasValue("TritiumBreedMultiplier") ? Single.Parse(node.GetValue("TritiumBreedMultiplier")) : 1;
             _fuel_efficency_multiplier = node.HasValue("FuelEfficiencyMultiplier") ? Double.Parse(node.GetValue("FuelEfficiencyMultiplier")) : 1;
 
-            _requires_lab = node.HasValue("RequiresLab") ? Boolean.Parse(node.GetValue("RequiresLab")) : false;
-            _requires_upgrade = node.HasValue("RequiresUpgrade") ? Boolean.Parse(node.GetValue("RequiresUpgrade")) : false;
+            _requires_lab = node.HasValue("RequiresLab") && Boolean.Parse(node.GetValue("RequiresLab"));
+            _requires_upgrade = node.HasValue("RequiresUpgrade") && Boolean.Parse(node.GetValue("RequiresUpgrade"));
             _techLevel = node.HasValue("TechLevel") ? Int32.Parse(node.GetValue("TechLevel")) : 0;
             _minimumQ = node.HasValue("MinimumQ") ? Int32.Parse(node.GetValue("MinimumQ")) : 0;
-            _aneutronic = node.HasValue("Aneutronic") ? Boolean.Parse(node.GetValue("Aneutronic")) : false;
+            _aneutronic = node.HasValue("Aneutronic") && Boolean.Parse(node.GetValue("Aneutronic"));
             _gammaRayEnergy = node.HasValue("GammaRayEnergy") ? Double.Parse(node.GetValue("GammaRayEnergy")) : 0;
 
 
@@ -247,8 +247,8 @@ namespace KIT.Reactors
 
         public double FuelRatio { get; set; }
 
-        public bool AllFuelResourcesDefinitionsAvailable { get; private set; }
-        public bool AllProductResourcesDefinitionsAvailable { get; private set; }
+        public bool AllFuelResourcesDefinitionsAvailable { get; }
+        public bool AllProductResourcesDefinitionsAvailable { get; }
 
     }
 }

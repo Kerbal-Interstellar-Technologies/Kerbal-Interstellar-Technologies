@@ -19,7 +19,7 @@ namespace PhotonSail
 
                 // catalog part upgrades
                 ConfigNode[] partUpgradeNodes = GameDatabase.Instance.GetConfigNodes("PARTUPGRADE");
-                Debug.Log("[PhotonSail]: PartUpgradeByName found: " + partUpgradeNodes.Count() + " Part upgrades");
+                Debug.Log("[PhotonSail]: PartUpgradeByName found: " + partUpgradeNodes.Length + " Part upgrades");
 
                 foreach (var partUpgradeConfig in partUpgradeNodes)
                 {
@@ -116,7 +116,7 @@ namespace PhotonSail
 
                 // catalog part upgrades
                 ConfigNode[] techTree = GameDatabase.Instance.GetConfigNodes("TechTree");
-                Debug.Log("[PhotonSail]: PluginHelper found: " + techTree.Count() + " TechTrees");
+                Debug.Log("[PhotonSail]: PluginHelper found: " + techTree.Length + " TechTrees");
 
                 foreach (var techTreeConfig in techTree)
                 {

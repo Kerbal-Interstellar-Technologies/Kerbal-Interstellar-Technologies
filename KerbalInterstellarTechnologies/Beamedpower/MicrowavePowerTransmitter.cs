@@ -1,13 +1,15 @@
-﻿using KIT.Extensions;
-using KSP.Localization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KIT.BeamedPower;
+using KIT.Extensions;
 using KIT.Resources;
-using UnityEngine;
 using KIT.ResourceScheduler;
+using KIT.Wasteheat;
+using KSP.Localization;
+using UnityEngine;
 
-namespace KIT.BeamedPower
+namespace KIT.Beamedpower
 {
     class PhasedArrayTransmitter : BeamedPowerTransmitter { }
 
@@ -38,13 +40,13 @@ namespace KIT.BeamedPower
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_MergingBeams")]//Merging Beams
         public bool mergingBeams;
         [KSPField(isPersistant = true)]
-        public double nuclear_power = 0;
+        public double nuclear_power;
         [KSPField(isPersistant = true)]
-        public double solar_power = 0;
+        public double solar_power;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_PowerCapacity", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Power Capacity
-        public double power_capacity = 0;
+        public double power_capacity;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_TransmitWaveLengthm", guiFormat = "F8", guiUnits = " m")]//Transmit WaveLength m
-        public double wavelength = 0;
+        public double wavelength;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_TransmitWaveLengthSI")]//Transmit WaveLength SI
         public string wavelengthText;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_TransmitWaveLengthWLName")]//Transmit WaveLength WL Name
@@ -58,11 +60,11 @@ namespace KIT.BeamedPower
         [KSPField(isPersistant = true)]
         public double aperture = 1;
         [KSPField(isPersistant = true)]
-        public double diameter = 0;
+        public double diameter;
         [KSPField(isPersistant = true)]
-        public bool forceActivateAtStartup = false;
+        public bool forceActivateAtStartup;
         [KSPField(isPersistant = true)]
-        public bool hasLinkedReceivers = false;
+        public bool hasLinkedReceivers;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_NativeWavelength", guiFormat = "F8", guiUnits = " m")]
         public double nativeWaveLength = 0.003189281;
         [KSPField(isPersistant = true, guiActiveEditor = false)]
@@ -104,7 +106,7 @@ namespace KIT.BeamedPower
         [KSPField(groupName = GROUP)]
         public int compatibleBeamTypes = 1;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_ApertureDiameter", guiFormat = "F2", guiUnits = " m")]//Aperture Diameter
-        public double apertureDiameter = 0;
+        public double apertureDiameter;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_Status")]//Status
         public string statusStr;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_TransmissionEfficiency", guiFormat = "F1", guiUnits = "%")]//Transmission Efficiency
@@ -178,7 +180,7 @@ namespace KIT.BeamedPower
 
 
             Debug.Log("[KSPI]: BeamedPowerTransmitter on " + part.name + " was Force Activated");
-            this.part.force_activate();
+            part.force_activate();
             forceActivateAtStartup = true;
 
             if (genericAnimation != null && genericAnimation.GetScalar < 1)
@@ -189,25 +191,25 @@ namespace KIT.BeamedPower
             IsEnabled = true;
 
             // update wavelength
-            this.wavelength = Wavelength;
+            wavelength = Wavelength;
             minimumRelayWavelenght = wavelength * 0.99;
             maximumRelayWavelenght = wavelength * 1.01;
 
-            this.wavelengthText = WavelengthToText(wavelength);
-            this.wavelengthName = WavelengthName;
+            wavelengthText = WavelengthToText(wavelength);
+            wavelengthName = WavelengthName;
             atmosphericAbsorption = CombinedAtmosphericAbsorption;
         }
 
         private string WavelengthToText( double waveLength)
         {
             if (waveLength > 1.0e-3)
-                return (waveLength * 1.0e+3).ToString() + " mm";
+                return (waveLength * 1.0e+3) + " mm";
             else if (waveLength > 7.5e-7)
-                return (waveLength * 1.0e+6).ToString() + " µm";
+                return (waveLength * 1.0e+6) + " µm";
             else if (waveLength > 1.0e-9)
-                return (waveLength * 1.0e+9).ToString() + " nm";
+                return (waveLength * 1.0e+9) + " nm";
             else
-                return (waveLength * 1.0e+12).ToString() + " pm";
+                return (waveLength * 1.0e+12) + " pm";
         }
 
         [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_DeactivateTransmitter", active = false)]//Deactivate Transmitter
@@ -235,7 +237,7 @@ namespace KIT.BeamedPower
                 genericAnimation.Toggle();
             }
 
-            vessel_recievers = this.vessel.FindPartModulesImplementing<BeamedPowerReceiver>().Where(m => m.part != this.part).ToList();
+            vessel_recievers = vessel.FindPartModulesImplementing<BeamedPowerReceiver>().Where(m => m.part != part).ToList();
 
             UpdateRelayWavelength();
 
@@ -260,14 +262,14 @@ namespace KIT.BeamedPower
         private void UpdateRelayWavelength()
         {
             // update stored variables
-            this.wavelength = Wavelength;
-            this.wavelengthText = WavelengthToText(wavelength);
-            this.wavelengthName = WavelengthName;
-            this.atmosphericAbsorption = CombinedAtmosphericAbsorption;
+            wavelength = Wavelength;
+            wavelengthText = WavelengthToText(wavelength);
+            wavelengthName = WavelengthName;
+            atmosphericAbsorption = CombinedAtmosphericAbsorption;
 
             if (isMirror)
             {
-                this.hasLinkedReceivers = true;
+                hasLinkedReceivers = true;
                 return;
             }
 
@@ -279,10 +281,10 @@ namespace KIT.BeamedPower
                 receiversConfiguredForRelay.Add(part_receiver);
 
             // determine if we can activate relay
-            this.hasLinkedReceivers = receiversConfiguredForRelay.Count > 0;
+            hasLinkedReceivers = receiversConfiguredForRelay.Count > 0;
 
             // use all available receivers
-            if (this.hasLinkedReceivers)
+            if (hasLinkedReceivers)
             {
                 minimumRelayWavelenght = receiversConfiguredForRelay.Min(m => m.minimumWavelength);
                 maximumRelayWavelenght = receiversConfiguredForRelay.Max(m => m.maximumWavelength);
@@ -315,7 +317,7 @@ namespace KIT.BeamedPower
             DeactivateRelay();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             onMoving = new EventData<float, float>("transmitterMoving");
             onStop = new EventData<float>("transmitterStop");
@@ -353,14 +355,14 @@ namespace KIT.BeamedPower
             }
 
             solarCells = vessel.FindPartModulesImplementing<ISolarPower>();
-            vessel_recievers = vessel.FindPartModulesImplementing<BeamedPowerReceiver>().Where(m => m.part != this.part).ToList();
+            vessel_recievers = vessel.FindPartModulesImplementing<BeamedPowerReceiver>().Where(m => m.part != part).ToList();
 
             UpdateRelayWavelength();
 
             if (forceActivateAtStartup)
             {
                 Debug.Log("[KSPI]: BeamedPowerTransmitter on " + part.name + " was Force Activated");
-                this.part.force_activate();
+                part.force_activate();
             }
         }
 
@@ -386,14 +388,14 @@ namespace KIT.BeamedPower
             {
                 var attachedParts = part.attachNodes.Where(m => m.attachedPart != null).Select(m => m.attachedPart).ToList();
 
-                var parentParts = attachedParts.Where(m => m.parent != null && m.parent != this.part).Select(m => m.parent).ToList();
-                var indirectParts = attachedParts.SelectMany(m => m.attachNodes.Where(l => l.attachedPart != null && l.attachedPart != this.part).Select(l => l.attachedPart)).ToList();
+                var parentParts = attachedParts.Where(m => m.parent != null && m.parent != part).Select(m => m.parent).ToList();
+                var indirectParts = attachedParts.SelectMany(m => m.attachNodes.Where(l => l.attachedPart != null && l.attachedPart != part).Select(l => l.attachedPart)).ToList();
 
                 attachedParts.AddRange(indirectParts);
                 attachedParts.AddRange(parentParts);
 
                 var nearbyParts = attachedParts.Distinct().ToList();
-                nearbyPartsCount = nearbyParts.Count();
+                nearbyPartsCount = nearbyParts.Count;
 
                 var nearbyGenerators = nearbyParts.Select(m => m.FindModuleImplementing<BeamGenerator>()).Where(l => l != null);
                 var availableGenerators = nearbyGenerators.SelectMany(m => m.FindBeamGenerators(m.part)).Where(m => (m.beamType & compatibleBeamTypes) == m.beamType).Distinct();
@@ -407,8 +409,8 @@ namespace KIT.BeamedPower
             {
                 activeBeamGenerator.Connect(this);
 
-                if (activeBeamGenerator.part != this.part)
-                    activeBeamGenerator.UpdateMass(this.maximumPower);
+                if (activeBeamGenerator.part != part)
+                    activeBeamGenerator.UpdateMass(maximumPower);
             }
         }
 
@@ -467,13 +469,13 @@ namespace KIT.BeamedPower
                 }
             }
 
-            var canOperateInCurrentEnvironment = this.canFunctionOnSurface || vesselInSpace;
+            var canOperateInCurrentEnvironment = canFunctionOnSurface || vesselInSpace;
             var vesselCanTransmit = canTransmit && canOperateInCurrentEnvironment;
 
             activateTransmittervEvent.active = activeBeamGenerator != null && vesselCanTransmit && !IsEnabled && !relay && !receiver_on && canBeActive;
             deactivateTransmitterEvent.active = IsEnabled;
 
-            canRelay = this.hasLinkedReceivers && canOperateInCurrentEnvironment;
+            canRelay = hasLinkedReceivers && canOperateInCurrentEnvironment;
 
             activateRelayEvent.active = canRelay && !IsEnabled && !relay && !receiver_on && canBeActive;
             deactivateRelayEvent.active = relay;
@@ -678,8 +680,7 @@ namespace KIT.BeamedPower
             if (transmitters.Count == 0)
                 return null;
 
-            var vesselTransmitters = new VesselMicrowavePersistence(vessel);
-            vesselTransmitters.IsActive = true;
+            var vesselTransmitters = new VesselMicrowavePersistence(vessel) {IsActive = true};
 
             foreach (var transmitter in transmitters)
             {

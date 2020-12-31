@@ -4,7 +4,7 @@ using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.UI.Screens.Flight.Dialogs;
 
-namespace KIT
+namespace KIT.Science
 {
 
     class ModuleModdableScienceGenerator : PartModule, IKITMod, IScienceDataContainer
@@ -28,7 +28,7 @@ namespace KIT
         [KSPField(isPersistant = true)]
         public float ref_value;
         [KSPField(isPersistant = true)]
-        public bool data_gend = false;
+        public bool data_gend;
 
         [KSPField(isPersistant = false)]
         public bool rerunnable = false;
@@ -85,18 +85,18 @@ namespace KIT
                 if (merdp == null || !data_gend)
                 {
                     merdp = new ExperimentResultDialogPage(
-                        base.part,
-                        this.science_data,
+                        part,
+                        science_data,
                         1f,
                         0f,
                         false,
                         "",
                         true,
-                        new ScienceLabSearch(this.vessel, this.science_data),
-                        this.endExperiment,
-                        this.keepData,
-                        this.sendDataToComms,
-                        this.sendDataToLab);
+                        new ScienceLabSearch(vessel, science_data),
+                        endExperiment,
+                        keepData,
+                        sendDataToComms,
+                        sendDataToLab);
                 }
                 ExperimentsResultDialog.DisplayResult(merdp);
             }
@@ -104,9 +104,8 @@ namespace KIT
                 ResetExperiment();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
-            if (state == StartState.Editor) return;
         }
 
         public override void OnSave(ConfigNode node)
@@ -158,7 +157,7 @@ namespace KIT
         public ScienceData[] GetData()
         {
             if (science_data != null)
-                return new ScienceData[] { science_data };
+                return new[] { science_data };
             else
                 return new ScienceData[0];
         }
@@ -203,13 +202,12 @@ namespace KIT
 
         protected void sendDataToComms(ScienceData science_data)
         {
-            List<IScienceDataTransmitter> list = base.vessel.FindPartModulesImplementing<IScienceDataTransmitter>();
-            if (list.Any<IScienceDataTransmitter>() && science_data != null && data_gend)
+            List<IScienceDataTransmitter> list = vessel.FindPartModulesImplementing<IScienceDataTransmitter>();
+            if (list.Any() && science_data != null && data_gend)
             {
                 merdp = null;
-                List<ScienceData> list2 = new List<ScienceData>();
-                list2.Add(science_data);
-                list.OrderBy(ScienceUtil.GetTransmitterScore).First<IScienceDataTransmitter>().TransmitData(list2);
+                List<ScienceData> list2 = new List<ScienceData> {science_data};
+                list.OrderBy(ScienceUtil.GetTransmitterScore).First().TransmitData(list2);
                 endExperiment(science_data);
             }
         }

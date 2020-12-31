@@ -61,7 +61,7 @@ namespace KIT.Refinery.Activity
             _aluminiumProductionRate = _aluminaConsumptionRate;
             resMan.ProduceResource(ResourceName.Aluminium, _aluminaConsumptionRate / _aluminiumDensity);
             _oxygenProductionRate = _aluminaConsumptionRate;
-            resMan.ProduceResource(ResourceName.OxygenGas, GameConstants.aluminiumElectrolysisMassRatio * _aluminaConsumptionRate / _oxygenDensity); ;
+            resMan.ProduceResource(ResourceName.OxygenGas, GameConstants.AluminiumElectrolysisMassRatio * _aluminaConsumptionRate / _oxygenDensity);
             UpdateStatusMessage();
         }
 
@@ -75,15 +75,15 @@ namespace KIT.Refinery.Activity
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_AluminaConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Alumina Consumption Rate"
-            GUILayout.Label(_aluminaConsumptionRate * GameConstants.SECONDS_IN_HOUR + " mT/"+Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_hour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label(_aluminaConsumptionRate * GameConstants.SecondsInHour + " mT/"+Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_hour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_AluminiumProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Aluminium Production Rate"
-            GUILayout.Label(_aluminiumProductionRate * GameConstants.SECONDS_IN_HOUR + " mT/"+Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_hour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label(_aluminiumProductionRate * GameConstants.SecondsInHour + " mT/"+Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_hour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_OxygenProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Oxygen Production Rate"
-            GUILayout.Label(_oxygenProductionRate * GameConstants.SECONDS_IN_HOUR + " mT/"+Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_hour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label(_oxygenProductionRate * GameConstants.SecondsInHour + " mT/"+Localizer.Format("#LOC_KSPIE_AluminiumElectrolyser_hour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
         }
 

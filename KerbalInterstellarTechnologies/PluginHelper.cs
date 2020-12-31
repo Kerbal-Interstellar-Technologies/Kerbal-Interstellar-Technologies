@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using KIT.Toolbar;
+using KIT.Wasteheat;
 using UnityEngine;
 
 namespace KIT
@@ -29,7 +30,7 @@ namespace KIT
 
                 // catalog part upgrades
                 ConfigNode[] techTreeConfigs = GameDatabase.Instance.GetConfigNodes("TechTree");
-                Debug.Log("[KSPI]: PluginHelper found: " + techTreeConfigs.Count() + " TechTrees");
+                Debug.Log("[KSPI]: PluginHelper found: " + techTreeConfigs.Length + " TechTrees");
 
                 foreach (var techTreeConfig in techTreeConfigs)
                 {
@@ -67,7 +68,7 @@ namespace KIT
 
                 // catalog part upgrades
                 ConfigNode[] partUpgradeConfigs = GameDatabase.Instance.GetConfigNodes("PARTUPGRADE");
-                Debug.Log("[KSPI]: PluginHelper found: " + partUpgradeConfigs.Count() + " Part upgrades");
+                Debug.Log("[KSPI]: PluginHelper found: " + partUpgradeConfigs.Length + " Part upgrades");
 
                 foreach (var partUpgradeConfig in partUpgradeConfigs)
                 {
@@ -108,9 +109,9 @@ namespace KIT
 
         #endregion
 
-        public static int HoursInDay { get; private set; } = GameConstants.KERBIN_HOURS_DAY;
-        public static int SecondsInDay { get; private set; } = GameConstants.KERBIN_DAY_SECONDS;
-        public static int SecondsInHour => GameConstants.SECONDS_IN_HOUR;
+        public static int HoursInDay { get; } = GameConstants.KerbinHoursDay;
+        public static int SecondsInDay { get; } = GameConstants.KerbinDaySeconds;
+        public static int SecondsInHour => GameConstants.SecondsInHour;
 
         public static string FormatMassStr(double mass, string format = "0.000000")
         {
@@ -406,7 +407,7 @@ namespace KIT
                 _buttonAdded = true;
             }
 
-            this.enabled = true;
+            enabled = true;
 
             if (resourcesConfigured) return;
 

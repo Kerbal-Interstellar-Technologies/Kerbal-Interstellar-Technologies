@@ -159,7 +159,7 @@ namespace KIT.Refinery.Activity
             var partsThatContainLqdHelium3 = _part.GetConnectedResources(_strLiquidHelium3ResourceName).ToList();
             var partsThatContainLqdHelium4 = _part.GetConnectedResources(_strLiquidHelium4ResourceName).ToList();
             var partsThatContainMonoxide = _part.GetConnectedResources(_strMonoxideResourceName).ToList();
-            var partsThatContainDioxide = _part.GetConnectedResources(_strDioxideResourceName).ToList(); ;
+            var partsThatContainDioxide = _part.GetConnectedResources(_strDioxideResourceName).ToList();
             var partsThatContainMethane = _part.GetConnectedResources(_strMethaneResourceName).ToList();
             var partsThatContainNitrogen = _part.GetConnectedResources(_strNitrogenResourceName).ToList();
             var partsThatContainWater = _part.GetConnectedResources(_strWaterResourceName).ToList();
@@ -303,7 +303,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_RegolithProcessor_Consumption"), _bold_label, GUILayout.Width(labelWidth));//"Regolith Consumption"
-            GUILayout.Label(((_regolithConsumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000000")) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(((_regolithConsumptionRate * GameConstants.SecondsInHour).ToString("0.000000")) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -339,7 +339,7 @@ namespace KIT.Refinery.Activity
             GUILayout.Label(resourceName, _value_label, GUILayout.Width(labelWidth));
             GUILayout.Label(spareRoom.ToString("0.000000") + " mT", maxCapacity > 0 && spareRoom == 0 ? _value_label_red : _value_label, GUILayout.Width(labelWidth));
             GUILayout.Label(maxCapacity.ToString("0.000000") + " mT", maxCapacity == 0 ? _value_label_red : _value_label, GUILayout.Width(labelWidth));
-            GUILayout.Label((productionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000000") + " mT/hour", productionRate > 0 ? _value_label_green : _value_label, GUILayout.Width(labelWidth));
+            GUILayout.Label((productionRate * GameConstants.SecondsInHour).ToString("0.000000") + " mT/hour", productionRate > 0 ? _value_label_green : _value_label, GUILayout.Width(labelWidth));
             GUILayout.EndHorizontal();
         }
 

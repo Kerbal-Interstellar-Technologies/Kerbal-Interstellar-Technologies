@@ -7,7 +7,7 @@ namespace KIT.Resources
 {
     class MagneticFieldDefinitionsHandler
     {
-        protected static Dictionary<string, MagneticFieldDefinition> magneticFieldDefinitions_by_name = null;
+        protected static Dictionary<string, MagneticFieldDefinition> magneticFieldDefinitions_by_name;
 
         public static MagneticFieldDefinition GetMagneticFieldDefinitionForBody(CelestialBody celestialBodyName)
         {
@@ -31,7 +31,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.Log("[KSPI]: Exception while retrieving MagneticFieldDefinition : " + ex.ToString());
+                Debug.Log("[KSPI]: Exception while retrieving MagneticFieldDefinition : " + ex);
                 magneticFieldDefinition = new MagneticFieldDefinition(celestialBodyName, 1); // create an object list for holding default multiplier
                 magneticFieldDefinitions_by_name.Add(celestialBodyName, magneticFieldDefinition);
             }
@@ -55,8 +55,6 @@ namespace KIT.Resources
 
                     // create empty dictionary
                     magneticFieldDefinitions_by_name = new Dictionary<string, MagneticFieldDefinition>();
-
-                    return;
                 }
                 else
                 {
@@ -70,7 +68,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.Log("[KSPI]: Exception while loading MagneticFieldDefinitions : " + ex.ToString());
+                Debug.Log("[KSPI]: Exception while loading MagneticFieldDefinitions : " + ex);
             }
             
         }

@@ -1,18 +1,19 @@
-﻿using KIT.BeamedPower;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using KIT.BeamedPower;
 using KIT.Extensions;
+using KIT.Interfaces;
 using KIT.Powermanagement;
+using KIT.Powermanagement.Interfaces;
 using KIT.Propulsion;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KIT.Wasteheat;
 using KSP.Localization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using KIT.Interfaces;
 using UnityEngine;
 
-namespace KIT
+namespace KIT.Beamedpower
 {
     [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName1")]//Solar Power Receiver Dish
     class SolarBeamedPowerReceiverDish : SolarBeamedPowerReceiver { } // receives less of a power capacity nerve in NF mode
@@ -156,9 +157,9 @@ namespace KIT
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_IsThermalReceiverSlave")]//Is Slave
         public bool isThermalReceiverSlave = false;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_InputPower", guiFormat = "F3", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Input Power
-        public double powerInputMegajoules = 0;
+        public double powerInputMegajoules;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_MaxInputPower", guiFormat = "F3", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Input Power
-        public double powerInputMegajoulesMax = 0;
+        public double powerInputMegajoulesMax;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_ThermalPower", guiFormat = "F3", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Thermal Power
         public double ThermalPower;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_Radius", guiFormat = "F2", guiUnits = " m")]//Radius
@@ -250,7 +251,7 @@ namespace KIT
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_SolarFlux", guiFormat = "F4")]//Solar Flux
         public double solarFlux;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_PowerMode"), UI_Toggle(disabledText = "#LOC_KSPIE_BeamPowerReceiver_ElectricMode", enabledText = "#LOC_KSPIE_BeamPowerReceiver_ThermalMode")]//Power Mode--Electric--Thermal
-        public bool thermalMode = false;
+        public bool thermalMode;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiName = "#LOC_KSPIE_BeamPowerReceiver_RadiatorMode"), UI_Toggle(disabledText = "#LOC_KSPIE_BeamPowerReceiver_BeamedPowerMode", enabledText = "#LOC_KSPIE_BeamPowerReceiver_RadiatorMode")]//Function--Beamed Power--Radiator
         public bool radiatorMode = false;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_BeamPowerReceiver_SolarPowerMode"), UI_Toggle(disabledText = "#LOC_KSPIE_BeamPowerReceiver_BeamedPowerMode", enabledText = "#LOC_KSPIE_BeamPowerReceiver_SolarMode")]//Power Mode--Beamed Power--Solar Only
@@ -533,7 +534,7 @@ namespace KIT
 
         public void NotifyActiveChargedEnergyGenerator(double efficiency, double powerRatio, double mass) { }
 
-        public bool IsThermalSource => this.isThermalReceiver;
+        public bool IsThermalSource => isThermalReceiver;
 
         public double RawMaximumPowerForPowerGeneration => powerInputMegajoulesMax;
 
@@ -621,7 +622,7 @@ namespace KIT
 
             // force activate to trigger any fairings and generators
             Debug.Log("[KSPI]: BeamedPowerReceiver was force activated on  " + part.name);
-            this.part.force_activate();
+            part.force_activate();
 
             ShowDeployAnimation(forced);
         }
@@ -723,9 +724,7 @@ namespace KIT
 
         public void SetActiveBandwidthConfigurationByWaveLength(double targetwavelength)
         {
-            if (BandwidthConverters == null) return;
-
-            var foundBandwidthConfiguration = BandwidthConverters.FirstOrDefault(m => m.minimumWavelength < targetwavelength && m.maximumWavelength > targetwavelength);
+            var foundBandwidthConfiguration = BandwidthConverters?.FirstOrDefault(m => m.minimumWavelength < targetwavelength && m.maximumWavelength > targetwavelength);
 
             if (foundBandwidthConfiguration == null) return;
 
@@ -765,21 +764,17 @@ namespace KIT
             return 2 * MomentumWhole; //output is in Newtons per second
         }
 
-        //lamdba = Wavelength in nanometers, time in seconds, wattage in normal Watts, returns momentum of whole laser
+        //lambda = Wavelength in nanometers, time in seconds, wattage in normal Watts, returns momentum of whole laser
         public static double PhotonicLaserMomentum2(double lambda, int time, long wattage)
         {
-            double PhotonImpulse;
-            double EnergyLaser = wattage * time;
-            double EnergySingle;
-            double MomentumSingle;
-            double MomentumWhole;
+            double energyLaser = wattage * time;
 
-            EnergySingle = 6.626e-34 * 3e8 / lambda;
-            PhotonImpulse = EnergyLaser / EnergySingle;
-            MomentumSingle = (6.626e-34 / (3e8 * lambda)) * 3e8;
-            MomentumWhole = MomentumSingle * PhotonImpulse;
+            var energySingle = 6.626e-34 * 3e8 / lambda;
+            var photonImpulse = energyLaser / energySingle;
+            var momentumSingle = (6.626e-34 / (3e8 * lambda)) * 3e8;
+            var momentumWhole = momentumSingle * photonImpulse;
 
-            return 2 * MomentumWhole;
+            return 2 * momentumWhole;
         }
 
         public override void OnStart(StartState state)
@@ -935,7 +930,7 @@ namespace KIT
 
                 if (isThermalReceiverSlave)
                 {
-                    var result = PowerSourceSearchResult.BreadthFirstSearchForThermalSource(this.part, (s) => s is BeamedPowerReceiver && (BeamedPowerReceiver)s != this, connectStackdepth, connectParentdepth, connectSurfacedepth, true);
+                    var result = PowerSourceSearchResult.BreadthFirstSearchForThermalSource(part, (s) => s is BeamedPowerReceiver receiver && receiver != this, connectStackdepth, connectParentdepth, connectSurfacedepth, true);
 
                     if (result?.Source == null)
                         Debug.LogWarning("[KSPI]: MicrowavePowerReceiver - BreadthFirstSearchForThermalSource-Failed to find Thermal receiver");
@@ -1292,7 +1287,7 @@ namespace KIT
             _solarFacingFactorField.guiActive = solarReceptionSurfaceArea > 0;
             _solarFluxField.guiActive = solarReceptionSurfaceArea > 0;
 
-            _selectedBandwidthConfigurationField.guiActive = (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().ReconfigureAntennas || canSwitchBandwidthInFlight) && receiverIsEnabled; ;
+            _selectedBandwidthConfigurationField.guiActive = (HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().ReconfigureAntennas || canSwitchBandwidthInFlight) && receiverIsEnabled;
 
             if (IsThermalSource)
                 coreTempererature = CoreTemperature.ToString("0.0") + " K";
@@ -1334,7 +1329,7 @@ namespace KIT
 
         private void OnGUI()
         {
-            if (this.vessel == FlightGlobals.ActiveVessel && showWindow && !HighLogic.LoadedSceneIsEditor)
+            if (vessel == FlightGlobals.ActiveVessel && showWindow && !HighLogic.LoadedSceneIsEditor)
                 windowPosition = GUILayout.Window(windowID, windowPosition, DrawGui, Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_InterfaceWindowTitle"));//"Power Receiver Interface"
         }
 
@@ -1753,8 +1748,7 @@ namespace KIT
 
         public double GetCurrentReceiverdPower(VesselMicrowavePersistence vmp)
         {
-            ReceivedPowerData data;
-            if (receiverIsEnabled && received_power.TryGetValue(vmp.Vessel, out data))
+            if (receiverIsEnabled && received_power.TryGetValue(vmp.Vessel, out var data))
             {
                 return data.CurrentReceivedPower;
             }
@@ -1827,7 +1821,7 @@ namespace KIT
             if (isMirror && receiverIsEnabled)
             {
                 var thermalMassPerKilogram = part.mass * part.thermalMassModifier * PhysicsGlobals.StandardSpecificHeatCapacity * 1e-3;
-                dissipationInMegaJoules = PluginHelper.GetBlackBodyDissipation(solarReceptionSurfaceArea, part.temperature) * 1e-6; ;
+                dissipationInMegaJoules = PluginHelper.GetBlackBodyDissipation(solarReceptionSurfaceArea, part.temperature) * 1e-6;
                 var temperatureChange = resMan.FixedDeltaTime() * -(dissipationInMegaJoules / thermalMassPerKilogram);
                 part.temperature = part.temperature + temperatureChange;
             }
@@ -1960,7 +1954,7 @@ namespace KIT
 
                 ThermalPower = ThermalPower <= 0
                     ? total_thermal_power_provided
-                    : total_thermal_power_provided * GameConstants.microwave_alpha + GameConstants.microwave_beta * ThermalPower;
+                    : total_thermal_power_provided * GameConstants.MicrowaveAlpha + GameConstants.MicrowaveBeta * ThermalPower;
 
                 foreach (var item in received_power)
                 {

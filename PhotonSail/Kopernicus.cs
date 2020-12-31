@@ -19,7 +19,7 @@ namespace PhotonSail
         /// <summary>
         /// Retrieves list of Starlight data
         /// </summary>
-        static public List<StarLight> Stars => stars ?? (stars = ExtractStarData(moduleName));
+        public static List<StarLight> Stars => stars ?? (stars = ExtractStarData(moduleName));
 
         public static bool IsStar(CelestialBody body)
         {
@@ -77,12 +77,10 @@ namespace PhotonSail
                 {
                     string bodyName = currentBody.GetValue("name");
 
-                    CelestialBody celestialBody = null;
-
-                    celestrialBodiesByName.TryGetValue(bodyName, out celestialBody);
+                    celestrialBodiesByName.TryGetValue(bodyName, out var celestialBody);
                     if (celestialBody == null)
                     {
-                        Debug.LogWarning(debugPrefix + "Failed to find celestialbody " + bodyName);
+                        Debug.LogWarning(debugPrefix + "Failed to find celestial body " + bodyName);
                         continue;
                     }
 
@@ -112,8 +110,7 @@ namespace PhotonSail
                                 Debug.LogWarning(debugPrefix + "luminosity is missing in Light ConfigNode for " + bodyName);
                             else
                             {
-                                double luminosity;
-                                if (double.TryParse(luminosityText, out luminosity))
+                                if (double.TryParse(luminosityText, out var luminosity))
                                 {
                                     solarLuminocity = (4 * Math.PI * kerbinAU * kerbinAU * luminosity) / kerbalLuminocity;
                                     Debug.Log(debugPrefix + "calculated solarLuminocity " + solarLuminocity + " based on luminosity " + luminosity + " for " + bodyName);
@@ -168,7 +165,7 @@ namespace PhotonSail
 
             // add local sun if kopernicus configuration was not found or did not contain any star
             var homePlanetSun = Planetarium.fetch.Sun;
-            if (!stars.Any(m => m.star.name == homePlanetSun.name))
+            if (stars.All(m => m.star.name != homePlanetSun.name))
             {
                 Debug.LogWarning(debugPrefix + "homeplanet star was not found, adding homeplanet star as default sun");
                 stars.Add(new StarLight() { star = Planetarium.fetch.Sun, relativeLuminocity = 1 });

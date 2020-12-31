@@ -93,7 +93,7 @@ namespace KIT.Propulsion
         ModuleEnginesFX _attached_engine;
         ModuleEnginesWarp _attached_warpable_engine;
         PartResourceDefinition propellantBufferResourceDefinition;
-        Guid id = Guid.NewGuid();
+        readonly Guid id = Guid.NewGuid();
 
         IFNChargedParticleSource _attached_reactor;
 
@@ -128,12 +128,12 @@ namespace KIT.Propulsion
 
         public bool RequiresChargedPower => true;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (maintainsPropellantBuffer)
                 propellantBufferResourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellantBufferResourceName);
 
-            _attached_warpable_engine = this.part.FindModuleImplementing<ModuleEnginesWarp>();
+            _attached_warpable_engine = part.FindModuleImplementing<ModuleEnginesWarp>();
             _attached_engine = _attached_warpable_engine;
 
             if (_attached_engine != null)
@@ -148,6 +148,8 @@ namespace KIT.Propulsion
             throtleExponent = Math.Abs(Math.Log10(_attached_reactor.MinimumChargedIspMult / _attached_reactor.MaximumChargedIspMult));
 
             simulatedThrottleFloatRange = Fields["simulatedThrottle"].uiControlEditor as UI_FloatRange;
+            System.Diagnostics.Debug.Assert(simulatedThrottleFloatRange != null, nameof(simulatedThrottleFloatRange) + " != null");
+            
             simulatedThrottleFloatRange.onFieldChanged += UpdateFromGUI;
 
             if (_attached_reactor == null)
@@ -159,7 +161,7 @@ namespace KIT.Propulsion
 
             InitializesPropellantBuffer();
 
-            if (_attached_engine != null && _attached_engine is ModuleEnginesFX)
+            if (_attached_engine != null)
             {
                 if (!String.IsNullOrEmpty(runningEffectName))
                     part.Effect(runningEffectName, 0, -1);
@@ -219,7 +221,7 @@ namespace KIT.Propulsion
         private void ConnectToReactor()
         {
             // first try to look in part, otherwise try to find the nearest source
-            _attached_reactor = this.part.FindModuleImplementing<IFNChargedParticleSource>() ??
+            _attached_reactor = part.FindModuleImplementing<IFNChargedParticleSource>() ??
                                 BreadthFirstSearchForChargedParticleSource(10, 1);
             
             _attached_reactor?.ConnectWithEngine(this);
@@ -273,8 +275,8 @@ namespace KIT.Propulsion
                 return;
 
             // set Isp
-            var joulesPerAmu = _attached_reactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ELECTRON_CHARGE / GameConstants.dilution_factor;
-            var calculatedIsp = Math.Sqrt(joulesPerAmu * 2 / GameConstants.ATOMIC_MASS_UNIT) / GameConstants.STANDARD_GRAVITY;
+            var joulesPerAmu = _attached_reactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ElectronCharge / GameConstants.DilutionFactor;
+            var calculatedIsp = Math.Sqrt(joulesPerAmu * 2 / GameConstants.AtomicMassUnit) / GameConstants.StandardGravity;
 
             // calculate max and min isp
             minimum_isp = calculatedIsp * _attached_reactor.MinimumChargedIspMult;
@@ -294,8 +296,8 @@ namespace KIT.Propulsion
                 maximumChargedPower = _attached_reactor.MaximumChargedPower;
                 powerBufferMax = maximumChargedPower / 10000;
 
-                _engineMaxThrust = powerThrustModifier * maximumChargedPower / currentIsp / GameConstants.STANDARD_GRAVITY;
-                var maxFuelFlowRate = _engineMaxThrust / currentIsp / GameConstants.STANDARD_GRAVITY;
+                _engineMaxThrust = powerThrustModifier * maximumChargedPower / currentIsp / GameConstants.StandardGravity;
+                var maxFuelFlowRate = _engineMaxThrust / currentIsp / GameConstants.StandardGravity;
                 _attached_engine.maxFuelFlow = (float)maxFuelFlowRate;
                 _attached_engine.maxThrust = (float)_engineMaxThrust;
 
@@ -334,7 +336,7 @@ namespace KIT.Propulsion
                 return;
 
             var powerEffectRatio = exhaustAllowed && _attached_engine != null && _attached_engine.isOperational && _chargedParticleMaximumPercentageUsage > 0 && currentThrust > 0 ? _attached_engine.currentThrottle : 0;
-            part.Effect(powerEffectName, powerEffectRatio, -1);
+            part.Effect(powerEffectName, powerEffectRatio);
         }
 
         private void UpdateRunningEffect()
@@ -343,7 +345,7 @@ namespace KIT.Propulsion
                 return;
 
             var runningEffectRatio = exhaustAllowed && _attached_engine != null && _attached_engine.isOperational && _chargedParticleMaximumPercentageUsage > 0 && currentThrust > 0 ? _attached_engine.currentThrottle : 0;
-            part.Effect(runningEffectName, runningEffectRatio, -1);
+            part.Effect(runningEffectName, runningEffectRatio);
         }
 
         // Note: does not seem to be called while in vab mode
@@ -397,13 +399,8 @@ namespace KIT.Propulsion
             if (AttachedReactor == null)
                 return false;
 
-            double allowedExhaustAngle;
-            if (AttachedReactor.MayExhaustInAtmosphereHomeworld)
-            {
-                allowedExhaustAngle = 180;
-                return true;
-            }
-
+            if (AttachedReactor.MayExhaustInAtmosphereHomeworld) return true;
+            
             var minAltitude = AttachedReactor.MayExhaustInLowSpaceHomeworld ? homeworld.atmosphereDepth : homeworld.scienceValues.spaceAltitudeThreshold;
 
             if (distanceToSurfaceHomeworld < minAltitude)
@@ -419,7 +416,7 @@ namespace KIT.Propulsion
 
             var coneAngle = 45 * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude * radiusDividedByAltitude;
 
-            allowedExhaustAngle = coneAngle + Math.Tanh(radiusDividedByAltitude) * (180 / Math.PI);
+            var allowedExhaustAngle = coneAngle + Math.Tanh(radiusDividedByAltitude) * (180 / Math.PI);
 
             if (allowedExhaustAngle < 3)
                 return true;
@@ -472,9 +469,9 @@ namespace KIT.Propulsion
                 currentIsp = !_attached_engine.isOperational || _attached_engine.currentThrottle == 0 ? maximum_isp : Math.Min(maximum_isp, minimum_isp / Math.Pow(_attached_engine.currentThrottle, throtleExponent));
 
                 var powerThrustModifier = GameConstants.BaseThrustPowerMultiplier * powerThrustMultiplier;
-                var max_engine_thrust_at_max_isp = powerThrustModifier * _charged_particles_received / maximum_isp / GameConstants.STANDARD_GRAVITY;
+                var max_engine_thrust_at_max_isp = powerThrustModifier * _charged_particles_received / maximum_isp / GameConstants.StandardGravity;
 
-                var calculatedConsumptionInTon = max_engine_thrust_at_max_isp / maximum_isp / GameConstants.STANDARD_GRAVITY;
+                var calculatedConsumptionInTon = max_engine_thrust_at_max_isp / maximum_isp / GameConstants.StandardGravity;
 
                 UpdatePropellantBuffer(calculatedConsumptionInTon);
 
@@ -549,7 +546,7 @@ namespace KIT.Propulsion
                 _engineMaxThrust = 0;
                 if (_max_charged_particles_power > 0)
                 {
-                    var max_thrust = powerThrustModifier * _charged_particles_received * scaledPowerFactor / currentIsp / GameConstants.STANDARD_GRAVITY;
+                    var max_thrust = powerThrustModifier * _charged_particles_received * scaledPowerFactor / currentIsp / GameConstants.StandardGravity;
 
                     var effective_thrust = Math.Max(max_thrust - (radius * radius * vessel.atmDensity * 100), 0);
 
@@ -567,11 +564,11 @@ namespace KIT.Propulsion
                 _attached_engine.atmosphereCurve = newAtmosphereCurve;
 
                 var max_effective_fuel_flow_rate = !double.IsInfinity(_engineMaxThrust) && !double.IsNaN(_engineMaxThrust) && currentIsp > 0
-                    ? _engineMaxThrust / currentIsp / GameConstants.STANDARD_GRAVITY / (_attached_engine.currentThrottle > 0 ? _attached_engine.currentThrottle : 1)
+                    ? _engineMaxThrust / currentIsp / GameConstants.StandardGravity / (_attached_engine.currentThrottle > 0 ? _attached_engine.currentThrottle : 1)
                     : 0;
 
-                max_theoretical_thrust = powerThrustModifier * maximumChargedPower * _chargedParticleMaximumPercentageUsage / currentIsp / GameConstants.STANDARD_GRAVITY;
-                max_theoratical_fuel_flow_rate = max_theoretical_thrust / currentIsp / GameConstants.STANDARD_GRAVITY;
+                max_theoretical_thrust = powerThrustModifier * maximumChargedPower * _chargedParticleMaximumPercentageUsage / currentIsp / GameConstants.StandardGravity;
+                max_theoratical_fuel_flow_rate = max_theoretical_thrust / currentIsp / GameConstants.StandardGravity;
 
                 // set maximum flow
                 engineFuelFlow = _attached_engine.currentThrottle > 0 ? Math.Max((float)max_effective_fuel_flow_rate, 1e-9f) : (float)max_theoratical_fuel_flow_rate;

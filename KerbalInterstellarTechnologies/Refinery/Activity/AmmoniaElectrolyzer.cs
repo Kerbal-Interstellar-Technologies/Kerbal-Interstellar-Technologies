@@ -49,8 +49,8 @@ namespace KIT.Refinery.Activity
             var spareCapacityNitrogen = resMan.ResourceSpareCapacity(ResourceName.NitrogenLqd);
             var spareCapacityHydrogen = resMan.ResourceSpareCapacity(ResourceName.HydrogenLqd);
 
-            var maxNitrogenMassRate = (_currentMassRate * (1 - GameConstants.ammoniaHydrogenFractionByMass))  / _nitrogenDensity;
-            var maxHydrogenMassRate = (_currentMassRate * GameConstants.ammoniaHydrogenFractionByMass)  / _hydrogenDensity;
+            var maxNitrogenMassRate = (_currentMassRate * (1 - GameConstants.AmmoniaHydrogenFractionByMass))  / _nitrogenDensity;
+            var maxHydrogenMassRate = (_currentMassRate * GameConstants.AmmoniaHydrogenFractionByMass)  / _hydrogenDensity;
 
             // prevent overflow
             if (spareCapacityNitrogen <= maxNitrogenMassRate || spareCapacityHydrogen <= maxHydrogenMassRate)
@@ -64,8 +64,8 @@ namespace KIT.Refinery.Activity
                 var tmp = resMan.ConsumeResource(ResourceName.AmmoniaLqd, _currentMassRate / _ammoniaDensity);
                 _ammoniaConsumptionMassRate = _currentMassRate * (tmp / (_currentMassRate / _ammoniaDensity));
                 
-                var hydrogenMassRate = _ammoniaConsumptionMassRate * GameConstants.ammoniaHydrogenFractionByMass;
-                var nitrogenMassRate = _ammoniaConsumptionMassRate * (1 - GameConstants.ammoniaHydrogenFractionByMass);
+                var hydrogenMassRate = _ammoniaConsumptionMassRate * GameConstants.AmmoniaHydrogenFractionByMass;
+                var nitrogenMassRate = _ammoniaConsumptionMassRate * (1 - GameConstants.AmmoniaHydrogenFractionByMass);
 
                 _hydrogenProductionMassRate = hydrogenMassRate;
                 resMan.ProduceResource(ResourceName.HydrogenLqd, hydrogenMassRate / _hydrogenDensity);
@@ -86,15 +86,15 @@ namespace KIT.Refinery.Activity
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_ConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Ammonia Consumption Rate"
-            GUILayout.Label((_ammoniaConsumptionMassRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000") + " mT/"+Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label((_ammoniaConsumptionMassRate * GameConstants.SecondsInHour).ToString("0.000") + " mT/"+Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_HydrProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Hydrogen Production Rate"
-            GUILayout.Label((_hydrogenProductionMassRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000") + " mT/" + Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label((_hydrogenProductionMassRate * GameConstants.SecondsInHour).ToString("0.000") + " mT/" + Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_NitrogenProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Nitrogen Production Rate"
-            GUILayout.Label((_nitrogenProductionMassRate * GameConstants.SECONDS_IN_HOUR).ToString("0.000") + " mT/" + Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label((_nitrogenProductionMassRate * GameConstants.SecondsInHour).ToString("0.000") + " mT/" + Localizer.Format("#LOC_KSPIE_AmmoniaElectrolyzer_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
 
             part.GetConnectedResourceTotals(KITResourceSettings.NitrogenLqd.GetHashCode(), out var amount, out var maxAmount);

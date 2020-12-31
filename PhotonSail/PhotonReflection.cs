@@ -1,14 +1,13 @@
 ﻿using KSP.Localization;
-using PhotonSail;
 
-namespace KIT.BeamedPower
+namespace PhotonSail
 {
 
     [KSPModule("#LOC_PhotonSail_PhotonReflectionModuleName")]//Photon Reflection
     class PhotonReflectionDefinition : PartModule
     {
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
-        public double targetWavelength = 0;        
+        public double targetWavelength;        
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double minimumWavelength = 0.001;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
@@ -20,7 +19,7 @@ namespace KIT.BeamedPower
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double reflectionPercentage0 = 20;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double photovoltaicPercentage0 = 0;
+        public double photovoltaicPercentage0;
         [KSPField(guiActiveEditor = false, guiActive = false)]
         public string techRequirement0 = "";
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]
@@ -30,7 +29,7 @@ namespace KIT.BeamedPower
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double reflectionPercentage1 = 20;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double photovoltaicPercentage1 = 0;
+        public double photovoltaicPercentage1;
         [KSPField(guiActiveEditor = false, guiActive = false)]
         public string techRequirement1 = "";
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]
@@ -40,7 +39,7 @@ namespace KIT.BeamedPower
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double reflectionPercentage2 = 20;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double photovoltaicPercentage2 = 0;
+        public double photovoltaicPercentage2;
         [KSPField(guiActiveEditor = false, guiActive = false)]
         public string techRequirement2 = "";
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]
@@ -50,7 +49,7 @@ namespace KIT.BeamedPower
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double reflectionPercentage3 = 45;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double photovoltaicPercentage3 = 0;
+        public double photovoltaicPercentage3;
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]
         public string techRequirement3 = "";
         [KSPField(isPersistant = false, guiActiveEditor = false, guiActive = false)]

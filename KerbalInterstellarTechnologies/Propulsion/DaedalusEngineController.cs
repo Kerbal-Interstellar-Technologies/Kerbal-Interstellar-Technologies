@@ -77,7 +77,7 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_partMass", guiFormat = "F3", guiUnits = " t")]
         public float partMass = 1;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fusionRatio", guiFormat = "F3")]
-        public double fusionRatio = 0;
+        public double fusionRatio;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsCurrent")]
         public double fuelAmounts;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsMax")]
@@ -85,19 +85,19 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsRatio")]
         public string fuelAmountsRatio;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_thrustPowerInTeraWatt", guiFormat = "F2", guiUnits = " TW")]
-        public double thrustPowerInTeraWatt = 0;
+        public double thrustPowerInTeraWatt;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_calculatedFuelflow", guiFormat = "F6", guiUnits = " U")]
-        public double calculatedFuelflow = 0;
+        public double calculatedFuelflow;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_massFlowRateKgPerSecond", guiFormat = "F6", guiUnits = " kg/s")]
         public double massFlowRateKgPerSecond;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_massFlowRateTonPerHour", guiFormat = "F6", guiUnits = " t/h")]
         public double massFlowRateTonPerHour;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_storedThrotle")]
-        public float storedThrotle = 0;
+        public float storedThrotle;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_effectiveMaxThrustInKiloNewton", guiFormat = "F2", guiUnits = " kN")]
-        public double effectiveMaxThrustInKiloNewton = 0;
+        public double effectiveMaxThrustInKiloNewton;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_effectiveIsp", guiFormat = "F1", guiUnits = "s")]
-        public double effectiveIsp = 0;
+        public double effectiveIsp;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_worldSpaceVelocity", guiFormat = "F2", guiUnits = " m/s")]
         public double worldSpaceVelocity;
 
@@ -208,9 +208,9 @@ namespace KIT.Propulsion
         BaseEvent activateRadSafetyEvent;
         BaseField radhazardstrField;
 
-        PartResourceDefinition fuelResourceDefinition1 = null;
-        PartResourceDefinition fuelResourceDefinition2 = null;
-        PartResourceDefinition fuelResourceDefinition3 = null;
+        PartResourceDefinition fuelResourceDefinition1;
+        PartResourceDefinition fuelResourceDefinition2;
+        PartResourceDefinition fuelResourceDefinition3;
 
         ResourceName fuelResourceID1;
         ResourceName fuelResourceID2;
@@ -222,7 +222,6 @@ namespace KIT.Propulsion
         double universalTime;
         double percentageFuelRemaining;
         int vesselChangedSIOCountdown;
-        int totalNumberOfGenerations;
 
         private int _engineGenerationType;
         public GenerationType EngineGenerationType
@@ -417,7 +416,7 @@ namespace KIT.Propulsion
             emitterController = part.FindModuleImplementing<FNEmitterController>();
 
             if (emitterController == null)
-                UnityEngine.Debug.LogWarning("[KSPI]: No Emitter Found om " + part.partInfo.title);
+                Debug.LogWarning("[KSPI]: No Emitter Found om " + part.partInfo.title);
         }
 
         private void UpdateKerbalismEmitter()
@@ -480,24 +479,6 @@ namespace KIT.Propulsion
 
         private void DetermineTechLevel()
         {
-            totalNumberOfGenerations = 1;
-            if (!string.IsNullOrEmpty(upgradeTechReq1))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq2))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq3))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq4))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq5))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq6))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq7))
-                totalNumberOfGenerations++;
-            if (!string.IsNullOrEmpty(upgradeTechReq8))
-                totalNumberOfGenerations++;
-
             numberOfAvailableUpgradeTechs = 0;
             if (PluginHelper.UpgradeAvailable(upgradeTechReq1))
                 numberOfAvailableUpgradeTechs++;
@@ -534,7 +515,7 @@ namespace KIT.Propulsion
                 // configure engine for Kerbal Engineer support
                 UpdateAtmosphericCurve(EngineIsp);
                 effectiveMaxThrustInKiloNewton = MaximumThrust;
-                calculatedFuelflow = effectiveMaxThrustInKiloNewton / EngineIsp / GameConstants.STANDARD_GRAVITY;
+                calculatedFuelflow = effectiveMaxThrustInKiloNewton / EngineIsp / GameConstants.StandardGravity;
                 curEngineT.maxFuelFlow = (float)calculatedFuelflow;
                 curEngineT.maxThrust = (float)effectiveMaxThrustInKiloNewton;
                 powerUsage = EffectiveMaxPowerRequirement.ToString("0.00") + Localizer.Format("#LOC_KSPIE_Reactor_megawattUnit");
@@ -570,9 +551,9 @@ namespace KIT.Propulsion
         }
 
         // Note: we assume OnRescale is called at load and after any time tweak scale changes the size of an part
-        public void OnRescale(TweakScale.ScalingFactor factor)
+        public void OnRescale(ScalingFactor factor)
         {
-            UnityEngine.Debug.Log("[KSPI]: DaedalusEngineController OnRescale was called with factor " + factor.absolute.linear);
+            Debug.Log("[KSPI]: DaedalusEngineController OnRescale was called with factor " + factor.absolute.linear);
 
             var storedAbsoluteFactor = (double)(decimal)factor.absolute.linear;
 
@@ -619,7 +600,7 @@ namespace KIT.Propulsion
                 foreach (var currentVessel in FlightGlobals.Vessels)
                 {
                     var distance = Vector3d.Distance(vessel.transform.position, currentVessel.transform.position);
-                    if (distance < lethalDistance && currentVessel != this.vessel)
+                    if (distance < lethalDistance && currentVessel != vessel)
                         kerbalHazardCount += currentVessel.GetCrewCount();
                 }
 
@@ -703,7 +684,7 @@ namespace KIT.Propulsion
             ratioHeadingVersusRequest = vessel.PersistHeading(vesselChangedSIOCountdown > 0, ratioHeadingVersusRequest == 1);
             if (ratioHeadingVersusRequest != 1)
             {
-                UnityEngine.Debug.Log("[KSPI]: " + "quit persistent heading: " + ratioHeadingVersusRequest);
+                Debug.Log("[KSPI]: " + "quit persistent heading: " + ratioHeadingVersusRequest);
                 return;
             }
 
@@ -711,12 +692,12 @@ namespace KIT.Propulsion
 
             var deltaVv = thrustVector.CalculateDeltaVV(vesselMass, modifiedFixedDeltaTime, timeDilationMaximumThrust * fusionRatio, timeDilation * engineIsp, out demandMass);
 
-            double persistentThrustDot = Vector3d.Dot(this.part.transform.up, vessel.obt_velocity);
+            double persistentThrustDot = Vector3d.Dot(part.transform.up, vessel.obt_velocity);
             if (persistentThrustDot < 0 && (vessel.obt_velocity.magnitude <= deltaVv.magnitude * 2))
             {
                 var message = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg4");//"Thrust warp stopped - orbital speed too low"
                 ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
-                UnityEngine.Debug.Log("[KSPI]: " + message);
+                Debug.Log("[KSPI]: " + message);
                 TimeWarp.SetRate(0, true);
                 return;
             }
@@ -974,11 +955,11 @@ namespace KIT.Propulsion
                 fusionRatio = ProcessPowerAndWasteHeat(resMan, throttle);
 
                 if (!string.IsNullOrEmpty(effectName))
-                    part.Effect(effectName, (float)(throttle * fusionRatio), -1);
+                    part.Effect(effectName, (float)(throttle * fusionRatio));
 
                 // Update FuelFlow
                 effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.STANDARD_GRAVITY;
+                calculatedFuelflow = fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.StandardGravity;
                 massFlowRateKgPerSecond = thrustRatio * curEngineT.currentThrottle * calculatedFuelflow * 0.001;
 
                 if (!curEngineT.getFlameoutState && fusionRatio < 0.01)
@@ -1001,7 +982,7 @@ namespace KIT.Propulsion
                 if (fusionRatio <= 0.01)
                 {
                     var message = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg1");//"Thrust warp stopped - insufficient power"
-                    UnityEngine.Debug.Log("[KSPI]: " + message);
+                    Debug.Log("[KSPI]: " + message);
                     ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                     // Return to realtime
                     TimeWarp.SetRate(0, true);
@@ -1028,14 +1009,14 @@ namespace KIT.Propulsion
                 if (fuelRatio < 0.999)
                 {
                     var message = (fuelRatio <= 0) ? Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg2") : Localizer.Format("#LOC_KSPIE_DaedalusEngineController_PostMsg3");//"Thrust warp stopped - propellant depleted" : "Thrust warp stopped - running out of propellant"
-                    UnityEngine.Debug.Log("[KSPI]: " + message);
+                    Debug.Log("[KSPI]: " + message);
                     ScreenMessages.PostScreenMessage(message, 5, ScreenMessageStyle.UPPER_CENTER);
                     // Return to realtime
                     TimeWarp.SetRate(0, true);
                 }
 
                 if (!string.IsNullOrEmpty(effectName))
-                    part.Effect(effectName, (float)(throttle * fusionRatio), -1);
+                    part.Effect(effectName, (float)(throttle * fusionRatio));
             }
             else
             {
@@ -1053,7 +1034,7 @@ namespace KIT.Propulsion
                 }
 
                 effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.STANDARD_GRAVITY;
+                calculatedFuelflow = effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.StandardGravity;
                 massFlowRateKgPerSecond = 0;
                 fusionRatio = 0;
             }
@@ -1062,7 +1043,7 @@ namespace KIT.Propulsion
             curEngineT.maxThrust = Mathf.Max((float)effectiveMaxThrustInKiloNewton, 0.0001f);
 
             massFlowRateTonPerHour = massFlowRateKgPerSecond * 3.6;
-            thrustPowerInTeraWatt = effectiveMaxThrustInKiloNewton * 500 * effectiveIsp * GameConstants.STANDARD_GRAVITY * 1e-12;
+            thrustPowerInTeraWatt = effectiveMaxThrustInKiloNewton * 500 * effectiveIsp * GameConstants.StandardGravity * 1e-12;
 
             UpdateKerbalismEmitter();
         }

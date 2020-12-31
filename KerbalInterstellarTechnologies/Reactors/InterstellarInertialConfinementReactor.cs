@@ -49,7 +49,7 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Charge")]//Charge
         public string accumulatedChargeStr = string.Empty;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_InertialConfinementReactor_FusionPowerRequirement", guiFormat = "F2")]//Fusion Power Requirement
-        public double currentLaserPowerRequirements = 0;
+        public double currentLaserPowerRequirements;
         [KSPField(groupName = GROUP, isPersistant = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Startup"), UI_Toggle(disabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Off", enabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Charging")]//Startup--Off--Charging
         public bool isChargingForJumpStart;
 
@@ -65,7 +65,7 @@ namespace KIT.Reactors
         public override double PlasmaModifier => plasma_ratio;
         public double GravityDivider => startupCostGravityMultiplier * Math.Pow(FlightGlobals.getGeeForceAtPosition(vessel.GetWorldPos3D()).magnitude, startupCostGravityExponent);
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             isChargingField = Fields[nameof(isChargingForJumpStart)];
             accumulatedChargeStrField = Fields[nameof(accumulatedChargeStr)];
@@ -139,7 +139,7 @@ namespace KIT.Reactors
             {
                 var startupPower = startupPowerMultiplier * LaserPowerRequirements;
 
-                if (!(startupCostGravityMultiplier > 0)) return startupPower;
+                if (startupCostGravityMultiplier <= 0) return startupPower;
 
                 gravityDivider = GravityDivider;
                 startupPower = gravityDivider > 0 ? startupPower / gravityDivider : startupPower;
@@ -317,7 +317,7 @@ namespace KIT.Reactors
             {
                 if (!initialized || shutdownAnimation == null || loopingAnimation.IsMoving()) return;
 
-                if (!(animationStarted >= 0))
+                if (animationStarted < 0)
                 {
                     animationStarted = Planetarium.GetUniversalTime();
                     shutdownAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
@@ -337,7 +337,7 @@ namespace KIT.Reactors
 
         private void ProcessCharging(IResourceManager resMan)
         {
-            if (!CanJumpStart || !isChargingForJumpStart || !(part.vessel.geeForce < startupMaximumGeforce)) return;
+            if (!CanJumpStart || !isChargingForJumpStart || (part.vessel.geeForce >= startupMaximumGeforce)) return;
 
             var neededPower = Math.Max(StartupPower - accumulatedElectricChargeInMW, 0);
 
@@ -361,10 +361,7 @@ namespace KIT.Reactors
                     ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_InertialConfinementReactor_PostMsg1", minimumChargingPower.ToString("F0")), 1f, ScreenMessageStyle.UPPER_CENTER);//"Curent you need at least " +  + " MW to charge the reactor. Move closer to gravity well to reduce amount needed"
                 else
                     ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_InertialConfinementReactor_PostMsg2", minimumChargingPower.ToString("F0")), 5f, ScreenMessageStyle.UPPER_CENTER);//"You need at least " +  + " MW to charge the reactor"
-
-                return;
             }
-
         }
     }
 }

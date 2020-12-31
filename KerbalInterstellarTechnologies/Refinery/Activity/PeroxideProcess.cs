@@ -135,7 +135,7 @@ namespace KIT.Refinery.Activity
                 _hydrazineProductionRate = -_part.RequestResource(_hydrazineResourceName, -fixedHydrazineProduction) * _hydrazineDensity;
 
                 var fixedWaterProduction = combinedConsumptionRate * WaterMassProductionRatio / _waterDensity;
-                _waterProductionRate = -_part.RequestResource(_waterResourceName, -fixedWaterProduction) * _waterDensity; ;
+                _waterProductionRate = -_part.RequestResource(_waterResourceName, -fixedWaterProduction) * _waterDensity;
             }
             else
             {
@@ -159,7 +159,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_PeroxideProcess_Consumption"), _bold_label, GUILayout.Width(labelWidth));//"Current Consumption"
-            GUILayout.Label(((_consumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000")) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(((_consumptionRate * GameConstants.SecondsInHour).ToString("0.00000")) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -174,7 +174,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_PeroxideProcess_AmmonaConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Ammonia Consumption Rate"
-            GUILayout.Label((_ammoniaConsumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_ammoniaConsumptionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -184,7 +184,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_PeroxideProcess_HydrogenPeroxideConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Hydrogen Peroxide Consumption Rate"
-            GUILayout.Label((_hydrogenPeroxideConsumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_hydrogenPeroxideConsumptionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -194,7 +194,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_PeroxideProcess_WaterProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Water Production Rate"
-            GUILayout.Label((_waterProductionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_waterProductionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -204,7 +204,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_PeroxideProcess_HydrazineProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Hydrazine Production Rate"
-            GUILayout.Label((_hydrazineProductionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((_hydrazineProductionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
         }
 

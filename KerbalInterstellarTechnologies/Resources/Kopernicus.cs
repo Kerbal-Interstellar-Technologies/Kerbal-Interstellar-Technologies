@@ -136,8 +136,7 @@ namespace KIT.Resources
                                 Debug.LogWarning(debugPrefix + "luminosity is missing in Light ConfigNode for " + bodyName);
                             else
                             {
-                                double luminosity;
-                                if (double.TryParse(luminosityText, out luminosity))
+                                if (double.TryParse(luminosityText, out var luminosity))
                                 {
                                     solarLuminocity = (4 * Math.PI * kerbinAU * kerbinAU * luminosity) / kerbalLuminocity;
                                     Debug.Log(debugPrefix + "calculated solarLuminocity " + solarLuminocity + " based on luminosity " + luminosity + " for " + bodyName);
@@ -192,7 +191,7 @@ namespace KIT.Resources
 
             // add local sun if kopernicus configuration was not found or did not contain any star
             var homePlanetSun = Planetarium.fetch.Sun;
-            if (!stars.Any(m => m.star.name == homePlanetSun.name))
+            if (stars.All(m => m.star.name != homePlanetSun.name))
             {
                 Debug.LogWarning(debugPrefix + "homeplanet localStar was not found, adding homeplanet localStar as default sun");
                 stars.Add(new StarLight() { star = Planetarium.fetch.Sun, relativeLuminocity = 1 });

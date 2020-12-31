@@ -25,7 +25,7 @@ namespace KIT.Resources
             DecayConfiguration ret = new DecayConfiguration();
             string tmpStr = "";
 
-            if (node.TryGetValue("decayProduct", ref tmpStr) == false)
+            if (!node.TryGetValue("decayProduct", ref tmpStr))
             {
                 Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. Error getting decayProduct");
                 return ret;
@@ -43,7 +43,7 @@ namespace KIT.Resources
             }
             ret.DensityRatio = PartResourceLibrary.Instance.GetDefinition(node.name).density / PartResourceLibrary.Instance.GetDefinition(tmpStr).density;
 
-            if (node.TryGetValue("decayConstant", ref ret.DecayConstant) == false)
+            if (!node.TryGetValue("decayConstant", ref ret.DecayConstant))
             {
                 Debug.Log($"[VesselDecay.ParseConfig] - resource configuration {node.name} is invalid. Error getting decayConstant");
                 return ret;
@@ -81,7 +81,7 @@ namespace KIT.Resources
             foreach (var v in decayConfig.GetNodes())
             {
                 var c = ParseConfig(v);
-                if (c.Valid == false)
+                if (!c.Valid)
                 {
                     Debug.Log($"[VesselDecayConfiguration.Initialize] ignoring invalid configuration entry {v.name}");
                     continue;

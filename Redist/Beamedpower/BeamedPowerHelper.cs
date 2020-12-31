@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using KIT.Extensions;
+using UnityEngine;
 
 namespace KIT.BeamedPower
 {
@@ -171,8 +172,10 @@ namespace KIT.BeamedPower
 
             var receiverAtmosphericPressure = FlightGlobals.getStaticPressure(receiver.Vessel.GetVesselPos()) * 0.01;
 
-            foreach (VesselMicrowavePersistence transmitter in BeamedPowerSources.Instance.GlobalTransmitters.Values)
+            foreach (var vesselMicrowavePersistence in BeamedPowerSources.Instance.GlobalTransmitters.Values)
             {
+                var transmitter = (VesselMicrowavePersistence) vesselMicrowavePersistence;
+
                 //ignore if no power or transmitter is on the same vessel
                 if (transmitter.Vessel == receiver.Vessel)
                 {

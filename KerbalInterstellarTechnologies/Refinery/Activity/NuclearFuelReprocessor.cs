@@ -4,6 +4,7 @@ using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
+using KIT.Interfaces;
 using UnityEngine;
 
 namespace KIT.Refinery.Activity
@@ -14,7 +15,7 @@ namespace KIT.Refinery.Activity
         {
             ActivityName = "Nuclear Fuel Reprocessing";
             PowerRequirements = PluginSettings.Config.BasePowerConsumption;
-            EnergyPerTon = 1 / GameConstants.baseReprocessingRate;
+            EnergyPerTon = 1 / GameConstants.BaseReprocessingRate;
         }
 
         private double _fixedCurrentRate;
@@ -42,7 +43,7 @@ namespace KIT.Refinery.Activity
             _current_power = PowerRequirements * rateMultiplier;
 
             var nuclearReactors = _vessel.FindPartModulesImplementing<INuclearFuelReprocessable>();
-            double remainingCapacityToReprocess = GameConstants.baseReprocessingRate / PluginSettings.Config.SecondsInDay * rateMultiplier;
+            double remainingCapacityToReprocess = GameConstants.BaseReprocessingRate / PluginSettings.Config.SecondsInDay * rateMultiplier;
             double enumActinidesChange = 0;
 
             foreach (INuclearFuelReprocessable nuclearReactor in nuclearReactors)

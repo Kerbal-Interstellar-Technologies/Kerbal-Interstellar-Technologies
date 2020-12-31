@@ -41,9 +41,9 @@ namespace KIT.Propulsion
         public int rcsIndex = 0;
 
         [KSPField(isPersistant = true, guiActive = false)]
-        public double storedPower = 0;
+        public double storedPower;
         [KSPField(isPersistant = true, guiActive = false)]
-        public double maxStoredPower = 0;
+        public double maxStoredPower;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_HasSufficientPower")]//Is Powered
         public bool hasSufficientPower;
@@ -58,7 +58,7 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_CurrentTotalThrust", guiFormat = "F2", guiUnits = " kN")]//Current Total Thrust
         public float currentThrust;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_Mass", guiFormat = "F3", guiUnits = " t")]//Mass
-        public float partMass = 0;
+        public float partMass;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Consumption")]//Consumption
         public string powerConsumptionStr = "";
@@ -213,7 +213,7 @@ namespace KIT.Propulsion
             powerConsumptionStrField.guiActive = showConsumption;
 
             maxStoredPower = bufferMult * maxThrust * powerMult * maxIsp * GameConstants.
-                STANDARD_GRAVITY / (efficiency * 1000.0);
+                StandardGravity / (efficiency * 1000.0);
         }
 
         private void MovePropellant(bool moveNext)
@@ -264,7 +264,7 @@ namespace KIT.Propulsion
                 }
 
                 int n = rcsStates.Length;
-                bool extend = attachedRCS.rcsEnabled && rcsIsOn && rcsPartActive;
+                bool extend = attachedRCS != null && attachedRCS.rcsEnabled && rcsIsOn && rcsPartActive;
                 for (var i = 0; i < n; i++)
                 {
                     var anim = rcsStates[i];
@@ -372,7 +372,7 @@ namespace KIT.Propulsion
                 if (currentThrust > 0.0f)
                 {
                     requested = 0.5 * powerMult * currentThrust * maxIsp * GameConstants.
-                        STANDARD_GRAVITY / (efficiency * 1000.0 * CurrentPropellant.
+                        StandardGravity / (efficiency * 1000.0 * CurrentPropellant.
                         ThrustMultiplier);
                 }
                 // XXX - is this the amount correct, might need a * ec in MJ conversion.

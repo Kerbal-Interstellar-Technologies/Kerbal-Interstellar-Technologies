@@ -126,7 +126,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.Log("[KSPI]: Exception while loading Crustal resources : " + ex.ToString());
+                Debug.Log("[KSPI]: Exception while loading Crustal resources : " + ex);
             }
             return bodyCrustalComposition;
         }
@@ -185,7 +185,8 @@ namespace KIT.Resources
 
                 // Lookup homeworld
                 CelestialBody homeworld = FlightGlobals.Bodies.SingleOrDefault(b => b.isHomeWorld);
-
+                System.Diagnostics.Debug.Assert(homeworld != null, nameof(homeworld) + " != null");
+                
                 double pressureAtSurface = celestialBody.GetPressure(0);
 
                 if (celestialBody.Mass < homeworld.Mass * 10 && pressureAtSurface < 1000)
@@ -217,7 +218,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.LogError("[KSPI]: Exception while generating Crustal resource composition from celestial properties : " + ex.ToString());
+                Debug.LogError("[KSPI]: Exception while generating Crustal resource composition from celestial properties : " + ex);
             }
 
             return bodyCrustalComposition;
@@ -252,7 +253,7 @@ namespace KIT.Resources
             }
             catch (Exception ex)
             {
-                Debug.LogError("[KSPI]: Exception while generating Crustal composition from defined abundances : " + ex.ToString());
+                Debug.LogError("[KSPI]: Exception while generating Crustal composition from defined abundances : " + ex);
             }
 
             return bodyCrustalComposition;
@@ -347,11 +348,12 @@ namespace KIT.Resources
         private static void AddRaresAndIsotopesToCrustComposition(List<CrustalResource> bodyCrustalComposition)
         {
             // add heavywater based on water abundance in crust
-            if (!bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterHeavy) && bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterPure))
+            if (bodyCrustalComposition.All(m => m.ResourceName != KITResourceSettings.WaterHeavy) && bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterPure))
             {
                 var water = bodyCrustalComposition.FirstOrDefault(m => m.ResourceName == KITResourceSettings.WaterPure);
-                var heavywaterAbundance = water.ResourceAbundance / 6420;
-                bodyCrustalComposition.Add(new CrustalResource(KITResourceSettings.WaterHeavy, heavywaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
+                // ReSharper disable once PossibleNullReferenceException - We check for presence above
+                var heavyWaterAbundance = water.ResourceAbundance / 6420;
+                bodyCrustalComposition.Add(new CrustalResource(KITResourceSettings.WaterHeavy, heavyWaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
             }
         }
 

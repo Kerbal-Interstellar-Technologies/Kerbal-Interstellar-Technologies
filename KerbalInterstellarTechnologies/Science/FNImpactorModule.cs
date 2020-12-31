@@ -1,8 +1,8 @@
 ﻿using System;
-using UnityEngine;
 using KSP.Localization;
+using UnityEngine;
 
-namespace KIT 
+namespace KIT.Science 
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     class FNImpactorModule : MonoBehaviour 
@@ -14,8 +14,8 @@ namespace KIT
             lastImpactTime = 0d;
 
             // Register collision handler with GameEvents.onCollision
-            GameEvents.onCollision.Add(this.onVesselAboutToBeDestroyed);
-            GameEvents.onCrash.Add(this.onVesselAboutToBeDestroyed);
+            GameEvents.onCollision.Add(onVesselAboutToBeDestroyed);
+            GameEvents.onCrash.Add(onVesselAboutToBeDestroyed);
             Debug.Log("[KSPI]: FNImpactorModule listening for collisions.");
         }
 
@@ -51,7 +51,7 @@ namespace KIT
 
             // Do nothing if we have recorded an impact less than 10 physics updates ago.  This probably means this call
             // is a duplicate of a previous call.
-            if (Planetarium.GetUniversalTime() - this.lastImpactTime < TimeWarp.fixedDeltaTime * 10f) 
+            if (Planetarium.GetUniversalTime() - lastImpactTime < TimeWarp.fixedDeltaTime * 10f) 
             {
                 Debug.Log("[KSPI]: Impactor: Ignored because we've just recorded an impact.");
                 return;
@@ -135,18 +135,16 @@ namespace KIT
                     ConfigNode probe_node = config.GetNode(vessel_probe_node_string);
 
                     // If the seismometer is inactive, skip it.
-                    bool is_active = false;
                     if (probe_node.HasValue("is_active")) 
                     {
-                        bool.TryParse(probe_node.GetValue("is_active"), out is_active);
+                        bool.TryParse(probe_node.GetValue("is_active"), out var is_active);
                         if (!is_active) continue;
                     }
 
                     // If the seismometer is on another planet, skip it.
-                    int planet = -1;
                     if (probe_node.HasValue("celestial_body")) 
                     {
-                        int.TryParse(probe_node.GetValue("celestial_body"), out planet);
+                        int.TryParse(probe_node.GetValue("celestial_body"), out int planet);
                         if (planet != body) continue;
                     }
 
@@ -171,7 +169,7 @@ namespace KIT
             if (distribution_factor > 0 && !double.IsInfinity(distribution_factor) && !double.IsNaN(distribution_factor)) 
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ImpactorModule_Postmsg"), 5f, ScreenMessageStyle.UPPER_CENTER);//"Impact Recorded, science report can now be accessed from one of your accelerometers deployed on this body."
-                this.lastImpactTime = Planetarium.GetUniversalTime();
+                lastImpactTime = Planetarium.GetUniversalTime();
                 Debug.Log("[KSPI]: Impactor: Impact registered!");
 
                 ConfigNode impact_node = new ConfigNode(vessel_impact_node_string);

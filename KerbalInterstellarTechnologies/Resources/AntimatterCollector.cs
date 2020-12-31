@@ -33,7 +33,7 @@ namespace KIT.Resources
 
         private double _effectiveFlux;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             _antimatterDef = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.AntiProtium);
 
@@ -43,7 +43,7 @@ namespace KIT.Resources
 
             if (state == StartState.Editor) return;
 
-            _homeworld = FlightGlobals.fetch.bodies.First(m => m.isHomeWorld == true);
+            _homeworld = FlightGlobals.fetch.bodies.First(m => m.isHomeWorld);
 
             if (!(vessel.orbit.eccentricity < 1) || !active || !canCollect) return;
 
@@ -53,7 +53,7 @@ namespace KIT.Resources
 
         public override void OnUpdate()
         {
-            var lat = vessel.mainBody.GetLatitude(this.vessel.GetWorldPos3D());
+            var lat = vessel.mainBody.GetLatitude(vessel.GetWorldPos3D());
             celestrialBodyFieldStrengthMod = MagneticFieldDefinitionsHandler.GetMagneticFieldDefinitionForBody(vessel.mainBody).StrengthMult;
             flux = collectionMultiplier * vessel.mainBody.GetBeltAntiparticles(_homeworld, vessel.altitude, lat);
             ParticleFlux = flux.ToString("E");

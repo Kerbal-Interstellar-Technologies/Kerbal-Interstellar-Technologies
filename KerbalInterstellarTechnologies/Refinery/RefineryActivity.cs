@@ -86,7 +86,7 @@ namespace KIT.Refinery
                     double production = capacity / EnergyPerTon;
                     sb.Append("Production: ").Append(production.ToString("F3")).AppendLine(" t/sec");
                     sb.Append("Production: ").Append((production * 60.0).ToString("F1")).AppendLine(" t/min");
-                    sb.Append("Production: ").Append((production * GameConstants.SECONDS_IN_HOUR).ToString("F0")).AppendLine(" t/hr");
+                    sb.Append("Production: ").Append((production * GameConstants.SecondsInHour).ToString("F0")).AppendLine(" t/hr");
                 }
             }
 

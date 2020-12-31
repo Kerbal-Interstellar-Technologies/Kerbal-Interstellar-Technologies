@@ -1,6 +1,4 @@
-﻿using KIT.Propulsion;
-
-namespace KIT.Interfaces
+﻿namespace KIT.Interfaces
 {
     public interface IPowerSource : IThermalReceiver
     {

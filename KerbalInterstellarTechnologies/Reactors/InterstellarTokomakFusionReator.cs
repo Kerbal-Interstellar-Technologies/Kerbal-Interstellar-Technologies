@@ -171,7 +171,7 @@ namespace KIT.Reactors
 
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state != StartState.Editor)
             {

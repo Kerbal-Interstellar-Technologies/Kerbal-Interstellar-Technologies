@@ -1,10 +1,10 @@
-﻿using KSP.Localization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using KIT.Resources;
+using KSP.Localization;
 using UnityEngine;
 
-namespace KIT
+namespace KIT.Wasteheat
 {
     class FNModulePrecooler : PartModule
     {
@@ -21,7 +21,7 @@ namespace KIT
         AtmosphericIntake attachedIntake;
         List<AtmosphericIntake> radialAttachedIntakes = new List<AtmosphericIntake>();
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             Debug.Log("[KSPI]: FNModulePrecooler - Onstart start search for Air Intake module to cool");
 

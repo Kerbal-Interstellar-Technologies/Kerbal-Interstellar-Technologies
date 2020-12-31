@@ -4,7 +4,7 @@ using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace KIT.BeamedPower
+namespace KIT.Beamedpower
 {
     [KSPModule("Integrated Beam Generator")]//#LOC_KSPIE_BeamGenerator_ModuleName1
     class IntegratedBeamGenerator : BeamGenerator { }
@@ -21,7 +21,7 @@ namespace KIT.BeamedPower
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_Wavelength")]//Wavelength
         [UI_ChooseOption(affectSymCounterparts = UI_Scene.None, scene = UI_Scene.All, suppressEditorShipModified = true)]
         public int selectedBeamConfiguration;
-        
+
         [KSPField(isPersistant = true)]
         public bool isInitialized = false;
         [KSPField(isPersistant = true)]
@@ -53,7 +53,7 @@ namespace KIT.BeamedPower
         [KSPField]
         public bool canSwitchWavelengthInFlight = true;
         [KSPField]
-        public bool isLoaded = false;
+        public bool isLoaded;
         [KSPField]
         public int beamType = 1;
         [KSPField]
@@ -103,7 +103,7 @@ namespace KIT.BeamedPower
 
         public void Connect(BeamedPowerTransmitter transmitter)
         {
-            this._transmitter = transmitter;
+            _transmitter = transmitter;
         }
 
         private int GetTechLevelFromTechId(string techID)
@@ -122,7 +122,7 @@ namespace KIT.BeamedPower
                 return 2;
             else if (techID == techLevelMk1)
                 return 1;
-            else 
+            else
                 return 7;
         }
 
@@ -189,7 +189,7 @@ namespace KIT.BeamedPower
             }
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             targetMass = part.prefabMass * storedMassMultiplier;
             initialMass = part.prefabMass * storedMassMultiplier;
@@ -199,7 +199,7 @@ namespace KIT.BeamedPower
             if (targetMass == 0)
                 targetMass = (double)(decimal)part.prefabMass;
 
-            if(BeamConfigurations == null)
+            if (BeamConfigurations == null)
             {
                 var rootNode = GameDatabase.Instance.GetConfigNodes("KIT_BeamConfiguration");
                 if (rootNode == null || !rootNode.Any())
@@ -266,8 +266,8 @@ namespace KIT.BeamedPower
             UpdateFromGUI(_chooseField, selectedBeamConfiguration);
 
             // connect on change event
-            chooseOptionEditor.onFieldChanged = UpdateFromGUI;
-            chooseOptionFlight.onFieldChanged = UpdateFromGUI;
+            if (chooseOptionEditor != null) chooseOptionEditor.onFieldChanged = UpdateFromGUI;
+            if (chooseOptionFlight != null) chooseOptionFlight.onFieldChanged = UpdateFromGUI;
         }
 
         public override void OnUpdate()
@@ -421,7 +421,7 @@ namespace KIT.BeamedPower
         // public new void Load(ConfigNode node)
         {
             Debug.Log($"[KSPI Beam Generator] Load()ing");
-           
+
             _beamConfigurationNodes = node.GetNodes("BeamConfiguration");
 
             if (!_beamConfigurationNodes.Any())
@@ -430,7 +430,7 @@ namespace KIT.BeamedPower
                 return;
             }
 
-            var inlineConfigurations = new  List<BeamConfiguration>();
+            var inlineConfigurations = new List<BeamConfiguration>();
             foreach (var beamConfigurationNode in _beamConfigurationNodes)
             {
                 var beamConfiguration = new BeamConfiguration(beamConfigurationNode, part.partInfo.title);
@@ -445,7 +445,7 @@ namespace KIT.BeamedPower
 
         public override void OnSave(ConfigNode node)
         {
-            foreach(var beamConfiguration in _inlineConfigurations)
+            foreach (var beamConfiguration in _inlineConfigurations)
             {
                 beamConfiguration.Save(node);
             }
@@ -454,7 +454,7 @@ namespace KIT.BeamedPower
         public override string GetInfo()
         {
 
-            return ""; 
+            return "";
             /*
             var sb = StringBuilderCache.Acquire();
 

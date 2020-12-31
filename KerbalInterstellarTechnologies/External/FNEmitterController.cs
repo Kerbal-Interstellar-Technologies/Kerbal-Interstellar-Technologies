@@ -35,7 +35,7 @@ namespace KIT.External
         [KSPField]
         public double diameter = 1;
         [KSPField]
-        public double height = 0;
+        public double height;
         [KSPField]
         public double habitatMassMultiplier = 20;
         [KSPField]
@@ -86,7 +86,7 @@ namespace KIT.External
         BaseField _emitterRadiationField;
         PartResource _shieldingPartResource;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             InitializeKerbalismEmitter();
         }
@@ -100,11 +100,11 @@ namespace KIT.External
         {
             if (Kerbalism.versionMajor == 0)
             {
-                UnityEngine.Debug.Log("[KSPI]: Skipped Initialize FNEmitterController");
+                Debug.Log("[KSPI]: Skipped Initialize FNEmitterController");
                 return;
             }
 
-            UnityEngine.Debug.Log("[KSPI]: FNEmitterController Initialize");
+            Debug.Log("[KSPI]: FNEmitterController Initialize");
 
             _shieldingPartResource = part.Resources["Shielding"];
             if (_shieldingPartResource != null)
@@ -136,9 +136,9 @@ namespace KIT.External
             }
 
             if (found)
-                UnityEngine.Debug.Log("[KSPI]: FNEmitterController Found Emitter");
+                Debug.Log("[KSPI]: FNEmitterController Found Emitter");
             else
-                UnityEngine.Debug.LogWarning("[KSPI]: FNEmitterController failed to find Emitter");
+                Debug.LogWarning("[KSPI]: FNEmitterController failed to find Emitter");
         }
 
         private void UpdateKerbalismEmitter()

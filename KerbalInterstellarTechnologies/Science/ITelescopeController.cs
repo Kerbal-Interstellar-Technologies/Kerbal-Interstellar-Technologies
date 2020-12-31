@@ -1,5 +1,5 @@
 ﻿
-namespace KIT
+namespace KIT.Science
 {
     public interface ITelescopeController
     {

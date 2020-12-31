@@ -43,10 +43,10 @@ namespace KIT.Powermanagement
         private double _hotColdBathRatio;
         private double _thermalConversionEfficiency;
 
-        public Part Part => this.part;
+        public Part Part => part;
 
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
@@ -103,7 +103,7 @@ namespace KIT.Powermanagement
 
         public string KITPartName() => part.partInfo.title;
 
-        public ResourceName[] ResourcesProvided() => new ResourceName[] { ResourceName.ElectricCharge };
+        public ResourceName[] ResourcesProvided() => new[] { ResourceName.ElectricCharge };
 
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {

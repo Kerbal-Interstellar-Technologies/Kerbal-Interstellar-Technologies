@@ -135,7 +135,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_OveralConsumption"), _bold_label, GUILayout.Width(labelWidth));//"Overal Consumption"
-            GUILayout.Label(((_consumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000")) + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label(((_consumptionRate * GameConstants.SecondsInHour).ToString("0.00000")) + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -145,7 +145,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_HydrogenConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Hydrogen Consumption Rate"
-            GUILayout.Label((_hydrogenConsumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label((_hydrogenConsumptionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -155,7 +155,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_OxygenConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Oxygen Consumption Rate"
-            GUILayout.Label((_oxygenConsumptionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label((_oxygenConsumptionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -165,7 +165,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_HydrogenPeroxideProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Hydrogen Peroxide Production Rate"
-            GUILayout.Label((_hydrogenPeroxideProductionRate * GameConstants.SECONDS_IN_HOUR).ToString("0.00000") + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
+            GUILayout.Label((_hydrogenPeroxideProductionRate * GameConstants.SecondsInHour).ToString("0.00000") + " mT/"+Localizer.Format("#LOC_KSPIE_AnthraquinoneProcessor_perhour"), _value_label, GUILayout.Width(valueWidth));//hour
             GUILayout.EndHorizontal();
         }
 

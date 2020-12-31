@@ -3,6 +3,7 @@ using KIT.Wasteheat;
 using KSP.Localization;
 using System;
 using System.Linq;
+using KIT.Interfaces;
 using UnityEngine;
 
 namespace KIT.Reactors
@@ -23,7 +24,7 @@ namespace KIT.Reactors
     class InterstellarFissionMSRGC : InterstellarReactor, INuclearFuelReprocessable
     {
         [KSPField(isPersistant = true)]
-        public int fuel_mode = 0;
+        public int fuel_mode;
         [KSPField]
         public double actinidesModifer = 1;
         [KSPField]
@@ -254,7 +255,7 @@ namespace KIT.Reactors
             base.OnUpdate();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             Debug.Log("[KSPI]: OnStart MSRGC " + part.name);
 

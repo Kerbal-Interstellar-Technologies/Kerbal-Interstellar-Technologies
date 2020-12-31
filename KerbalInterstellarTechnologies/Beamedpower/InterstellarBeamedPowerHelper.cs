@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using KIT.BeamedPower;
 using KIT.Extensions;
+using UnityEngine;
 
-namespace KIT.BeamedPower
+namespace KIT.Beamedpower
 {
     public static class InterstellarBeamedPowerHelper
     {

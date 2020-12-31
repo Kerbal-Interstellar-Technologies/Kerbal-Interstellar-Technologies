@@ -60,12 +60,7 @@ namespace KIT.Refinery.Activity
         // this is a function used for IRefinery HasActivityRequirements check
         public bool IsThereAnyLiquid()
         {
-            double tmpAvail, tmpMax;
-
-            bool ret;
-            ret = GetTotalLiquidScoopedPerSecond() > 0;
-
-            part.GetConnectedResourceTotals(_intakeLiquidDefinition.GetHashCode(), out tmpAvail, out tmpMax);
+            var ret = GetTotalLiquidScoopedPerSecond() > 0;
 
             return ret;
         }
@@ -175,12 +170,12 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_SeawaterExtract_LqdConsumption"), _bold_label, GUILayout.Width(labelWidth));//"Intake Lqd Consumption"
-            GUILayout.Label((GetValueText(_intakeLqdConsumptionRate * GameConstants.SECONDS_IN_HOUR)) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((GetValueText(_intakeLqdConsumptionRate * GameConstants.SecondsInHour)) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_SeawaterExtract_ProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Production Rate"
-            GUILayout.Label((GetValueText(_currentResourceProductionRate * GameConstants.SECONDS_IN_HOUR)) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label((GetValueText(_currentResourceProductionRate * GameConstants.SecondsInHour)) + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -249,7 +244,7 @@ namespace KIT.Refinery.Activity
             if (productionRate > 0)
             {
                 GUILayout.Label(GetValueText(productionRate) + " U/s", _value_label, GUILayout.Width(valueWidth));
-                GUILayout.Label(GetValueText(productionRate * GameConstants.SECONDS_IN_HOUR) + " U/h", _value_label, GUILayout.Width(valueWidth));
+                GUILayout.Label(GetValueText(productionRate * GameConstants.SecondsInHour) + " U/h", _value_label, GUILayout.Width(valueWidth));
             }
             else
             {

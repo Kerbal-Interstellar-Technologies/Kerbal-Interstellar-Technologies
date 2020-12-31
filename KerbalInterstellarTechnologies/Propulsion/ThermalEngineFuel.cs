@@ -40,9 +40,9 @@ namespace KIT.Propulsion
 
         public bool IsJet { get; }
 
-        public int AtomType { get; } = 1;
+        public int AtomType { get; }
 
-        public int PropType { get; } = 1;
+        public int PropType { get; }
 
         public double IspPropellantMultiplier { get; }
 

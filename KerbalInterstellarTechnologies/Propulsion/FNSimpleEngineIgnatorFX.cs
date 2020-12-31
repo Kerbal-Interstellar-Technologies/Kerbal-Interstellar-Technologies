@@ -40,7 +40,7 @@ namespace KIT.Propulsion
         [KSPEvent(name = "ReloadIgniter", guiName = "#LOC_KSPIE_FNSimpleEngineIgnatorFX_ReloadIgnitors", active = true, externalToEVAOnly = true, guiActive = false, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Reload Ignitors
         public void ReloadIgniter()
         {
-            var kervalOnEva = FlightGlobals.ActiveVessel.GetVesselCrew().First();
+            var kerbalOnEva = FlightGlobals.ActiveVessel.GetVesselCrew().First();
 
             if (reloadRequiresLandedVessel && part.vessel.Landed == false)
             {
@@ -49,9 +49,9 @@ namespace KIT.Propulsion
                 ScreenMessages.PostScreenMessage(message, 6.0f, ScreenMessageStyle.UPPER_CENTER);
             }
 
-            var meetProfessionRequirement = reloadRequiresEngineer == false || kervalOnEva.experienceTrait.Title.Equals("Engineer");
+            var meetProfessionRequirement = reloadRequiresEngineer == false || kerbalOnEva.experienceTrait.Title.Equals("Engineer");
 
-            if (meetProfessionRequirement && kervalOnEva.experienceLevel >= reloadRequiresExperienceLevel)
+            if (meetProfessionRequirement && kerbalOnEva.experienceLevel >= reloadRequiresExperienceLevel)
             {
                 var message = Localizer.Format("#LOC_KSPIE_FNSimpleEngineIgnatorFX_PostMsg2");//"Reloaded Ignitor"
                 Debug.Log("[KSPI]: " + message);

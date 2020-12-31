@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using KIT.Interfaces;
+using KIT.Powermanagement.Interfaces;
 using TweakScale;
 using UnityEngine;
 
@@ -104,8 +105,8 @@ namespace KIT.Reactors
         [KSPField] public double maximumPower;
         [KSPField] public float minimumPowerPercentage = 10;
 
-        [KSPField] public string upgradeTechReqMk2 = null;
-        [KSPField] public string upgradeTechReqMk3 = null;
+        [KSPField] public string upgradeTechReqMk2;
+        [KSPField] public string upgradeTechReqMk3;
         [KSPField] public string upgradeTechReqMk4 = null;
         [KSPField] public string upgradeTechReqMk5 = null;
         [KSPField] public string upgradeTechReqMk6 = null;
@@ -242,7 +243,7 @@ namespace KIT.Reactors
         [KSPField] public double wasteHeatMultiplier = 1;
         [KSPField] public double wasteHeatBufferMassMult = 2.0e+5;
         [KSPField] public double wasteHeatBufferMult = 1;
-        [KSPField] public double hotBathTemperature = 0;
+        [KSPField] public double hotBathTemperature;
         [KSPField] public bool usePropellantBaseIsp = false;
         [KSPField] public double emergencyPowerShutdownFraction = 0.99;
         [KSPField] public double thermalPropulsionEfficiency = 1;
@@ -290,8 +291,8 @@ namespace KIT.Reactors
         [KSPField] public double neutronEmbrittlementDivider = 1e+9;
         [KSPField] public double hotBathModifier = 1;
         [KSPField] public double thermalProcessingModifier = 1;
-        [KSPField] public int supportedPropellantAtoms = GameConstants.defaultSupportedPropellantAtoms;
-        [KSPField] public int supportedPropellantTypes = GameConstants.defaultSupportedPropellantTypes;
+        [KSPField] public int supportedPropellantAtoms = GameConstants.DefaultSupportedPropellantAtoms;
+        [KSPField] public int supportedPropellantTypes = GameConstants.DefaultSupportedPropellantTypes;
         [KSPField] public bool fullPowerForNonNeutronAbsorbents = true;
         [KSPField] public bool showPowerPriority = true;
         [KSPField] public bool showSpecialisedUI = true;
@@ -367,7 +368,7 @@ namespace KIT.Reactors
         [KSPField] public bool isConnectedToChargedGenerator;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorControlWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_reactorControlWindow_Hidden", enabledText = "#LOC_KSPIE_Reactor_reactorControlWindow_Shown", affectSymCounterparts = UI_Scene.None)]//Hidden-Shown
-        public bool render_window = false;
+        public bool render_window;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_startEnabled"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_startEnabled_True", enabledText = "#LOC_KSPIE_Reactor_startEnabled_False")]//True-False
         public bool startDisabled;
 
@@ -383,8 +384,8 @@ namespace KIT.Reactors
         protected double currentGeeForce;
         protected double animationStarted = 0;
         protected double PowerPercent;
-        protected double totalAmountLithium = 0;
-        protected double totalMaxAmountLithium = 0;
+        protected double totalAmountLithium;
+        protected double totalMaxAmountLithium;
 
         protected GUIStyle boldStyle;
         protected GUIStyle textStyle;
@@ -534,7 +535,7 @@ namespace KIT.Reactors
 
         public String UpgradeTechnology => upgradeTechReq;
 
-        public double PowerBufferBonus => this.bonusBufferFactor;
+        public double PowerBufferBonus => bonusBufferFactor;
 
         public double RawMaximumPowerForPowerGeneration => RawPowerOutput;
 
@@ -619,7 +620,7 @@ namespace KIT.Reactors
             {
                 _currentFuelMode = value;
                 maxPowerToSupply = Math.Max(MaximumPower * TimeWarp.fixedDeltaTime, 0);
-                currentFuelVariantsSorted = _currentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult);
+                currentFuelVariantsSorted = _currentFuelMode.GetVariantsOrderedByFuelRatio(part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult);
                 currentFuelVariant = currentFuelVariantsSorted.First();
 
                 // persist
@@ -937,7 +938,7 @@ namespace KIT.Reactors
                         break;
                 }
 
-                return baseEfficiency * CurrentFuelMode.FuelEfficencyMultiplier;
+                return baseEfficiency * CurrentFuelMode.FuelEfficiencyMultiplier;
             }
         }
 
@@ -1220,7 +1221,7 @@ namespace KIT.Reactors
 
             windowPosition = new Rect(windowPositionX, windowPositionY, 300, 100);
             hasBimodelUpgradeTechReq = PluginHelper.HasTechRequirementOrEmpty(bimodelUpgradeTechReq);
-            _staticBreedRate = 1 / powerOutputMultiplier / breedDivider / GameConstants.tritiumBreedRate;
+            _staticBreedRate = 1 / powerOutputMultiplier / breedDivider / GameConstants.TritiumBreedRate;
 
             var powerPercentageField = Fields[nameof(powerPercentage)];
             powerPercentageField.guiActive = showPowerPercentage;
@@ -1680,8 +1681,8 @@ namespace KIT.Reactors
                     var engines = vessel.FindPartModulesImplementing<ModuleEngines>();
                     if (engines.Any())
                     {
-                        var totalThrust = engines.Sum(m => m.realIsp * m.requestedMassFlow * GameConstants.STANDARD_GRAVITY * Vector3d.Dot(m.part.transform.up, vessel.transform.up));
-                        currentGeeForce = Math.Max(currentGeeForce, totalThrust / vessel.totalMass / GameConstants.STANDARD_GRAVITY);
+                        var totalThrust = engines.Sum(m => m.realIsp * m.requestedMassFlow * GameConstants.StandardGravity * Vector3d.Dot(m.part.transform.up, vessel.transform.up));
+                        currentGeeForce = Math.Max(currentGeeForce, totalThrust / vessel.totalMass / GameConstants.StandardGravity);
                     }
                 }
 
@@ -2091,7 +2092,7 @@ namespace KIT.Reactors
         {
             var isp = Math.Min(Math.Sqrt(temperature) * 21, maxThermalNozzleIsp);
 
-            var exhaustVelocity = isp * GameConstants.STANDARD_GRAVITY;
+            var exhaustVelocity = isp * GameConstants.StandardGravity;
 
             var thrust = powerInMj * 2000.0 * thermalPropulsionEfficiency / (exhaustVelocity * powerOutputMultiplier);
 
@@ -2102,7 +2103,7 @@ namespace KIT.Reactors
         {
             var isp = Math.Sqrt(temperature) * 21;
 
-            var exhaustVelocity = isp * GameConstants.STANDARD_GRAVITY;
+            var exhaustVelocity = isp * GameConstants.StandardGravity;
 
             var thrust = powerInMj * 2000.0 * plasmaPropulsionEfficiency / (exhaustVelocity * powerOutputMultiplier);
 
@@ -2261,16 +2262,18 @@ namespace KIT.Reactors
         // Called by the UI, no resource manager present
         protected double GetFuelAvailability(ReactorFuel fuel)
         {
-            if (fuel == null)
+            if (fuel?.Definition == null)
             {
-                Debug.LogError("[KSPI]: GetFuelAvailability fuel null");
+                Debug.LogError("[KSPI]: GetFuelAvailability fuel (or fuel.definition) is null");
                 return 0;
             }
 
             if (!fuel.ConsumeGlobal)
                 return GetLocalResourceAmount(fuel);
 
-            part.GetConnectedResourceTotals(fuel.Definition.GetHashCode(), out var amount, out _);
+            
+            // This crashes, and I'm not sure why. 
+            part.GetConnectedResourceTotals(fuel.Definition.id, out var amount, out _);
             return amount;
 
 
@@ -2546,13 +2549,13 @@ namespace KIT.Reactors
                         PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_Reactor_LithiumConsumption"), lithiumConsumptionDay.ToString("0.00000") + " " + Localizer.Format("#LOC_KSPIE_Reactor_lithiumConsumptionDay"), boldStyle, textStyle);//"Lithium Consumption"L/day
                         var lithiumLifetimeTotalDays = lithiumConsumptionDay > 0 ? totalLithium6Amount / lithiumConsumptionDay : 0;
 
-                        var lithiumLifetimeYears = Math.Floor(lithiumLifetimeTotalDays / GameConstants.KERBIN_YEAR_IN_DAYS);
-                        var lithiumLifetimeYearsRemainderInDays = lithiumLifetimeTotalDays % GameConstants.KERBIN_YEAR_IN_DAYS;
+                        var lithiumLifetimeYears = Math.Floor(lithiumLifetimeTotalDays / GameConstants.KerbinYearInDays);
+                        var lithiumLifetimeYearsRemainderInDays = lithiumLifetimeTotalDays % GameConstants.KerbinYearInDays;
 
                         var lithiumLifetimeRemainingDays = Math.Floor(lithiumLifetimeYearsRemainderInDays);
                         var lithiumLifetimeRemainingDaysRemaining = lithiumLifetimeYearsRemainderInDays % 1;
 
-                        var lithiumLifetimeRemainingHours = lithiumLifetimeRemainingDaysRemaining * PluginHelper.SecondsInDay / GameConstants.SECONDS_IN_HOUR;
+                        var lithiumLifetimeRemainingHours = lithiumLifetimeRemainingDaysRemaining * PluginHelper.SecondsInDay / GameConstants.SecondsInHour;
 
                         if (lithiumLifetimeYears < 1e9)
                         {
@@ -2590,10 +2593,10 @@ namespace KIT.Reactors
                         if (fuel == null)
                             continue;
 
-                        var resourceVariantsDefinitions = CurrentFuelMode.ResourceGroups.First(m => m.name == fuel.FuelName).resourceVariantsMetaData;
+                        var resourceVariantsDefinitions = CurrentFuelMode.ResourceGroups.First(m => m.Name == fuel.FuelName).ResourceVariantsMetaData;
 
                         var availableResources = resourceVariantsDefinitions
-                            .Select(m => new { m.resourceDefinition, m.ratio }).Distinct()
+                            .Select(m => new { resourceDefinition = m.ResourceDefinition, ratio = m.Ratio }).Distinct()
                             .Select(d => new { definition = d.resourceDefinition, amount = GetFuelAvailability(d.resourceDefinition), effectiveDensity = d.resourceDefinition.density * d.ratio })
                             .Where(m => m.amount > 0).ToList();
 
@@ -2614,17 +2617,17 @@ namespace KIT.Reactors
                         if (kgFuelUsePerDay > 0)
                         {
                             var fuelLifetimeD = availabilityInTon * 1000 / kgFuelUsePerDay;
-                            var lifetimeYears = Math.Floor(fuelLifetimeD / GameConstants.KERBIN_YEAR_IN_DAYS);
+                            var lifetimeYears = Math.Floor(fuelLifetimeD / GameConstants.KerbinYearInDays);
                             if (lifetimeYears < 1e9)
                             {
                                 if (lifetimeYears >= 10)
                                 {
-                                    var lifetimeYearsDayRemainder = lifetimeYears < 1e+6 ? fuelLifetimeD % GameConstants.KERBIN_YEAR_IN_DAYS : 0;
+                                    var lifetimeYearsDayRemainder = lifetimeYears < 1e+6 ? fuelLifetimeD % GameConstants.KerbinYearInDays : 0;
                                     PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Lifetime"), (double.IsNaN(lifetimeYears) ? "-" : lifetimeYears + " " + Localizer.Format("#LOC_KSPIE_Reactor_years") + " "), boldStyle, textStyle);//Lifetime years
                                 }
                                 else if (lifetimeYears > 0)
                                 {
-                                    var lifetimeYearsDayRemainder = lifetimeYears < 1e+6 ? fuelLifetimeD % GameConstants.KERBIN_YEAR_IN_DAYS : 0;
+                                    var lifetimeYearsDayRemainder = lifetimeYears < 1e+6 ? fuelLifetimeD % GameConstants.KerbinYearInDays : 0;
                                     PrintToGuiLayout(fuel.FuelName + " " + Localizer.Format("#LOC_KSPIE_Reactor_Lifetime"), (double.IsNaN(lifetimeYears) ? "-" : lifetimeYears + " " + Localizer.Format("#LOC_KSPIE_Reactor_years") + " " + (lifetimeYearsDayRemainder).ToString("0.00")) + " " + Localizer.Format("#LOC_KSPIE_Reactor_days"), boldStyle, textStyle);//Lifetime--years--days
                                 }
                                 else if (fuelLifetimeD < 1)
@@ -2820,7 +2823,7 @@ namespace KIT.Reactors
             else
                 overheatModifier = 1;
 
-            currentFuelVariantsSorted = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply * geeForceModifier * overheatModifier, fuelUsePerMJMult);
+            currentFuelVariantsSorted = CurrentFuelMode.GetVariantsOrderedByFuelRatio(part, FuelEfficiency, maxPowerToSupply * geeForceModifier * overheatModifier, fuelUsePerMJMult);
             currentFuelVariant = currentFuelVariantsSorted.FirstOrDefault();
 
             fuel_mode_variant = currentFuelVariant?.Name;
@@ -2831,7 +2834,7 @@ namespace KIT.Reactors
 
             LookForAlternativeFuelTypes();
 
-            var trueVariant = CurrentFuelMode.GetVariantsOrderedByFuelRatio(this.part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult, false).FirstOrDefault();
+            var trueVariant = CurrentFuelMode.GetVariantsOrderedByFuelRatio(part, FuelEfficiency, maxPowerToSupply, fuelUsePerMJMult, false).FirstOrDefault();
             fuel_ratio = CheatOptions.InfinitePropellant ? 1 : trueVariant != null ? Math.Min(trueVariant.FuelRatio, 1) : 0;
 
             if (fuel_ratio < 0.99999)
@@ -2949,8 +2952,8 @@ namespace KIT.Reactors
                 return 0;
         }
 
-        private ResourceName[] thermalResourcesProvided = new ResourceName[] { ResourceName.ThermalPower };
-        private ResourceName[] chargedResourcesProvided = new ResourceName[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
+        private ResourceName[] thermalResourcesProvided = new[] { ResourceName.ThermalPower };
+        private ResourceName[] chargedResourcesProvided = new[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
 
         // What resources can this reactor provide, either as intended, or by side effect.
         // an example might be that we can generate ThermalPower when generating ElectricCharge.
@@ -3010,23 +3013,30 @@ namespace KIT.Reactors
             }
             */
 
+            // One Charged Particle is One Thermal Power is one Waste Heat.
+
             double tmp;
             switch (resource)
             {
                 case ResourceName.ThermalPower:
                     tmp = requestedAmount / ThermalPowerRatio;
                     tmp = Math.Min(tmp, maxThermalToSupplyPerSecondAvail);
+                    if (MaximumChargedPower > 0) tmp = Math.Min(tmp, maxChargedToSupplyPerSecondAvail);
                     break;
                 case ResourceName.ChargedParticle:
                     tmp = requestedAmount / ChargedPowerRatio;
-                    tmp = Math.Min(requestedAmount, maxChargedToSupplyPerSecondAvail);
+                    tmp = Math.Min(tmp, maxChargedToSupplyPerSecondAvail);
+                    if (MaximumThermalPower > 0) tmp = Math.Min(tmp, maxThermalToSupplyPerSecondAvail);
                     break;
                 default:
                     Debug.Log($"[KIT InterstellarReactor] don't know how to handle {resource} request");
-                    return true; ;
+                    return true;
             }
 
+            // Is the above right? Is there cases where we want to be able to exceed the limit on one of them? :\
 
+            // Debug.Log($"[Interstellar Reactor] got request for {KITResourceSettings.ResourceToName(resource)} of {requestedAmount}. tmp is {tmp}, ThermalPowerRatio is {ThermalPowerRatio}, ChargedPowerRatio is {ChargedPowerRatio}, and tmp * ThermalPowerRatio is {tmp * ThermalPowerRatio} and also {tmp * ChargedPowerRatio}");
+            
             maxThermalToSupplyPerSecondAvail -= tmp * ThermalPowerRatio;
             maxChargedToSupplyPerSecondAvail -= tmp * ChargedPowerRatio;
 

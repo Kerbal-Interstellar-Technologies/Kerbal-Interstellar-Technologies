@@ -26,9 +26,9 @@ namespace KIT.Animate
 
         private AnimationState[] _containerStates;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
-            _containerStates = SetUpAnimation(animationName, this.part);
+            _containerStates = SetUpAnimation(animationName, part);
         }
 
         void Update()

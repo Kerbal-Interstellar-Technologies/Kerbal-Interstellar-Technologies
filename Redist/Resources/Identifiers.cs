@@ -108,13 +108,14 @@ namespace KIT.Resources
         IntakeOxygenAir,
         IntakeLiquid,
         IntakeAtmosphere,
-        
+
         FusionPellets,
         FissionParticles,
 
         EndResource,
     }
 
+    [Flags]
     public enum ResourcePriorityValue
     {
         First = 1,
@@ -328,7 +329,7 @@ namespace KIT.Resources
                 }
             }
 
-            if (_nameToResourceMap.ContainsKey(name) == false)
+            if (!_nameToResourceMap.ContainsKey(name))
             {
                 // Debug.Log($"[ResourceSettings.ResourceName] requested to map Unknown resource {name} - this will likely blow up");
                 return ResourceName.Unknown;
@@ -370,7 +371,7 @@ namespace KIT.Resources
                 PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "KIT Error", "Kerbal Interstellar Technologies Installation Error", errorMessage, "OK", false, HighLogic.UISkin);
 
                 _warningDisplayed = true;
-                
+
                 return;
             }
 

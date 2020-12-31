@@ -1,15 +1,15 @@
-using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using KIT.Powermanagement;
 using KIT.Resources;
+using KIT.ResourceScheduler;
+using KSP.Localization;
 using TweakScale;
 using UnityEngine;
-using KIT.ResourceScheduler;
 
-namespace KIT
+namespace KIT.Storage
 {
     [KSPModule("Antimatter Storage")]
     class AntimatterStorageTank : PartModule, IKITMod, IPartMassModifier, IRescalable<FNGenerator>, IPartCostModifier
@@ -421,7 +421,7 @@ namespace KIT
             else
                 UpdateTargetMass();
 
-            this.enabled = true;
+            enabled = true;
 
             UpdateTolerances();
 
@@ -479,7 +479,7 @@ namespace KIT
                 return;
             }
 
-            if (!FlightGlobals.VesselsLoaded.Contains(this.vessel))
+            if (!FlightGlobals.VesselsLoaded.Contains(vessel))
             {
                 Debug.Log("[KSPI]: !FlightGlobals.VesselsLoaded.Contains(this.vessel)");
                 return;
@@ -527,7 +527,7 @@ namespace KIT
 
             _attachedAntimatterTanks = part.attachNodes.Where(m => m.nodeType == AttachNode.NodeType.Stack && m.attachedPart != null).Select(m => m.attachedPart.FindModuleImplementing<AntimatterStorageTank>()).Where(m => m != null).ToList();
             _attachedAntimatterTanks.ForEach(m => m.UpdateMass());
-            attachedAntimatterTanksCount = _attachedAntimatterTanks.Count();
+            attachedAntimatterTanksCount = _attachedAntimatterTanks.Count;
         }
 
         public void Update()
@@ -780,7 +780,7 @@ namespace KIT
             }
 
             var explodeParts = vessel.Parts.ToArray();
-            foreach (var explodePart in explodeParts.Where(explodePart => explodePart != vessel.rootPart && explodePart != this.part))
+            foreach (var explodePart in explodeParts.Where(explodePart => explodePart != vessel.rootPart && explodePart != part))
             {
                 explodePart.explode();
             }
@@ -822,7 +822,7 @@ namespace KIT
             {
                 var acceleration = PluginHelper.GForcesIgnored ? 0 : (Math.Max(0, (Math.Abs(_previousSpeed - vessel.obt_speed) / (Math.Max(resMan.FixedDeltaTime(), _previousFixedTime)))));
                 currentGeeForce = _geeforceQueue.Any(m => m > 0) ? _geeforceQueue.Where(m => m > 0).Min() : _geeforceQueue.Average();
-                _geeforceQueue.Enqueue(acceleration / GameConstants.STANDARD_GRAVITY);
+                _geeforceQueue.Enqueue(acceleration / GameConstants.StandardGravity);
                 if (_geeforceQueue.Count > 20)
                     _geeforceQueue.Dequeue();
             }

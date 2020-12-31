@@ -1,6 +1,6 @@
 ﻿using KSP.Localization;
 
-namespace KIT.BeamedPower
+namespace KIT.Beamedpower
 {
     [KSPModule("Beamed Power Bandwidth Converter")]//#LOC_KSPIE_BeamedPowerBandwidthConverter
     class BandwidthConverter
@@ -8,7 +8,7 @@ namespace KIT.BeamedPower
         [KSPField(groupName = BeamedPowerReceiver.GROUP, groupDisplayName = BeamedPowerReceiver.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = false)]
         public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthCoverter_missing");//"missing"
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
-        public double targetWavelength = 0;
+        public double targetWavelength;
 
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double minimumWavelength = 0.001;
@@ -21,36 +21,36 @@ namespace KIT.BeamedPower
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage0 = 45;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double electricEfficiencyPercentage0 = 0;
+        public double electricEfficiencyPercentage0;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double thermalEfficiencyPercentage0 = 0;
+        public double thermalEfficiencyPercentage0;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
         public string techRequirement0 = "";
 
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage1 = 45;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double electricEfficiencyPercentage1 = 0;
+        public double electricEfficiencyPercentage1;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double thermalEfficiencyPercentage1 = 0;
+        public double thermalEfficiencyPercentage1;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
         public string techRequirement1 = "";
 
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage2 = 45;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double electricEfficiencyPercentage2 = 0;
+        public double electricEfficiencyPercentage2;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double thermalEfficiencyPercentage2 = 0;
+        public double thermalEfficiencyPercentage2;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
         public string techRequirement2 = "";
 
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage3 = 45;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double electricEfficiencyPercentage3 = 0;
+        public double electricEfficiencyPercentage3;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
-        public double thermalEfficiencyPercentage3 = 0;
+        public double thermalEfficiencyPercentage3;
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false)]
         public string techRequirement3 = "";
 
@@ -62,31 +62,31 @@ namespace KIT.BeamedPower
         {
             var original = bandwidthName;
 
-            node.TryGetValue(nameof(bandwidthName), ref this.bandwidthName);
-            node.TryGetValue(nameof(targetWavelength), ref this.targetWavelength);
-            node.TryGetValue(nameof(minimumWavelength), ref this.minimumWavelength);
-            node.TryGetValue(nameof(maximumWavelength), ref this.maximumWavelength);
-            node.TryGetValue(nameof(AvailableTechLevel), ref this.AvailableTechLevel);
+            node.TryGetValue(nameof(bandwidthName), ref bandwidthName);
+            node.TryGetValue(nameof(targetWavelength), ref targetWavelength);
+            node.TryGetValue(nameof(minimumWavelength), ref minimumWavelength);
+            node.TryGetValue(nameof(maximumWavelength), ref maximumWavelength);
+            node.TryGetValue(nameof(AvailableTechLevel), ref AvailableTechLevel);
 
-            node.TryGetValue(nameof(efficiencyPercentage0), ref this.efficiencyPercentage0);
-            node.TryGetValue(nameof(electricEfficiencyPercentage0), ref this.electricEfficiencyPercentage0);
-            node.TryGetValue(nameof(thermalEfficiencyPercentage0), ref this.thermalEfficiencyPercentage0);
-            node.TryGetValue(nameof(techRequirement0), ref this.techRequirement0);
+            node.TryGetValue(nameof(efficiencyPercentage0), ref efficiencyPercentage0);
+            node.TryGetValue(nameof(electricEfficiencyPercentage0), ref electricEfficiencyPercentage0);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage0), ref thermalEfficiencyPercentage0);
+            node.TryGetValue(nameof(techRequirement0), ref techRequirement0);
 
-            node.TryGetValue(nameof(efficiencyPercentage1), ref this.efficiencyPercentage1);
-            node.TryGetValue(nameof(electricEfficiencyPercentage1), ref this.electricEfficiencyPercentage1);
-            node.TryGetValue(nameof(thermalEfficiencyPercentage1), ref this.thermalEfficiencyPercentage1);
-            node.TryGetValue(nameof(techRequirement1), ref this.techRequirement1);
+            node.TryGetValue(nameof(efficiencyPercentage1), ref efficiencyPercentage1);
+            node.TryGetValue(nameof(electricEfficiencyPercentage1), ref electricEfficiencyPercentage1);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage1), ref thermalEfficiencyPercentage1);
+            node.TryGetValue(nameof(techRequirement1), ref techRequirement1);
 
-            node.TryGetValue(nameof(efficiencyPercentage2), ref this.efficiencyPercentage2);
-            node.TryGetValue(nameof(electricEfficiencyPercentage2), ref this.electricEfficiencyPercentage2);
-            node.TryGetValue(nameof(thermalEfficiencyPercentage2), ref this.thermalEfficiencyPercentage2);
-            node.TryGetValue(nameof(techRequirement2), ref this.techRequirement2);
+            node.TryGetValue(nameof(efficiencyPercentage2), ref efficiencyPercentage2);
+            node.TryGetValue(nameof(electricEfficiencyPercentage2), ref electricEfficiencyPercentage2);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage2), ref thermalEfficiencyPercentage2);
+            node.TryGetValue(nameof(techRequirement2), ref techRequirement2);
 
-            node.TryGetValue(nameof(efficiencyPercentage3), ref this.efficiencyPercentage3);
-            node.TryGetValue(nameof(electricEfficiencyPercentage3), ref this.electricEfficiencyPercentage3);
-            node.TryGetValue(nameof(thermalEfficiencyPercentage3), ref this.thermalEfficiencyPercentage3);
-            node.TryGetValue(nameof(techRequirement3), ref this.techRequirement3);
+            node.TryGetValue(nameof(efficiencyPercentage3), ref efficiencyPercentage3);
+            node.TryGetValue(nameof(electricEfficiencyPercentage3), ref electricEfficiencyPercentage3);
+            node.TryGetValue(nameof(thermalEfficiencyPercentage3), ref thermalEfficiencyPercentage3);
+            node.TryGetValue(nameof(techRequirement3), ref techRequirement3);
 
             Initialize();
             
@@ -113,31 +113,31 @@ namespace KIT.BeamedPower
         {
             ConfigNode myself = new ConfigNode("BandwidthConverter");
 
-            myself.AddValue(nameof(bandwidthName), this.bandwidthName);
-            myself.AddValue(nameof(targetWavelength), this.targetWavelength);
-            myself.AddValue(nameof(minimumWavelength), this.minimumWavelength);
-            myself.AddValue(nameof(maximumWavelength), this.maximumWavelength);
-            myself.AddValue(nameof(AvailableTechLevel), this.AvailableTechLevel);
+            myself.AddValue(nameof(bandwidthName), bandwidthName);
+            myself.AddValue(nameof(targetWavelength), targetWavelength);
+            myself.AddValue(nameof(minimumWavelength), minimumWavelength);
+            myself.AddValue(nameof(maximumWavelength), maximumWavelength);
+            myself.AddValue(nameof(AvailableTechLevel), AvailableTechLevel);
 
-            myself.AddValue(nameof(efficiencyPercentage0), this.efficiencyPercentage0);
-            myself.AddValue(nameof(electricEfficiencyPercentage0), this.electricEfficiencyPercentage0);
-            myself.AddValue(nameof(thermalEfficiencyPercentage0), this.thermalEfficiencyPercentage0);
-            myself.AddValue(nameof(techRequirement0), this.techRequirement0);
+            myself.AddValue(nameof(efficiencyPercentage0), efficiencyPercentage0);
+            myself.AddValue(nameof(electricEfficiencyPercentage0), electricEfficiencyPercentage0);
+            myself.AddValue(nameof(thermalEfficiencyPercentage0), thermalEfficiencyPercentage0);
+            myself.AddValue(nameof(techRequirement0), techRequirement0);
 
-            myself.AddValue(nameof(efficiencyPercentage1), this.efficiencyPercentage1);
-            myself.AddValue(nameof(electricEfficiencyPercentage1), this.electricEfficiencyPercentage1);
-            myself.AddValue(nameof(thermalEfficiencyPercentage1), this.thermalEfficiencyPercentage1);
-            myself.AddValue(nameof(techRequirement1), this.techRequirement1);
+            myself.AddValue(nameof(efficiencyPercentage1), efficiencyPercentage1);
+            myself.AddValue(nameof(electricEfficiencyPercentage1), electricEfficiencyPercentage1);
+            myself.AddValue(nameof(thermalEfficiencyPercentage1), thermalEfficiencyPercentage1);
+            myself.AddValue(nameof(techRequirement1), techRequirement1);
 
-            myself.AddValue(nameof(efficiencyPercentage2), this.efficiencyPercentage2);
-            myself.AddValue(nameof(electricEfficiencyPercentage2), this.electricEfficiencyPercentage2);
-            myself.AddValue(nameof(thermalEfficiencyPercentage2), this.thermalEfficiencyPercentage2);
-            myself.AddValue(nameof(techRequirement2), this.techRequirement2);
+            myself.AddValue(nameof(efficiencyPercentage2), efficiencyPercentage2);
+            myself.AddValue(nameof(electricEfficiencyPercentage2), electricEfficiencyPercentage2);
+            myself.AddValue(nameof(thermalEfficiencyPercentage2), thermalEfficiencyPercentage2);
+            myself.AddValue(nameof(techRequirement2), techRequirement2);
 
-            myself.AddValue(nameof(efficiencyPercentage3), this.efficiencyPercentage3);
-            myself.AddValue(nameof(electricEfficiencyPercentage3), this.electricEfficiencyPercentage3);
-            myself.AddValue(nameof(thermalEfficiencyPercentage3), this.thermalEfficiencyPercentage3);
-            myself.AddValue(nameof(techRequirement3), this.techRequirement3);
+            myself.AddValue(nameof(efficiencyPercentage3), efficiencyPercentage3);
+            myself.AddValue(nameof(electricEfficiencyPercentage3), electricEfficiencyPercentage3);
+            myself.AddValue(nameof(thermalEfficiencyPercentage3), thermalEfficiencyPercentage3);
+            myself.AddValue(nameof(techRequirement3), techRequirement3);
 
             node.AddNode(myself);
         }

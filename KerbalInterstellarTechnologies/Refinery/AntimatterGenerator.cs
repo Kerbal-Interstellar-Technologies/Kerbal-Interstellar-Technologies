@@ -48,7 +48,7 @@
             if (energyProvidedInMegajoules <= 0)
                 return;
 
-            double antimatterUnits = energyProvidedInMegajoules * 1E6 / GameConstants.lightSpeedSquared / 2000 / _antimatterDefinition.density * _efficiency;
+            double antimatterUnits = energyProvidedInMegajoules * 1E6 / GameConstants.LightSpeedSquared / 2000 / _antimatterDefinition.density * _efficiency;
 
             _current_rate = -_part.RequestResource(_antimatterDefinition.id, -antimatterUnits, ResourceFlowMode.STAGE_PRIORITY_FLOW);
         }

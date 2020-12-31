@@ -1,12 +1,13 @@
 ﻿using KIT.Extensions;
 using KIT.Interfaces;
-using KIT.Powermanagement;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KIT.Powermanagement.Interfaces;
+using KIT.Wasteheat;
 using TweakScale;
 using UnityEngine;
 
@@ -135,9 +136,9 @@ namespace KIT.Propulsion
         [KSPField] public double emissiveConstant = 0.85;
         [KSPField] public float thermalMassModifier = 1f;
         [KSPField] public double skinMaxTemp = 2750;
-        [KSPField] public float maxThermalNozzleIsp = 0;
-        [KSPField] public float maxJetModeBaseIsp = 0;
-        [KSPField] public float maxLfoModeBaseIsp = 0;
+        [KSPField] public float maxThermalNozzleIsp;
+        [KSPField] public float maxJetModeBaseIsp;
+        [KSPField] public float maxLfoModeBaseIsp;
         [KSPField] public float effectiveIsp;
         [KSPField] public double skinInternalConductionMult = 1;
         [KSPField] public double skinThermalMassModifier = 1;
@@ -277,7 +278,7 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AirCooling", guiFormat = "F5")]//Air Cooling
         protected double airFlowForCooling;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentIsp", guiFormat = "F1")]//Current Isp
-        protected double current_isp = 0;
+        protected double current_isp;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxPressureThresholdAtKerbinSurface", guiFormat = "F1", guiUnits = " kPa")]//Max Pressure Thresshold @ 1 atm
         protected double maxPressureThresholdAtKerbinSurface;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThermalRatio")]//Thermal Ratio
@@ -287,7 +288,7 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ExpectedMaxThrust")]//Expected Max Thrust
         protected double expectedMaxThrust;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsLFO")]//Is LFO
-        protected bool _propellantIsLFO = false;
+        protected bool _propellantIsLFO;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_VelocityModifier", guiFormat = "F3")]//Velocity Modifier
         protected float vcurveAtCurrentVelocity;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AtmosphereModifier", guiFormat = "F3")]//Atmosphere Modifier
@@ -297,7 +298,7 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_PropellantType")]//Propellant Type
         protected int _propType = 1;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsNeutronAbsorber")]//Is Neutron Absorber
-        protected bool _isNeutronAbsorber = false;
+        protected bool _isNeutronAbsorber;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaxThermalPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Thermal Power
         protected double currentMaxThermalPower;
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaxChargedPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Charged Power
@@ -329,9 +330,9 @@ namespace KIT.Propulsion
         [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ElectricalyPowered", guiUnits = "%", guiFormat = "F1")]//Electricaly Powered
         public double received_megajoules_percentage;
         [KSPField(groupName = GROUP, isPersistant = true, guiActive = false, guiName = "Jet Spool Ratio", guiFormat = "F2")]
-        public float jetSpoolRatio = 0;
+        public float jetSpoolRatio;
         [KSPField(groupName = GROUP, isPersistant = false, guiActive = false, guiName = "Spool Effect Ratio", guiFormat = "F2")]
-        public float spoolEffectRatio = 0;
+        public float spoolEffectRatio;
         [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_PropelantWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_ThermalNozzleController_WindowHidden", enabledText = "#LOC_KSPIE_ThermalNozzleController_WindowShown", affectSymCounterparts = UI_Scene.None)]//Propelant Window--Hidden--Shown
         public bool render_window;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ModuleSabreHeating_MissingPrecoolerRatio")]
@@ -447,7 +448,7 @@ namespace KIT.Propulsion
 
         public double EffectiveCoreTempIspMult => (ispCoreTempMult == 0 ? PluginSettings.Config.IspCoreTempMult : ispCoreTempMult) + IspTempMultOffset;
 
-        public bool UsePlasmaPower => isPlasmaNozzle || canUsePlasmaPower && (AttachedReactor != null && AttachedReactor.PlasmaPropulsionEfficiency > 0);
+        public bool UsePlasmaPower => isPlasmaNozzle || (canUsePlasmaPower && (AttachedReactor != null && AttachedReactor.PlasmaPropulsionEfficiency > 0));
 
         public bool UseThermalPowerOnly => AttachedReactor != null && (!isPlasmaNozzle || AttachedReactor.ChargedParticlePropulsionEfficiency == 0 || AttachedReactor.SupportMHD || AttachedReactor.ChargedPowerRatio == 0 || _listOfPropellants.Count > 1 );
 
@@ -463,7 +464,7 @@ namespace KIT.Propulsion
             if (fuel_mode >= fuelConfigNodes.Length)
                 fuel_mode = 0;
 
-            SetupPropellants(fuel_mode, true, false);
+            SetupPropellants(fuel_mode);
         }
 
         public void PreviousPropellantInternal()
@@ -472,11 +473,11 @@ namespace KIT.Propulsion
             if (fuel_mode < 0)
                 fuel_mode = fuelConfigNodes.Length - 1;
 
-            SetupPropellants(fuel_mode, false, false);
+            SetupPropellants(fuel_mode, false);
         }
 
         // Note: we assume OnRescale is called at load and after any time tweakscale changes the size of an part
-        public void OnRescale(TweakScale.ScalingFactor factor)
+        public void OnRescale(ScalingFactor factor)
         {
             Debug.Log("[KSPI]: ThermalNozzleController OnRescale was called with factor " + factor.absolute.linear);
 
@@ -503,7 +504,7 @@ namespace KIT.Propulsion
             if (fuel_mode >= fuelConfigNodes.Length)
                 fuel_mode = 0;
 
-            SetupPropellants(true, false);
+            SetupPropellants();
         }
 
         [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_PreviousPropellant", active = true)]//Previous Propellant
@@ -513,7 +514,7 @@ namespace KIT.Propulsion
             if (fuel_mode < 0)
                 fuel_mode = fuelConfigNodes.Length - 1;
 
-            SetupPropellants(false, false);
+            SetupPropellants(false);
         }
 
         [KSPAction("Next Propellant")]
@@ -619,7 +620,7 @@ namespace KIT.Propulsion
         /// </summary>
         IResourceManager tzrmi;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             Debug.Log("[KSPI]: ThermalNozzleController - start");
 
@@ -1119,7 +1120,7 @@ namespace KIT.Propulsion
             if (canLoadPropellant)
             {
                 Debug.Log("[KSPI]: ThermalNozzleController - Setup propellant chosen propellant " + fuel_mode + " / " +
-                          fuelConfigNodes.Count());
+                          fuelConfigNodes.Length);
 
                 myAttachedEngine.Shutdown();
 
@@ -1129,7 +1130,7 @@ namespace KIT.Propulsion
                 {
                     ResourceFlowMode flowMode = prop.GetFlowMode();
                     Debug.Log("[KSPI]: ThermalNozzleController set propellant name: " + prop.name + " ratio: " +
-                              prop.ratio + " resourceFlowMode: " + flowMode.ToString());
+                              prop.ratio + " resourceFlowMode: " + flowMode);
 
                     var propellantConfigNode = newPropNode.AddNode("PROPELLANT");
                     propellantConfigNode.AddValue("name", prop.name);
@@ -1440,13 +1441,13 @@ namespace KIT.Propulsion
             if (_maxISP <= 0)
                 return;
 
-            var baseMaxThrust = GetPowerThrustModifier() * GetHeatThrustModifier() * AttachedReactor.MaximumPower / _maxISP / GameConstants.STANDARD_GRAVITY * GetHeatExchangerThrustMultiplier();
+            var baseMaxThrust = GetPowerThrustModifier() * GetHeatThrustModifier() * AttachedReactor.MaximumPower / _maxISP / GameConstants.StandardGravity * GetHeatExchangerThrustMultiplier();
             var maxThrustInSpace = baseMaxThrust;
             baseMaxThrust *= _thrustPropellantMultiplier;
 
             final_max_thrust_in_space = baseMaxThrust;
 
-            maxFuelFlowOnEngine = (float)Math.Max(baseMaxThrust / (GameConstants.STANDARD_GRAVITY * _maxISP), 1e-10);
+            maxFuelFlowOnEngine = (float)Math.Max(baseMaxThrust / (GameConstants.StandardGravity * _maxISP), 1e-10);
             myAttachedEngine.maxFuelFlow = maxFuelFlowOnEngine;
 
             maxThrustOnEngine = (float)Math.Max(baseMaxThrust, minimumThrust);
@@ -1585,6 +1586,8 @@ namespace KIT.Propulsion
                 var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedMegajoules);
                 receivedMegajoulesRatio = requestedMegajoules > 0 ? availablePower / requestedMegajoules : 0;
 
+                Debug.Log($"[Thermal Nozzle] receivedMegajoulesRatio is {receivedMegajoulesRatio} .. should it be?");
+                
                 requestedElectricPowerMegajoules = availablePower * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
                 //var receivedMegajoules = consumeFNResourcePerSecond(requestedElectricPowerMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
                 var receivedMegajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedElectricPowerMegajoules);
@@ -1633,7 +1636,7 @@ namespace KIT.Propulsion
                 if (_fuelCoolingFactor > 0)
                     wasteheatEfficiencyModifier /= _fuelCoolingFactor;
 
-                resMan.ConsumeResource(ResourceName.WasteHeat, sootModifier * (1 - wasteheatEfficiencyModifier) * reactor_power_received);
+                resMan.ProduceResource(ResourceName.WasteHeat, sootModifier * (1 - wasteheatEfficiencyModifier) * reactor_power_received);
             }
 
             if (reactor_power_received > 0 && _maxISP > 0)
@@ -1648,9 +1651,9 @@ namespace KIT.Propulsion
 
                 powerHeatModifier = receivedMegajoulesRatio * GetPowerThrustModifier() * GetHeatThrustModifier();
 
-                engineMaxThrust = powerHeatModifier * _mhdTrustIspModifier * reactor_power_received / _maxISP / GameConstants.STANDARD_GRAVITY;
+                engineMaxThrust = powerHeatModifier * _mhdTrustIspModifier * reactor_power_received / _maxISP / GameConstants.StandardGravity;
 
-                thrustPerMegaJoule = powerHeatModifier * maximumPowerUsageForPropulsionRatio / _maxISP / GameConstants.STANDARD_GRAVITY * ispRatio;
+                thrustPerMegaJoule = powerHeatModifier * maximumPowerUsageForPropulsionRatio / _maxISP / GameConstants.StandardGravity * ispRatio;
 
                 expectedMaxThrust = thrustPerMegaJoule * AttachedReactor.MaximumPower * effectiveThrustFraction;
 
@@ -1706,7 +1709,7 @@ namespace KIT.Propulsion
             var maxThrustForFuelFlow = final_max_engine_thrust > 0.0001 ? calculatedMaxThrust : final_max_engine_thrust;
 
             // calculate maximum fuel flow rate
-            maxFuelFlowRate = maxThrustForFuelFlow / current_isp / GameConstants.STANDARD_GRAVITY;
+            maxFuelFlowRate = maxThrustForFuelFlow / current_isp / GameConstants.StandardGravity;
 
             fuelFlowThrottleModifier = 1;
 
@@ -1762,7 +1765,7 @@ namespace KIT.Propulsion
 
             CalculateMissingPreCoolerRatio();
 
-            airflowHeatModifier = missingPrecoolerRatio > 0 ? Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 20 / GameConstants.atmospheric_non_precooled_limit * missingPrecoolerRatio), 0): 0;
+            airflowHeatModifier = missingPrecoolerRatio > 0 ? Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 20 / GameConstants.AtmosphericNonPrecooledLimit * missingPrecoolerRatio), 0): 0;
             airflowHeatModifier *= vessel.atmDensity * (vessel.speed / vessel.speedOfSound);
 
             if (airflowHeatModifier.IsInfinityOrNaN())
@@ -1807,7 +1810,7 @@ namespace KIT.Propulsion
 
             if (pulseDuration != 0 || !(myAttachedEngine is ModuleEnginesFX)) return;
 
-            maxEngineFuelFlow = myAttachedEngine.maxThrust > minimumThrust ? maxThrustOnEngine / realIspEngine / GameConstants.STANDARD_GRAVITY : 0;
+            maxEngineFuelFlow = myAttachedEngine.maxThrust > minimumThrust ? maxThrustOnEngine / realIspEngine / GameConstants.StandardGravity : 0;
             fuelEffectRatio = currentMassFlow / maxEngineFuelFlow;
 
             if (!string.IsNullOrEmpty(_powerEffectNameParticleFX))
@@ -1902,7 +1905,7 @@ namespace KIT.Propulsion
             if (_currentPropellantIsJet)
             {
                 UpdateIspEngineParams(resMan);
-                this.current_isp = myAttachedEngine.atmosphereCurve.Evaluate((float)Math.Min(FlightGlobals.getStaticPressure(vessel.transform.position), 1.0));
+                current_isp = myAttachedEngine.atmosphereCurve.Evaluate((float)Math.Min(FlightGlobals.getStaticPressure(vessel.transform.position), 1.0));
             }
             else
             {
@@ -1950,8 +1953,8 @@ namespace KIT.Propulsion
             }
             else if (UseChargedPowerOnly)
             {
-                var joulesPerAmu = AttachedReactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ELECTRON_CHARGE / GameConstants.dilution_factor;
-                _maxISP = 100 * Math.Sqrt(joulesPerAmu * 2 / GameConstants.ATOMIC_MASS_UNIT) / GameConstants.STANDARD_GRAVITY;
+                var joulesPerAmu = AttachedReactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ElectronCharge / GameConstants.DilutionFactor;
+                _maxISP = 100 * Math.Sqrt(joulesPerAmu * 2 / GameConstants.AtomicMassUnit) / GameConstants.StandardGravity;
             }
             else
             {
@@ -2050,7 +2053,7 @@ namespace KIT.Propulsion
                 heatThrustModifier = GetHeatThrustModifier();
                 powerThrustModifier = GetPowerThrustModifier();
 
-                max_thrust_in_space = powerThrustModifier * heatThrustModifier * maximumReactorPower / _maxISP / GameConstants.STANDARD_GRAVITY * effectiveThrustFraction;
+                max_thrust_in_space = powerThrustModifier * heatThrustModifier * maximumReactorPower / _maxISP / GameConstants.StandardGravity * effectiveThrustFraction;
                 final_max_thrust_in_space = Math.Max(max_thrust_in_space * _thrustPropellantMultiplier, minimumThrust);
 
                 // Set max thrust
@@ -2130,7 +2133,7 @@ namespace KIT.Propulsion
                     if (GUILayout.Button(fuel.GuiName, GUILayout.ExpandWidth(true)))
                     {
                         fuel_mode = fuel.Index;
-                        SetupPropellants(true);
+                        SetupPropellants();
                     }
                     GUILayout.EndHorizontal();
                 }
@@ -2216,35 +2219,10 @@ namespace KIT.Propulsion
             else
                 AttachedReactor.DetachThermalReceiver(id);
 
-            bool canUseChargedPower = this.allowUseOfChargedPower && AttachedReactor.ChargedPowerRatio > 0;
+            bool canUseChargedPower = allowUseOfChargedPower && AttachedReactor.ChargedPowerRatio > 0;
 
             effectiveThrustFraction = GetHeatExchangerThrustMultiplier();
-
-            // TODO verify if this is correct..
-            effectiveThermalSupply = effectiveChargedSupply = 0;
-
-            if (! UseChargedPowerOnly)
-            {
-                var results = resMan.ResourceProductionStats(ResourceName.ThermalPower);
-                if (results != null)
-                {
-                    effectiveThermalSupply = results.PreviousDataSupplied() ? results.PreviouslySupplied() : results.CurrentSupplied();
-                }
-            }
-
-            if(canUseChargedPower)
-            {
-                var results = resMan.ResourceProductionStats(ResourceName.ChargedParticle);
-                if (results != null)
-                {
-                    effectiveChargedSupply = results.PreviousDataSupplied() ? results.PreviouslySupplied() : results.CurrentSupplied();
-                }
-            }
-            // was
-            //effectiveThermalSupply = UseChargedPowerOnly == false ? effectiveThrustFraction * resgetAvailableStableSupply(ResourceSettings.Config.ThermalPowerInMegawatt) : 0;
-            //effectiveChargedSupply = canUseChargedPower == true ? effectiveThrustFraction * getAvailableStableSupply(ResourceSettings.Config.ChargedParticleInMegawatt) : 0;
-
-
+            
             maximumPowerUsageForPropulsionRatio = UsePlasmaPower
                 ? AttachedReactor.PlasmaPropulsionEfficiency
                 : AttachedReactor.ThermalPropulsionEfficiency;
@@ -2252,14 +2230,14 @@ namespace KIT.Propulsion
             maximumThermalPower = AttachedReactor.MaximumThermalPower;
             maximumChargedPower = AttachedReactor.MaximumChargedPower;
 
-            currentMaxThermalPower = Math.Min(effectiveThermalSupply, effectiveThrustFraction * maximumThermalPower * maximumPowerUsageForPropulsionRatio * adjustedThrottle);
-            currentMaxChargedPower = Math.Min(effectiveChargedSupply, effectiveThrustFraction * maximumChargedPower * maximumPowerUsageForPropulsionRatio * adjustedThrottle);
+            currentMaxThermalPower = effectiveThrustFraction * maximumThermalPower * maximumPowerUsageForPropulsionRatio * adjustedThrottle;
+            currentMaxChargedPower = effectiveThrustFraction * maximumChargedPower * maximumPowerUsageForPropulsionRatio * adjustedThrottle;
 
             thermalResourceRatio = resMan.ResourceFillFraction(ResourceName.ThermalPower);
             chargedResourceRatio = resMan.ResourceFillFraction(ResourceName.ChargedParticle); // does not work anymore.
 
             availableThermalPower = exhaustAllowed ? currentMaxThermalPower * (thermalResourceRatio > 0.5 ? 1 : thermalResourceRatio * 2) : 0;
-            availableChargedPower = exhaustAllowed ? /* currentMaxChargedPower * (chargedResourceRatio > 0.5 ? 1 : chargedResourceRatio * 2) */ 1: 0;
+            availableChargedPower = exhaustAllowed ? currentMaxChargedPower * (chargedResourceRatio > 0.5 ? 1 : chargedResourceRatio * 2) : 0;
 
             UpdateAnimation();
 
@@ -2273,6 +2251,8 @@ namespace KIT.Propulsion
                 resMan.ConsumeResource(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling);
             }
 
+            // effectiveChargedSupply, effectiveThermalSupply
+
             // flameout when reactor cannot produce power
             myAttachedEngine.flameoutBar = AttachedReactor.CanProducePower ? 0 : float.MaxValue;
 
@@ -2285,14 +2265,14 @@ namespace KIT.Propulsion
                 UpdateIspEngineParams(resMan);
 
                 expectedMaxThrust = (_maxISP <= 0.0) ? 0.0 : (AttachedReactor.MaximumPower * maximumPowerUsageForPropulsionRatio *
-                    GetPowerThrustModifier() * GetHeatThrustModifier() * GetHeatExchangerThrustMultiplier() / (GameConstants.STANDARD_GRAVITY * _maxISP));
+                    GetPowerThrustModifier() * GetHeatThrustModifier() * GetHeatExchangerThrustMultiplier() / (GameConstants.StandardGravity * _maxISP));
                 calculatedMaxThrust = expectedMaxThrust;
 
                 var sootMult = CheatOptions.UnbreakableJoints ? 1 : 1 - sootAccumulationPercentage / 200;
 
                 expectedMaxThrust *= _thrustPropellantMultiplier * sootMult;
 
-                maxFuelFlowRate = (_maxISP <= 0.0) ? 0.0 : expectedMaxThrust / (_maxISP * GameConstants.STANDARD_GRAVITY);
+                maxFuelFlowRate = (_maxISP <= 0.0) ? 0.0 : expectedMaxThrust / (_maxISP * GameConstants.StandardGravity);
 
                 UpdateAtmosphericPressureThreshold();
 

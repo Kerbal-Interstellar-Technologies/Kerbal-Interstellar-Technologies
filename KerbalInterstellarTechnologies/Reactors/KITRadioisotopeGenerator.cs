@@ -93,9 +93,8 @@ namespace KIT.Reactors
             var productsToGenerateInKG = originalMassRemaining - massRemaining;
             if(decayResource == null || decayProductResource == null)
             {
-                ConfigNode[] config;
-                config = GameDatabase.Instance.GetConfigNodes("KIT_Radioactive_Decay");
-                if(config == null || config.Count() == 0)
+                var config = GameDatabase.Instance.GetConfigNodes("KIT_Radioactive_Decay");
+                if(config == null || !config.Any())
                 {
                     resourceNotDefined = true;
                     Debug.Log($"[KITRadioisotopeGenerator] can't find KIT_Radioactive_Decay configuration");
@@ -170,7 +169,7 @@ namespace KIT.Reactors
             DecayFuel(resMan);
         }
 
-        private string _KITPartName = Localizer.Format("#LOC_KIT_RTG_PartName");
+        private readonly string _KITPartName = Localizer.Format("#LOC_KIT_RTG_PartName");
         public string KITPartName() => _KITPartName;
 
         public override string GetInfo()

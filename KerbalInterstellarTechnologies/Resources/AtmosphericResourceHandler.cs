@@ -288,24 +288,24 @@ namespace KIT.Resources
             try
             {
                 // mundane resources
-                AddResource(KITResourceSettings.AmmoniaLqd, "Ammonia", body, bodyComposition, new[] { "LqdAmmonia", "AmmoniaGas", "Ammonia", "NH3"}, 1);
-                AddResource(KITResourceSettings.ArgonLqd, "Argon", body, bodyComposition, new[] { "LqdArgon", "ArgonGas", "Argon", "Ar" }, 1);
-                AddResource(KITResourceSettings.CarbonDioxideLqd, "CarbonDioxide", body, bodyComposition, new[] { "LqdCO2", "CarbonDioxideGas", "CarbonDioxide", "CO2" }, 1);
-                AddResource(KITResourceSettings.CarbonMonoxideLqd, "CarbonMonoxide", body, bodyComposition, new[] { "LqdCO", "CarbonMonoxideGas", "CarbonMonoxide", "CO", }, 1);
-                AddResource(KITResourceSettings.ChlorineGas, "Chlorine", body, bodyComposition, new[] { "Chlorine", "ChlorineGas", "LqdChlorine", "Cl", }, 1);
-                AddResource(KITResourceSettings.WaterHeavy, "HeavyWater", body, bodyComposition, new[] { "DeuteriumWater", "HeavyWater", "D2O" }, 1);
-                AddResource(KITResourceSettings.KryptonLqd, "Krypton", body, bodyComposition, new[] { "LqdKrypton", "KryptonGas", "Krypton" , "Kr"}, 1);
-                AddResource(KITResourceSettings.MethaneLqd, "Methane", body, bodyComposition, new[] { "LqdMethane", "MethaneGas", "Methane", "CH4" }, 1);
-                AddResource(KITResourceSettings.NitrogenLqd, "Nitrogen", body, bodyComposition, new[] { "LqdNitrogen", "NitrogenGas", "Nitrogen", "N", "N2" }, 1);
-                AddResource(KITResourceSettings.NeonLqd, "Neon", body, bodyComposition, new[] { "LqdNeon", "NeonGas", "Neon", "Ne" }, 1);
-                AddResource(KITResourceSettings.OxygenLqd, "Oxygen", body, bodyComposition, new[] { "LqdOxygen", "OxygenGas", "Oxygen", "O", "O2" }, 1);
-                AddResource(KITResourceSettings.WaterPure, "LqdWater", body, bodyComposition, new[] { "LqdWater", "Water", "WaterGas", "DihydrogenMonoxide", "H2O", "DHMO" }, 1);
-                AddResource(KITResourceSettings.XenonLqd, "Xenon", body, bodyComposition, new[] { "LqdXenon", "XenonGas", "Xenon", "Xe" }, 1);
-                AddResource(KITResourceSettings.Sodium, "Sodium", body, bodyComposition, new[] { "LqdSodium", "SodiumGas", "Sodium", "Natrium", "Na" }, 1);
-                AddResource(KITResourceSettings.Lithium7, "Lithium", body, bodyComposition, new[] { "Lithium", "LithiumGas", "Lithium7", "Li", "Li7" }, 1);
-                AddResource(KITResourceSettings.Lithium6, "Lithium6", body, bodyComposition, new[] { "Lithium6", "Lithium-6", "Li6" }, 1);
-                AddResource(KITResourceSettings.HydrogenLqd , "Hydrogen", body, bodyComposition, new[] { "LqdHydrogen", "HydrogenGas", "Hydrogen", "LiquidHydrogen", "H2", "Protium", "LqdProtium", "H" }, 1);
-                AddResource(KITResourceSettings.Helium4Lqd, "Helium", body, bodyComposition, new[] { "LqdHe4", "Helium4Gas", "Helium4", "Helium-4", "He4Gas", "He4", "LqdHelium", "Helium", "HeliumGas", "He" }, 1);
+                AddResource(KITResourceSettings.AmmoniaLqd, "Ammonia", body, bodyComposition, new[] { "LqdAmmonia", "AmmoniaGas", "Ammonia", "NH3"});
+                AddResource(KITResourceSettings.ArgonLqd, "Argon", body, bodyComposition, new[] { "LqdArgon", "ArgonGas", "Argon", "Ar" });
+                AddResource(KITResourceSettings.CarbonDioxideLqd, "CarbonDioxide", body, bodyComposition, new[] { "LqdCO2", "CarbonDioxideGas", "CarbonDioxide", "CO2" });
+                AddResource(KITResourceSettings.CarbonMonoxideLqd, "CarbonMonoxide", body, bodyComposition, new[] { "LqdCO", "CarbonMonoxideGas", "CarbonMonoxide", "CO", });
+                AddResource(KITResourceSettings.ChlorineGas, "Chlorine", body, bodyComposition, new[] { "Chlorine", "ChlorineGas", "LqdChlorine", "Cl", });
+                AddResource(KITResourceSettings.WaterHeavy, "HeavyWater", body, bodyComposition, new[] { "DeuteriumWater", "HeavyWater", "D2O" });
+                AddResource(KITResourceSettings.KryptonLqd, "Krypton", body, bodyComposition, new[] { "LqdKrypton", "KryptonGas", "Krypton" , "Kr"});
+                AddResource(KITResourceSettings.MethaneLqd, "Methane", body, bodyComposition, new[] { "LqdMethane", "MethaneGas", "Methane", "CH4" });
+                AddResource(KITResourceSettings.NitrogenLqd, "Nitrogen", body, bodyComposition, new[] { "LqdNitrogen", "NitrogenGas", "Nitrogen", "N", "N2" });
+                AddResource(KITResourceSettings.NeonLqd, "Neon", body, bodyComposition, new[] { "LqdNeon", "NeonGas", "Neon", "Ne" });
+                AddResource(KITResourceSettings.OxygenLqd, "Oxygen", body, bodyComposition, new[] { "LqdOxygen", "OxygenGas", "Oxygen", "O", "O2" });
+                AddResource(KITResourceSettings.WaterPure, "LqdWater", body, bodyComposition, new[] { "LqdWater", "Water", "WaterGas", "DihydrogenMonoxide", "H2O", "DHMO" });
+                AddResource(KITResourceSettings.XenonLqd, "Xenon", body, bodyComposition, new[] { "LqdXenon", "XenonGas", "Xenon", "Xe" });
+                AddResource(KITResourceSettings.Sodium, "Sodium", body, bodyComposition, new[] { "LqdSodium", "SodiumGas", "Sodium", "Natrium", "Na" });
+                AddResource(KITResourceSettings.Lithium7, "Lithium", body, bodyComposition, new[] { "Lithium", "LithiumGas", "Lithium7", "Li", "Li7" });
+                AddResource(KITResourceSettings.Lithium6, "Lithium6", body, bodyComposition, new[] { "Lithium6", "Lithium-6", "Li6" });
+                AddResource(KITResourceSettings.HydrogenLqd , "Hydrogen", body, bodyComposition, new[] { "LqdHydrogen", "HydrogenGas", "Hydrogen", "LiquidHydrogen", "H2", "Protium", "LqdProtium", "H" });
+                AddResource(KITResourceSettings.Helium4Lqd, "Helium", body, bodyComposition, new[] { "LqdHe4", "Helium4Gas", "Helium4", "Helium-4", "He4Gas", "He4", "LqdHelium", "Helium", "HeliumGas", "He" });
 
                 // exotic isotopes
                 AddResource(KITResourceSettings.Helium3Lqd, "Helium-3", body, bodyComposition, new[] { "LqdHe3", "Helium3Gas", "Helium3", "Helium-3", "He3Gas", "He3", "LqdHelium3" }, 5);

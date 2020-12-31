@@ -1,16 +1,15 @@
-﻿using KIT.BeamedPower;
-using KIT.Extensions;
-using KIT.Powermanagement;
-using KIT.Propulsion;
-using KIT.Wasteheat;
-using KSP.Localization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KIT.Beamedpower;
+using KIT.Extensions;
+using KIT.Powermanagement;
 using KIT.Powermanagement.Interfaces;
+using KIT.Propulsion;
+using KSP.Localization;
 using UnityEngine;
 
-namespace KIT
+namespace KIT.Wasteheat
 {
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
     public class VABThermalUI : MonoBehaviour
@@ -578,7 +577,7 @@ namespace KIT
                 _vesselMaxRadConvection += maxRadiatorConvection;
 
                 var tempToPowerFour = maxRadTemperature * maxRadTemperature * maxRadTemperature * maxRadTemperature;
-                _vesselMaxRadDissipation += GameConstants.stefan_const * radiator.EffectiveRadiatorArea * tempToPowerFour / 1e6;
+                _vesselMaxRadDissipation += GameConstants.StefanConst * radiator.EffectiveRadiatorArea * tempToPowerFour / 1e6;
                 totalConvectiveTempArea += maxRadTemperature * baseRadiatorArea;
                 _totalConvectiveBonusArea += radiator.radiatorArea * radiator.convectiveBonus;
             }

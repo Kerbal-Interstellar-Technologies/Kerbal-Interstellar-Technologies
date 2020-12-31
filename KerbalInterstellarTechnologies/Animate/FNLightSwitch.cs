@@ -15,7 +15,7 @@ namespace KIT.Animate
         [KSPField(isPersistant = true)]
         public bool LightsAreOn = true;
 
-        private Light _myLight = null;
+        private Light _myLight;
 
         public void SetLightState(bool toggle)
         {

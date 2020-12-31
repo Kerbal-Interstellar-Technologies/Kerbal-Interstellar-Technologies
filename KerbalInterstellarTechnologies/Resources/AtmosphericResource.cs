@@ -7,31 +7,31 @@ namespace KIT.Resources
     {
         public AtmosphericResource(PartResourceDefinition definition, double abundance)
         {
-            this.ResourceName = definition.name;
-            this.ResourceAbundance = abundance;
-            this.DisplayName = string.IsNullOrEmpty(definition.displayName) ? definition.name : definition.displayName;
-            this.Synonyms = new[] { ResourceName, DisplayName }.Distinct().ToList();
+            ResourceName = definition.name;
+            ResourceAbundance = abundance;
+            DisplayName = string.IsNullOrEmpty(definition.displayName) ? definition.name : definition.displayName;
+            Synonyms = new[] { ResourceName, DisplayName }.Distinct().ToList();
         }
 
         public AtmosphericResource(string resourceName, double abundance, string displayName)
         {
-            this.ResourceName = resourceName;
-            this.ResourceAbundance = abundance;
-            this.DisplayName = displayName;
-            this.Synonyms = new[] { resourceName }.ToList();
+            ResourceName = resourceName;
+            ResourceAbundance = abundance;
+            DisplayName = displayName;
+            Synonyms = new[] { resourceName }.ToList();
         }
 
         public AtmosphericResource(string resourceName, double abundance, string displayName, string[] synonyms)
         {
-            this.ResourceName = resourceName;
-            this.ResourceAbundance = abundance;
-            this.DisplayName = displayName;
-            this.Synonyms = synonyms.ToList();
+            ResourceName = resourceName;
+            ResourceAbundance = abundance;
+            DisplayName = displayName;
+            Synonyms = synonyms.ToList();
         }
 
-        public string DisplayName { get; private set; }
-        public string ResourceName {get; private set;}
-        public double ResourceAbundance { get; private set; }
-        public List<string> Synonyms { get; private set; }
+        public string DisplayName { get; }
+        public string ResourceName {get; }
+        public double ResourceAbundance { get; }
+        public List<string> Synonyms { get; }
     }
 }

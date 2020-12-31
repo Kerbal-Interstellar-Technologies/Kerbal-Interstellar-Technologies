@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using KSP.Localization;
+﻿using KSP.Localization;
+using UnityEngine;
 
 /* AdvancedAnimator was made by Christophe Savard (stupid_chris) and is licensed under CC-BY-SA. You are free to share and modify this code freely
  * under the attribution clause to me. You can contact me on the forums for more information. */
 
-namespace KIT
+namespace KIT.Storage
 {
     public class FNModuleAnimator : PartModule
     {
@@ -38,7 +38,7 @@ namespace KIT
         [KSPField]
         public float unfocusedRange = 5f;
         [KSPField(isPersistant = true)]
-        public new bool enabled = false;
+        public new bool enabled;
         [KSPField(isPersistant = true)]
         public bool played = true;
         [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ModuleAnimater_Status")]//Status
@@ -46,14 +46,14 @@ namespace KIT
         #endregion
 
         #region Fields
-        private bool initiated = false;
+        private bool initiated;
         #endregion
 
         #region Part GUI
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, externalToEVAOnly = true, guiName = "#LOC_KSPIE_ModuleAnimater_Toggle", unfocusedRange = 5)]//Toggle
         public void GUIToggle()
         {
-            if (this.enabled) { Disable(); }
+            if (enabled) { Disable(); }
             else { Enable(); }
         }
         #endregion
@@ -83,13 +83,13 @@ namespace KIT
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (this.oneShot && this.played) { return; }
-                this.played = true;
+                if (oneShot && played) { return; }
+                played = true;
             }
-            if (CheckAnimationPlaying()) { PlayAnimation(this.animationSpeed, GetAnimationTime()); }
-            else { PlayAnimation(this.animationSpeed, 0); }
-            this.enabled = true;
-            this.part.Effect("onAnimationDeploy");
+            if (CheckAnimationPlaying()) { PlayAnimation(animationSpeed, GetAnimationTime()); }
+            else { PlayAnimation(animationSpeed, 0); }
+            enabled = true;
+            part.Effect("onAnimationDeploy");
             SetName();
         }
 
@@ -97,67 +97,67 @@ namespace KIT
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (this.oneShot && this.played) { return; }
-                this.played = true;
+                if (oneShot && played) { return; }
+                played = true;
             }
-            if (CheckAnimationPlaying()) { PlayAnimation(-this.animationSpeed, GetAnimationTime()); }
-            else { PlayAnimation(-this.animationSpeed, 1); }
+            if (CheckAnimationPlaying()) { PlayAnimation(-animationSpeed, GetAnimationTime()); }
+            else { PlayAnimation(-animationSpeed, 1); }
             Events["GUIToggle"].guiName = guiDisableName;
-            this.enabled = false;
-            this.part.Effect("onAnimationRetract");
+            enabled = false;
+            part.Effect("onAnimationRetract");
             SetName();
         }
 
         private void SetName()
         {
             BaseEvent toggle = Events["GUIToggle"];
-            if (!string.IsNullOrEmpty(this.guiEnableName) && !string.IsNullOrEmpty(this.guiDisableName)) { toggle.guiName = this.enabled ? this.guiDisableName : this.guiEnableName; }
+            if (!string.IsNullOrEmpty(guiEnableName) && !string.IsNullOrEmpty(guiDisableName)) { toggle.guiName = enabled ? guiDisableName : guiEnableName; }
         }
 
         private void InitiateAnimation()
         {
-            foreach (Animation animation in this.part.FindModelAnimators(this.animationName))
+            foreach (Animation animation in part.FindModelAnimators(animationName))
             {
-                AnimationState state = animation[this.animationName];
-                state.normalizedTime = this.enabled ? 1 : 0;
+                AnimationState state = animation[animationName];
+                state.normalizedTime = enabled ? 1 : 0;
                 state.normalizedSpeed = 0;
                 state.enabled = false;
                 state.wrapMode = WrapMode.Clamp;
                 state.layer = layer;
-                animation.Play(this.animationName);
+                animation.Play(animationName);
             }
-            this.initiated = true;
+            initiated = true;
         }
 
         private void PlayAnimation(float animationSpeed, float animationTime)
         {
             //Plays the animation
-            foreach (Animation animation in this.part.FindModelAnimators(this.animationName))
+            foreach (Animation animation in part.FindModelAnimators(animationName))
             {
-                AnimationState state = animation[this.animationName];
+                AnimationState state = animation[animationName];
                 state.normalizedTime = animationTime;
                 state.normalizedSpeed = animationSpeed;
                 state.enabled = true;
                 state.wrapMode = WrapMode.Clamp;
-                animation.Play(this.animationName);
+                animation.Play(animationName);
             }
         }
 
         private bool CheckAnimationPlaying()
         {
             //Checks if a given animation is playing
-            foreach (Animation animation in this.part.FindModelAnimators(this.animationName))
+            foreach (Animation animation in part.FindModelAnimators(animationName))
             {
-                return animation.IsPlaying(this.animationName);
+                return animation.IsPlaying(animationName);
             }
             return false;
         }
 
         private float GetAnimationTime()
         {
-            foreach (Animation animation in this.part.FindModelAnimators(this.animationName))
+            foreach (Animation animation in part.FindModelAnimators(animationName))
             {
-                return animation[this.animationName].normalizedTime;
+                return animation[animationName].normalizedTime;
             }
             return 0f;
         }
@@ -169,15 +169,14 @@ namespace KIT
             if (!HighLogic.LoadedSceneIsFlight) { return; }
             if (CheckAnimationPlaying())
             {
-                this.status = Localizer.Format(this.enabled ? "#LOC_KSPIE_ModuleAnimater_Deploying" : "#LOC_KSPIE_ModuleAnimater_Retracting");
+                status = Localizer.Format(enabled ? "#LOC_KSPIE_ModuleAnimater_Deploying" : "#LOC_KSPIE_ModuleAnimater_Retracting");
             }
             else
             {
-                if (this.oneShot && this.played) { this.status = Localizer.Format("#LOC_KSPIE_ModuleAnimater_Locked"); }//"Locked."
+                if (oneShot && played) { status = Localizer.Format("#LOC_KSPIE_ModuleAnimater_Locked"); }//"Locked."
                 else
                 {
-                    if (this.enabled) { this.status = Localizer.Format("#LOC_KSPIE_ModuleAnimater_Deployed"); }//"Deployed"
-                    else { this.status = Localizer.Format("#LOC_KSPIE_ModuleAnimater_Retracted"); }//"Retracted"
+                    status = Localizer.Format(enabled ? "#LOC_KSPIE_ModuleAnimater_Deployed" : "#LOC_KSPIE_ModuleAnimater_Retracted");
                 }
             }
         }
@@ -185,24 +184,24 @@ namespace KIT
         private void LateUpdate()
         {
             if (!HighLogic.LoadedSceneIsFlight) { return; }
-            if (this.initiated)
+            if (initiated)
             {
-                foreach (Animation animation in this.part.FindModelAnimators(animationName))
+                foreach (Animation animation in part.FindModelAnimators(animationName))
                 {
                     animation.Stop(animationName);
                 }
-                this.initiated = false;
+                initiated = false;
             }
         }
         #endregion
 
         #region Overrides
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (!HighLogic.LoadedSceneIsFlight && !HighLogic.LoadedSceneIsEditor) { return; }
 
             //In case of errors
-            if (string.IsNullOrEmpty(this.animationName) || this.part.FindModelAnimators(this.animationName).Length <= 0)
+            if (string.IsNullOrEmpty(animationName) || part.FindModelAnimators(animationName).Length <= 0)
             {
                 Events.ForEach(e => e.active = false);
                 Actions.ForEach(a => a.active = false);
@@ -216,21 +215,21 @@ namespace KIT
             BaseEvent toggle = Events["GUIToggle"];
             BaseAction aEnable = Actions["ActionEnable"], aDisable = Actions["ActionDisable"], aToggle = Actions["ActionToggle"];
 
-            toggle.guiActiveEditor = this.activeEditor;
-            toggle.guiActive = this.activeFlight;
-            toggle.guiActiveUnfocused = this.activeUnfocused;
-            toggle.externalToEVAOnly = this.externalToEVAOnly;
-            toggle.unfocusedRange = this.unfocusedRange;
+            toggle.guiActiveEditor = activeEditor;
+            toggle.guiActive = activeFlight;
+            toggle.guiActiveUnfocused = activeUnfocused;
+            toggle.externalToEVAOnly = externalToEVAOnly;
+            toggle.unfocusedRange = unfocusedRange;
             SetName();
 
-            if (string.IsNullOrEmpty(this.actionEnableName)) { aEnable.active = false; }
-            else { aEnable.guiName = this.actionEnableName; }
+            if (string.IsNullOrEmpty(actionEnableName)) { aEnable.active = false; }
+            else { aEnable.guiName = actionEnableName; }
 
-            if (string.IsNullOrEmpty(this.actionDisableName)) { aDisable.active = false; }
-            else { aDisable.guiName = this.actionDisableName; }
+            if (string.IsNullOrEmpty(actionDisableName)) { aDisable.active = false; }
+            else { aDisable.guiName = actionDisableName; }
 
-            if (string.IsNullOrEmpty(this.actionToggleName)) { aToggle.active = false; }
-            else { aToggle.guiName = this.actionToggleName; }
+            if (string.IsNullOrEmpty(actionToggleName)) { aToggle.active = false; }
+            else { aToggle.guiName = actionToggleName; }
         }
         #endregion
     }

@@ -4,7 +4,7 @@ namespace KIT.Wasteheat
 {
 	public static class RadiatorProperties
 	{
-		private static bool _isInitialized = false;
+		private static bool _isInitialized;
 
         public static string RadiatorUpgradeTech1 { get; private set; } = "heatManagementSystems";
         public static string RadiatorUpgradeTech2 { get; private set; } = "advHeatManagement";

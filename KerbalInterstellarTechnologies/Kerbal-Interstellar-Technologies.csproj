@@ -183,7 +183,6 @@
     <Compile Include="Science\FNSeismicProbe.cs" />
     <Compile Include="Powermanagement\FNThermalPowerGenerator.cs" />
     <Compile Include="Refinery\InterstellarRefinery.cs" />
-    <Compile Include="Resources\ResourceSettings.cs" />
     <Compile Include="Science\InterstellarTelescope.cs" />
     <Compile Include="Science\ITelescopeController.cs" />
     <Compile Include="Refinery\Activity\NuclearFuelReprocessor.cs" />
@@ -212,7 +211,6 @@
     <Compile Include="Refinery\Activity\WaterElectrolyzer.cs" />
     <Compile Include="Wasteheat\FNPassiveThermalDissipation.cs" />
     <Compile Include="Wasteheat\FNWasteheatExplode.cs" />
-    <Compile Include="Wasteheat\RadiatorManager.cs" />
     <Compile Include="Wasteheat\RadiatorProperties.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

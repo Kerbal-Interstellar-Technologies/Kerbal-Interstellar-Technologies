@@ -2,6 +2,8 @@
 using KIT.Propulsion;
 using KIT.Wasteheat;
 using System.Linq;
+using KIT.Beamedpower;
+using KIT.External;
 using UnityEngine;
 
 namespace KIT

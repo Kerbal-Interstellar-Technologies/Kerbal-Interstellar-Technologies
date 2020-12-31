@@ -1,16 +1,16 @@
-﻿using UnityEngine;
-using KIT.Resources;
+﻿using KIT.Resources;
 using KSP.Localization;
+using UnityEngine;
 
-namespace KIT
+namespace KIT.Science
 {
     class FNMassSpectrometer : PartModule
     {
         protected Rect windowPosition = new Rect(20, 20, 300, 100);
         protected int windowID = 346578435;
-        protected bool render_window = false;
+        protected bool render_window;
         protected GUIStyle bold_label;
-        protected int analysis_count = 0;
+        protected int analysis_count;
         protected static int analysis_length = 1500;
 
         [KSPEvent(guiActive = true, guiName = "#LOC_KSPIE_MassSpectrometer_ShowWindow", active = true)]//Show Spectrometry Results
@@ -27,7 +27,6 @@ namespace KIT
 
         public override void OnStart(StartState state)
         {
-            if (state == StartState.Editor) return;
         }
 
         public override void OnUpdate()
@@ -38,7 +37,7 @@ namespace KIT
 
         private void OnGUI()
         {
-            if (this.vessel == FlightGlobals.ActiveVessel && render_window)
+            if (vessel == FlightGlobals.ActiveVessel && render_window)
             {
                 windowPosition = GUILayout.Window(windowID, windowPosition, Window, Localizer.Format("#LOC_KSPIE_FNMassSpectrometer_Windowtitle"));//"GC/MS Atmospheric Composition"
                 if (analysis_count <= analysis_length)

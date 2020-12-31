@@ -266,7 +266,7 @@ namespace KIT.Wasteheat
             resource.amount = 0;
             resource.maxAmount = storage;
 
-            this.surfaceArea = (float)surface;
+            surfaceArea = (float)surface;
 
             var intakeatm = part.FindModuleImplementing<AtmosphericIntake>();
             var intakelqd = part.FindModuleImplementing<ModuleResourceIntake>();
@@ -1514,7 +1514,7 @@ namespace KIT.Wasteheat
                 totalArea += Vector3.Cross(a, b).magnitude;
             }
 
-            if (totalArea.IsInfinityOrNaNorZero() == true)
+            if (totalArea.IsInfinityOrNaNorZero())
             {
                 Debug.Log("MeshRadiatorSize: total_area is IsInfinityOrNaNorZero :(");
                 return false;
@@ -2029,7 +2029,7 @@ namespace KIT.Wasteheat
 
         private void SetHeatAnimationRatio(float color)
         {
-            var heatStatesCount = _heatStates.Count();
+            var heatStatesCount = _heatStates.Length;
             for (var i = 0; i < heatStatesCount; i++)
             {
                 _anim = _heatStates[i];
@@ -2069,9 +2069,9 @@ namespace KIT.Wasteheat
 
                 var emissiveColor = new Color(colorRatioRed, colorRatioGreen, colorRatioBlue, effectiveColorRatio);
 
-                for (var i = 0; i < _renderArray.Count(); i++)
+                foreach (var t in _renderArray)
                 {
-                    _renderer = _renderArray[i];
+                    _renderer = t;
 
                     if (_renderer == null || _renderer.material == null)
                         continue;

@@ -26,10 +26,10 @@ namespace KIT.Resources
 
             public Conversion(double maxPowerPrimary, double maxPowerSecondary, double primaryConversionEnergyCost, double secondaryConversionEnergyCost, PartResourceDefinition primaryDefinition, PartResourceDefinition secondaryDefinition)
             {
-                this._maxPowerPrimary = maxPowerPrimary;
-                this._maxPowerSecondary = maxPowerSecondary;
-                this._primaryConversionEnergyCost = primaryConversionEnergyCost;
-                this._secondaryConversionEnergyCost = secondaryConversionEnergyCost;
+                _maxPowerPrimary = maxPowerPrimary;
+                _maxPowerSecondary = maxPowerSecondary;
+                _primaryConversionEnergyCost = primaryConversionEnergyCost;
+                _secondaryConversionEnergyCost = secondaryConversionEnergyCost;
 
                 _primaryConversionRatio = secondaryDefinition.density / primaryDefinition.density;
                 _secondaryConversionRatio = primaryDefinition.density / secondaryDefinition.density;
@@ -45,7 +45,7 @@ namespace KIT.Resources
             _conversionTable = new Dictionary<ResourceName, Conversion>(24);
 
             var rootNode = GameDatabase.Instance.GetConfigNodes("KIT_GAS_LIQUID_CONVERSION");
-            if(rootNode == null || !rootNode.Any())
+            if (rootNode == null || !rootNode.Any())
             {
                 Debug.Log("[GasLiquidConversion] Can not find configuration node KIT_GAS_LIQUID_CONVERSION");
                 return;
@@ -57,16 +57,16 @@ namespace KIT.Resources
                 string secondaryResourceName;
 
                 double maxPowerSecondary, primaryConversionEnergyCost, secondaryConversionEnergyCost;
-                
+
                 var primaryResourceName = secondaryResourceName = "";
                 var maxPowerPrimary = maxPowerSecondary = primaryConversionEnergyCost = secondaryConversionEnergyCost = 0;
-                var failed = node.TryGetValue(nameof(primaryResourceName), ref primaryResourceName) == false;
+                var failed = !node.TryGetValue(nameof(primaryResourceName), ref primaryResourceName);
 
-                if (node.TryGetValue(nameof(secondaryResourceName), ref secondaryResourceName) == false) failed = true;
-                if (node.TryGetValue(nameof(maxPowerPrimary), ref maxPowerPrimary) == false) failed = true;
-                if (node.TryGetValue(nameof(maxPowerSecondary), ref maxPowerSecondary) == false) failed = true;
-                if (node.TryGetValue(nameof(primaryConversionEnergyCost), ref primaryConversionEnergyCost) == false) failed = true;
-                if (node.TryGetValue(nameof(secondaryConversionEnergyCost), ref secondaryConversionEnergyCost) == false) failed = true;
+                if (!node.TryGetValue(nameof(secondaryResourceName), ref secondaryResourceName)) failed = true;
+                if (!node.TryGetValue(nameof(maxPowerPrimary), ref maxPowerPrimary)) failed = true;
+                if (!node.TryGetValue(nameof(maxPowerSecondary), ref maxPowerSecondary)) failed = true;
+                if (!node.TryGetValue(nameof(primaryConversionEnergyCost), ref primaryConversionEnergyCost)) failed = true;
+                if (!node.TryGetValue(nameof(secondaryConversionEnergyCost), ref secondaryConversionEnergyCost)) failed = true;
 
                 if (failed)
                 {
@@ -101,7 +101,7 @@ namespace KIT.Resources
                 _conversionTable[primaryID] = new Conversion(maxPowerPrimary, maxPowerSecondary, primaryConversionEnergyCost, secondaryConversionEnergyCost, primaryDefinition, secondaryDefinition);
 
             }
-            
+
         }
 
         public void KITFixedUpdate(IResourceManager resMan)
@@ -126,7 +126,7 @@ namespace KIT.Resources
 
         public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
 
-        private readonly ResourceName[] _resourcesConverted = new ResourceName[] {
+        private readonly ResourceName[] _resourcesConverted = new[] {
             ResourceName.NeonGas, ResourceName.CarbonDioxideGas, ResourceName.CarbonMonoxideGas, ResourceName.DeuteriumGas,
             ResourceName.Helium4Gas, ResourceName.Helium3Gas, ResourceName.HydrogenGas, ResourceName.KryptonGas, ResourceName.MethaneGas,
             ResourceName.NeonGas, ResourceName.NitrogenGas, ResourceName.OxygenGas, ResourceName.TritiumGas, ResourceName.XenonGas,

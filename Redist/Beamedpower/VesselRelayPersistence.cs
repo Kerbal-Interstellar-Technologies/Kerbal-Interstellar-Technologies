@@ -12,7 +12,7 @@ namespace KIT.BeamedPower
 
         public VesselRelayPersistence(Vessel vessel) 
         {
-            this.Vessel = vessel;
+            Vessel = vessel;
             SupportedTransmitWavelengths = new List<WaveLengthData>();
         }
 
@@ -24,20 +24,20 @@ namespace KIT.BeamedPower
 
         public double Diameter
         {
-            get => _diameter != 0 ? this._diameter : Aperture; // fall back to aperture when diameter is not available
-            set => this._diameter = value;
+            get => _diameter != 0 ? _diameter : Aperture; // fall back to aperture when diameter is not available
+            set => _diameter = value;
         }
 
         public double Aperture
         {
-            get => _aperture != 0 ? this._aperture : 1;
-            set => this._aperture = value;
+            get => _aperture != 0 ? _aperture : 1;
+            set => _aperture = value;
         }
 
         public double PowerCapacity
         {
-            get => _powerCapacity != 0 ? this._powerCapacity : 1000;
-            set => this._powerCapacity = value;
+            get => _powerCapacity != 0 ? _powerCapacity : 1000;
+            set => _powerCapacity = value;
         }
 
         public double MinimumRelayWavelength

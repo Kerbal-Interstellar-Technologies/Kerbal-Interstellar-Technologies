@@ -548,7 +548,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_AtmosphericExtractor_AtmoConsumption"), _bold_label, GUILayout.Width(labelWidth));//"Intake Atmo. Consumption"
-            GUILayout.Label((GetValueText(_atmosphereConsumptionRate * GameConstants.SECONDS_IN_HOUR)) + " mT/hour", _value_label, GUILayout.Width(valueWidth));//
+            GUILayout.Label((GetValueText(_atmosphereConsumptionRate * GameConstants.SecondsInHour)) + " mT/hour", _value_label, GUILayout.Width(valueWidth));//
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -620,7 +620,7 @@ namespace KIT.Refinery.Activity
             if (productionRate > 0)
             {
                 GUILayout.Label(GetValueText(productionRate) + " U/s", _value_label, GUILayout.Width(valueWidth));
-                GUILayout.Label(GetValueText(productionRate * GameConstants.SECONDS_IN_HOUR) + " U/h", _value_label, GUILayout.Width(valueWidth));
+                GUILayout.Label(GetValueText(productionRate * GameConstants.SecondsInHour) + " U/h", _value_label, GUILayout.Width(valueWidth));
             }
             else
             {

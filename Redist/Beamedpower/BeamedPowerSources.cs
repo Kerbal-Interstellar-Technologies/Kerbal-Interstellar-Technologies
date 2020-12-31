@@ -28,13 +28,13 @@ namespace KIT.BeamedPower
 
         void Start()
         {
-            DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(gameObject);
             Instance = this;
             Debug.Log("[KSPI]: MicrowaveSources initialized");
         }
 
         private int _counter = -1;
-        private bool _initialized = false;
+        private bool _initialized;
 
         public void CalculateTransmitters()
         {

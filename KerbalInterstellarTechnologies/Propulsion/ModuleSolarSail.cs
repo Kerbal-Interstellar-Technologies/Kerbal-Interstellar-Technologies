@@ -8,7 +8,7 @@ namespace KIT.Propulsion
     {
         // Persistent True
         [KSPField(isPersistant = true)]
-        public bool IsEnabled = false;
+        public bool IsEnabled;
 
         // Persistent False
         [KSPField]
@@ -25,13 +25,13 @@ namespace KIT.Propulsion
         protected string solarAcc = "";
 
         protected Transform surfaceTransform = null;
-        protected Animation solarSailAnim = null;
+        protected Animation solarSailAnim;
 
         const double ThrustCoefficient = 9.08e-6;
 
-        protected double solar_force_d = 0;
-        protected double solar_acc_d = 0;
-        protected long count = 0;
+        protected double solar_force_d;
+        protected double solar_acc_d;
+        protected long count;
 
         [KSPEvent(guiActive = true, guiName = "#LOC_KSPIE_ModuleSolarSail_DeploySail", active = true)]//Deploy Sail
         public void DeploySail() {
@@ -70,8 +70,8 @@ namespace KIT.Propulsion
                     solarSailAnim.Blend(animName, 0.1f);
                 }
 
-                UnityEngine.Debug.Log("[KSPI]: ModuleSolarSail on " + part.name + " was Force Activated");
-                this.part.force_activate();
+                Debug.Log("[KSPI]: ModuleSolarSail on " + part.name + " was Force Activated");
+                part.force_activate();
             }
         }
 
@@ -115,7 +115,7 @@ namespace KIT.Propulsion
 
                 Vector3d solarForce = CalculateSolarForce() * sunlightFactor;
                 Vector3d solar_accel = solarForce / vessel.totalMass / 1000.0 * TimeWarp.fixedDeltaTime;
-                if (!this.vessel.packed)
+                if (!vessel.packed)
                 {
                     vessel.ChangeWorldVelocity(solar_accel);
                 }
@@ -175,12 +175,12 @@ namespace KIT.Propulsion
         // New Solar Force Function
         private Vector3d CalculateSolarForce()
         {
-            if (this.part != null)
+            if (part != null)
             {
                 Vector3d sunPosition = FlightGlobals.fetch.bodies[0].position;
-                Vector3d ownPosition = this.part.transform.position;
+                Vector3d ownPosition = part.transform.position;
                 Vector3d ownsunPosition = ownPosition - sunPosition;
-                Vector3d normal = this.part.transform.up;
+                Vector3d normal = part.transform.up;
                 if (surfaceTransform != null)
                     normal = surfaceTransform.forward;
                 // If normal points away from sun, negate so our force is always away from the sun
@@ -199,7 +199,7 @@ namespace KIT.Propulsion
         private double solarForceAtDistance()
         {
             double distance_from_sun = Vector3.Distance(LocalStar.position, vessel.CoMD);
-            double force_to_return = ThrustCoefficient * GameConstants.kerbin_sun_distance * GameConstants.kerbin_sun_distance / distance_from_sun / distance_from_sun;
+            double force_to_return = ThrustCoefficient * GameConstants.KerbinSunDistance * GameConstants.KerbinSunDistance / distance_from_sun / distance_from_sun;
             return force_to_return;
         }
 

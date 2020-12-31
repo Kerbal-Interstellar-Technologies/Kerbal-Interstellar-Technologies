@@ -1,7 +1,7 @@
 ﻿using System;
 using KSP.Localization;
 
-namespace KIT 
+namespace KIT.Storage 
 {
     [KSPModule("Radioactive Decay")]
     class ModuleElementRadioactiveDecay : PartModule 
@@ -22,7 +22,7 @@ namespace KIT
 
         private bool resourceDefinitionsContainDecayProduct;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             double time_diff = lastActiveTime - Planetarium.GetUniversalTime();
 

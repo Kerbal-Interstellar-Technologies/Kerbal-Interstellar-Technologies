@@ -13,7 +13,7 @@ namespace KIT.Refinery.Activity
         {
             ActivityName = "Uranium Tetrafluoride Ammonolysis";
             PowerRequirements = PluginSettings.Config.BaseUraniumAmmonolysisPowerConsumption;
-            EnergyPerTon = 1 / GameConstants.baseUraniumAmmonolysisRate;
+            EnergyPerTon = 1 / GameConstants.BaseUraniumAmmonolysisRate;
         }
 
         double _ammoniaDensity;
@@ -68,15 +68,15 @@ namespace KIT.Refinery.Activity
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UF4Ammonolysiser_AmmonaConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Ammona Consumption Rate"
-            GUILayout.Label(_ammoniaConsumptionRate * GameConstants.SECONDS_IN_HOUR + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(_ammoniaConsumptionRate * GameConstants.SecondsInHour + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UF4Ammonolysiser_ConsumptionRate"), _bold_label, GUILayout.Width(labelWidth));//"Uranium Tetraflouride Consumption Rate"
-            GUILayout.Label(_uraniumTetrafluorideConsumptionRate * GameConstants.SECONDS_IN_HOUR + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(_uraniumTetrafluorideConsumptionRate * GameConstants.SecondsInHour + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UF4Ammonolysiser_ProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Uranium Nitride Production Rate"
-            GUILayout.Label(_uraniumNitrideProductionRate * GameConstants.SECONDS_IN_HOUR + " mT/hour", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(_uraniumNitrideProductionRate * GameConstants.SecondsInHour + " mT/hour", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
         }
 

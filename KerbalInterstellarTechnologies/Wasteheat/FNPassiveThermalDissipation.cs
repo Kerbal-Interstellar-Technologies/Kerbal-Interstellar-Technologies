@@ -61,7 +61,7 @@ namespace KIT.Wasteheat
             }
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor)
                 return;
@@ -160,7 +160,7 @@ namespace KIT.Wasteheat
                 Vector3d vector3d = position - scaledSpace;
                 var distance = vector3d.magnitude;
                 distanceFromStarCenterToVessel = distance * ScaledSpace.ScaleFactor;
-                cosAngle = Math.Max(minimumAngle, Math.Min(1, Math.Abs(Vector3d.Dot(vector3d.normalized, this.vessel.transform.up))));
+                cosAngle = Math.Max(minimumAngle, Math.Min(1, Math.Abs(Vector3d.Dot(vector3d.normalized, vessel.transform.up))));
 
                 //// normalize vector using distance
                 //var sunVector = (Vector3)(vector3d / distance);

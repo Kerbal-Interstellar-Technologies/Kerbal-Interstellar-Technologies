@@ -1,11 +1,12 @@
-using KIT.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using KIT.Beamedpower;
+using KIT.Resources;
 using KIT.ResourceScheduler;
+using UnityEngine;
 
-namespace KIT
+namespace KIT.Wasteheat
 {
     enum ResourceType
     {
@@ -75,7 +76,7 @@ namespace KIT
 
         public double SolarPower => solar_supply;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor) return;
 

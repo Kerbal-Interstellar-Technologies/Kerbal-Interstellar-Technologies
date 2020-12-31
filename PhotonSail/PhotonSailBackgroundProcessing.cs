@@ -43,7 +43,7 @@ namespace PhotonSail
     }
 
 
-    [KSPScenario(ScenarioCreationOptions.AddToAllGames, new[] {GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT, GameScenes.EDITOR})]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT, GameScenes.EDITOR)]
     public sealed class PhotonSailBackgroundProcessing : ScenarioModule
     {
         private static readonly Dictionary<Guid, VesselData> vesselDataDict = new Dictionary<Guid, VesselData>();
@@ -217,7 +217,7 @@ namespace PhotonSail
 
                 // calculate effective radiation pressure on solarSail
                 var energyOnSailInWatt = starLight.solarFlux * vesselData.ModulePhotonSail.surfaceArea;
-                var reflectedRadiationPressureOnSail = 2 * energyOnSailInWatt / KIT.GameConstants.speedOfLight * cosConeAngle;
+                var reflectedRadiationPressureOnSail = 2 * energyOnSailInWatt / KIT.GameConstants.SpeedOfLight * cosConeAngle;
                 var reflectedPhotonForceVector = vesselNormal * reflectedRadiationPressureOnSail * cosConeAngle;
 
                 // calculate acceleration

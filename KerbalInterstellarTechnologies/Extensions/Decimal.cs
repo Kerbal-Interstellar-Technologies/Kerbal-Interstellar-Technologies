@@ -100,7 +100,7 @@ namespace KIT.Extensions
 			for (int i = t - 1; i >= 0; --i)
 			{
 				a *= a;
-				if (e[i] == true)
+				if (e[i])
 				{
 					a *= x;
 				}

@@ -16,7 +16,7 @@ namespace KIT.Toolbar
             this.vesselResourceManager = vesselResourceManager;
         }
 
-        readonly ResourceName[] resources = new ResourceName[] { ResourceName.ElectricCharge, ResourceName.ThermalPower, ResourceName.ChargedParticle, ResourceName.WasteHeat };
+        readonly ResourceName[] resources = new[] { ResourceName.ElectricCharge, ResourceName.ThermalPower, ResourceName.ChargedParticle, ResourceName.WasteHeat };
 
         // TODO: we should ensure that we only run after a fixed update, not in between.
         public string TextUI()

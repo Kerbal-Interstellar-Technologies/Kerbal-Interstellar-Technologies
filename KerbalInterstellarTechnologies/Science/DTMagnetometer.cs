@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using UnityEngine;
 using KIT.Extensions;
+using UnityEngine;
 
-namespace KIT
+namespace KIT.Science
 {
     class DTMagnetometer : PartModule
     {
@@ -61,14 +61,14 @@ namespace KIT
                 ActivateMagnetometer();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor) return;
 
-            homeworld = FlightGlobals.fetch.bodies.First(m => m.isHomeWorld == true);
+            homeworld = FlightGlobals.fetch.bodies.First(m => m.isHomeWorld);
 
-            UnityEngine.Debug.Log("[KSPI]: DTMagnetometer on " + part.name + " was Force Activated");
-            this.part.force_activate();
+            Debug.Log("[KSPI]: DTMagnetometer on " + part.name + " was Force Activated");
+            part.force_activate();
 
             anim = part.FindModelAnimators (animName).FirstOrDefault ();
 
@@ -97,14 +97,14 @@ namespace KIT
             Fields[nameof(Bthe)].guiActive = IsEnabled;
             Fields[nameof(ParticleFlux)].guiActive = IsEnabled;
 
-            var lat = vessel.mainBody.GetLatitude(this.vessel.GetWorldPos3D());
+            var lat = vessel.mainBody.GetLatitude(vessel.GetWorldPos3D());
             var bMag = vessel.mainBody.GetBeltMagneticFieldMagnitude(homeworld, vessel.altitude, lat);
             var bRad = vessel.mainBody.GetBeltMagneticFieldRadial(homeworld, vessel.altitude, lat);
             var bThe = vessel.mainBody.GetBeltMagneticFieldAzimuthal(homeworld, vessel.altitude, lat);
             var flux = vessel.mainBody.GetBeltAntiparticles(homeworld, vessel.altitude, lat);
-            this.Bmag = bMag.ToString("E") + "T";
-            this.Brad = bRad.ToString("E") + "T";
-            this.Bthe = bThe.ToString("E") + "T";
+            Bmag = bMag.ToString("E") + "T";
+            Brad = bRad.ToString("E") + "T";
+            Bthe = bThe.ToString("E") + "T";
             ParticleFlux = flux.ToString("E");
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using KIT.Powermanagement;
+using KIT.Powermanagement.Interfaces;
 using KIT.Reactors;
 
 namespace KIT.Extensions
@@ -14,7 +14,7 @@ namespace KIT.Extensions
         }
 
         public double Cost { get; private set; }
-        public IFNPowerSource Source { get; private set; }
+        public IFNPowerSource Source { get; }
 
         public PowerSourceSearchResult IncreaseCost(double cost)
         {

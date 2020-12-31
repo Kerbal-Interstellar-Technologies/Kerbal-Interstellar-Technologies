@@ -1,4 +1,4 @@
-﻿namespace KIT.Propulsion
+﻿namespace KIT.Interfaces
 {
     public interface IEngineNozzle
     {

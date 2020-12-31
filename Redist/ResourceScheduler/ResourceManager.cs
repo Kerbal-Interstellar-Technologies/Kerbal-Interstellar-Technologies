@@ -59,10 +59,10 @@ namespace KIT.ResourceScheduler
 
         public ResourceManager(IVesselResources vesselResources, ICheatOptions cheatOptions)
         {
-            this._vesselResources = vesselResources;
-            this._myCheatOptions = cheatOptions;
+            _vesselResources = vesselResources;
+            _myCheatOptions = cheatOptions;
 
-            _resourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat - ResourceName.ElectricCharge) + 1];
+            _resourceProductionStats = new ResourceProduction[ResourceName.WasteHeat - ResourceName.ElectricCharge + 1];
 
             ModProduction = new Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>>();
             ModConsumption = new Dictionary<ResourceName, Dictionary<IKITMod, PerPartResourceInformation>>();
@@ -153,7 +153,7 @@ namespace KIT.ResourceScheduler
                 return wanted;
             }
 
-            if (_currentResources.ContainsKey(resource) == false)
+            if (!_currentResources.ContainsKey(resource))
             {
                 _currentResources[resource] = 0;
             }
@@ -225,7 +225,7 @@ namespace KIT.ResourceScheduler
 
                 var lastMod = _modsCurrentlyRunning.Last();
 
-                if (ModProduction[resource].ContainsKey(lastMod) == false)
+                if (!ModProduction[resource].ContainsKey(lastMod))
                 {
                     var tmpPPRI = new PerPartResourceInformation {Amount = amount, MaxAmount = (max == -1) ? 0 : max};
                     ModProduction[resource][lastMod] = tmpPPRI;
@@ -242,7 +242,7 @@ namespace KIT.ResourceScheduler
 
             if (resource == ResourceName.WasteHeat && _myCheatOptions.IgnoreMaxTemperature) return 0;
 
-            if (_currentResources.ContainsKey(resource) == false)
+            if (! _currentResources.ContainsKey(resource))
             {
                 _currentResources[resource] = 0;
             }
@@ -312,8 +312,6 @@ namespace KIT.ResourceScheduler
             {
                 Debug.Log($"[CheckForWasteHeatEquilibrium] WasteHeatEquilibriumAchieved - percentDifference is {percentDifference}, larger is {larger}, and smaller is {smaller}");
             }
-
-            return;
         }
 
         /// <summary>
@@ -394,7 +392,7 @@ namespace KIT.ResourceScheduler
 
             if (_modsCurrentlyRunning.Count > 0)
             {
-                if (_complainedToWaiterAboutOrder == false)
+                if (! _complainedToWaiterAboutOrder)
                     Debug.Log("[ResourceManager.ExecuteKITModules] URGENT modsCurrentlyRunning.Count != 0. there may be resource production / consumption issues.");
                 else
                     _complainedToWaiterAboutOrder = true;
@@ -413,14 +411,10 @@ namespace KIT.ResourceScheduler
                 Debug.Log($"[resource manager] got {_activeKITModules.Count} modules and also {_variableSupplierModules.Count} variable modules");
             }
 
-            if (_activeKITModules.Count >= 1)
+            if (_activeKITModules.Count >= 1 && _activeKITModules[0] is IDCElectricalSystem dc)
             {
-                if (_activeKITModules[0] is IDCElectricalSystem dc)
-                {
-                    var ppri = new PerPartResourceInformation {Amount = dc.UnallocatedElectricChargeConsumption()};
-                    ModConsumption[ResourceName.ElectricCharge][_activeKITModules[0]] = ppri;
-                    _activeKITModules.Remove(_activeKITModules[0]);
-                }
+                ModConsumption[ResourceName.ElectricCharge][_activeKITModules[0]] = new PerPartResourceInformation { Amount = dc.UnallocatedElectricChargeConsumption() };
+                _activeKITModules.Remove(_activeKITModules[0]);
             }
 
             _inExecuteKITModules = true;
@@ -533,7 +527,7 @@ namespace KIT.ResourceScheduler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InitializeModuleIfNeeded(IKITMod KITMod)
         {
-            if (_fixedUpdateCalledMods.Contains(KITMod) == false)
+            if (! _fixedUpdateCalledMods.Contains(KITMod))
             {
                 // Hasn't had it's KITFixedUpdate() yet? call that first.
                 _fixedUpdateCalledMods.Add(KITMod);
@@ -556,7 +550,7 @@ namespace KIT.ResourceScheduler
 
         private double CallVariableSuppliers(ResourceName resource, double obtainedAmount, double originalAmount, double resourceFiller = 0)
         {
-            if (_variableSupplierModules.ContainsKey(resource) == false) return 0;
+            if (! _variableSupplierModules.ContainsKey(resource)) return 0;
 
             var reducedObtainedAmount = obtainedAmount * _fixedDeltaTime;
             var reducedOriginalAmount = originalAmount * _fixedDeltaTime;

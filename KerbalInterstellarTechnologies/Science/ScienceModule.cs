@@ -1,13 +1,13 @@
-﻿using KIT.Refinery;
-using System;
+﻿using System;
 using System.Linq;
+using KIT.Refinery;
 using KIT.Refinery.Activity;
 using KIT.Resources;
-using UnityEngine;
-using KSP.Localization;
 using KIT.ResourceScheduler;
+using KSP.Localization;
+using UnityEngine;
 
-namespace KIT
+namespace KIT.Science
 {
     class ScienceModule : PartModule, IKITMod, ITelescopeController, IUpgradeableModule
     {
@@ -15,7 +15,7 @@ namespace KIT
         [KSPField(isPersistant = true)]
         public bool IsEnabled;
         [KSPField(isPersistant = true)]
-        public int active_mode = 0;
+        public int active_mode;
         [KSPField(isPersistant = true)]
         public double electrical_power_ratio;
         //[KSPField(isPersistant = true)]
@@ -85,7 +85,7 @@ namespace KIT
         [KSPField(isPersistant = false)]
         public float upgradeCost = 20;
         [KSPField(isPersistant = true)]
-        public bool isupgraded = false;
+        public bool isupgraded;
         [KSPField(isPersistant = false)]
         public float powerReqMult = 1;
         [KSPField(isPersistant = false)]
@@ -95,14 +95,14 @@ namespace KIT
         protected float megajoules_supplied = 0;
         protected String[] modes = { "Scanning", "Reprocessing", "Producing Antimatter", "Electrolysing", "Centrifuging" };
         protected double science_rate_f;
-        protected double reprocessing_rate_f = 0;
+        protected double reprocessing_rate_f;
         protected float crew_capacity_ratio;
-        protected double antimatter_rate_f = 0;
+        protected double antimatter_rate_f;
 
-        protected float electrolysis_rate_f = 0;
-        protected double deut_rate_f = 0;
+        protected float electrolysis_rate_f;
+        protected double deut_rate_f;
         protected bool play_down = true;
-        protected bool hasRequiredUpgrade = false;
+        protected bool hasRequiredUpgrade;
 
         protected Animation anim;
         protected Animation anim2;
@@ -260,7 +260,7 @@ namespace KIT
             isupgraded = true;
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             moduleScienceLab = part.FindModuleImplementing<ModuleScienceLab>();
             moduleScienceConverter = part.FindModuleImplementing<ModuleScienceConverter>();
@@ -307,7 +307,7 @@ namespace KIT
             reprocessor.Initialize(part);
             antimatterGenerator = new AntimatterGenerator(part, 1, PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.AntiProtium));
 
-            UnityEngine.Debug.Log("[KSPI]: ScienceModule on " + part.name + " was Force Activated");
+            Debug.Log("[KSPI]: ScienceModule on " + part.name + " was Force Activated");
             part.force_activate();
 
             anim = part.FindModelAnimators(animName1).FirstOrDefault();
@@ -549,7 +549,7 @@ namespace KIT
         public void KITFixedUpdate(IResourceManager resMan)
         {
             double global_rate_multipliers = 1;
-            crew_capacity_ratio = ((float)part.protoModuleCrew.Count) / ((float)part.CrewCapacity);
+            crew_capacity_ratio = part.protoModuleCrew.Count / ((float)part.CrewCapacity);
             global_rate_multipliers = global_rate_multipliers * crew_capacity_ratio;
 
             if (!IsEnabled) return;
@@ -621,7 +621,7 @@ namespace KIT
 
                     electrical_power_ratio = electrical_power_provided  / PluginSettings.Config.BaseCentriPowerConsumption / powerReqMult;
                     global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;
-                    double deut_produced = global_rate_multipliers * GameConstants.deuterium_timescale * GameConstants.deuterium_abudance * 1000.0f;
+                    double deut_produced = global_rate_multipliers * GameConstants.DeuteriumTimescale * GameConstants.DeuteriumAbudance * 1000.0f;
                     deut_rate_f = -part.RequestResource(KITResourceSettings.DeuteriumLqd, -deut_produced);
                 }
                 else

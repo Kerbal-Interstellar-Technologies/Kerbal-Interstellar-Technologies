@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using KSP.Localization;
+﻿using KSP.Localization;
+using UnityEngine;
 
-namespace KIT
+namespace KIT.Science
 {
     class FNSeismicProbe : ModuleModdableScienceGenerator
     {
@@ -34,10 +34,10 @@ namespace KIT
             saveState();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            base.canDeploy = true;
+            canDeploy = true;
         }
 
         public override void OnUpdate()

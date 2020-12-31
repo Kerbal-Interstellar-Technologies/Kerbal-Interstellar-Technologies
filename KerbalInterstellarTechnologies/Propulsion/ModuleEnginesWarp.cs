@@ -91,10 +91,10 @@ namespace KIT.Propulsion
         private double masslessFuelPercentage3;
         private double masslessFuelPercentage4;
 
-        public double fuelRequestAmount1 = 0;
-        public double fuelRequestAmount2 = 0;
-        public double fuelRequestAmount3 = 0;
-        public double fuelRequestAmount4 = 0;
+        public double fuelRequestAmount1;
+        public double fuelRequestAmount2;
+        public double fuelRequestAmount3;
+        public double fuelRequestAmount4;
 
         double consumedPropellant1;
         double consumedPropellant2;
@@ -111,9 +111,12 @@ namespace KIT.Propulsion
         ResourceName propellantResourceID3;
         ResourceName propellantResourceID4;
 
-        // Are we transitioning from timewarp to reatime?
-        bool _warpToReal = false;
+        // Are we transitioning from timewarp to real time?
+        bool _warpToReal;
 
+        public new void FixedUpdate()
+        {
+        }
 
         public void VesselChangedSOI()
         {
@@ -146,7 +149,7 @@ namespace KIT.Propulsion
             if (IsForceActivated || !isEnabled || !isOperational) return;
 
             IsForceActivated = true;
-            UnityEngine.Debug.Log("[KSPI]: ModuleEngineWarp on " + part.name + " was Force Activated");
+            Debug.Log("[KSPI]: ModuleEngineWarp on " + part.name + " was Force Activated");
             part.force_activate();
         }
 
@@ -216,13 +219,13 @@ namespace KIT.Propulsion
                 propellantResourceID4 = ResourceName.Unknown;
             }
 
-            var ratioSumOveral = 0.0;
+            var ratioSumOverall = 0.0;
             var ratioSumWithMass = 0.0;
             var densitySum = 0.0;
 
             if (propellantResourceDefinition1 != null)
             {
-                ratioSumOveral += ratio1;
+                ratioSumOverall += ratio1;
                 if (propellantResourceDefinition1.density > 0)
                 {
                     ratioSumWithMass = ratio1;
@@ -231,7 +234,7 @@ namespace KIT.Propulsion
             }
             if (propellantResourceDefinition2 != null)
             {
-                ratioSumOveral += ratio2;
+                ratioSumOverall += ratio2;
                 if (propellantResourceDefinition2.density > 0)
                 {
                     ratioSumWithMass = ratio2;
@@ -240,7 +243,7 @@ namespace KIT.Propulsion
             }
             if (propellantResourceDefinition3 != null)
             {
-                ratioSumOveral += ratio3;
+                ratioSumOverall += ratio3;
                 if (propellantResourceDefinition3.density > 0)
                 {
                     ratioSumWithMass = ratio3;
@@ -249,7 +252,7 @@ namespace KIT.Propulsion
             }
             if (propellantResourceDefinition4 != null)
             {
-                ratioSumOveral += ratio4;
+                ratioSumOverall += ratio4;
                 if (propellantResourceDefinition4.density > 0)
                 {
                     ratioSumWithMass = ratio4;
@@ -258,8 +261,8 @@ namespace KIT.Propulsion
             }
 
             averageDensityInTonPerLiter = densitySum / ratioSumWithMass;
-            massPropellantRatio = ratioSumWithMass / ratioSumOveral;
-            ratioSumWithoutMass = ratioSumOveral - ratioSumWithMass;
+            massPropellantRatio = ratioSumWithMass / ratioSumOverall;
+            ratioSumWithoutMass = ratioSumOverall - ratioSumWithMass;
 
             fuelWithMassPercentage1 = propellantResourceDefinition1 != null && propellantResourceDefinition1.density > 0 ? ratio1 / ratioSumWithMass : 0;
             fuelWithMassPercentage2 = propellantResourceDefinition2 != null && propellantResourceDefinition2.density > 0 ? ratio2 / ratioSumWithMass : 0;
@@ -299,8 +302,8 @@ namespace KIT.Propulsion
                 return 0;
 
             var propellantWithMassNeededInLiter = demandMass / averageDensityInTonPerLiter;
-            var overalAmountNeeded = propellantWithMassNeededInLiter / massPropellantRatio;
-            var masslessResourceNeeded = overalAmountNeeded - propellantWithMassNeededInLiter;
+            var overallAmountNeeded = propellantWithMassNeededInLiter / massPropellantRatio;
+            var masslessResourceNeeded = overallAmountNeeded - propellantWithMassNeededInLiter;
 
             // first determine lowest available resource ratio
             double availableRatio = 1;
@@ -308,11 +311,15 @@ namespace KIT.Propulsion
             {
                 fuelRequestAmount1 = fuelWithMassPercentage1 > 0 ? fuelWithMassPercentage1 * propellantWithMassNeededInLiter : masslessFuelPercentage1 * masslessResourceNeeded;
                 availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID1) / fuelRequestAmount1);
+
+                Debug.Log($"[CollectFuel] first availableRatio is {availableRatio}");
             }
             if (propellantResourceDefinition2 != null && ratio2 > 0)
             {
                 fuelRequestAmount2 = fuelWithMassPercentage2 > 0 ? fuelWithMassPercentage2 * propellantWithMassNeededInLiter : masslessFuelPercentage2 * masslessResourceNeeded;
                 availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID2) / fuelRequestAmount2);
+
+                Debug.Log($"[CollectFuel] second availableRatio is {availableRatio}");
             }
             if (propellantResourceDefinition3 != null && ratio3 > 0)
             {
@@ -339,11 +346,15 @@ namespace KIT.Propulsion
             {
                 consumedPropellant1 = resMan.ConsumeResource(propellantResourceID1, fuelRequestAmount1 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount1 > 0 ? consumedPropellant1 / fuelRequestAmount1 : 0);
+
+                Debug.Log($"[CollectFuel] first receivedRatio is {receivedRatio}");
             }
             if (fuelRequestAmount2 > 0 && !double.IsNaN(fuelRequestAmount2) && !double.IsInfinity(fuelRequestAmount2))
             {
                 consumedPropellant2 = resMan.ConsumeResource(propellantResourceID2, fuelRequestAmount2 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount2 > 0 ? consumedPropellant2 / fuelRequestAmount2 : 0);
+
+                Debug.Log($"[CollectFuel] second receivedRatio is {receivedRatio}");
             }
             if (fuelRequestAmount3 > 0 && !double.IsNaN(fuelRequestAmount3) && !double.IsInfinity(fuelRequestAmount3))
             {
@@ -356,14 +367,15 @@ namespace KIT.Propulsion
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
             }
 
+            Debug.Log($"[CollectFuel] receivedRatio is {receivedRatio}");
             return Math.Min(receivedRatio, 1);
         }
 
         // Physics update
-        public override void OnFixedUpdate()
-        {
+        // public override void OnFixedUpdate()
+        // {
             // deliberately empty
-        }
+        // }
 
         private bool IsPositiveValidNumber(double variable)
         {
@@ -394,19 +406,19 @@ namespace KIT.Propulsion
 
             UpdateFuelFactors();
 
-            if (double.IsNaN(this.requestedMassFlow) || double.IsInfinity(requestedMassFlow))
+            if (double.IsNaN(requestedMassFlow) || double.IsInfinity(requestedMassFlow))
                 Debug.LogWarning("[KSPI]: requestedMassFlow  is " + requestedMassFlow);
-            if (double.IsNaN(this.realIsp) || double.IsInfinity(realIsp))
+            if (double.IsNaN(realIsp) || double.IsInfinity(realIsp))
                 Debug.LogWarning("[KSPI]: realIsp  is " + realIsp);
-            if (double.IsNaN(this.finalThrust) || double.IsInfinity(finalThrust))
+            if (double.IsNaN(finalThrust) || double.IsInfinity(finalThrust))
                 Debug.LogWarning("[KSPI]: finalThrust  is " + finalThrust);
 
             _realIsp = realIsp;
             _currentThrottle = currentThrottle;
             _getIgnitionState = getIgnitionState;
 
-            requestedFlow = this.requestedMassFlow;
-            totalmassVessel = this.vessel.totalMass;
+            requestedFlow = requestedMassFlow;
+            totalmassVessel = vessel.totalMass;
 
             // Check if we are in time warp mode
             if (!vessel.packed)
@@ -420,7 +432,7 @@ namespace KIT.Propulsion
                 // Update values to use during timewarp
                 if (!_warpToReal)
                 {
-                    _throttlePersistent = vessel.ctrlState.mainThrottle;
+                    _throttlePersistent = currentThrottle; //vessel.ctrlState.mainThrottle;
 
                     if (_throttlePersistent == 0 && finalThrust < 0.0000005)
                         _thrustPersistent = 0;
@@ -435,7 +447,7 @@ namespace KIT.Propulsion
                 // Timewarp mode: perturb orbit using thrust
                 _warpToReal = true; // Set to true for transition to realtime
 
-                _thrustPersistent = requestedFlow * GameConstants.STANDARD_GRAVITY * _realIsp;
+                _thrustPersistent = requestedFlow * GameConstants.StandardGravity * _realIsp;
 
                 // only persist thrust if active and non zero throttle or significant thrust
                 if (getIgnitionState && (currentThrottle > 0 || _thrustPersistent > 0.0000005))
@@ -451,13 +463,13 @@ namespace KIT.Propulsion
                     demandMass = requestedFlow * resMan.FixedDeltaTime();
                     remainingMass = totalmassVessel - demandMass;
 
-                    deltaV = _realIsp * GameConstants.STANDARD_GRAVITY * Math.Log(totalmassVessel / remainingMass);
+                    deltaV = _realIsp * GameConstants.StandardGravity * Math.Log(totalmassVessel / remainingMass);
 
-                    _engineThrustTransform = this.part.FindModelTransform(thrustVectorTransformName);
+                    _engineThrustTransform = part.FindModelTransform(thrustVectorTransformName);
                     if (_engineThrustTransform == null)
                     {
-                        _engineThrustTransform = this.part.transform;
-                        _engineThrustTransformUp = (Vector3d)_engineThrustTransform.up;
+                        _engineThrustTransform = part.transform;
+                        _engineThrustTransformUp = _engineThrustTransform.up;
                     }
                     else
                         _engineThrustTransformUp = (Vector3d)_engineThrustTransform.forward * -1;
@@ -478,10 +490,10 @@ namespace KIT.Propulsion
                     // Calculate thrust and deltaV if demand output > 0
                     if (IsPositiveValidNumber(fuelRatio) && IsPositiveValidNumber(demandMass) && IsPositiveValidNumber(totalmassVessel) && IsPositiveValidNumber(_realIsp))
                     {
-                        remainingMass = this.vessel.totalMass - (demandMass * fuelRatio); // Mass at end of burn
+                        remainingMass = vessel.totalMass - (demandMass * fuelRatio); // Mass at end of burn
 
                         massDelta = Math.Log(totalmassVessel / remainingMass);
-                        deltaV = _realIsp * GameConstants.STANDARD_GRAVITY * massDelta; // Delta V from burn
+                        deltaV = _realIsp * GameConstants.StandardGravity * massDelta; // Delta V from burn
                         vessel.orbit.Perturb(deltaV * _engineThrustTransformUp, Planetarium.GetUniversalTime()); // Update vessel orbit
 
                         if (fuelRatio < 0.999)
@@ -517,6 +529,8 @@ namespace KIT.Propulsion
             thrust_d = _thrustPersistent;
             isp_d = _realIsp;
             throttle_d = _throttlePersistent;
+            
+            base.FixedUpdate();
         }
 
         public string KITPartName() => part.partInfo.title;

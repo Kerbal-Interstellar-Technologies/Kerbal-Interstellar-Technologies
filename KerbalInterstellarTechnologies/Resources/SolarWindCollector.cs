@@ -42,7 +42,7 @@ namespace KIT.Resources
 
         // Part properties
         [KSPField(groupName = GROUP, guiActiveEditor = false, guiName = "#LOC_KSPIE_SolarwindCollector_surfaceArea", guiUnits = " m\xB2")]
-        public double surfaceArea = 0; // Surface area of the panel.
+        public double surfaceArea; // Surface area of the panel.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_SolarwindCollector_magneticArea", guiUnits = " m\xB2")]
         public double magneticArea = 0; // Magnetic area of the panel.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_SolarwindCollector_effectiveness", guiFormat = "P1")]
@@ -125,9 +125,9 @@ namespace KIT.Resources
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_magnetosphereStrengthRatio", guiFormat = "F3")]
         protected double magnetoSphereStrengthRatio;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_solarwindFacingFactor", guiFormat = "F3")]
-        protected double solarWindAngleOfAttackFactor = 0;
+        protected double solarWindAngleOfAttackFactor;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_solarwindCollectionModifier", guiFormat = "F3")]
-        protected double solarwindProductionModifiers = 0;
+        protected double solarwindProductionModifiers;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_solarWindMassCollected", guiUnits = " g/h")]
         protected float fSolarWindCollectedGramPerHour;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_SolarwindCollector_interstellarMassCollected", guiUnits = " g/h")]
@@ -160,14 +160,14 @@ namespace KIT.Resources
         protected double solarwindDensityFactor;
 
         // internals
-        double _dWindResourceFlow = 0;
-        double _dHydrogenResourceFlow = 0;
-        double _dHeliumResourceFlow = 0;
+        double _dWindResourceFlow;
+        double _dHydrogenResourceFlow;
+        double _dHeliumResourceFlow;
         double _heliumRequirementTonPerSecond;
 
         double _dSolarWindSpareCapacity;
         double _dHydrogenSpareCapacity;
-        double _dShieldedEffectiveness = 0;
+        double _dShieldedEffectiveness;
 
         double _effectiveIonizationFactor;
         double _effectiveNonIonizationFactor;
@@ -231,7 +231,7 @@ namespace KIT.Resources
 
         public bool IsIonizing => ionizationPercentage > 0;
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             // get the part's animation
             _deployAnimation = part.FindModelAnimators(animName).FirstOrDefault();
@@ -247,7 +247,7 @@ namespace KIT.Resources
 
             if (state == StartState.Editor) return; // collecting won't work in editor
 
-            _heliumRequirementTonPerSecond = heliumRequirement * 1e-6 / GameConstants.SECONDS_IN_HOUR ;
+            _heliumRequirementTonPerSecond = heliumRequirement * 1e-6 / GameConstants.SecondsInHour ;
             _helium4GasResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Helium4Gas);
             _lqdHelium4ResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.Helium4Lqd);
             _solarWindResourceDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.SolarWind);
@@ -472,7 +472,7 @@ namespace KIT.Resources
         // calculates solar wind concentration
         private static double CalculateSolarwindIonMolesPerSquareMeter(double solarWindPerCubM, Vessel vessel, double solarWindSpeed)
         {
-            var dMolarSolarConcentration = (vessel.solarFlux / GameConstants.averageKerbinSolarFlux) * solarWindPerCubM * solarWindSpeed / PhysicsGlobals.AvogadroConstant;
+            var dMolarSolarConcentration = (vessel.solarFlux / GameConstants.AverageKerbinSolarFlux) * solarWindPerCubM * solarWindSpeed / PhysicsGlobals.AvogadroConstant;
 
             return Math.Abs(dMolarSolarConcentration); // in mol / m2 / sec
         }

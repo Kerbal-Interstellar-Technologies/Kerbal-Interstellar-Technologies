@@ -1,13 +1,12 @@
+using System;
+using System.Linq;
 using CommNet;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;
-using System;
-using System.Linq;
 using UnityEngine;
 
-
-namespace KIT
+namespace KIT.Science
 {
     public class AIHome : PartModule
     {
@@ -31,7 +30,7 @@ namespace KIT
             DestroyAIsHome();
         }
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             if (state == StartState.Editor) return;
 
@@ -58,7 +57,7 @@ namespace KIT
         }
     }
 
-    class ComputerCore : ModuleModdableScienceGenerator, ITelescopeController, IUpgradeableModule, CommNet.ICommNetControlSource, IRelayEnabler
+    class ComputerCore : ModuleModdableScienceGenerator, ITelescopeController, IUpgradeableModule, ICommNetControlSource, IRelayEnabler
     {
         // Persistent
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_Name")]//Name
@@ -182,7 +181,7 @@ namespace KIT
             _scienceRateField.guiActive = isUpgradedOrNoActiveScience;
             _isPoweredField.guiActive = isUpgradedOrNoActiveScience;
 
-            var science = _scienceRateF * GameConstants.KERBIN_DAY_SECONDS * PluginHelper.GetScienceMultiplier(vessel);
+            var science = _scienceRateF * GameConstants.KerbinDaySeconds * PluginHelper.GetScienceMultiplier(vessel);
             scienceRate = science.ToString("0.000") + "/ Day";
 
             if (ResearchAndDevelopment.Instance != null)
@@ -295,8 +294,8 @@ namespace KIT
 
             Is_Enabled = Is_Powered = false;
 
-            if (!mSnap.moduleValues.TryGetValue(nameof(ComputerCore.IsEnabled), ref Is_Enabled)) return false;
-            if (!mSnap.moduleValues.TryGetValue(nameof(ComputerCore.IsPowered), ref Is_Powered)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(IsEnabled), ref Is_Enabled)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(IsPowered), ref Is_Powered)) return false;
 
             return Is_Enabled && Is_Powered;
         }
@@ -320,9 +319,11 @@ namespace KIT
             electrical_power_ratio = powerReturned / _effectivePowerRequirement;
             IsPowered = electrical_power_ratio > 0.99;
 
+            if (vessel == null) return;
+            
             if (!IsPowered)
             {
-                if (vessel != null && vessel.connection != null)
+                if (vessel.connection != null)
                 {
                     vessel.connection.UnregisterCommandSource(this);
 
@@ -335,14 +336,13 @@ namespace KIT
                     }
                 }
 
-                //part.RequestResource(KITResourceSettings.ElectricCharge, -powerReturned * TimeWarp.fixedDeltaTime);
                 resMan.ProduceResource(ResourceName.ElectricCharge, powerReturned);
                 return;
             }
 
             part.isControlSource = Vessel.ControlLevel.FULL;
 
-            if (vessel != null && vessel.connection != null)
+            if (vessel.connection != null)
             {
                 vessel.connection.RegisterCommandSource(this);
 
@@ -361,7 +361,7 @@ namespace KIT
 
             var scienceMultiplier = PluginHelper.GetScienceMultiplier(vessel);
 
-            _scienceRateF = baseScienceRate * scienceMultiplier / GameConstants.KERBIN_DAY_SECONDS * powerReturned / _effectivePowerRequirement / Math.Sqrt(altitudeMultiplier);
+            _scienceRateF = baseScienceRate * scienceMultiplier / GameConstants.KerbinDaySeconds * powerReturned / _effectivePowerRequirement / Math.Sqrt(altitudeMultiplier);
 
             if (ResearchAndDevelopment.Instance != null && !double.IsInfinity(_scienceRateF) && !double.IsNaN(_scienceRateF))
                 science_to_add += _scienceRateF * TimeWarp.fixedDeltaTime;

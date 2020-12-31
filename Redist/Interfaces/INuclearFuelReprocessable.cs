@@ -1,4 +1,4 @@
-﻿namespace KIT
+﻿namespace KIT.Interfaces
 {
     public interface INuclearFuelReprocessable
     {

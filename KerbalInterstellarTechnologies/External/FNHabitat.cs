@@ -1,11 +1,11 @@
-﻿using KSP.Localization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using KIT.Resources;
+using KSP.Localization;
 using UnityEngine;
 
-namespace KIT
+namespace KIT.External
 {
     public class FNHabitat : PartModule, IMultipleDragCube
     {
@@ -69,13 +69,13 @@ namespace KIT
         public string secondaryAnimationName = Localizer.Format("#LOC_KSPIE_FNHabitat_Rotate");//"Rotate"
 
         [KSPField(isPersistant = true)]
-        public bool isDeployed = false;
+        public bool isDeployed;
 
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_FNHabitat_Deployed", guiFormat = "P2")]//Deployed
-        public double partialDeployCostPaid = 0d;
+        public double partialDeployCostPaid;
 
         [KSPField(isPersistant = true)]
-        public float inflatedCost = 0;
+        public float inflatedCost;
 
         [KSPField]
         public bool inflatable = false;
@@ -211,7 +211,7 @@ namespace KIT
                         var pNode = p.srfAttachNode;
                         if (pNode.attachedPart == part)
                         {
-                            p.decouple(0f);
+                            p.decouple();
                         }
                     }
                 }
@@ -538,7 +538,7 @@ namespace KIT
                 }
             }
 
-            UnityEngine.Debug.Log(found ? "[KSPI]: Found Comfort" : "[KSPI]: No Comfort Found");
+            Debug.Log(found ? "[KSPI]: Found Comfort" : "[KSPI]: No Comfort Found");
         }
 
         private void UpdateKerbalismComfort()
@@ -580,7 +580,7 @@ namespace KIT
             {
                 var ratio = waterPartResource.amount / waterPartResource.maxAmount;
                 waterPartResource.maxAmount = water;
-                waterPartResource.amount = water * waterPartResource.maxAmount;
+                waterPartResource.amount = ratio * waterPartResource.maxAmount;
             }
 
             var oxygenPartResource = part.Resources[KITResourceSettings.OxygenGas];
@@ -827,7 +827,7 @@ namespace KIT
 
         public string[] GetDragCubeNames()
         {
-            return new string[] { "A", "B" };
+            return new[] { "A", "B" };
         }
 
         public bool UsesProceduralDragCubes()

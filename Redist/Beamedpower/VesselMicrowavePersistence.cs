@@ -40,7 +40,7 @@ namespace KIT.BeamedPower
             if (_solarPower > 0.001 && vessel.LineOfSightToSun(LocalStar))
             {
                 var distanceBetweenVesselAndSun = Vector3d.Distance(vessel.GetVesselPos(), LocalStar.position);
-                double invSquareMult = Math.Pow(distanceBetweenVesselAndSun, 2) / Math.Pow(GameConstants.kerbin_sun_distance, 2);
+                double invSquareMult = Math.Pow(distanceBetweenVesselAndSun, 2) / Math.Pow(GameConstants.KerbinSunDistance, 2);
                 power = _solarPower / invSquareMult;
             }
 
@@ -56,32 +56,32 @@ namespace KIT.BeamedPower
             return GetAvailablePowerInKW()/1000;
         }
 
-        public Vessel Vessel => this.vessel;
+        public Vessel Vessel => vessel;
 
         public bool IsActive { get; set; }
 
         public double SolarPower
         {
-            get => this._solarPower;
-            set => this._solarPower = value;
+            get => _solarPower;
+            set => _solarPower = value;
         }
 
         public double NuclearPower
         {
-            get => this._nuclearPower;
-            set => this._nuclearPower = value;
+            get => _nuclearPower;
+            set => _nuclearPower = value;
         }
 
         public double Aperture
         {
-            get => _aperture != 0 ? this._aperture : 5;
-            set => this._aperture = value;
+            get => _aperture != 0 ? _aperture : 5;
+            set => _aperture = value;
         }
 
         public double PowerCapacity
         {
-            get => _powerCapacity != 0 ? this._powerCapacity : 2;
-            set => this._powerCapacity = value;
+            get => _powerCapacity != 0 ? _powerCapacity : 2;
+            set => _powerCapacity = value;
         }
 
         public List<WaveLengthData> SupportedTransmitWavelengths { get; }

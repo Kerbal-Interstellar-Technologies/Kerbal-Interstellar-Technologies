@@ -471,7 +471,7 @@ namespace KIT.Resources
 
             var atmosphereParticlesPerCubM = comparableEarthAltitudeInKm > 64000 ? 0
                 : comparableEarthAltitudeInKm <= 1000
-                    ? Math.Max(0, AtmosphericFloatCurves.Instance.ParticlesAtmosphereCubePerMeter.Evaluate((float)comparableEarthAltitudeInKm))
+                    ? Math.Max(0, Instance.ParticlesAtmosphereCubePerMeter.Evaluate((float)comparableEarthAltitudeInKm))
                     : 2.06e+11f * (1 / (Math.Pow(20, (comparableEarthAltitudeInKm - 1000) / 1000)));
 
 			var atmosphereConcentration = atmosphereMultiplier * atmosphereParticlesPerCubM * vessel.obt_speed / PhysicsGlobals.AvogadroConstant;
@@ -495,7 +495,7 @@ namespace KIT.Resources
 
             var atmosphericDensityGramPerSquareCm = comparableEarthAltitudeInKm > 64000 ? 0
                 : comparableEarthAltitudeInKm <= 1000
-                    ? Math.Max(0, AtmosphericFloatCurves.Instance.MassDensityAtmosphereGramPerCubeCm.Evaluate((float)comparableEarthAltitudeInKm))
+                    ? Math.Max(0, Instance.MassDensityAtmosphereGramPerCubeCm.Evaluate((float)comparableEarthAltitudeInKm))
                     : 5.849E-18f * (1 / (Math.Pow(20, (comparableEarthAltitudeInKm - 1000) / 1000)));
 
             var atmosphereConcentration = 1e+3 * atmosphereMultiplier * atmosphericDensityGramPerSquareCm;

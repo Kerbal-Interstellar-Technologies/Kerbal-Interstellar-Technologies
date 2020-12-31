@@ -22,7 +22,7 @@ namespace KIT.Resources
 
         // state of the extractor
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillEnabled")]//Drill Enabled
-        public bool bIsEnabled = false;
+        public bool bIsEnabled;
         [KSPField(groupName = GROUP, isPersistant = true, guiActive = false, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillDeployed")]//Deployed
         public bool isDeployed;
 
@@ -187,7 +187,7 @@ namespace KIT.Resources
         }
         // *** END of KSP Actions
 
-        public override void OnStart(PartModule.StartState state)
+        public override void OnStart(StartState state)
         {
             // initialise resources
             //resources_to_supply = new[] { ResourceSettings.Config.WasteHeatInMegawatt };
@@ -628,8 +628,7 @@ namespace KIT.Resources
         /// <param name="resourceName">The name of the current resource.</param>
         private double AddResource(IResourceManager resMan, double amount, string resourceName)
         {
-            ResourceName resID;
-            resID = KITResourceSettings.NameToResource(resourceName);
+            var resID = KITResourceSettings.NameToResource(resourceName);
             if (resID == ResourceName.Unknown)
             {
                 return part.RequestResource(resourceName, -amount * resMan.FixedDeltaTime(), ResourceFlowMode.ALL_VESSEL);

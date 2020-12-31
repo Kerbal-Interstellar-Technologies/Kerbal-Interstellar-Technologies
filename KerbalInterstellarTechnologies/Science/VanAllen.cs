@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace KIT 
+namespace KIT.Science 
 {
-    class VanAllen 
+    static class VanAllen 
     {
         public const double B0 = 3.12E-5;
-        public static Dictionary<string,double> crew_rad_exposure = new Dictionary<string, double> ();
+        public static Dictionary<string,double> CrewRadExposure = new Dictionary<string, double> ();
     }
 }

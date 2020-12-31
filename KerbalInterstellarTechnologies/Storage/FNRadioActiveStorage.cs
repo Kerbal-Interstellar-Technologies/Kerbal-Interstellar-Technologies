@@ -1,4 +1,4 @@
-﻿namespace KIT
+﻿namespace KIT.Storage
 {
     [KSPModule("Radioactive Storage")]
     public class FNRadioActiveStorage : PartModule
