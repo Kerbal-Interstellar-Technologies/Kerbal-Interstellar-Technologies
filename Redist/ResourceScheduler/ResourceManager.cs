@@ -518,7 +518,7 @@ namespace KIT.ResourceScheduler
             {
                 double fillBattery = resourceMaxAmounts[ResourceName.ElectricCharge] - resourceAmounts[ResourceName.ElectricCharge];
                 if (fillBattery > 0)
-                    resourceAmounts[ResourceName.ElectricCharge] += CallVariableSuppliers(ResourceName.ElectricCharge, 0, fillBattery);
+                    resourceAmounts[ResourceName.ElectricCharge] += CallVariableSuppliers(ResourceName.ElectricCharge, fillBattery, 0);
             }
         }
 
@@ -559,21 +559,21 @@ namespace KIT.ResourceScheduler
 
             foreach (var mod in _variableSupplierModules[resource])
             {
-                var KITMod = mod as IKITMod;
-                if (KITMod == null) continue;
+                var kitMod = mod as IKITMod;
+                if (kitMod == null) continue;
 
                 if (tappedOutMods.Contains(mod)) continue; // it's tapped out for this cycle.
-                if (_modsCurrentlyRunning.Contains(KITMod)) continue;
+                if (_modsCurrentlyRunning.Contains(kitMod)) continue;
 
-                _modsCurrentlyRunning.Add(KITMod);
+                _modsCurrentlyRunning.Add(kitMod);
 
-                InitializeModuleIfNeeded(KITMod);
+                InitializeModuleIfNeeded(kitMod);
 
                 double perSecondAmount = originalAmount * (1 - (reducedObtainedAmount / reducedOriginalAmount));
 
                 try
                 {
-                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{KITMod.KITPartName()}");
+                    UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{kitMod.KITPartName()}");
 
                     var canContinue = mod.ProvideResource(secondaryInterface, resource, perSecondAmount + resourceFiller);
                     if (!canContinue) tappedOutMods.Add(mod);
@@ -581,7 +581,7 @@ namespace KIT.ResourceScheduler
                 catch (Exception ex)
                 {
                     if (UseThisToHelpWithTesting) throw;
-                    Debug.Log($"[KITResourceManager.callVariableSuppliers] calling KITMod {KITMod.KITPartName()} resulted in {ex}");
+                    Debug.Log($"[KITResourceManager.callVariableSuppliers] calling KITMod {kitMod.KITPartName()} resulted in {ex}");
                 }
                 finally
                 {
@@ -592,7 +592,7 @@ namespace KIT.ResourceScheduler
                 _currentResources[resource] -= tmp;
                 reducedObtainedAmount += tmp;
 
-                _modsCurrentlyRunning.Remove(KITMod);
+                _modsCurrentlyRunning.Remove(kitMod);
 
                 if (reducedObtainedAmount >= reducedOriginalAmount) return originalAmount;
             }

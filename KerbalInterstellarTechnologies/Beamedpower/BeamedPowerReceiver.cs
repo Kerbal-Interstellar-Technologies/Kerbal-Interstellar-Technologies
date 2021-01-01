@@ -1057,7 +1057,7 @@ namespace KIT.Beamedpower
 
             if (!bandwidthConverterNodes.Any())
             {
-                Debug.Log("[KSP] BeamedPowerReceiver: something is wrong, no inline BandwidthConverters present");
+                // Happens when KSP is loading
                 return;
             }
 

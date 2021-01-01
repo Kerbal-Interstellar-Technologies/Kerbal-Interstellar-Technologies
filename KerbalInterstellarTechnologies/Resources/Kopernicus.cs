@@ -160,8 +160,7 @@ namespace KIT.Resources
 
                         if (string.IsNullOrEmpty(starLuminosityText))
                         {
-                            if (usesSunTemplate)
-                                Debug.LogWarning(debugPrefix + "starLuminosity is missing in ConfigNode for " + bodyName);
+                            Debug.LogWarning(debugPrefix + "starLuminosity is missing in ConfigNode for " + bodyName);
                         }
                         else
                         {
@@ -178,12 +177,12 @@ namespace KIT.Resources
 
                     if (solarLuminocity > 0)
                     {
-                        Debug.Log(debugPrefix + "Added Star " + celestialBody.name + " with calculated luminocity of " + solarLuminocity);
+                        Debug.Log(debugPrefix + "Added Star " + celestialBody.name + " with calculated luminosity of " + solarLuminocity);
                         stars.Add(new StarLight() { star = celestialBody, relativeLuminocity = solarLuminocity });
                     }
                     else
                     {
-                        Debug.Log(debugPrefix + "Added Star " + celestialBody.name + " with default luminocity of 1");
+                        Debug.Log(debugPrefix + "Added Star " + celestialBody.name + " with default luminosity of 1");
                         stars.Add(new StarLight() { star = celestialBody, relativeLuminocity = 1 });
                     }
                 }
@@ -193,7 +192,7 @@ namespace KIT.Resources
             var homePlanetSun = Planetarium.fetch.Sun;
             if (stars.All(m => m.star.name != homePlanetSun.name))
             {
-                Debug.LogWarning(debugPrefix + "homeplanet localStar was not found, adding homeplanet localStar as default sun");
+                Debug.LogWarning(debugPrefix + "home planet localStar was not found, adding home planet localStar as default sun");
                 stars.Add(new StarLight() { star = Planetarium.fetch.Sun, relativeLuminocity = 1 });
             }
 

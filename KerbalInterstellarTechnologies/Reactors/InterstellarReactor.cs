@@ -2896,8 +2896,8 @@ namespace KIT.Reactors
 
             // Debug.Log($"[reactor] maxThermalToSupplyPerSecond is {maxThermalToSupplyPerSecond}, maxChargedToSupplyPerSecond is {maxChargedToSupplyPerSecond}, power_request_ratio is {power_request_ratio}, maxStoredGeneratorEnergyRequestedRatio is {maxStoredGeneratorEnergyRequestedRatio}, ");
 
-            maxThermalToSupplyPerSecondAvail = maxThermalToSupplyPerSecond;
-            maxChargedToSupplyPerSecondAvail = maxChargedToSupplyPerSecond;
+            _maxThermalToSupplyPerSecondAvail = maxThermalToSupplyPerSecond;
+            _maxChargedToSupplyPerSecondAvail = maxChargedToSupplyPerSecond;
 
             // XXX todo. fill in the max we want.
             // maxPowerToSupply = Math.Max(maximumPower, );
@@ -2912,8 +2912,8 @@ namespace KIT.Reactors
 
         }
 
-        double maxThermalToSupplyPerSecondAvail;
-        double maxChargedToSupplyPerSecondAvail;
+        private double _maxThermalToSupplyPerSecondAvail;
+        private double _maxChargedToSupplyPerSecondAvail;
 
         public string KITPartName()
         {
@@ -3020,13 +3020,13 @@ namespace KIT.Reactors
             {
                 case ResourceName.ThermalPower:
                     tmp = requestedAmount / ThermalPowerRatio;
-                    tmp = Math.Min(tmp, maxThermalToSupplyPerSecondAvail);
-                    if (MaximumChargedPower > 0) tmp = Math.Min(tmp, maxChargedToSupplyPerSecondAvail);
+                    tmp = Math.Min(tmp, _maxThermalToSupplyPerSecondAvail);
+                    if (MaximumChargedPower > 0) tmp = Math.Min(tmp, _maxChargedToSupplyPerSecondAvail);
                     break;
                 case ResourceName.ChargedParticle:
                     tmp = requestedAmount / ChargedPowerRatio;
-                    tmp = Math.Min(tmp, maxChargedToSupplyPerSecondAvail);
-                    if (MaximumThermalPower > 0) tmp = Math.Min(tmp, maxThermalToSupplyPerSecondAvail);
+                    tmp = Math.Min(tmp, _maxChargedToSupplyPerSecondAvail);
+                    if (MaximumThermalPower > 0) tmp = Math.Min(tmp, _maxThermalToSupplyPerSecondAvail);
                     break;
                 default:
                     Debug.Log($"[KIT InterstellarReactor] don't know how to handle {resource} request");
@@ -3037,8 +3037,8 @@ namespace KIT.Reactors
 
             // Debug.Log($"[Interstellar Reactor] got request for {KITResourceSettings.ResourceToName(resource)} of {requestedAmount}. tmp is {tmp}, ThermalPowerRatio is {ThermalPowerRatio}, ChargedPowerRatio is {ChargedPowerRatio}, and tmp * ThermalPowerRatio is {tmp * ThermalPowerRatio} and also {tmp * ChargedPowerRatio}");
             
-            maxThermalToSupplyPerSecondAvail -= tmp * ThermalPowerRatio;
-            maxChargedToSupplyPerSecondAvail -= tmp * ChargedPowerRatio;
+            _maxThermalToSupplyPerSecondAvail -= tmp * ThermalPowerRatio;
+            _maxChargedToSupplyPerSecondAvail -= tmp * ChargedPowerRatio;
 
             ongoing_thermal_power_generated += tmp * ThermalPowerRatio;
             ongoing_charged_power_generated += tmp * ChargedPowerRatio;

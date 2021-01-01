@@ -178,7 +178,7 @@ namespace KIT.Propulsion
 
                 if (propellantResourceDefinition2 == null || propellantResourceID2 == ResourceName.Unknown)
                 {
-                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant2 is not correctly defined");
+                    Debug.Log("[ModuleEnginesWarp] UpdateFuelFactors propellant2 is not correctly defined");
                 }
             }
             else
@@ -194,7 +194,7 @@ namespace KIT.Propulsion
 
                 if (propellantResourceDefinition3 == null || propellantResourceID3 == ResourceName.Unknown)
                 {
-                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant3 is not correctly defined");
+                    Debug.Log("[ModuleEnginesWarp] UpdateFuelFactors propellant3 is not correctly defined");
                 }
             }
             else
@@ -210,7 +210,7 @@ namespace KIT.Propulsion
 
                 if (propellantResourceDefinition4 == null || propellantResourceID4 == ResourceName.Unknown)
                 {
-                    Debug.Log($"[ModuleEnginesWarp] UpdateFuelFactors propellant4 is not correctly defined");
+                    Debug.Log("[ModuleEnginesWarp] UpdateFuelFactors propellant4 is not correctly defined");
                 }
             }
             else

@@ -101,14 +101,14 @@ namespace KIT.Science
                 return;
             }
 
-            ConfigNode science_node;
+            ConfigNode scienceNode;
             ConfigNode config = PluginHelper.GetPluginSaveFile();
             if (config.HasNode(vessel_seismic_node_string)) 
             {
-                science_node = config.GetNode(vessel_seismic_node_string);
-                science_experiment_number = science_node.nodes.Count;
+                scienceNode = config.GetNode(vessel_seismic_node_string);
+                science_experiment_number = scienceNode.nodes.Count;
 
-                if (science_node.HasNode(vessel_impact_node_string)) 
+                if (scienceNode.HasNode(vessel_impact_node_string)) 
                 {
                     Debug.Log("[KSPI]: Impactor: Ignored because this vessel's impact has already been recorded.");
                     return;
@@ -117,56 +117,56 @@ namespace KIT.Science
             else 
             {
                 Debug.Log("[KSPI]: Impactor: Created sysmic impact data node");
-                science_node = config.AddNode(vessel_seismic_node_string);
-                science_node.AddValue("name", "interstellarseismicarchive");
+                scienceNode = config.AddNode(vessel_seismic_node_string);
+                scienceNode.AddValue("name", "interstellarseismicarchive");
             }
 
             int body = vessel.mainBody.flightGlobalsIndex;
-            Vector3d net_vector = Vector3d.zero;
+            Vector3d netVector = Vector3d.zero;
             bool first = true;
-            double distribution_factor = 0;
+            double distributionFactor = 0;
 
-            foreach (Vessel conf_vess in FlightGlobals.Vessels) 
+            foreach (Vessel confVess in FlightGlobals.Vessels) 
             {
-                string vessel_probe_node_string = string.Concat("VESSEL_SEISMIC_PROBE_", conf_vess.id.ToString());
+                string vesselProbeNodeString = string.Concat("VESSEL_SEISMIC_PROBE_", confVess.id.ToString());
 
-                if (config.HasNode(vessel_probe_node_string)) 
+                if (config.HasNode(vesselProbeNodeString)) 
                 {
-                    ConfigNode probe_node = config.GetNode(vessel_probe_node_string);
+                    ConfigNode probeNode = config.GetNode(vesselProbeNodeString);
 
                     // If the seismometer is inactive, skip it.
-                    if (probe_node.HasValue("is_active")) 
+                    if (probeNode.HasValue("is_active")) 
                     {
-                        bool.TryParse(probe_node.GetValue("is_active"), out var is_active);
+                        bool.TryParse(probeNode.GetValue("is_active"), out var is_active);
                         if (!is_active) continue;
                     }
 
                     // If the seismometer is on another planet, skip it.
-                    if (probe_node.HasValue("celestial_body")) 
+                    if (probeNode.HasValue("celestial_body")) 
                     {
-                        int.TryParse(probe_node.GetValue("celestial_body"), out int planet);
+                        int.TryParse(probeNode.GetValue("celestial_body"), out int planet);
                         if (planet != body) continue;
                     }
 
                     // do sciency stuff
-                    Vector3d surface_vector = (conf_vess.transform.position - FlightGlobals.Bodies[body].transform.position);
-                    surface_vector = surface_vector.normalized;
+                    Vector3d surfaceVector = (confVess.transform.position - FlightGlobals.Bodies[body].transform.position);
+                    surfaceVector = surfaceVector.normalized;
                     if (first) 
                     {
                         first = false;
-                        net_vector = surface_vector;
-                        distribution_factor = 1;
+                        netVector = surfaceVector;
+                        distributionFactor = 1;
                     } 
                     else 
                     {
-                        distribution_factor += 1.0 - Vector3d.Dot(surface_vector, net_vector.normalized);
-                        net_vector = net_vector + surface_vector;
+                        distributionFactor += 1.0 - Vector3d.Dot(surfaceVector, netVector.normalized);
+                        netVector = netVector + surfaceVector;
                     }
                 }
             }
 
-            distribution_factor = Math.Min(distribution_factor, 3.5); // no more than 3.5x boost to science by using multiple detectors
-            if (distribution_factor > 0 && !double.IsInfinity(distribution_factor) && !double.IsNaN(distribution_factor)) 
+            distributionFactor = Math.Min(distributionFactor, 3.5); // no more than 3.5x boost to science by using multiple detectors
+            if (distributionFactor > 0 && !double.IsInfinity(distributionFactor) && !double.IsNaN(distributionFactor)) 
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_ImpactorModule_Postmsg"), 5f, ScreenMessageStyle.UPPER_CENTER);//"Impact Recorded, science report can now be accessed from one of your accelerometers deployed on this body."
                 lastImpactTime = Planetarium.GetUniversalTime();
@@ -175,8 +175,8 @@ namespace KIT.Science
                 ConfigNode impact_node = new ConfigNode(vessel_impact_node_string);
                 impact_node.AddValue(string.Intern("transmitted"), bool.FalseString);
                 impact_node.AddValue(string.Intern("vesselname"), vessel.vesselName);
-                impact_node.AddValue(string.Intern("distribution_factor"), distribution_factor);
-                science_node.AddNode(impact_node);
+                impact_node.AddValue(string.Intern("distribution_factor"), distributionFactor);
+                scienceNode.AddNode(impact_node);
 
                 config.Save(PluginHelper.PluginSaveFilePath);
             }

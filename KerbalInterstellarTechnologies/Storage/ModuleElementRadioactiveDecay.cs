@@ -41,7 +41,7 @@ namespace KIT.Storage
                     density_rat = decay_resource.info.density / PartResourceLibrary.Instance.GetDefinition(decayProduct).density;
             }
 
-            if (!CheatOptions.UnbreakableJoints && decay_resource != null && time_diff > 0)
+            if (!CheatOptions.UnbreakableJoints && time_diff > 0)
             {
                 double n_0 = decay_resource.amount;
                 decay_resource.amount = n_0 * Math.Exp(-decayConstant * time_diff);

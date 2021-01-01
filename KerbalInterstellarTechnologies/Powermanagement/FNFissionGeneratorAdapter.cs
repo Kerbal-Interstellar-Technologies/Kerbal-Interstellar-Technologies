@@ -22,8 +22,6 @@ namespace KIT.Powermanagement
         private BaseField _fieldEfficiency;
         private BaseField _fieldMax;
 
-        private bool active;
-
         public override void OnStart(StartState state)
         {
             try

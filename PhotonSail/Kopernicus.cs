@@ -134,8 +134,7 @@ namespace PhotonSail
 
                         if (string.IsNullOrEmpty(starLuminosityText))
                         {
-                            if (usesSunTemplate)
-                                Debug.LogWarning(debugPrefix + "starLuminosity is missing in ConfigNode for " + bodyName);
+                            Debug.LogWarning(debugPrefix + "starLuminosity is missing in ConfigNode for " + bodyName);
                         }
                         else
                         {

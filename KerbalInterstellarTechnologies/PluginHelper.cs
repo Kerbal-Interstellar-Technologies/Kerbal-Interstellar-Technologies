@@ -3,7 +3,6 @@ using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using KIT.Toolbar;
 using KIT.Wasteheat;
 using UnityEngine;

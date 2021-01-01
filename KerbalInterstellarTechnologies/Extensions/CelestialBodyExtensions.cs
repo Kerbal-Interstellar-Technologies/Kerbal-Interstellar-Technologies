@@ -7,7 +7,7 @@ namespace KIT.Extensions
 {
     public static class CelestialBodyExtensions
     {
-        static Dictionary<string, BeltData> BeltDataCache = new Dictionary<string, BeltData>();
+        static readonly Dictionary<string, BeltData> BeltDataCache = new Dictionary<string, BeltData>();
 
         class BeltData
         {
@@ -15,8 +15,8 @@ namespace KIT.Extensions
             public double Ampere;
         }
 
-        const double sqrt2 = 1.4142135624;
-        const double sqrt2divPi = 0.79788456080;
+        private const double SqRt2 = 1.4142135624;
+        private const double Sqrt2DivPi = 0.79788456080;
 
         public static double GetBeltAntiparticles(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
         {
@@ -31,14 +31,14 @@ namespace KIT.Extensions
                 beltData = new BeltData()
                 {
                     Density = body.Mass / homeworld.Mass * relrp / relrt * 50,
-                    Ampere = 1.5 * homeworld.Radius * relrp / sqrt2,
+                    Ampere = 1.5 * homeworld.Radius * relrp / SqRt2,
                 };
 
                 BeltDataCache.Add(body.name, beltData);
             }
 
             double beltParticles = beltData.Density
-                * sqrt2divPi
+                * Sqrt2DivPi
                 * Math.Pow(altitude, 2)
                 * Math.Exp(-Math.Pow(altitude, 2) / (2 * Math.Pow(beltData.Ampere, 2)))
                 / (Math.Pow(beltData.Ampere, 3));
@@ -62,10 +62,9 @@ namespace KIT.Extensions
             double atmosphere = FlightGlobals.getStaticPressure(altitude, body) / GameConstants.EarthAtmospherePressureAtSeaLevel;
             double relrp = body.Radius / homeworld.Radius;
             double relrt = body.rotationPeriod / homeworld.rotationPeriod;
-            double peakBelt = body.GetPeakProtonBeltAltitude(homeworld, altitude, lat);
-            double altituded = altitude;
-            double a = peakBelt / sqrt2;
-            double beltParticles = sqrt2divPi * Math.Pow(altituded, 2) * Math.Exp(-Math.Pow(altituded, 2) / (2 * Math.Pow(a, 2))) / (Math.Pow(a, 3));
+            double peakBelt = body.GetPeakProtonBeltAltitude(homeworld);
+            double a = peakBelt / SqRt2;
+            double beltParticles = Sqrt2DivPi * Math.Pow(altitude, 2) * Math.Exp(-Math.Pow(altitude, 2) / (2 * Math.Pow(a, 2))) / (Math.Pow(a, 3));
             beltParticles = beltParticles * relrp / relrt * 50;
 
             if (KopernicusHelper.IsStar(body))
@@ -81,12 +80,10 @@ namespace KIT.Extensions
             return beltParticles;
         }
 
-        public static double GetPeakProtonBeltAltitude(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
+        public static double GetPeakProtonBeltAltitude(this CelestialBody body, CelestialBody homeworld)
         {
-            lat = lat / 180 * Math.PI;
             double relrp = body.Radius / homeworld.Radius;
-            double peakBelt = 1.5 * homeworld.Radius * relrp;
-            return peakBelt;
+            return (double)(1.5 * homeworld.Radius * relrp);
         }
 
         public static double GetElectronRadiationLevel(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
@@ -99,10 +96,9 @@ namespace KIT.Extensions
             double relrp = body.Radius / homeworld.Radius;
             double relrt = body.rotationPeriod / homeworld.rotationPeriod;
 
-            double peakBelt2 = body.GetPeakElectronBeltAltitude(homeworld, altitude, lat);
-            double altituded = altitude;
-            double b = peakBelt2 / sqrt2;
-            double beltParticles = 0.9 * sqrt2divPi * Math.Pow(altituded, 2) * Math.Exp(-Math.Pow(altituded, 2) / (2 * Math.Pow(b, 2))) / (Math.Pow(b, 3));
+            double peakBelt2 = body.GetPeakElectronBeltAltitude(homeworld);
+            double b = peakBelt2 / SqRt2;
+            double beltParticles = 0.9 * Sqrt2DivPi * Math.Pow(altitude, 2) * Math.Exp(-Math.Pow(altitude, 2) / (2 * Math.Pow(b, 2))) / (Math.Pow(b, 3));
             beltParticles = beltParticles * relrp / relrt * 50;
 
             if (KopernicusHelper.IsStar(body))
@@ -118,12 +114,10 @@ namespace KIT.Extensions
             return beltParticles;
         }
 
-        public static double GetPeakElectronBeltAltitude(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
+        public static double GetPeakElectronBeltAltitude(this CelestialBody body, CelestialBody homeworld)
         {
-            lat = lat / 180 * Math.PI;
             double relrp = body.Radius / homeworld.Radius;
-            double peakBelt = 6.0 * homeworld.Radius * relrp;
-            return peakBelt;
+            return 6.0 * homeworld.Radius * relrp;
         }
 
         public static double SpecialMagneticFieldScaling(this CelestialBody body)
@@ -136,7 +130,6 @@ namespace KIT.Extensions
             double mlat = lat / 180 * Math.PI + Math.PI / 2;
 
             double relmp = body.Mass / homeworld.Mass;
-            double relrp = body.Radius / homeworld.Radius;
             double relrt = body.rotationPeriod / homeworld.rotationPeriod;
 
             double altituded = altitude + body.Radius;
@@ -158,7 +151,6 @@ namespace KIT.Extensions
             double mlat = lat / 180 * Math.PI + Math.PI / 2;
 
             double relmp = body.Mass / homeworld.Mass;
-            double relrp = body.Radius / homeworld.Radius;
             double relrt = body.rotationPeriod / homeworld.rotationPeriod;
 
             double altituded = altitude + body.Radius;
@@ -180,7 +172,6 @@ namespace KIT.Extensions
             double mlat = lat / 180 * Math.PI + Math.PI / 2;
 
             double relmp = body.Mass / homeworld.Mass;
-            double relrp = body.Radius / homeworld.Radius;
             double relrt = body.rotationPeriod / homeworld.rotationPeriod;
 
             double altituded = altitude + body.Radius;

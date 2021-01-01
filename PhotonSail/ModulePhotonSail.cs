@@ -455,7 +455,7 @@ namespace PhotonSail
 
             photonReflectionDefinitions = part.FindModulesImplementing<PhotonReflectionDefinition>();
 
-            GetPhotonStatisticsForWavelength(kscLaserWavelength, ref kscPhotonReflection, ref kscPhotovoltaic);
+            GetPhotonStatisticsForWavelength(kscLaserWavelength, out kscPhotonReflection, out kscPhotovoltaic);
 
             kscPhotonReflectionPercentage = kscPhotonReflection * 100;
 
@@ -758,7 +758,7 @@ namespace PhotonSail
         {
         }
 
-        private void GetPhotonStatisticsForWavelength(double wavelength, ref double reflection, ref double photovolaticEfficiency)
+        private void GetPhotonStatisticsForWavelength(double wavelength, out double reflection, out double photovolaticEfficiency)
         {
             var reflectionDefinition = photonReflectionDefinitions.FirstOrDefault(m => (wavelength >= m.minimumWavelength && wavelength <= m.maximumWavelength));
             reflection = reflectionDefinition != null ? reflectionDefinition.PhotonReflectionPercentage * 0.01 : 0;
@@ -1361,7 +1361,7 @@ namespace PhotonSail
             {
                 double photonReflection = 0;
                 double photovoltaicEfficiency = 0;
-                GetPhotonStatisticsForWavelength(receivedPowerData.Route.WaveLength, ref photonReflection, ref photovoltaicEfficiency);
+                GetPhotonStatisticsForWavelength(receivedPowerData.Route.WaveLength, out photonReflection, out photovoltaicEfficiency);
 
                 var availableTransmitterPowerInWatt = CheatOptions.IgnoreMaxTemperature
                     ? receivedPowerData.AvailablePower * 1e+6

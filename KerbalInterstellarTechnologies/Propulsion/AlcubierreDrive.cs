@@ -1567,7 +1567,7 @@ namespace KIT.Propulsion
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_gravityAtSeaLevel"), gravityAtSeaLevel.ToString("0.00000") + " m/s\xB2", _boldBlackStyle, _textBlackStyle);
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_gravityVesselPull"), gravityPull.ToString("0.00000") + " m/s\xB2", _boldBlackStyle, _textBlackStyle);
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_gravityDragPercentage"), gravityDragPercentage.ToString("0.000") + "%", _boldBlackStyle, _textBlackStyle);
-                PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_maxAllowedThrotle"), maximumAllowedWarpThrotle.ToString("0.0000") + " c", _boldBlackStyle, _textBlackStyle);
+                PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_maxAllowedThrottle"), maximumAllowedWarpThrotle.ToString("0.0000") + " c", _boldBlackStyle, _textBlackStyle);
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_currentSelectedSpeed"), warpEngineThrottle.ToString("0.0000") + " c", _boldBlackStyle, _textBlackStyle);
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_currentPowerReqForWarp"), PluginHelper.GetFormattedPowerString(currentPowerRequirementForWarp), _boldBlackStyle, _textBlackStyle);
                 PrintToGUILayout(Localizer.Format("#LOC_KSPIE_AlcubierreDrive_currentWarpExitSpeed"), exitSpeed.ToString("0.000") + " m/s", _boldBlackStyle, _textBlackStyle);

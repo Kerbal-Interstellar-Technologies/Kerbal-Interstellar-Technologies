@@ -256,7 +256,7 @@ namespace KIT.Resources
 
                 Events["ToggleWindow"].active = true;
 
-                if (terrainType == TerrainType.Planetary)
+                if (_terrainType == TerrainType.Planetary)
                 {
                     UpdateResourceAbundances();
                 }
@@ -289,18 +289,18 @@ namespace KIT.Resources
 
         private void UpdateAsteroidCometResources()
         {
-            if (drillTarget == null)
+            if (_drillTarget == null)
             {
                 // Debug.Log($"[Universal Drill] no resources because of no drillTarget");
                 return;
             }
 
             // throw new NotImplementedException();
-            if (rateLimit++ % 250 == 0)
+            if (_rateLimit++ % 250 == 0)
             {
-                var resources = drillTarget.vessel.FindPartModulesImplementing<ModuleSpaceObjectResource>();
+                var resources = _drillTarget.vessel.FindPartModulesImplementing<ModuleSpaceObjectResource>();
 
-                Debug.Log($"[Universal Crust Extractor] there's {resources.Count} resources present on {drillTarget.vessel.GetDisplayName()}");
+                Debug.Log($"[Universal Crust Extractor] there's {resources.Count} resources present on {_drillTarget.vessel.GetDisplayName()}");
             }
         }
 
@@ -369,7 +369,7 @@ namespace KIT.Resources
             if (!IsTerrainReachable())
                 return " " + Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg3");//trouble reaching the terrain.
 
-            switch (terrainType)
+            switch (_terrainType)
             {
                 case TerrainType.Planetary:
                     if (vessel.checkLanded() == false || vessel.checkSplashed())
@@ -377,7 +377,7 @@ namespace KIT.Resources
                     break;
                 case TerrainType.Asteroid:
                 case TerrainType.Comet:
-                    var attached = vessel.parts.Find(x => x == drillTarget.part);
+                    var attached = vessel.parts.Find(x => x == _drillTarget.part);
                     if(attached == null)
                     {
                         return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");
@@ -404,7 +404,6 @@ namespace KIT.Resources
             var scaleFactor = part.rescaleFactor; // what is the rescale factor of the drill?
             var drillDistance = drillReach * scaleFactor; // adjust the distance for the ray with the rescale factor, needs to be a float for raycast.
 
-            RaycastHit hit = new RaycastHit(); // create a variable that stores info about hit colliders etc.
             Ray drillPartRay = new Ray(partPosition, -part.transform.up); // this ray will start at the part's center and go down in local space coordinates (Vector3d.down is in world space)
 
             /* This little bit will fire a ray from the part, straight down, in the distance that the part should be able to reach.
@@ -413,14 +412,14 @@ namespace KIT.Resources
              * to check for contact, but that seems to be bugged somehow, at least when paired with this drill - it works enough times to pass tests, but when testing
              * this module in a difficult terrain, it just doesn't work properly. (I blame KSP planet meshes + Unity problems with accuracy further away from origin).
             */
-            Physics.Raycast(drillPartRay, out hit, drillDistance); // use the defined ray, pass info about a hit, go the proper distance and choose the proper layermask
+            Physics.Raycast(drillPartRay, out var hit, drillDistance); // use the defined ray, pass info about a hit, go the proper distance and choose the proper layermask
 
             return hit;
         }
 
-        private int rateLimit;
+        private int _rateLimit;
 
-        enum TerrainType
+        private enum TerrainType
         {
             None,
             Planetary,
@@ -428,9 +427,9 @@ namespace KIT.Resources
             Asteroid,
         }
 
-        private TerrainType terrainType;
+        private TerrainType _terrainType;
 
-        private PartModule drillTarget;
+        private PartModule _drillTarget;
 
         /// <summary>
         /// Helper function to calculate (and raycast) if the drill could potentially hit the terrain.
@@ -438,44 +437,44 @@ namespace KIT.Resources
         /// <returns>True if the raycast hits the terrain layermask and it's close enough for the drill to reach (affected by the drillReach part property).</returns>
         private bool IsTerrainReachable()
         {
-            terrainType = TerrainType.None;
+            _terrainType = TerrainType.None;
             RaycastHit hit = WhatsUnderneath();
 
-            drillTarget = null;
+            _drillTarget = null;
             asteroidCometResources = null;
 
             if (hit.collider == null) return false;
 
             if (hit.collider.gameObject.GetComponentUpwards<LocalSpace>())
             {
-                terrainType = TerrainType.Planetary;
+                _terrainType = TerrainType.Planetary;
                 harvestType = $"LocalSpace (planet / moon) - {vessel.checkLanded()}";
             }
 
-            drillTarget = hit.collider.gameObject.GetComponentUpwards<PartModule>();
+            _drillTarget = hit.collider.gameObject.GetComponentUpwards<PartModule>();
 
-            if (drillTarget == null) return false;
+            if (_drillTarget == null) return false;
 
-            if (drillTarget.ClassName == "ModuleComet")
+            if (_drillTarget.ClassName == "ModuleComet")
             {
-                terrainType = TerrainType.Comet;
+                _terrainType = TerrainType.Comet;
                 harvestType = $"Comet harvesting - {vessel.SituationString}";
             }
 
-            if (drillTarget.ClassName == "ModuleAsteroid")
+            if (_drillTarget.ClassName == "ModuleAsteroid")
             {
-                terrainType = TerrainType.Asteroid;
+                _terrainType = TerrainType.Asteroid;
                 harvestType = $"Asteroid harvesting - {vessel.SituationString}";
             }
 
-            if (terrainType == TerrainType.None)
+            if (_terrainType == TerrainType.None)
             {
-                drillTarget = null;
+                _drillTarget = null;
 
-                if (rateLimit++ % 250 == 0)
+                if (_rateLimit++ % 250 == 0)
                 {
                     Debug.Log($"[Universal Drill] Hit /something/ but I have no idea what. Please let a developer know about this, what planet pack you're using, so on and so fourth. Thanks.");
-                    Debug.Log($"[Universal Drill] drillTarget.className is {drillTarget.ClassName}, name is {drillTarget.name}");
+                    Debug.Log($"[Universal Drill] drillTarget.className is {_drillTarget.ClassName}, name is {_drillTarget.name}");
                     return false;
                 }
             }
@@ -673,7 +672,7 @@ namespace KIT.Resources
                 return;
             }
 
-            switch (terrainType)
+            switch (_terrainType)
             {
                 case TerrainType.None:
                     return;
@@ -697,13 +696,13 @@ namespace KIT.Resources
             double bonusMultiplier = 0.05; // 0.0005
             double minedAmount = bonusMultiplier * drillSize * effectiveness * percentPower;
 
-            if(drillTarget == null)
+            if(_drillTarget == null)
             {
                 Debug.Log($"[Universal Drill] Odd, no drillTarget");
                 return;
             }
 
-            var spaceObjectInfo = drillTarget.part.FindModuleImplementing<ModuleSpaceObjectInfo>();
+            var spaceObjectInfo = _drillTarget.part.FindModuleImplementing<ModuleSpaceObjectInfo>();
             if (spaceObjectInfo == null)
             {
                 Debug.Log($"[Universal Drill] no ModuleSpaceObjectInfo available. Free resources!");
@@ -787,9 +786,9 @@ namespace KIT.Resources
 
         private void GetAsteroidCometResourceData()
         {
-            if (drillTarget == null) return;
+            if (_drillTarget == null) return;
 
-            asteroidCometResources = drillTarget.part.FindModulesImplementing<ModuleSpaceObjectResource>();
+            asteroidCometResources = _drillTarget.part.FindModulesImplementing<ModuleSpaceObjectResource>();
         }
 
         private void DrawGui(int window)
@@ -833,7 +832,7 @@ namespace KIT.Resources
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MaxCapacity"), _bold_label, GUILayout.Width(valueWidth));//"Max Capacity"
             GUILayout.EndHorizontal();
 
-            if (terrainType == TerrainType.Planetary)
+            if (_terrainType == TerrainType.Planetary)
             {
                 GetResourceData();
                 if (localResources != null)

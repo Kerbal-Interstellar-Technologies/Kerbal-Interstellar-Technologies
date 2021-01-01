@@ -96,15 +96,19 @@ namespace KIT.Resources
             var bodyOceanicComposition = new List<OceanicResource>();
 
             ConfigNode oceanicResourcePack = GameDatabase.Instance.GetConfigNodes("OCEANIC_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
+            if (oceanicResourcePack == null)
+            {
+                Debug.Log("[CreateFromKspiOceanDefinitionFile] can not find OCEANIC_RESOURCE_PACK_DEFINITION_KSPI");
+                return bodyOceanicComposition;
+            }
 
             Debug.Log("[KSPI] Loading oceanic data from pack: " + (oceanicResourcePack.HasValue("name") ? oceanicResourcePack.GetValue("name") : "Unknown pack"));
-            if (oceanicResourcePack != null)
-            {
-                Debug.Log("[KSPI]: searching for ocean definition for " + celestialBody.name);
-                List<ConfigNode> oceanicResourceList = oceanicResourcePack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == FlightGlobals.Bodies[refBody].name).ToList();
-                if (oceanicResourceList.Any())
-                    bodyOceanicComposition = oceanicResourceList.Select(orsc => new OceanicResource(orsc.HasValue("resourceName") ? orsc.GetValue("resourceName") : null, double.Parse(orsc.GetValue("abundance")), orsc.GetValue("guiName"))).ToList();
-            }
+
+            Debug.Log("[KSPI]: searching for ocean definition for " + celestialBody.name);
+            List<ConfigNode> oceanicResourceList = oceanicResourcePack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == FlightGlobals.Bodies[refBody].name).ToList();
+            if (oceanicResourceList.Any())
+                bodyOceanicComposition = oceanicResourceList.Select(orsc => new OceanicResource(orsc.HasValue("resourceName") ? orsc.GetValue("resourceName") : null, double.Parse(orsc.GetValue("abundance")), orsc.GetValue("guiName"))).ToList();
+
             return bodyOceanicComposition;
         }
 
@@ -198,7 +202,7 @@ namespace KIT.Resources
 
                 AddResource(KITResourceSettings.Helium4Lqd, "Helium-4", refBody, bodyComposition, new[] { "LqdHe4", "Helium4Gas", "Helium4", "Helium-4", "He4Gas", "He4", "LqdHelium", "Helium", "HeliumGas" });
                 AddResource(KITResourceSettings.Helium3Lqd, "Helium-3", refBody, bodyComposition, new[] { "LqdHe3", "Helium3Gas", "Helium3", "Helium-3", "He3Gas", "He3" });
-                AddResource(KITResourceSettings.HydrogenLqd, "Hydrogen", refBody, bodyComposition, new[] { "LqdHydrogen", "HydrogenGas", "Hydrogen", "H2", "Protium", "LqdProtium"});
+                AddResource(KITResourceSettings.HydrogenLqd, "Hydrogen", refBody, bodyComposition, new[] { "LqdHydrogen", "HydrogenGas", "Hydrogen", "H2", "Protium", "LqdProtium" });
             }
             catch (Exception ex)
             {
@@ -257,7 +261,7 @@ namespace KIT.Resources
 
         private static void AddResource(string outputResourceName, string displayName, int refBody, List<OceanicResource> bodyOceanicComposition, string[] variants)
         {
-            var abundances = new[] { GetAbundance(outputResourceName, refBody)}.Concat(variants.Select(m => GetAbundance(m, refBody)));
+            var abundances = new[] { GetAbundance(outputResourceName, refBody) }.Concat(variants.Select(m => GetAbundance(m, refBody)));
 
             var oceanicResource = new OceanicResource(outputResourceName, abundances.Max(), displayName, variants);
             if (oceanicResource.ResourceAbundance > 0)
@@ -303,7 +307,7 @@ namespace KIT.Resources
                 if (waterResource != null)
                 {
                     var heavyWaterAbundance = waterResource.ResourceAbundance / 6420;
-                    bodyOceanicComposition.Add(new OceanicResource(KITResourceSettings.WaterHeavy, heavyWaterAbundance, "HeavyWater", new[] {"HeavyWater", "D2O", "DeuteriumWater"}));
+                    bodyOceanicComposition.Add(new OceanicResource(KITResourceSettings.WaterHeavy, heavyWaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
                 }
             }
 

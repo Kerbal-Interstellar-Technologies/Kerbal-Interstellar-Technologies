@@ -63,7 +63,7 @@
 
 			// bool found = false;
 
-			foreach (PartModule module in part.Modules)
+			foreach (var module in part.Modules)
 			{
 				if (module.moduleName == "Habitat")
 				{

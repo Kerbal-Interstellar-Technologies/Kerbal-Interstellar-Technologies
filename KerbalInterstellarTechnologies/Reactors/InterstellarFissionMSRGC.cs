@@ -415,7 +415,7 @@ namespace KIT.Reactors
         private void SwitchFuelType()
         {
             var startFirstFuelType = CurrentFuelMode.Variants.First().ReactorFuels.First();
-            var currentFirstFuelType = startFirstFuelType;
+            ReactorFuel currentFirstFuelType;
 
             do
             {
