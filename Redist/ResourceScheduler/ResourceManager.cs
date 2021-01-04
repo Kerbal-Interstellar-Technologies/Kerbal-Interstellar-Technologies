@@ -177,11 +177,12 @@ namespace KIT.ResourceScheduler
                 return wanted;
             }
 
-            var surplusWanted = _currentMaxResources[resource];
-            if (resource == ResourceName.ChargedParticle) surplusWanted = 0;
+            double surplusWanted = 0;
+            if(resource != ResourceName.ChargedParticle) _currentMaxResources.TryGetValue(resource, out surplusWanted);
 
             // Convert to seconds
             obtainedAmount = wanted * (obtainedAmount / modifiedAmount);
+            // Debug.Log($"[ConsumeResource] calling variable suppliers for {KITResourceSettings.ResourceToName(resource)}, already have {obtainedAmount}, want a total of {wanted}, with a surplus of {surplusWanted}");
             obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted, surplusWanted);
 
             // We do not need to account for InternalCurrentlySupplied here, as the modules called above will call
@@ -189,6 +190,8 @@ namespace KIT.ResourceScheduler
 
             // is it close enough to being fully requested? (accounting for precision issues)
             var result = (obtainedAmount < (wanted * fudgeFactor)) ? wanted * (obtainedAmount / wanted) : wanted;
+
+            // Debug.Log($"[ConsumeResource] after calling variable suppliers, obtainedAmount is {obtainedAmount}, fudged value is {wanted * fudgeFactor}, and result is {result}");
 
             tmpPPRI.Amount += result;
             if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
@@ -220,6 +223,8 @@ namespace KIT.ResourceScheduler
                     $"[KITResourceManager.ProduceResource] don't{(_inExecuteKITModules ? " use outside of IKITModules" : "")} {(amount < 0 ? " produce negative amounts" : "")}");
                 return 0;
             }
+
+            // Debug.Log($"[ProduceResource] called with resource = {KITResourceSettings.ResourceToName(resource)}, amount = {amount} and max as {max}");
 
             if (TrackableResource(resource))
             {
@@ -594,12 +599,14 @@ namespace KIT.ResourceScheduler
                 _currentResources[resource] -= tmp;
                 reducedObtainedAmount += tmp;
 
+                // Debug.Log($"[CallVariableSuppliers] _currentResources[resource] is {_currentResources[resource]}, reducedOriginalAmount - reducedObtainedAmount is {reducedOriginalAmount - reducedObtainedAmount} and tmp is {tmp}, reducedObtainedAmount is now {reducedObtainedAmount}");
+
                 _modsCurrentlyRunning.Remove(kitMod);
 
                 if (reducedObtainedAmount >= reducedOriginalAmount) return originalAmount;
             }
 
-            return obtainedAmount * (reducedObtainedAmount / reducedOriginalAmount);
+            return originalAmount * (reducedObtainedAmount / reducedOriginalAmount);
         }
 
         public double ResourceSpareCapacity(ResourceName resourceIdentifier)
