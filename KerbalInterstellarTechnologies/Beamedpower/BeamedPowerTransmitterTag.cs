@@ -1,4 +1,4 @@
-﻿namespace KIT.Beamedpower
+﻿namespace KIT.BeamedPower
 {
     public class MirrorRelaysTransmitterTag : BeamedPowerTransmitterTag { };
 

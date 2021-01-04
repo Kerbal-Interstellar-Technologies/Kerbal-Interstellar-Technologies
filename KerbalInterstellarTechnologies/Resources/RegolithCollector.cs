@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace KIT.Resources
 {
-    class RegolithCollector : PartModule, IKITMod
+    class RegolithCollector : PartModule, IKITModule
     {
         public const string GROUP = "RegolithCollector";
         public const string GROUP_TITLE = "#LOC_KSPIE_RegolithCollector_groupName";
@@ -316,7 +316,14 @@ namespace KIT.Resources
             resMan.ProduceResource(ResourceName.WasteHeat, dTotalWasteHeatProduction);
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 3;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

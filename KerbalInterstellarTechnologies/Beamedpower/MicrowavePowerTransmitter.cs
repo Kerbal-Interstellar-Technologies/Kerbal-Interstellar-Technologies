@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.BeamedPower;
 using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
@@ -9,7 +8,7 @@ using KIT.Wasteheat;
 using KSP.Localization;
 using UnityEngine;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     class PhasedArrayTransmitter : BeamedPowerTransmitter { }
 
@@ -17,7 +16,7 @@ namespace KIT.Beamedpower
 
     class BeamedPowerLaserTransmitter : BeamedPowerTransmitter { }
 
-    class BeamedPowerTransmitter : PartModule, IKITMod, IMicrowavePowerTransmitter, IScalarModule
+    class BeamedPowerTransmitter : PartModule, IKITModule, IMicrowavePowerTransmitter, IScalarModule
     {
         public const string GROUP = "BeamedPowerTransmitter";
         public const string GROUP_TITLE = "#LOC_KSPIE_MicrowavePowerTransmitter_groupName";
@@ -54,9 +53,9 @@ namespace KIT.Beamedpower
         [KSPField(isPersistant = true)]
         public double atmosphericAbsorption = 0.1;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_MinRelayWaveLength", guiFormat = "F8", guiUnits = " m")]//Min Relay WaveLength
-        public double minimumRelayWavelenght;
+        public double minimumRelayWaveLength;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_MicrowavePowerTransmitter_MaxRelayWaveLength", guiFormat = "F8", guiUnits = " m")]//Max Relay WaveLength
-        public double maximumRelayWavelenght;
+        public double maximumRelayWaveLength;
         [KSPField(isPersistant = true)]
         public double aperture = 1;
         [KSPField(isPersistant = true)]
@@ -192,8 +191,8 @@ namespace KIT.Beamedpower
 
             // update wavelength
             wavelength = Wavelength;
-            minimumRelayWavelenght = wavelength * 0.99;
-            maximumRelayWavelenght = wavelength * 1.01;
+            minimumRelayWaveLength = wavelength * 0.99;
+            maximumRelayWaveLength = wavelength * 1.01;
 
             wavelengthText = WavelengthToText(wavelength);
             wavelengthName = WavelengthName;
@@ -286,8 +285,8 @@ namespace KIT.Beamedpower
             // use all available receivers
             if (hasLinkedReceivers)
             {
-                minimumRelayWavelenght = receiversConfiguredForRelay.Min(m => m.minimumWavelength);
-                maximumRelayWavelenght = receiversConfiguredForRelay.Max(m => m.maximumWavelength);
+                minimumRelayWaveLength = receiversConfiguredForRelay.Min(m => m.minimumWavelength);
+                maximumRelayWaveLength = receiversConfiguredForRelay.Max(m => m.maximumWavelength);
 
                 diameter = receiversConfiguredForRelay.Max(m => m.diameter);
             }
@@ -422,11 +421,11 @@ namespace KIT.Beamedpower
                     return true;
 
                 var pressure = part.atmDensity;
-                var dynamic_pressure = 0.5 * pressure * 1.2041 * vessel.srf_velocity.sqrMagnitude / 101325.0;
+                var dynamicPressure = 0.5 * pressure * 1.2041 * vessel.srf_velocity.sqrMagnitude / 101325.0;
 
-                if (dynamic_pressure <= 0) return true;
+                if (dynamicPressure <= 0) return true;
 
-                var pressureLoad = (dynamic_pressure / 1.4854428818159e-3) * 100;
+                var pressureLoad = (dynamicPressure / 1.4854428818159e-3) * 100;
                 if (pressureLoad > 100 * atmosphereToleranceModifier)
                     return false;
                 else
@@ -448,7 +447,7 @@ namespace KIT.Beamedpower
             atmosphericAbsorption = totalAbsorptionPercentage / 100;
 
             bool vesselInSpace = (vessel.situation == Vessel.Situations.ORBITING || vessel.situation == Vessel.Situations.ESCAPING || vessel.situation == Vessel.Situations.SUB_ORBITAL);
-            bool receiver_on = part_receiver != null && part_receiver.isActive();
+            bool receiverOn = part_receiver != null && part_receiver.isActive();
             canBeActive = CanBeActive;
 
             if (anim != null && !canBeActive && IsEnabled && part.vessel.isActiveVessel && !CheatOptions.UnbreakableJoints)
@@ -472,12 +471,12 @@ namespace KIT.Beamedpower
             var canOperateInCurrentEnvironment = canFunctionOnSurface || vesselInSpace;
             var vesselCanTransmit = canTransmit && canOperateInCurrentEnvironment;
 
-            activateTransmittervEvent.active = activeBeamGenerator != null && vesselCanTransmit && !IsEnabled && !relay && !receiver_on && canBeActive;
+            activateTransmittervEvent.active = activeBeamGenerator != null && vesselCanTransmit && !IsEnabled && !relay && !receiverOn && canBeActive;
             deactivateTransmitterEvent.active = IsEnabled;
 
             canRelay = hasLinkedReceivers && canOperateInCurrentEnvironment;
 
-            activateRelayEvent.active = canRelay && !IsEnabled && !relay && !receiver_on && canBeActive;
+            activateRelayEvent.active = canRelay && !IsEnabled && !relay && !receiverOn && canBeActive;
             deactivateRelayEvent.active = relay;
 
             mergingBeams = IsEnabled && canRelay && isBeamMerger;
@@ -489,7 +488,7 @@ namespace KIT.Beamedpower
             transmitPowerField.guiActive = part_receiver == null || !part_receiver.isActive();
 
             bool isLinkedForRelay = part_receiver != null && part_receiver.linkedForRelay;
-            bool receiverNotInUse = !isLinkedForRelay && !receiver_on && !IsRelay;
+            bool receiverNotInUse = !isLinkedForRelay && !receiverOn && !IsRelay;
 
             totalAbsorptionPercentageField.guiActive = receiverNotInUse;
             wavelengthField.guiActive = receiverNotInUse;
@@ -503,7 +502,7 @@ namespace KIT.Beamedpower
             {
                 if (isLinkedForRelay)
                     statusStr = Localizer.Format("#LOC_KSPIE_MicrowavePowerTransmitter_Statu3");//"Is Linked For Relay"
-                else if (receiver_on)
+                else if (receiverOn)
                     statusStr = Localizer.Format("#LOC_KSPIE_MicrowavePowerTransmitter_Statu4");//"Receiver active"
                 else if (canRelay)
                     statusStr = Localizer.Format("#LOC_KSPIE_MicrowavePowerTransmitter_Statu5");//"Is ready for relay"
@@ -651,8 +650,8 @@ namespace KIT.Beamedpower
                         ApertureSum = relay.aperture,
                         PowerCapacity = relay.power_capacity,
                         Wavelength = relay.Wavelength,
-                        MinWavelength = relay.minimumRelayWavelenght,
-                        MaxWavelength = relay.maximumRelayWavelenght,
+                        MinWavelength = relay.minimumRelayWaveLength,
+                        MaxWavelength = relay.maximumRelayWaveLength,
                         IsMirror = relay.isMirror,
                         AtmosphericAbsorption = relay.CombinedAtmosphericAbsorption
                     });
@@ -668,8 +667,8 @@ namespace KIT.Beamedpower
             relayPersistence.Aperture = relays.Average(m => m.aperture) * Approximate.Sqrt(relays.Count);
             relayPersistence.Diameter = relays.Average(m => m.diameter);
             relayPersistence.PowerCapacity = relays.Sum(m => m.PowerCapacity);
-            relayPersistence.MinimumRelayWavelength = relays.Min(m => m.minimumRelayWavelenght);
-            relayPersistence.MaximumRelayWavelength = relays.Max(m => m.maximumRelayWavelenght);
+            relayPersistence.MinimumRelayWavelength = relays.Min(m => m.minimumRelayWaveLength);
+            relayPersistence.MaximumRelayWavelength = relays.Max(m => m.maximumRelayWaveLength);
 
             return relayPersistence;
         }
@@ -844,11 +843,11 @@ namespace KIT.Beamedpower
                         totalDiameter += diameter;
                         totalPowerCapacity += powerCapacity;
 
-                        var relayWavelengthMin = double.Parse(protoModule.moduleValues.GetValue("minimumRelayWavelenght"));
+                        var relayWavelengthMin = double.Parse(protoModule.moduleValues.GetValue("minimumRelayWaveLength"));
                         if (relayWavelengthMin < minimumRelayWavelength)
                             minimumRelayWavelength = relayWavelengthMin;
 
-                        var relayWavelengthMax = double.Parse(protoModule.moduleValues.GetValue("maximumRelayWavelenght"));
+                        var relayWavelengthMax = double.Parse(protoModule.moduleValues.GetValue("maximumRelayWaveLength"));
                         if (relayWavelengthMax > maximumRelayWavelength)
                             maximumRelayWavelength = relayWavelengthMax;
 
@@ -906,8 +905,15 @@ namespace KIT.Beamedpower
             return info.ToStringAndRelease();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = false;
+            hasLocalResources = false;
 
+            return true;
+        }
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (activeBeamGenerator != null)

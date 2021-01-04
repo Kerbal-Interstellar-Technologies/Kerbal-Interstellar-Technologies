@@ -11,7 +11,7 @@ using static System.String;
 namespace KIT.Propulsion
 {
     [KSPModule("#LOC_KSPIE_AlcubierreDrive_partModuleName")]
-    class AlcubierreDrive : PartModule, IKITMod
+    class AlcubierreDrive : PartModule, IKITModule
     {
         public const string GROUP = "AlcubierreDrive";
         public const string GROUP_TITLE = "#LOC_KSPIE_AlcubierreDrive_groupName";
@@ -1745,7 +1745,14 @@ namespace KIT.Propulsion
             return minimumDistance;
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         private void UpdateStats()
         {

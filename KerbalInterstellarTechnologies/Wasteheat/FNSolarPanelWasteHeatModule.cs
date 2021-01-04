@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Beamedpower;
+using KIT.BeamedPower;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using UnityEngine;
@@ -19,7 +19,7 @@ namespace KIT.Wasteheat
     }
 
     [KSPModule("Solar Panel Adapter")]
-    class FNSolarPanelWasteHeatModule : PartModule, IKITMod, ISolarPower
+    class FNSolarPanelWasteHeatModule : PartModule, IKITModule, ISolarPower
     {
         public const string GROUP = "FNSolarPanelWasteHeatModule";
         public const string GROUP_TITLE = "Interstellar Solar Generator";
@@ -204,7 +204,14 @@ namespace KIT.Wasteheat
             return 1d / (distanceInAu * distanceInAu);
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 1;
+            supplierOnly = true;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

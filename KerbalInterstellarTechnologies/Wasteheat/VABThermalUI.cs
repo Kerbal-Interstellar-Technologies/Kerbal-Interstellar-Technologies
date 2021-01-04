@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Beamedpower;
+using KIT.BeamedPower;
 using KIT.Extensions;
 using KIT.Powermanagement;
 using KIT.Powermanagement.Interfaces;
@@ -408,7 +408,7 @@ namespace KIT.Wasteheat
                 if (!beamedReceiver.receiverIsEnabled)
                     continue;
 
-                var maxWasteheatProduction = beamedReceiver.MaximumRecievePower * (1 - beamedReceiver.activeBandwidthConfiguration.MaxEfficiencyPercentage * 0.01);
+                var maxWasteheatProduction = beamedReceiver.MaximumRecievePower * (1 - beamedReceiver.ActiveBandwidthConfiguration.MaxEfficiencyPercentage * 0.01);
 
                 _wasteheatSourcePower100Pc += maxWasteheatProduction;
                 _wasteheatSourcePower90Pc += maxWasteheatProduction * 0.90;

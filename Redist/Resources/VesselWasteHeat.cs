@@ -30,7 +30,7 @@ namespace KIT.Resources
 
     */
 
-    public class VesselHeatDissipation : IKITMod
+    public class VesselHeatDissipation : IKITModule
     {
         public Vessel Vessel;
 
@@ -113,7 +113,14 @@ namespace KIT.Resources
             return _KITPartName;
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = false;
+            hasLocalResources = false;
+            return true;
+        }
+
     }
 
 }

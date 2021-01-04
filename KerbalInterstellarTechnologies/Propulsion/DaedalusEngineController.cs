@@ -17,7 +17,7 @@ namespace KIT.Propulsion
     class FusionEngineController : DaedalusEngineController { }
 
     [KSPModule("Confinement Fusion Engine")]
-    class DaedalusEngineController : PartModule, IKITMod, IUpgradeableModule , IRescalable<DaedalusEngineController>
+    class DaedalusEngineController : PartModule, IKITModule, IUpgradeableModule , IRescalable<DaedalusEngineController>
     {
         const string LightBlue = "#7fdfffff";
         const string GROUP = "FusionEngine";
@@ -910,7 +910,14 @@ namespace KIT.Propulsion
             return sb.ToStringAndRelease();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

@@ -18,7 +18,7 @@ using UnityEngine;
 namespace KIT.Reactors
 {
     [KSPModule("#LOC_KSPIE_Reactor_moduleName")]
-    class InterstellarReactor : PartModule, IKITMod, IKITVariableSupplier, IFNPowerSource, IRescalable<InterstellarReactor>, IPartCostModifier
+    class InterstellarReactor : PartModule, IKITModule, IKITVariableSupplier, IFNPowerSource, IRescalable<InterstellarReactor>, IPartCostModifier
     {
         public const string GROUP = "InterstellarReactor";
         public const string GROUP_TITLE = "#LOC_KSPIE_Reactor_groupName";
@@ -2223,8 +2223,8 @@ namespace KIT.Reactors
                 part.Resources[fuel.ResourceName].amount -= reduction;
                 return reduction * fuel.DensityInTon;
             }
-            else
-                return 0;
+
+            return 0;
         }
 
         protected virtual double ProduceReactorProduct(IResourceManager resMan, ReactorProduct product, double powerInMj)
@@ -2711,7 +2711,15 @@ namespace KIT.Reactors
 
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => (ResourcePriorityValue)electricPowerPriority;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = (int)electricPowerPriority;
+            supplierOnly = false;
+            hasLocalResources = true;
+
+            return true;
+        }
+
 
         /// <summary>
         /// electricChargeGeneratedLastUpdate indicates how much ElectricCharge was generated in the since the previous FixedUpdate()

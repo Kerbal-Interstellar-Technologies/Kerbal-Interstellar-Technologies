@@ -13,7 +13,7 @@ namespace KIT.Resources
         public double Local { get; set; }
     }
 
-    class UniversalCrustExtractor : PartModule, IKITMod
+    class UniversalCrustExtractor : PartModule, IKITModule
     {
         public const string GROUP = "UniversalCrustExtractor";
         public const string GROUP_TITLE = "#LOC_KSPIE_UniversalCrustExtractor_groupName";
@@ -923,7 +923,14 @@ namespace KIT.Resources
             loopAnimation.Blend(loopingAnimationName, 1);
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

@@ -55,7 +55,7 @@ namespace KIT.ResourceScheduler
     }
 
     /// <summary>
-    /// This interface is passed to the part modules in IKITMod.KITFixedUpdate. It allows the 
+    /// This interface is passed to the part modules in IKITModule.KITFixedUpdate. It allows the 
     /// production and consumption of resources, and access to some wrapper variables to avoid global
     /// variable access.
     /// </summary>
@@ -126,28 +126,33 @@ namespace KIT.ResourceScheduler
     {
         // since the last call.
         bool VesselModified();
-        void VesselKITModules(ref List<IKITMod> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules);
+        void VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules);
         void OnKITProcessingFinished(IResourceManager resourceManager);
     }
 
     /// <summary>
-    /// IKITMod defines an interface used by Kerbal Interstellar Technologies PartModules. Through this interface,
+    /// IKITModule defines an interface used by Kerbal Interstellar Technologies PartModules. Through this interface,
     /// various functions are called on the PartModule from the KIT Resource Manager Vessel Module.
     /// </summary>
-    public interface IKITMod
+    public interface IKITModule
     {
         /// <summary>
-        /// This is the priority that the module should run at, from 1 to 5. 1 will be ran first, and 5 will be ran last.
+        /// Tells the resource scheduler about this module, and how it should be ran, when it should be accessed
         /// </summary>
-        /// <returns>Part Priority</returns>
-        ResourcePriorityValue ResourceProcessPriority();
+        /// <param name="priority">number between 1-5 indicating when the resource should be initialized</param>
+        /// <param name="supplierOnly">does this module only supply resources (solar panel, etc?)</param>
+        /// <param name="hasLocalResources">does this module use resources specific to that part? (radioactive, no flow, etc) The ResourceManager interface will give access to those if true</param>
+        /// <returns>true if the module is ready to run, false otherwise</returns>
+        bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources);
+        
         /// <summary>
         /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules. 
         /// </summary>
         /// <param name="resMan">Interface to the resource manager, and options that should be used when the code is running</param>
         void KITFixedUpdate(IResourceManager resMan);
+
         /// <summary>
-        /// 
+        /// String to identify the part
         /// </summary>
         /// <returns>String to identify the part</returns>
         string KITPartName();

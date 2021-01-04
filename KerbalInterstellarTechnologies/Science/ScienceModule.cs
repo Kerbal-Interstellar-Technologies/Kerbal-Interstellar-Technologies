@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace KIT.Science
 {
-    class ScienceModule : PartModule, IKITMod, ITelescopeController, IUpgradeableModule
+    class ScienceModule : PartModule, IKITModule, ITelescopeController, IUpgradeableModule
     {
         // persistant true
         [KSPField(isPersistant = true)]
@@ -544,7 +544,14 @@ namespace KIT.Science
             return kerbalFactor * (1.1f - (kerbal.stupidity / 5f));
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

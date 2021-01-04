@@ -6,7 +6,7 @@ using UnityEngine;
 namespace KIT.Powermanagement
 {
     [KSPModule("Near Future Fission Generator Adapter")]
-    class FNFissionGeneratorAdapter : PartModule, IKITMod
+    class FNFissionGeneratorAdapter : PartModule, IKITModule
     {
         [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Currentpower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F5")]//Generator current power
         public double megaJouleGeneratorPowerSupply;
@@ -49,7 +49,14 @@ namespace KIT.Powermanagement
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 1;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

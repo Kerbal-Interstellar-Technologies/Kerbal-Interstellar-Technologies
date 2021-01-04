@@ -9,9 +9,18 @@ namespace KIT.ResourceScheduler
 {
 
     // ReSharper disable once InconsistentNaming
-    public class KITDCElectricalSystem : IKITMod, IDCElectricalSystem
+    public class KITDCElectricalSystem : IKITModule, IDCElectricalSystem
     {
         public double UnallocatedElectricChargeConsumption;
+
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 0;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -28,7 +37,7 @@ namespace KIT.ResourceScheduler
             return _KITPartName;
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        
 
         double IDCElectricalSystem.UnallocatedElectricChargeConsumption() => UnallocatedElectricChargeConsumption;
     }
@@ -36,7 +45,7 @@ namespace KIT.ResourceScheduler
     /// <summary>
     /// KITResourceManager implements the Resource Manager code for Kerbal Interstellar Technologies.
     /// 
-    /// <para>It acts as a scheduler for the KIT Part Modules (denoted by the IKITMod interface), calling them by their self reported priority. This occurs 
+    /// <para>It acts as a scheduler for the KIT Part Modules (denoted by the IKITModule interface), calling them by their self reported priority. This occurs 
     /// every FixedUpdate(), and the IKITMods do not implemented their own FixedUpdate() interface.</para>
     /// 
     /// <para>It also manages what resources are available each FixedUpdate() tick for the modules, and once all modules have ran, it finalizes the results. This eliminates the need for resource buffering implementations.</para>
@@ -83,7 +92,7 @@ namespace KIT.ResourceScheduler
             RefreshEventOccurred = true;
         }
 
-        private SortedDictionary<ResourceName, SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>> variableSupplierModules = new SortedDictionary<ResourceName, SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>>();
+        private SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> variableSupplierModules = new SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
 
         Dictionary<ResourceName, double> _resourceAmounts = new Dictionary<ResourceName, double>(32);
         Dictionary<ResourceName, double> _resourceMaxAmounts = new Dictionary<ResourceName, double>(32);
@@ -132,12 +141,12 @@ namespace KIT.ResourceScheduler
             return ret;
         }
 
-        readonly SortedDictionary<ResourcePriorityValue, List<IKITMod>> sortedModules = new SortedDictionary<ResourcePriorityValue, List<IKITMod>>();
-        readonly Dictionary<ResourceName, SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>> tmpVariableSupplierModules = new Dictionary<ResourceName, SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>>();
+        readonly SortedDictionary<int, List<IKITModule>> sortedModules = new SortedDictionary<int, List<IKITModule>>();
+        readonly Dictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> tmpVariableSupplierModules = new Dictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
 
         List<PartResource> _decayPartResourceList = new List<PartResource>(64);
 
-        void IVesselResources.VesselKITModules(ref List<IKITMod> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules)
+        void IVesselResources.VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules)
         {
             // Clear the inputs
 
@@ -154,19 +163,18 @@ namespace KIT.ResourceScheduler
             foreach (var part in vessel.parts)
             {
                 #region Loop over modules
-                foreach (var _mod in part.Modules)
+                foreach (var partModule in part.Modules)
                 {
-                    var mod = _mod as IKITMod;
+                    var mod = partModule as IKITModule;
                     if (mod == null) continue;
                     // Handle the KITFixedUpdate() side of things first.
 
-                    var priority = mod.ResourceProcessPriority();
-                    var prepend = (priority & ResourcePriorityValue.SupplierOnlyFlag) == ResourcePriorityValue.SupplierOnlyFlag;
-                    priority &= ~ResourcePriorityValue.SupplierOnlyFlag;
-
-                    if (sortedModules.TryGetValue(priority, out _) == false)
+                    var working = mod.ModuleConfiguration(out var priority, out var prepend, out var hasLocalResources);
+                    if (!working) continue;
+                    
+                    if (!sortedModules.TryGetValue(priority, out _))
                     {
-                        sortedModules[priority] = new List<IKITMod>(32);
+                        sortedModules[priority] = new List<IKITModule>(32);
                     }
 
                     if (prepend)
@@ -187,7 +195,7 @@ namespace KIT.ResourceScheduler
                     {
                         if (tmpVariableSupplierModules.ContainsKey(resource) == false)
                         {
-                            tmpVariableSupplierModules[resource] = new SortedDictionary<ResourcePriorityValue, List<IKITVariableSupplier>>();
+                            tmpVariableSupplierModules[resource] = new SortedDictionary<int, List<IKITVariableSupplier>>();
                         }
                         var modules = tmpVariableSupplierModules[resource];
 
@@ -231,7 +239,7 @@ namespace KIT.ResourceScheduler
 
             NeedsRefresh = false;
 
-            foreach (List<IKITMod> list in sortedModules.Values)
+            foreach (List<IKITModule> list in sortedModules.Values)
             {
                 moduleList.AddRange(list);
             }
@@ -254,12 +262,13 @@ namespace KIT.ResourceScheduler
             _resourceAmounts.Clear();
             _resourceMaxAmounts.Clear();
 
+            var ignoreFlow = HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
+                .IgnoreResourceFlowRestrictions;
+
             foreach (var part in vessel.Parts)
             {
-                foreach (var resource in part.Resources)
+                foreach (var resource in part.Resources.Where( t => t.maxAmount > 0 && (t.flowState || ignoreFlow)))
                 {
-                    if (resource.maxAmount == 0) continue;
-
                     var resourceID = KITResourceSettings.NameToResource(resource.resourceName);
                     if (resourceID == ResourceName.Unknown)
                     {
@@ -278,43 +287,47 @@ namespace KIT.ResourceScheduler
             }
         }
 
-        private void HandleChargedParticles(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
+        private void HandleSpecialResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
         {
             // Per FreeThinker, "charged particle  power should technically not be able to be stored. The only reason it existed was to have some consumption
             // balancing when there are more than one consumer.", "charged particles should become Thermal heat when unconsumed and if no Thermal
             // storage available it should become waste heat."
 
-            if (available.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount))
-            {
-                _resourceMaxAmounts.Remove(ResourceName.ChargedParticle);
-                available.Remove(ResourceName.ChargedParticle);
+            var hasChargedParticles = available.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount);
+            var hasThermalPower = available.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount);
 
-                // Store any charged particles in either WasteHeat or ThermalPower
-                if (available.ContainsKey(ResourceName.ThermalPower) == false)
-                {
-                    available[ResourceName.WasteHeat] += chargedParticleAmount;
-                }
-                else
-                {
-                    available[ResourceName.ThermalPower] += chargedParticleAmount;
-                }
+            if (! available.ContainsKey(ResourceName.WasteHeat))
+            {
+                // Seems unlikely to have Charged Particles and/or Thermal Power without WasteHeat, but just in case
+                available[ResourceName.WasteHeat] = 0;
             }
 
-            if (available.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount))
+
+            if (hasChargedParticles)
+            {
+                available[ResourceName.ChargedParticle] = 0;
+
+                // Store any remaining charged particles in either ThermalPower or WasteHeat
+                available[hasThermalPower ? ResourceName.ThermalPower : ResourceName.WasteHeat] += chargedParticleAmount;
+            }
+
+            if (hasThermalPower)
             {
                 // Have we exceeded the storage capacity for Thermal Power?
-                if (_resourceMaxAmounts.ContainsKey(ResourceName.ThermalPower))
+                if (maxAmounts.ContainsKey(ResourceName.ThermalPower))
                 {
-                    var diff = thermalPowerAmount - _resourceMaxAmounts[ResourceName.ThermalPower];
+                    var diff = thermalPowerAmount - maxAmounts[ResourceName.ThermalPower];
 
                     if (diff > 0)
                     {
                         available[ResourceName.WasteHeat] += diff;
-                        available[ResourceName.ThermalPower] = _resourceMaxAmounts[ResourceName.ThermalPower];
+                        available[ResourceName.ThermalPower] = maxAmounts[ResourceName.ThermalPower];
                     }
                 }
                 else
                 {
+                    // no Thermal Power storage. Seems unlikely, but just in case
+                    
                     available.Remove(ResourceName.ThermalPower);
                     available[ResourceName.WasteHeat] += thermalPowerAmount;
                 }
@@ -323,13 +336,16 @@ namespace KIT.ResourceScheduler
 
         void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
         {
-            HandleChargedParticles(ref available, ref maxAmounts);
+            HandleSpecialResources(ref available, ref maxAmounts);
+
+            var ignoreFlow = HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
+                .IgnoreResourceFlowRestrictions;
 
             // Disperse the resources throughout the vessel
 
             foreach (var part in vessel.Parts)
             {
-                foreach (var resource in part.Resources)
+                foreach (var resource in part.Resources.Where(t => t.maxAmount > 0 && (t.flowState || ignoreFlow)))
                 {
                     var resourceID = KITResourceSettings.NameToResource(resource.resourceName);
                     if (resourceID == ResourceName.Unknown)
@@ -340,8 +356,9 @@ namespace KIT.ResourceScheduler
 
                     if (available.ContainsKey(resourceID) == false || maxAmounts.ContainsKey(resourceID) == false) return;
 
-                    var mult = Math.Min(1, (available[resourceID] / maxAmounts[resourceID]));
-                    resource.amount = resource.maxAmount * mult;
+                    var tmp = available[resourceID] / maxAmounts[resourceID];
+                    var multiplier = (tmp > 1) ? 1 : (tmp < 0) ? 0 : tmp;
+                    resource.amount = resource.maxAmount * multiplier;
                 }
             }
         }

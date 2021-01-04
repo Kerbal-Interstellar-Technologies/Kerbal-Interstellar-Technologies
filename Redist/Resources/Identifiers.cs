@@ -111,19 +111,9 @@ namespace KIT.Resources
 
         FusionPellets,
         FissionParticles,
+        LithiumDeuteride,
 
         EndResource,
-    }
-
-    [Flags]
-    public enum ResourcePriorityValue
-    {
-        First = 1,
-        Second = 2,
-        Third = 3,
-        Fourth = 4,
-        Fifth = 5,
-        SupplierOnlyFlag = 0x80,
     }
 
     public static class KITResourceSettings
@@ -200,7 +190,8 @@ namespace KIT.Resources
         public static string XenonLqd { get; private set; } = "LqdXenon";
         public static string FusionPellets { get; private set; } = "FusionPellets";
         public static string FissionParticles { get; private set; } = "FissionParticles";
-
+        public static string LithiumDeuteride { get; private set; } = "LithiumDeuteride";
+    
         #endregion
 
         #region Pseudo resources
@@ -305,6 +296,7 @@ namespace KIT.Resources
 
                 case ResourceName.FusionPellets: return FusionPellets;
                 case ResourceName.FissionParticles: return FissionParticles;
+                case ResourceName.LithiumDeuteride: return LithiumDeuteride;
                 case ResourceName.EndResource: return EndResource;
                 default: throw new InvalidEnumArgumentException(nameof(resource), (int)resource, typeof(ResourceName));
             }
