@@ -7,7 +7,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Beamedpower;
+using KIT.BeamedPower;
 using KIT.Interfaces;
 using KIT.Powermanagement.Interfaces;
 using TweakScale;
@@ -33,7 +33,7 @@ namespace KIT.Powermanagement
     class ChargedParticlesPowerGenerator : FNGenerator { }
 
     [KSPModule(" Generator")]
-    class FNGenerator : PartModule, IKITMod, IKITVariableSupplier, IUpgradeableModule, IFNElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
+    class FNGenerator : PartModule, IKITModule, IKITVariableSupplier, IUpgradeableModule, IFNElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
     {
         public const string GROUP = "FNGenerator";
         public const string GROUP_TITLE = "#LOC_KSPIE_Generator_groupName";
@@ -913,15 +913,25 @@ namespace KIT.Powermanagement
         }
 
 
-        public ResourcePriorityValue ResourceProcessPriority()
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
         {
             if (isLimitedByMinThrottle)
-                return (ResourcePriorityValue)1;
+            {
+                priority = 1;
+            }
+            else if (attachedPowerSource != null)
+            {
+                priority = attachedPowerSource.ProviderPowerPriority;
+            }
+            else
+            {
+                priority = 3;
+            }
+            
+            supplierOnly = false;
+            hasLocalResources = false;
 
-            if (attachedPowerSource == null)
-                return ResourcePriorityValue.Third;
-
-            return (ResourcePriorityValue)attachedPowerSource.ProviderPowerPriority;
+            return true;
         }
 
         double thermalPowerRatio, chargedPowerRatio;

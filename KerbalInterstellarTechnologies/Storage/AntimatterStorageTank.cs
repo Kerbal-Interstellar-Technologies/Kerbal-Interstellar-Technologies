@@ -12,7 +12,7 @@ using UnityEngine;
 namespace KIT.Storage
 {
     [KSPModule("Antimatter Storage")]
-    class AntimatterStorageTank : PartModule, IKITMod, IPartMassModifier, IRescalable<FNGenerator>, IPartCostModifier
+    class AntimatterStorageTank : PartModule, IKITModule, IPartMassModifier, IRescalable<FNGenerator>, IPartCostModifier
     {
         public const string GROUP = "AntimatterStorageTank";
         public const string GROUP_TITLE = "#LOC_KSPIE_AntimatterStorageTank_groupName";
@@ -801,7 +801,14 @@ namespace KIT.Storage
             return info.ToString();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => 0;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 0;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

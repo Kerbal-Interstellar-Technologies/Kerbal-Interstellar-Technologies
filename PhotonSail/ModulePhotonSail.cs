@@ -1,4 +1,5 @@
-﻿using KIT.BeamedPower;
+﻿
+using KIT.BeamedPower;
 using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
@@ -13,28 +14,28 @@ namespace PhotonSail
 {
     class BeamEffect
     {
-        public GameObject solar_effect;
-        public Renderer solar_effect_renderer;
-        public Collider solar_effect_collider;
+        public GameObject SolarEffect;
+        public Renderer SolarEffectRenderer;
+        public Collider SolarEffectCollider;
     }
 
     class ReceivedBeamedPower
     {
-        public double receivedPower;
-        public double pitchAngle;
-        public double spotsize;
-        public double cosConeAngle;
+        public double ReceivedPower;
+        public double PitchAngle;
+        public double SpotSize;
+        public double CosConeAngle;
     }
 
     class BeamRay
     {
-        public double energyInGigaWatt;
-        public double spotSize;
-        public double cosConeAngle;
-        public Vector3d powerSourceToVesselVector;
+        public double EnergyInGigaWatt;
+        public double SpotSize;
+        public double CosConeAngle;
+        public Vector3d PowerSourceToVesselVector;
     }
 
-    public class ModulePhotonSail : PartModule, IKITMod, IBeamedPowerReceiver, IPartMassModifier, IRescalable<ModulePhotonSail>
+    public class ModulePhotonSail : PartModule, IKITModule, IBeamedPowerReceiver, IPartMassModifier, IRescalable<ModulePhotonSail>
     {
         // Persistent Variables
         [KSPField(isPersistant = true)]
@@ -610,21 +611,21 @@ namespace PhotonSail
 
         private BeamEffect CreateBeam(int renderQueue)
         {
-            var beam = new BeamEffect {solar_effect = GameObject.CreatePrimitive(PrimitiveType.Cylinder)};
+            var beam = new BeamEffect {SolarEffect = GameObject.CreatePrimitive(PrimitiveType.Cylinder)};
 
-            beam.solar_effect.transform.localScale = Vector3.zero;
-            beam.solar_effect.transform.position = Vector3.zero;
-            beam.solar_effect.transform.rotation = part.transform.rotation;
+            beam.SolarEffect.transform.localScale = Vector3.zero;
+            beam.SolarEffect.transform.position = Vector3.zero;
+            beam.SolarEffect.transform.rotation = part.transform.rotation;
 
-            beam.solar_effect_collider = beam.solar_effect.GetComponent<Collider>();
-            beam.solar_effect_collider.enabled = false;
+            beam.SolarEffectCollider = beam.SolarEffect.GetComponent<Collider>();
+            beam.SolarEffectCollider.enabled = false;
 
-            beam.solar_effect_renderer = beam.solar_effect.GetComponent<Renderer>();
-            beam.solar_effect_renderer.material.shader = transparentShader;
-            beam.solar_effect_renderer.material.color = new Color(Color.white.r, Color.white.g, Color.white.b, 1);
-            beam.solar_effect_renderer.material.mainTexture = beamTexture;
-            beam.solar_effect_renderer.material.renderQueue = renderQueue;
-            beam.solar_effect_renderer.receiveShadows = false;
+            beam.SolarEffectRenderer = beam.SolarEffect.GetComponent<Renderer>();
+            beam.SolarEffectRenderer.material.shader = transparentShader;
+            beam.SolarEffectRenderer.material.color = new Color(Color.white.r, Color.white.g, Color.white.b, 1);
+            beam.SolarEffectRenderer.material.mainTexture = beamTexture;
+            beam.SolarEffectRenderer.material.renderQueue = renderQueue;
+            beam.SolarEffectRenderer.receiveShadows = false;
 
             return beam;
         }
@@ -806,17 +807,17 @@ namespace PhotonSail
                         cosConeAngle = Vector3d.Dot(powerSourceToVesselVector.normalized, -vessel.transform.up);
                     var effectiveDiameter = cosConeAngle * diameter;
 
-                    var labdaSpotSize = powerSourceToVesselVector.magnitude * kscLaserWavelength / kscLaserAperture;
-                    var centralSpotSize = labdaSpotSize * kscCentralSpotsizeMult;
-                    var sideSpotSize = labdaSpotSize * kscSideSpotsizeMult;
+                    var lambdaSpotSize = powerSourceToVesselVector.magnitude * kscLaserWavelength / kscLaserAperture;
+                    var centralSpotSize = lambdaSpotSize * kscCentralSpotsizeMult;
+                    var sideSpotSize = lambdaSpotSize * kscSideSpotsizeMult;
 
-                    var centralSpotsizeRatio = centralSpotSize > 0 ? Math.Min(1, effectiveDiameter / centralSpotSize) : 1;
-                    var sideSpotsizeRatio = sideSpotSize > 0 ? Math.Min(1, effectiveDiameter / sideSpotSize) : 1;
-                    var sideSpotsizeToFourthPowerRatio = sideSpotsizeRatio * sideSpotsizeRatio * sideSpotsizeRatio * sideSpotsizeRatio;
+                    var centralSpotSizeRatio = centralSpotSize > 0 ? Math.Min(1, effectiveDiameter / centralSpotSize) : 1;
+                    var sideSpotSizeRatio = sideSpotSize > 0 ? Math.Min(1, effectiveDiameter / sideSpotSize) : 1;
+                    var sideSpotSizeToFourthPowerRatio = sideSpotSizeRatio * sideSpotSizeRatio * sideSpotSizeRatio * sideSpotSizeRatio;
 
-                    var throtledPower = availableBeamedKscEnergy * beamedPowerThrottleRatio;
-                    var receivedPowerFromCentralSpot = throtledPower * kscCentralSpotEnergyRatio * centralSpotsizeRatio;
-                    var receivedPowerFromSideSpot = throtledPower * kscSideSpotEnergyRatio * sideSpotsizeToFourthPowerRatio;
+                    var throttledPower = availableBeamedKscEnergy * beamedPowerThrottleRatio;
+                    var receivedPowerFromCentralSpot = throttledPower * kscCentralSpotEnergyRatio * centralSpotSizeRatio;
+                    var receivedPowerFromSideSpot = throttledPower * kscSideSpotEnergyRatio * sideSpotSizeToFourthPowerRatio;
                     receivedBeamedPowerFromKsc = receivedPowerFromCentralSpot + receivedPowerFromSideSpot;
 
                     //gausionRatio = Math.Pow(centralSpotsizeRatio, 0.3 + (0.6 * (1 - centralSpotsizeRatio)))
@@ -836,8 +837,8 @@ namespace PhotonSail
         {
             foreach (var ray in beamRays)
             {
-                var availableSailDiameter = sailSurfaceModifier * ray.cosConeAngle * diameter * 0.25;
-                var effect = Math.Ceiling(10 * Math.Pow(ray.energyInGigaWatt, 0.35));
+                var availableSailDiameter = sailSurfaceModifier * ray.CosConeAngle * diameter * 0.25;
+                var effect = Math.Ceiling(10 * Math.Pow(ray.EnergyInGigaWatt, 0.35));
                 var effectCount = (int)effect;
 
                 if (effect == 0)
@@ -848,9 +849,9 @@ namespace PhotonSail
                     if (beamCounter < animatedRays)
                     {
                         var effectRatio = (effect - i) / effect;
-                        var scale = ray.spotSize * 4 * effectRatio < diameter ? 1 : 2;
-                        var spotSize = (float)Math.Max(availableSailDiameter * effectRatio, ray.spotSize * effectRatio);
-                        UpdateVisibleBeam(part, beamEffectArray[beamCounter++], ray.powerSourceToVesselVector, scale, spotSize);
+                        var scale = ray.SpotSize * 4 * effectRatio < diameter ? 1 : 2;
+                        var spotSize = (float)Math.Max(availableSailDiameter * effectRatio, ray.SpotSize * effectRatio);
+                        UpdateVisibleBeam(part, beamEffectArray[beamCounter++], ray.PowerSourceToVesselVector, scale, spotSize);
                     }
                 }
             }
@@ -1053,29 +1054,29 @@ namespace PhotonSail
             if (!isSun && sailSurfaceModifier > 0 && beamedPowerThrottle > 0)
             {
                 var availableEnergyInGigaWatt = availableEnergyInWatt * 1e-9;
-                BeamRay ray = beamRays.FirstOrDefault(m => Math.Abs(m.cosConeAngle - cosConeAngle) < 0.0001);
+                BeamRay ray = beamRays.FirstOrDefault(m => Math.Abs(m.CosConeAngle - cosConeAngle) < 0.0001);
 
                 if (ray != null)
                 {
-                    var totalEnergy = ray.energyInGigaWatt + availableEnergyInGigaWatt;
+                    var totalEnergy = ray.EnergyInGigaWatt + availableEnergyInGigaWatt;
 
                     if (totalEnergy > 0)
                     {
-                        ray.spotSize = totalEnergy > 0
-                            ? (ray.spotSize * (ray.energyInGigaWatt / totalEnergy)) + (beamSpotSize * (availableEnergyInGigaWatt / totalEnergy))
+                        ray.SpotSize = totalEnergy > 0
+                            ? (ray.SpotSize * (ray.EnergyInGigaWatt / totalEnergy)) + (beamSpotSize * (availableEnergyInGigaWatt / totalEnergy))
                             : 0;
                     }
 
-                    ray.energyInGigaWatt = totalEnergy;
+                    ray.EnergyInGigaWatt = totalEnergy;
                 }
                 else
                 {
                     beamRays.Add(new BeamRay()
                     {
-                        energyInGigaWatt = availableEnergyInGigaWatt,
-                        cosConeAngle = cosConeAngle,
-                        spotSize = beamSpotSize,
-                        powerSourceToVesselVector = powerSourceToVesselVector
+                        EnergyInGigaWatt = availableEnergyInGigaWatt,
+                        CosConeAngle = cosConeAngle,
+                        SpotSize = beamSpotSize,
+                        PowerSourceToVesselVector = powerSourceToVesselVector
                     });
                 }
             }
@@ -1139,7 +1140,7 @@ namespace PhotonSail
             }
             else
             {
-                receivedBeamedPowerList.Add(new ReceivedBeamedPower { pitchAngle = pitchAngleInDegree, receivedPower = energyOnSailnWatt * 1e-6, spotsize = beamSpotSize, cosConeAngle = cosConeAngle });
+                receivedBeamedPowerList.Add(new ReceivedBeamedPower { PitchAngle = pitchAngleInDegree, ReceivedPower = energyOnSailnWatt * 1e-6, SpotSize = beamSpotSize, CosConeAngle = cosConeAngle });
                 beamedSailForce += signedForce;
                 beamed_acc_d += signedAccel;
             }
@@ -1188,9 +1189,9 @@ namespace PhotonSail
             var solarVectorY = normalizedPowerSourceToVesselVector.y * 90 - 90;
             var solarVectorZ = normalizedPowerSourceToVesselVector.z * 90;
 
-            beamEffect.solar_effect.transform.localRotation = new Quaternion((float)solarVectorX, (float)solarVectorY, (float)solarVectorZ, 0);
-            beamEffect.solar_effect.transform.localScale = new Vector3(beamSize, (float)(beamLength * scaleModifer), beamSize);
-            beamEffect.solar_effect.transform.position = new Vector3((float)(part.transform.position.x + midPos.x + timeCorrection.x), (float)(part.transform.position.y + midPos.y + timeCorrection.y), (float)(part.transform.position.z + midPos.z + timeCorrection.z));
+            beamEffect.SolarEffect.transform.localRotation = new Quaternion((float)solarVectorX, (float)solarVectorY, (float)solarVectorZ, 0);
+            beamEffect.SolarEffect.transform.localScale = new Vector3(beamSize, (float)(beamLength * scaleModifer), beamSize);
+            beamEffect.SolarEffect.transform.position = new Vector3((float)(part.transform.position.x + midPos.x + timeCorrection.x), (float)(part.transform.position.y + midPos.y + timeCorrection.y), (float)(part.transform.position.z + midPos.z + timeCorrection.z));
         }
 
         private static double solarFluxAtDistance(Vessel vessel, CelestialBody star, double luminosity)
@@ -1288,7 +1289,15 @@ namespace PhotonSail
             return TechnologyHelper.UpgradeAvailable(name);
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => 0;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 1;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
+
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -1373,11 +1382,11 @@ namespace PhotonSail
             // process statistical data
             if (receivedBeamedPowerList.Count > 0)
             {
-                totalReceivedBeamedPower = receivedBeamedPowerList.Sum(m => m.receivedPower);
+                totalReceivedBeamedPower = receivedBeamedPowerList.Sum(m => m.ReceivedPower);
                 if (totalReceivedBeamedPower > 0)
                 {
-                    weightedBeamPowerPitch = receivedBeamedPowerList.Sum(m => m.pitchAngle * m.receivedPower / totalReceivedBeamedPower);
-                    weightedBeamedPowerSpotsize = receivedBeamedPowerList.Sum(m => m.spotsize * m.receivedPower / totalReceivedBeamedPower);
+                    weightedBeamPowerPitch = receivedBeamedPowerList.Sum(m => m.PitchAngle * m.ReceivedPower / totalReceivedBeamedPower);
+                    weightedBeamedPowerSpotsize = receivedBeamedPowerList.Sum(m => m.SpotSize * m.ReceivedPower / totalReceivedBeamedPower);
                     totalReceivedBeamedPowerInGigaWatt = totalReceivedBeamedPower * 1e-3;
                 }
             }

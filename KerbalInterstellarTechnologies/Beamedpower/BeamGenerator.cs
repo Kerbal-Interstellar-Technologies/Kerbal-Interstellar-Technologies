@@ -4,7 +4,7 @@ using System.Linq;
 using TweakScale;
 using UnityEngine;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     [KSPModule("Integrated Beam Generator")]//#LOC_KSPIE_BeamGenerator_ModuleName1
     class IntegratedBeamGenerator : BeamGenerator { }

@@ -10,7 +10,7 @@ namespace KIT.Storage
     class ModuleStorageCryostat: FNModuleCryostat {}
 
     [KSPModule("Cryostat")]
-    class FNModuleCryostat : PartModule, IKITMod
+    class FNModuleCryostat : PartModule, IKITModule
     {
         public const string GROUP = "FNModuleCryostat";
         public const string GROUP_TITLE = "Interstellar Cryostat";
@@ -171,7 +171,14 @@ namespace KIT.Storage
                 $"{resourceName} @ {boilOffTemp:F1} K\nPower Requirements: {powerReqKW * 0.2 * powerReqMult * envMod:F1} KW";
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Second;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 2;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

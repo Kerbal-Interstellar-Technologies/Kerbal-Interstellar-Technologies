@@ -9,23 +9,23 @@ namespace KIT.Toolbar
 
     public class ResourceUI
     {
-        readonly ResourceManager vesselResourceManager;
+        readonly ResourceManager _vesselResourceManager;
 
         public ResourceUI(ResourceManager vesselResourceManager)
         {
-            this.vesselResourceManager = vesselResourceManager;
+            this._vesselResourceManager = vesselResourceManager;
         }
 
-        readonly ResourceName[] resources = new[] { ResourceName.ElectricCharge, ResourceName.ThermalPower, ResourceName.ChargedParticle, ResourceName.WasteHeat };
+        readonly ResourceName[] _resources = new[] { ResourceName.ElectricCharge, ResourceName.ThermalPower, ResourceName.ChargedParticle, ResourceName.WasteHeat };
 
         // TODO: we should ensure that we only run after a fixed update, not in between.
         public string TextUI()
         {
             List<string> elements = new List<string>(128);
             
-            foreach(var resource in resources)
+            foreach(var resource in _resources)
             {
-                if(vesselResourceManager.ModProduction.TryGetValue(resource, out var resourceList))
+                if(_vesselResourceManager.ModProduction.TryGetValue(resource, out var resourceList))
                 {
                     elements.Add($"<br><b>{KITResourceSettings.ResourceToName(resource)} Producers</b><br>");
                     var mods = resourceList.Keys;
@@ -35,7 +35,7 @@ namespace KIT.Toolbar
                     }
                 }
 
-                if (vesselResourceManager.ModConsumption.TryGetValue(resource, out resourceList))
+                if (_vesselResourceManager.ModConsumption.TryGetValue(resource, out resourceList))
                 {
                     elements.Add($"<br><b>{KITResourceSettings.ResourceToName(resource)} Consumers</b><br>");
                     var mods = resourceList.Keys;

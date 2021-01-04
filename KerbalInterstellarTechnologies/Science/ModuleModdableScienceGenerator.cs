@@ -7,7 +7,7 @@ using KSP.UI.Screens.Flight.Dialogs;
 namespace KIT.Science
 {
 
-    class ModuleModdableScienceGenerator : PartModule, IKITMod, IScienceDataContainer
+    class ModuleModdableScienceGenerator : PartModule, IKITModule, IScienceDataContainer
     {
         [KSPField(isPersistant = false)]
         public bool canDeploy = false;
@@ -239,7 +239,14 @@ namespace KIT.Science
         }
 
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

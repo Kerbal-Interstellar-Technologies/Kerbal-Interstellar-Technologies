@@ -290,17 +290,24 @@ namespace KIT.Science
 
         public bool CanRelayUnloaded(ProtoPartModuleSnapshot mSnap)
         {
-            bool Is_Enabled, Is_Powered;
+            bool isEnabled, isPowered;
 
-            Is_Enabled = Is_Powered = false;
+            isEnabled = isPowered = false;
 
-            if (!mSnap.moduleValues.TryGetValue(nameof(IsEnabled), ref Is_Enabled)) return false;
-            if (!mSnap.moduleValues.TryGetValue(nameof(IsPowered), ref Is_Powered)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(IsEnabled), ref isEnabled)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(IsPowered), ref isPowered)) return false;
 
-            return Is_Enabled && Is_Powered;
+            return isEnabled && isPowered;
         }
 
-        public new ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+        public new bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 1;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public new void KITFixedUpdate(IResourceManager resMan)
         {

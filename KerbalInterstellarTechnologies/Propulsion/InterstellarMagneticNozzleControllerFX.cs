@@ -8,7 +8,7 @@ using KIT.ResourceScheduler;
 
 namespace KIT.Propulsion
 {
-    class InterstellarMagneticNozzleControllerFX : PartModule, IKITMod, IFnEngineNozzle
+    class InterstellarMagneticNozzleControllerFX : PartModule, IKITModule, IFnEngineNozzle
     {
         public const string GROUP = "MagneticNozzleController";
         public const string GROUP_TITLE = "#LOC_KSPIE_MagneticNozzleControllerFX_groupName";
@@ -423,8 +423,15 @@ namespace KIT.Propulsion
 
             return currentExhaustAngle > allowedExhaustAngle;
         }
+        
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 3;
+            supplierOnly = false;
+            hasLocalResources = false;
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

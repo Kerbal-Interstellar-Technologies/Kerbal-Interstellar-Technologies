@@ -14,7 +14,7 @@ namespace KIT.Powermanagement
 
 
     [KSPModule("Thermal Power Generator")]
-    class FNThermalPowerGenerator : PartModule, IKITMod, IKITVariableSupplier
+    class FNThermalPowerGenerator : PartModule, IKITModule, IKITVariableSupplier
     {
         //Configuration
         [KSPField] public double maximumPowerCapacity = 0.02; // 20 Kw
@@ -70,8 +70,15 @@ namespace KIT.Powermanagement
         {
             return "Maximum Power: " + PluginHelper.GetFormattedPowerString(maximumPowerCapacity) + "<br>Requires radiators to work.<br>";
         }
+        
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 3;
+            supplierOnly = false;
+            hasLocalResources = false;
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

@@ -1,6 +1,6 @@
 ﻿using KSP.Localization;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     [KSPModule("Beamed Power Bandwidth Converter")]//#LOC_KSPIE_BeamedPowerBandwidthConverter
     class BandwidthConverter

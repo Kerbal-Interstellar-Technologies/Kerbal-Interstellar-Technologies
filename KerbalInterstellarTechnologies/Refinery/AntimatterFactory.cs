@@ -5,7 +5,7 @@ using KIT.ResourceScheduler;
 
 namespace KIT.Refinery
 {
-    class AntimatterFactory : PartModule, IKITMod
+    class AntimatterFactory : PartModule, IKITModule
     {
         public const double ONE_THIRD = 1.0 / 3.0;
 
@@ -74,7 +74,14 @@ namespace KIT.Refinery
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

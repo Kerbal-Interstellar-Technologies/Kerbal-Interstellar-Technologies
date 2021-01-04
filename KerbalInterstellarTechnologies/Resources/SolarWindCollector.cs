@@ -8,7 +8,7 @@ using UnityEngine;
 namespace KIT.Resources
 {
     [KSPModule("Solar Wind Collector")]
-    class SolarWindCollector : PartModule, IKITMod
+    class SolarWindCollector : PartModule, IKITModule
     {
         public const string GROUP = "SolarWindCollector";
         public const string GROUP_TITLE = "#LOC_KSPIE_SolarwindCollector_groupName";
@@ -821,7 +821,14 @@ namespace KIT.Resources
             return sb.ToStringAndRelease();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

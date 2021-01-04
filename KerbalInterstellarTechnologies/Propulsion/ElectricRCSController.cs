@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace KIT.Propulsion
 {
-    class ElectricRCSController : PartModule, IKITMod
+    class ElectricRCSController : PartModule, IKITModule
     {
         public const string GROUP = "InterstellarRCSModule";
         public const string GROUP_TITLE = "#LOC_KSPIE_RCSModule_groupName";
@@ -350,7 +350,14 @@ namespace KIT.Propulsion
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Second;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 2;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

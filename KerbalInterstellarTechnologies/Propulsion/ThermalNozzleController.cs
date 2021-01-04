@@ -57,7 +57,7 @@ namespace KIT.Propulsion
     class PlasmaNozzleController : ThermalEngineController { }
 
     [KSPModule("Thermal Engine")]
-    class ThermalEngineController : PartModule, IKITMod, IFnEngineNozzle, IUpgradeableModule, IRescalable<ThermalEngineController>
+    class ThermalEngineController : PartModule, IKITModule, IFnEngineNozzle, IUpgradeableModule, IRescalable<ThermalEngineController>
     {
         public const string GROUP = "ThermalEngineController";
         public const string GROUP_TITLE = "#LOC_KSPIE_ThermalNozzleController_groupName";
@@ -2148,7 +2148,14 @@ namespace KIT.Propulsion
             GUI.DragWindow();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

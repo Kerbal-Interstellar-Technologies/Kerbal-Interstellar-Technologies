@@ -21,14 +21,20 @@ namespace KIT
         [CustomFloatParameterUI("#LOC_KIT_DifficultyConfig_EmergencyShutdownTemperaturePercentage", toolTip = "#LOC_KIT_DifficultyConfig_EmergencyShutdownTemperaturePercentage_tip", minValue = 0.90f, maxValue = 1.0f, displayFormat = "F2", asPercentage = true)]
         public float EmergencyShutdownTemperaturePercentage;
 
+        [CustomParameterUI("#LOC_KIT_DifficultyConfig_IgnoreResourceFlow", toolTip = "#LOC_KIT_DifficultyConfig_IgnoreResourceFlow_tip")]
+        public bool IgnoreResourceFlowRestrictions;
+
         public override void SetDifficultyPreset(Preset preset)
         {
             EmergencyShutdownTemperaturePercentage = 0.95f;
             DisableResourceConsumptionRateLimit = false;
+            var ignoreResourceFlowRestrictions = false;
 
             switch (preset)
             {
                 case Preset.Easy:
+                    ignoreResourceFlowRestrictions = true;
+                    break;
                 case Preset.Moderate:
                 case Preset.Normal:
                     break;
@@ -37,8 +43,9 @@ namespace KIT
                     DisableResourceConsumptionRateLimit = true;
                     break;
             }
+            
+            IgnoreResourceFlowRestrictions = ignoreResourceFlowRestrictions;
         }
-
     }
 
 }

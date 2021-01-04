@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace KIT.Resources
 {
-    class AntimatterCollector : PartModule, IKITMod
+    class AntimatterCollector : PartModule, IKITModule
     {
         public const string GROUP = "AntimatterCollector";
         public const string GROUP_TITLE = "#LOC_KSPIE_AntimatterCollector_groupName";
@@ -61,7 +61,14 @@ namespace KIT.Resources
             canCollect = _moduleAnimateGeneric == null ? true :  _moduleAnimateGeneric.GetScalar == 1;
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

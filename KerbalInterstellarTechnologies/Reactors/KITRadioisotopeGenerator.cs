@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace KIT.Reactors
 {
-    public class KITRadioisotopeGenerator : PartModule, IKITMod
+    public class KITRadioisotopeGenerator : PartModule, IKITModule
     {
         public const string GROUP_DISPLAY_NAME = "Radioisotope Generator";
         public const string GROUP_NAME = "KITRadioisotopeGenerator";
@@ -177,6 +177,13 @@ namespace KIT.Reactors
             return Localizer.Format("#LOC_KIT_RTG_GetInfo");
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First | ResourcePriorityValue.SupplierOnlyFlag;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 0;
+            supplierOnly = true;
+            hasLocalResources = true;
+
+            return true;
+        }
     }
 }

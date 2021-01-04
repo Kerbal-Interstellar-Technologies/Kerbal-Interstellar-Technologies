@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace KIT.Resources
 {
-    public class GasLiquidConversion : IKITMod, IKITVariableSupplier
+    public class GasLiquidConversion : IKITModule, IKITVariableSupplier
     {
         static readonly ResourceName GasStart = ResourceName.CarbonDioxideGas;
         static readonly ResourceName GasEnd = ResourceName.XenonGas;
@@ -124,7 +124,14 @@ namespace KIT.Resources
             throw new NotImplementedException();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = false;
+            hasLocalResources = false;
+            return true;
+        }
+
 
         private readonly ResourceName[] _resourcesConverted = new[] {
             ResourceName.NeonGas, ResourceName.CarbonDioxideGas, ResourceName.CarbonMonoxideGas, ResourceName.DeuteriumGas,

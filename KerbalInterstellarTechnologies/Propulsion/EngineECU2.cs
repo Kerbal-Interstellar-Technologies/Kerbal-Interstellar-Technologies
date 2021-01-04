@@ -10,7 +10,7 @@ namespace KIT.Propulsion
 {
     enum GenerationType { Mk1 = 0, Mk2 = 1, Mk3 = 2, Mk4 = 3, Mk5 = 4, Mk6 = 5, Mk7 = 6, Mk8 = 7, Mk9 = 8 }
 
-    abstract class EngineECU2 : PartModule, IKITMod
+    abstract class EngineECU2 : PartModule, IKITModule
     {
         public const string GROUP = "EngineECU2";
         public const string GROUP_TITLE = "#LOC_KSPIE_EngineECU2_groupName";
@@ -683,7 +683,14 @@ namespace KIT.Propulsion
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 3;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

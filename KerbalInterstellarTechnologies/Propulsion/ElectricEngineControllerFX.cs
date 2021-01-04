@@ -15,7 +15,7 @@ namespace KIT.Propulsion
     class ElectrostaticEngineControllerFX : ElectricEngineControllerFX { }
 
     [KSPModule("#LOC_KSPIE_ElectricEngine_partModuleName")]
-    class ElectricEngineControllerFX : PartModule, IKITMod, IUpgradeableModule, IRescalable<ElectricEngineControllerFX>, IPartMassModifier
+    class ElectricEngineControllerFX : PartModule, IKITModule, IUpgradeableModule, IRescalable<ElectricEngineControllerFX>, IPartMassModifier
     {
         public const string GROUP = "ElectricEngineControllerFX";
         public const string GROUP_TITLE = "#LOC_KSPIE_ElectricEngine_groupName";
@@ -920,7 +920,14 @@ namespace KIT.Propulsion
         }
 
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 3;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

@@ -3,7 +3,7 @@ using KIT.ResourceScheduler;
 
 namespace KIT.ReplacementPartModules
 { 
-    class KITModuleEnginesFX : ModuleEnginesFX, IKITMod
+    class KITModuleEnginesFX : ModuleEnginesFX, IKITModule
     {
         public new void FixedUpdate() { }
 
@@ -32,6 +32,14 @@ namespace KIT.ReplacementPartModules
         }
 
         public string KITPartName() => part.partInfo.title;
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = true;
+
+            return true;
+        }
+
     }
 }

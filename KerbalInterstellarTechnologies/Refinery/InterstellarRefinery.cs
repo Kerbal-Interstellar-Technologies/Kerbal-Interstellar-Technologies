@@ -9,7 +9,7 @@ using UnityEngine;
 namespace KIT.Refinery
 {
     [KSPModule("ISRU Refinery")]
-    class InterstellarRefineryController : PartModule, IKITMod
+    class InterstellarRefineryController : PartModule, IKITModule
     {
         [KSPField(isPersistant = true, guiActive = false)]
         protected bool refinery_is_enabled;
@@ -280,8 +280,15 @@ namespace KIT.Refinery
 
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 4;
+            supplierOnly = false;
+            hasLocalResources = false;
 
+            return true;
+        }
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             currentPowerReq = 0;

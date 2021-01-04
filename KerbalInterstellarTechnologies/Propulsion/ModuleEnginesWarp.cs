@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace KIT.Propulsion
 {
-    public class ModuleEnginesWarp : ModuleEnginesFX, IKITMod
+    public class ModuleEnginesWarp : ModuleEnginesFX, IKITModule
     {
         [KSPField(isPersistant = true)]
         bool IsForceActivated;
@@ -395,7 +395,14 @@ namespace KIT.Propulsion
                 return Math.Round(thrust, 3) + " kN";
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
