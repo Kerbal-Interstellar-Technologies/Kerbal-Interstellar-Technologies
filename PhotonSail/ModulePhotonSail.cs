@@ -140,19 +140,19 @@ namespace PhotonSail
         public string kscLaserApertureName7 = "KscApertureUpgradeG";
 
         [KSPField]
-        public string kscPowerUpgdradeName1 = "KscPowerUpgradeA";
+        public string kscPowerUpgradeName1 = "KscPowerUpgradeA";
         [KSPField]
-        public string kscPowerUpgdradeName2 = "KscPowerUpgradeB";
+        public string kscPowerUpgradeName2 = "KscPowerUpgradeB";
         [KSPField]
-        public string kscPowerUpgdradeName3 = "KscPowerUpgradeC";
+        public string kscPowerUpgradeName3 = "KscPowerUpgradeC";
         [KSPField]
-        public string kscPowerUpgdradeName4 = "KscPowerUpgradeD";
+        public string kscPowerUpgradeName4 = "KscPowerUpgradeD";
         [KSPField]
-        public string kscPowerUpgdradeName5 = "KscPowerUpgradeE";
+        public string kscPowerUpgradeName5 = "KscPowerUpgradeE";
         [KSPField]
-        public string kscPowerUpgdradeName6 = "KscPowerUpgradeF";
+        public string kscPowerUpgradeName6 = "KscPowerUpgradeF";
         [KSPField]
-        public string kscPowerUpgdradeName7 = "KscPowerUpgradeG";
+        public string kscPowerUpgradeName7 = "KscPowerUpgradeG";
 
 
         [KSPField]
@@ -540,13 +540,13 @@ namespace PhotonSail
                 return;
 
             kscLaserPowerInWatt = kscLaserPowerBonus0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName1) ? kscLaserPowerBonus1 : 0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName2) ? kscLaserPowerBonus2 : 0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName3) ? kscLaserPowerBonus3 : 0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName4) ? kscLaserPowerBonus4 : 0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName5) ? kscLaserPowerBonus5 : 0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName6) ? kscLaserPowerBonus6 : 0;
-            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgdradeName7) ? kscLaserPowerBonus7 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName1) ? kscLaserPowerBonus1 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName2) ? kscLaserPowerBonus2 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName3) ? kscLaserPowerBonus3 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName4) ? kscLaserPowerBonus4 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName5) ? kscLaserPowerBonus5 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName6) ? kscLaserPowerBonus6 : 0;
+            kscLaserPowerInWatt += HasUpgrade(kscPowerUpgradeName7) ? kscLaserPowerBonus7 : 0;
 
             kscLaserPowerInWatt *= kscPowerMult;
         }
@@ -1359,9 +1359,7 @@ namespace PhotonSail
             // apply photon pressure from every potential laser source
             foreach (var receivedPowerData in sortedConnectedTransmitters)
             {
-                double photonReflection = 0;
-                double photovoltaicEfficiency = 0;
-                GetPhotonStatisticsForWavelength(receivedPowerData.Route.WaveLength, out photonReflection, out photovoltaicEfficiency);
+                GetPhotonStatisticsForWavelength(receivedPowerData.Route.WaveLength, out var photonReflection, out var photovoltaicEfficiency);
 
                 var availableTransmitterPowerInWatt = CheatOptions.IgnoreMaxTemperature
                     ? receivedPowerData.AvailablePower * 1e+6
