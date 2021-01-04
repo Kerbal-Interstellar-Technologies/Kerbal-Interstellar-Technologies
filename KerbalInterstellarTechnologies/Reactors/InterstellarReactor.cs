@@ -1847,9 +1847,6 @@ namespace KIT.Reactors
             totalAmountLithium = 0;
             totalMaxAmountLithium = 0;
 
-            if (breedtritium == false || neutronPowerReceivedEachSecond <= 0 || resMan.FixedDeltaTime() <= 0)
-                return;
-
             // verify if there is any lithium6 present
             var partResourceLithium6 = part.Resources[KITResourceSettings.Lithium6];
             if (partResourceLithium6 == null)
@@ -1857,6 +1854,9 @@ namespace KIT.Reactors
 
             totalAmountLithium = partResourceLithium6.amount;
             totalMaxAmountLithium = partResourceLithium6.maxAmount;
+
+            if (breedtritium == false || neutronPowerReceivedEachSecond <= 0 || resMan.FixedDeltaTime() <= 0)
+                return;
 
             if (totalAmountLithium.IsInfinityOrNaNorZero() || totalMaxAmountLithium.IsInfinityOrNaNorZero())
                 return;
