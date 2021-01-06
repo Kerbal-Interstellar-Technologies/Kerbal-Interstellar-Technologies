@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace KIT.BeamedPower
 {
-    public class KITVesselTracker : PartModule, IKITMod
+    public class KITVesselTracker : PartModule, IKITModule
     {
         internal const string GROUP = "KITVesselTracker";
         internal const string GROUP_TITLE = "#LOC_KIT_VesselTracker_GroupName";
@@ -77,7 +77,7 @@ namespace KIT.BeamedPower
                 Debug.Log("[KITVesselTracker] and now we've got {_rotationTransform} and {_pivotTransform}");
                 if (_rotationTransform == null || _pivotTransform == null) return;
             }
-            
+
             _configured = true;
             Debug.Log("[KITVesselTracker] ready to track vessels");
 
@@ -108,16 +108,16 @@ namespace KIT.BeamedPower
 
             //_rotationTransform.localRotation = Quaternion.RotateTowards(_rotationTransform.localRotation, Quaternion.Euler(0,(float)(test.y), 0 ), 10);
             //_pivotTransform.localRotation = Quaternion.RotateTowards(_pivotTransform.localRotation, Quaternion.Euler((float)test.x, 0, 0), 10);
-            
-            
+
+
             //if (!vessel.HasLineOfSightWith(vesselToTrack))
             //{
-                // Debug.Log("[KITVesselTracker] we do not have line of sight to the vessel we wish to track");
-                return;
+            // Debug.Log("[KITVesselTracker] we do not have line of sight to the vessel we wish to track");
+            return;
             //}
 
-            
-            
+
+
             //var vesselToTrackPosition = vesselToTrack.GetVesselPos();
 
             //Debug.DrawLine(vessel.CoMD.normalized, vesselToTrackPosition.normalized, Color.blue, 4);
@@ -146,32 +146,38 @@ namespace KIT.BeamedPower
 
             //if (_rateLimit++ % 100 == 0)
             //{
-                //Debug.Log($"[CalculateDirectionToFace] directionVector is {directionVector}, and angleToTargetVessel is {angleToTargetVessel}, dotFacing is {dotFacing}, abs is {Math.Abs(dotFacing)}, factor is {1 - Math.Abs(dotFacing)}");
-                //Debug.Log($"[CalculateDirectionToFace] rotatingUp is {rotatingUp} and rotatingSide is {rotatingSide}");
-                //}
-                /*
-                            if (dotFacing < 0)
-                            {
-                                Debug.Log("[CalculateDirectionToFace] target is behind me");
-                                return 0;
-                            }
+            //Debug.Log($"[CalculateDirectionToFace] directionVector is {directionVector}, and angleToTargetVessel is {angleToTargetVessel}, dotFacing is {dotFacing}, abs is {Math.Abs(dotFacing)}, factor is {1 - Math.Abs(dotFacing)}");
+            //Debug.Log($"[CalculateDirectionToFace] rotatingUp is {rotatingUp} and rotatingSide is {rotatingSide}");
+            //}
+            /*
+                        if (dotFacing < 0)
+                        {
+                            Debug.Log("[CalculateDirectionToFace] target is behind me");
+                            return 0;
+                        }
 
-                            if(! _rotationAnimation.IsMoving()) _rotationAnimation.SetScalar((float)(angleToTargetVessel / 180));
-                            if(! _pivotAnimation.IsMoving()) _pivotAnimation.SetScalar((float)(1 - dotFacing));
-                */
+                        if(! _rotationAnimation.IsMoving()) _rotationAnimation.SetScalar((float)(angleToTargetVessel / 180));
+                        if(! _pivotAnimation.IsMoving()) _pivotAnimation.SetScalar((float)(1 - dotFacing));
+            */
 
 
 
-                return 0;
-            }
-
-            public void KITFixedUpdate(IResourceManager resMan)
-            {
-                // deliberately empty
-            }
-
-            public string KITPartName() => part.partInfo.title;
-
-            public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+            return 0;
         }
+
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 5;
+            supplierOnly = hasLocalResources = false;
+
+            return true;
+        }
+
+        public void KITFixedUpdate(IResourceManager resMan)
+        {
+            // deliberately empty
+        }
+
+        public string KITPartName() => part.partInfo.title;
+
     }

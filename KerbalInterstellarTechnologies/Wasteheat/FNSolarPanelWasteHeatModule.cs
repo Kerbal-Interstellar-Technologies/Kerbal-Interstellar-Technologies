@@ -215,7 +215,8 @@ namespace KIT.Wasteheat
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (_solarPanel == null) return;
+            // TODO update this code so that it works when it's tracking a vessel, not a body
+            if (_solarPanel == null || _solarPanel.trackingBody == null) return;
 
             if (_fieldKerbalismNominalRate != null)
             {
