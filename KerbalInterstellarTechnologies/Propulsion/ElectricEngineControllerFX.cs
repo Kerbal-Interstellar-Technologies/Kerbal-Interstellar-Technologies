@@ -336,7 +336,7 @@ namespace KIT.Propulsion
                 ? CurrentPropellant.DecomposedIspMult
                 : CurrentPropellant.IspMultiplier;
 
-        private double mostRecentWasteHeatRatio;
+        private double _mostRecentWasteHeatRatio;
         public double ThermalEfficiency
         {
             get
@@ -344,7 +344,7 @@ namespace KIT.Propulsion
                 if (HighLogic.LoadedSceneIsFlight || CheatOptions.IgnoreMaxTemperature || ignoreWasteheat)
                     return 1;
 
-                return 1 - mostRecentWasteHeatRatio * mostRecentWasteHeatRatio * mostRecentWasteHeatRatio;
+                return 1 - _mostRecentWasteHeatRatio * _mostRecentWasteHeatRatio * _mostRecentWasteHeatRatio;
             }
         }
 
@@ -933,7 +933,7 @@ namespace KIT.Propulsion
         {
             if (_attachedEngine == null || !HighLogic.LoadedSceneIsFlight) return;
 
-            mostRecentWasteHeatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+            _mostRecentWasteHeatRatio = resMan.FillFraction(ResourceName.WasteHeat);
 
             // disable exhaust effects
             if (!string.IsNullOrEmpty(EffectName))
@@ -978,9 +978,9 @@ namespace KIT.Propulsion
 
             if (!_attachedEngine.getIgnitionState) maxPower = 0;
 
-            totalPowerSupplied = resMan.ConsumeResource(ResourceName.ElectricCharge, maxPower * storedThrottle);
+            totalPowerSupplied = resMan.Consume(ResourceName.ElectricCharge, maxPower * storedThrottle);
 
-            var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+            var stats = resMan.ProductionStats(ResourceName.ElectricCharge);
             availableMaximumPower = stats.PreviousDataSupplied() ? stats.PreviouslySupplied() : stats.CurrentSupplied();
             availableCurrentPower = totalPowerSupplied;
 
@@ -1006,7 +1006,7 @@ namespace KIT.Propulsion
             var maxHeatToProduce = maximumAvailablePowerForEngine * heatModifier;
 
             _heatProductionF = heatToProduce;
-            resMan.ProduceResource(ResourceName.WasteHeat, heatToProduce);
+            resMan.Produce(ResourceName.WasteHeat, heatToProduce);
 
             // update GUI Values
             _electricalConsumptionF = actualPowerReceived;

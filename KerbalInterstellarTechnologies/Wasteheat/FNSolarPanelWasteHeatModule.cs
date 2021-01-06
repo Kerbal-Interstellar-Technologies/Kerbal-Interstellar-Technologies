@@ -261,15 +261,15 @@ namespace KIT.Wasteheat
                 }
                 else
                 {
-                    if (kerbalism_panelPower > 0) resMan.ProduceResource(resID, kerbalism_panelPower);
+                    if (kerbalism_panelPower > 0) resMan.Produce(resID, kerbalism_panelPower);
                     else if (_outputResource != null)
                         _outputResource.rate = 0;
                     else
-                        resMan.ProduceResource(resID, solarRate);
+                        resMan.Produce(resID, solarRate);
                 }
             }
 
-            resMan.ProduceResource(ResourceName.ElectricCharge, solarRate);
+            resMan.Produce(ResourceName.ElectricCharge, solarRate);
             mjSolarSupply = PluginHelper.GetFormattedPowerString(solarRate);
             mjMaxSupply = PluginHelper.GetFormattedPowerString(maxSupply);
         }

@@ -90,13 +90,13 @@ namespace KIT.Refinery
 
             // TODO 
             var availablePower = 300; //  getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
-            var resourceBarRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
+            var resourceBarRatio = resMan.FillFraction(ResourceName.ElectricCharge); 
             var effectiveResourceThrottling = resourceBarRatio > ONE_THIRD ? 1 : resourceBarRatio * 3;
 
             var energyRequestedInMegajoulesPerSecond = Math.Min(powerCapacity, effectiveResourceThrottling * availablePower * (double)(decimal)powerPercentage * 0.01);
 
             // XXX
-            var energyProvidedInMegajoulesPerSecond = resMan.ConsumeResource(ResourceName.ElectricCharge, energyRequestedInMegajoulesPerSecond);
+            var energyProvidedInMegajoulesPerSecond = resMan.Consume(ResourceName.ElectricCharge, energyRequestedInMegajoulesPerSecond);
 
             electricalPowerRatio = energyRequestedInMegajoulesPerSecond > 0 ? energyProvidedInMegajoulesPerSecond / energyRequestedInMegajoulesPerSecond : 0;
 

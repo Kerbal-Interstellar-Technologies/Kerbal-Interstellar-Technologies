@@ -25,14 +25,14 @@ namespace KIT.ResourceScheduler
         #region Proxy implementation functions
         public ICheatOptions CheatOptions() => _baseImpl.CheatOptions();
         public double FixedDeltaTime() => _baseImpl.FixedDeltaTime();
-        public double ProduceResource(ResourceName resource, double amount, double max = -1) => _baseImpl.ProduceResource(resource, amount, max);
-        public double ResourceCurrentCapacity(ResourceName resourceIdentifier) => _baseImpl.ResourceCurrentCapacity(resourceIdentifier);
-        public double ResourceFillFraction(ResourceName resourceIdentifier) => _baseImpl.ResourceFillFraction(resourceIdentifier);
-        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier) => _baseImpl.ResourceProductionStats(resourceIdentifier);
-        public double ResourceSpareCapacity(ResourceName resourceIdentifier) => _baseImpl.ResourceSpareCapacity(resourceIdentifier);
+        public double Produce(ResourceName resource, double amount, double max = -1) => _baseImpl.Produce(resource, amount, max);
+        public double CurrentCapacity(ResourceName resourceIdentifier) => _baseImpl.CurrentCapacity(resourceIdentifier);
+        public double FillFraction(ResourceName resourceIdentifier) => _baseImpl.FillFraction(resourceIdentifier);
+        public IResourceProduction ProductionStats(ResourceName resourceIdentifier) => _baseImpl.ProductionStats(resourceIdentifier);
+        public double SpareCapacity(ResourceName resourceIdentifier) => _baseImpl.SpareCapacity(resourceIdentifier);
         #endregion
 
-        public double ConsumeResource(ResourceName resource, double wanted)
+        public double Consume(ResourceName resource, double wanted)
         {
             if(ConsumptionReduction < 0 || ConsumptionReduction > 1)
             {
@@ -45,7 +45,7 @@ namespace KIT.ResourceScheduler
                 wanted = Math.Max(0, wanted * ConsumptionReduction);
             }
 
-            return _baseImpl.ConsumeResource(resource, wanted);
+            return _baseImpl.Consume(resource, wanted);
         }
     }
 

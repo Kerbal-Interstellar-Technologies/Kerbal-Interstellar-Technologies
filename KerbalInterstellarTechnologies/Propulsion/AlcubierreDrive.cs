@@ -39,7 +39,7 @@ namespace KIT.Propulsion
         //public const string warprTexturePath = "WarpPlugin/ParticleFX/warpr";
 
         [KSPField]
-        public string warpSoundPath = "WarpPlugin/Sounds/warp_sound";
+        public string warpSoundPath = "Kerbal-Interstellar-Technologies/Sounds/warp_sound";
         [KSPField]
         public double warpSoundPitchExp = 0.1;
 
@@ -404,7 +404,7 @@ namespace KIT.Propulsion
 
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(selectedWarpSpeed);
 
-            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
+            var powerReturned = resMan.Consume(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
 
             if (powerReturned < 0.99 * currentPowerRequirementForWarp)
             {
@@ -437,7 +437,7 @@ namespace KIT.Propulsion
             _vesselWasInOuterspace = false;
 
             // consume all exotic matter to create warp field
-            resMan.ConsumeResource(ResourceName.ExoticMatter, exotic_power_required);
+            resMan.Consume(ResourceName.ExoticMatter, exotic_power_required);
 
             _warpSound.Play();
             _warpSound.loop = true;
@@ -1220,11 +1220,11 @@ namespace KIT.Propulsion
 
             requiredExoticMaintenancePower = _exoticMatterRatio * _exoticMatterRatio * maximumExoticMaintenancePower;
 
-            var overheatingRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+            var overheatingRatio = resMan.FillFraction(ResourceName.WasteHeat);
 
             var overheatModifier = overheatingRatio < 0.9 ? 1 : (1 - overheatingRatio) * 10;
 
-            ReceivedExoticMaintenancePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requiredExoticMaintenancePower);
+            ReceivedExoticMaintenancePower = resMan.Consume(ResourceName.ElectricCharge, requiredExoticMaintenancePower);
 
             MinimumExoticMatterMaintenanceRatio = minimumExoticMaintenancePower > 0 ? ReceivedExoticMaintenancePower / minimumExoticMaintenancePower : 0;
 
@@ -1247,12 +1247,12 @@ namespace KIT.Propulsion
                 }
                 else
                 {
-                    var resourceBarRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
+                    var resourceBarRatio = resMan.FillFraction(ResourceName.ElectricCharge);
                     var effectiveResourceThrottling = resourceBarRatio > 0.5 ? 1 : resourceBarRatio * 2;
 
                     var wantedPower = Math.Max(overheatModifier * maxChargePowerRequired * effectiveResourceThrottling, minPowerRequirementForLightSpeed);
 
-                    chargePowerDraw = ExoticMatterProduced = resMan.ConsumeResource(ResourceName.ElectricCharge, wantedPower);
+                    chargePowerDraw = ExoticMatterProduced = resMan.Consume(ResourceName.ElectricCharge, wantedPower);
 
                     if (!CheatOptions.InfinitePropellant && ExoticMatterProduced < minPowerRequirementForLightSpeed)
                         _insufficientPowerTimeout--;
@@ -1277,7 +1277,7 @@ namespace KIT.Propulsion
                 ProduceWasteheat(resMan, ExoticMatterProduced);
             }
 
-            resMan.ProduceResource(ResourceName.ExoticMatter, ExoticMatterProduced * 0.001 / powerRequirementMultiplier);
+            resMan.Produce(ResourceName.ExoticMatter, ExoticMatterProduced * 0.001 / powerRequirementMultiplier);
             // part.RequestResource(KITResourceSettings.ExoticMatter, -exoticMatterProduced * 0.001 * TimeWarp.fixedDeltaTime / powerRequirementMultiplier);
         }
 
@@ -1314,7 +1314,7 @@ namespace KIT.Propulsion
 
         private void ProduceWasteheat(IResourceManager resMan, double powerReturned)
         {
-            resMan.ProduceResource(ResourceName.WasteHeat, powerReturned * (isupgraded ? wasteheatRatioUpgraded : wasteheatRatio));
+            resMan.Produce(ResourceName.WasteHeat, powerReturned * (isupgraded ? wasteheatRatioUpgraded : wasteheatRatio));
         }
 
         private double GetPowerRequirementForWarp(double lightspeedFraction)
@@ -1338,7 +1338,7 @@ namespace KIT.Propulsion
 
             double powerReturned;
 
-            availablePower = powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
+            availablePower = powerReturned = resMan.Consume(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
             ProduceWasteheat(resMan, powerReturned);
 
             var headingModifier = FlightGlobals.fetch.VesselTarget == null ? Math.Abs(Math.Min(0, cosineAngleToClosestBody)) : 1;

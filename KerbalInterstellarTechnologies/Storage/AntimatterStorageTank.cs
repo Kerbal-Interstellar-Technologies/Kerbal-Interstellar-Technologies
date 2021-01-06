@@ -666,7 +666,7 @@ namespace KIT.Storage
             double powerRequest = (chargeStatus >= maxCharge ? 1.0 : 2.0) *
                 effectivePowerNeeded;
             // TODO, not sure about this change.
-            double chargeToAdd = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest) / effectivePowerNeeded;
+            double chargeToAdd = resMan.Consume(ResourceName.ElectricCharge, powerRequest) / effectivePowerNeeded;
             chargeStatus += chargeToAdd;
 
             if (chargeToAdd >= resMan.FixedDeltaTime())

@@ -80,11 +80,11 @@ namespace KIT.Resources
                 return;
             }
 
-            double receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, powerReqKW);
+            double receivedPowerKW = resMan.Consume(ResourceName.ElectricCharge, powerReqKW);
             double powerRatio = powerReqKW > 0.0 ? receivedPowerKW / powerReqKW : 0.0;
 
             _effectiveFlux = powerRatio * flux;
-            resMan.ProduceResource(ResourceName.AntiProtium, _effectiveFlux);
+            resMan.Produce(ResourceName.AntiProtium, _effectiveFlux);
         }
 
         public string KITPartName() => part.partInfo.title;

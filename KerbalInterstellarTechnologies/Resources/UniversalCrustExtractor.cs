@@ -633,7 +633,7 @@ namespace KIT.Resources
                 return part.RequestResource(resourceName, -amount * resMan.FixedDeltaTime(), ResourceFlowMode.ALL_VESSEL);
             }
 
-            resMan.ProduceResource(resID, amount);
+            resMan.Produce(resID, amount);
             return amount;
         }
 
@@ -657,7 +657,7 @@ namespace KIT.Resources
             }
 
             double wantedPower = PluginSettings.Config.PowerConsumptionMultiplier * mwRequirements;
-            double percentPower = resMan.ConsumeResource(ResourceName.ElectricCharge, wantedPower) / wantedPower;
+            double percentPower = resMan.Consume(ResourceName.ElectricCharge, wantedPower) / wantedPower;
 
             if (percentPower < minimumPowerNeeded)
             {
@@ -736,7 +736,7 @@ namespace KIT.Resources
                 }
                 else
                 {
-                    resMan.ProduceResource(resID, amount);
+                    resMan.Produce(resID, amount);
                 }
             }
 

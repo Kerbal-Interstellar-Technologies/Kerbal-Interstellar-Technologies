@@ -321,7 +321,7 @@ namespace KIT.Science
                 science_to_add = 0;
             }
 
-            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, _effectivePowerRequirement);
+            var powerReturned = resMan.Consume(ResourceName.ElectricCharge, _effectivePowerRequirement);
 
             electrical_power_ratio = powerReturned / _effectivePowerRequirement;
             IsPowered = electrical_power_ratio > 0.99;
@@ -343,7 +343,7 @@ namespace KIT.Science
                     }
                 }
 
-                resMan.ProduceResource(ResourceName.ElectricCharge, powerReturned);
+                resMan.Produce(ResourceName.ElectricCharge, powerReturned);
                 return;
             }
 

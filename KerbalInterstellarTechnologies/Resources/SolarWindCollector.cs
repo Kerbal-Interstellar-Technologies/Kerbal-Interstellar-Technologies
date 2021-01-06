@@ -624,8 +624,8 @@ namespace KIT.Resources
             var dWasteheatProductionMw = powerReqMult * PluginSettings.Config.PowerConsumptionMultiplier * (magneticPulsatingPowerCost + magneticSuperconductorPowerReqCost * 0.05 + ionizationPowerCost * 0.3);
 
             // checks for free space in solar wind 'tanks'
-            _dSolarWindSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.SolarWind);
-            _dHydrogenSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.HydrogenLqd);
+            _dSolarWindSpareCapacity = resMan.SpareCapacity(ResourceName.SolarWind);
+            _dHydrogenSpareCapacity = resMan.SpareCapacity(ResourceName.HydrogenLqd);
 
             if (solarWindMolesPerSquareMeterPerSecond > 0 || hydrogenMolarMassPerSquareMeterPerSecond > 0 || interstellarDustMolesPerCubicMeter > 0)
             {
@@ -644,11 +644,11 @@ namespace KIT.Resources
                 var heliumRatio = Math.Min(1,  requiredHeliumMass > 0 ? (receivedHeliumGasMass + receiverLqdHeliumMass) / requiredHeliumMass : 0);
 
                 // calculate available power
-                var receivedPowerMw = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMw * heliumRatio);
+                var receivedPowerMw = resMan.Consume(ResourceName.ElectricCharge, dPowerRequirementsMw * heliumRatio);
 
                 dLastPowerRatio = offlineCollecting ? dLastPowerRatio : (dPowerRequirementsMw > 0 ? receivedPowerMw / dPowerRequirementsMw : 0);
 
-                resMan.ProduceResource(ResourceName.WasteHeat, dWasteheatProductionMw * dLastPowerRatio);
+                resMan.Produce(ResourceName.WasteHeat, dWasteheatProductionMw * dLastPowerRatio);
 
                 // show in GUI
                 strCollectingStatus = Localizer.Format("#LOC_KSPIE_SolarwindCollector_Collecting");//"Collecting solar wind"

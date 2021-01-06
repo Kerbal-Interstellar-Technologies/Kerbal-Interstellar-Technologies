@@ -68,7 +68,7 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource Name</param>
         /// <param name="wanted">Requested amount of resource to consume per second</param>
         /// <returns>Amount of resource that there is to consume (per second)</returns>
-        double ConsumeResource(ResourceName resource, double wanted);
+        double Consume(ResourceName resource, double wanted);
 
         /// <summary>
         /// Adds resources to the resource pool. It automatically converts your request to per-seconds,
@@ -77,28 +77,28 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource Name</param>
         /// <param name="amount">Amount of resource to produce per second</param>
         /// <param name="max">The maximum that this part can produce of this resource, in total. If -1, then it will add up all the times the resource has been produced.</param>
-        double ProduceResource(ResourceName resource, double amount, double max = -1);
+        double Produce(ResourceName resource, double amount, double max = -1);
 
         /// <summary>
         /// Checks to see how much storage is available for the given resource, returning 0 if there is none.
         /// </summary>
         /// <param name="resourceIdentifier"></param>
         /// <returns></returns>
-        double ResourceSpareCapacity(ResourceName resourceIdentifier);
+        double SpareCapacity(ResourceName resourceIdentifier);
 
         /// <summary>
-        /// ResourceCurrentCapacity returns how much of a resource is available, ship wide.
+        /// CurrentCapacity returns how much of a resource is available, ship wide.
         /// </summary>
         /// <param name="resourceIdentifier"></param>
         /// <returns></returns>
-        double ResourceCurrentCapacity(ResourceName resourceIdentifier);
+        double CurrentCapacity(ResourceName resourceIdentifier);
 
         /// <summary>
-        /// ResourceFillFraction returns how full the resource is, expressed between 0 and 1.
+        /// FillFraction returns how full the resource is, expressed between 0 and 1.
         /// </summary>
         /// <param name="resourceIdentifier"></param>
         /// <returns></returns>
-        double ResourceFillFraction(ResourceName resourceIdentifier);
+        double FillFraction(ResourceName resourceIdentifier);
 
         /// <summary>Provides access to the (equivalent) of TimeWarp.fixedDeltaTime.</summary>
         /// <remarks>
@@ -113,7 +113,7 @@ namespace KIT.ResourceScheduler
         /// <returns>The ICheatOptions associated with this resource manager.</returns>
         ICheatOptions CheatOptions();
 
-        IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier);
+        IResourceProduction ProductionStats(ResourceName resourceIdentifier);
 
     }
 

@@ -131,8 +131,8 @@ namespace KIT.Refinery.Activity
 
             GetResourceMass(resMan, ResourceName.SolarWind, _solarWind, ref _storedSolarWindMass, ref _maxCapacitySolarWindMass);
 
-            var cur = resMan.ResourceCurrentCapacity(ResourceName.SolarWind);
-            var spare = resMan.ResourceSpareCapacity(ResourceName.SolarWind);
+            var cur = resMan.CurrentCapacity(ResourceName.SolarWind);
+            var spare = resMan.SpareCapacity(ResourceName.SolarWind);
 
             _storedSolarWindMass = cur * _solarWind.density;
             _maxCapacitySolarWindMass = (cur + spare) * _solarWind.density;
@@ -195,7 +195,7 @@ namespace KIT.Refinery.Activity
                 double minConsumptionStorageRatio = consumptionStorageRatios.Min();
 
                 // this consumes the resource
-                _solarWindConsumptionRate = resMan.ConsumeResource(ResourceName.SolarWind, minConsumptionStorageRatio  / _solarWind.density) / _solarWind.density;
+                _solarWindConsumptionRate = resMan.Consume(ResourceName.SolarWind, minConsumptionStorageRatio  / _solarWind.density) / _solarWind.density;
 
                 // this produces the products
                 var hydrogenRateTemp = _solarWindConsumptionRate * _hydrogenMassByFraction;

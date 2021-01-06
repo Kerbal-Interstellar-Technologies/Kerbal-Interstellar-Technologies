@@ -46,8 +46,8 @@ namespace KIT.Refinery.Activity
             _current_power = PowerRequirements * rateMultiplier;
             _currentMassRate = (CurrentPower / EnergyPerTon);
 
-            var spareCapacityNitrogen = resMan.ResourceSpareCapacity(ResourceName.NitrogenLqd);
-            var spareCapacityHydrogen = resMan.ResourceSpareCapacity(ResourceName.HydrogenLqd);
+            var spareCapacityNitrogen = resMan.SpareCapacity(ResourceName.NitrogenLqd);
+            var spareCapacityHydrogen = resMan.SpareCapacity(ResourceName.HydrogenLqd);
 
             var maxNitrogenMassRate = (_currentMassRate * (1 - GameConstants.AmmoniaHydrogenFractionByMass))  / _nitrogenDensity;
             var maxHydrogenMassRate = (_currentMassRate * GameConstants.AmmoniaHydrogenFractionByMass)  / _hydrogenDensity;
@@ -61,16 +61,16 @@ namespace KIT.Refinery.Activity
             }
             else
             {
-                var tmp = resMan.ConsumeResource(ResourceName.AmmoniaLqd, _currentMassRate / _ammoniaDensity);
+                var tmp = resMan.Consume(ResourceName.AmmoniaLqd, _currentMassRate / _ammoniaDensity);
                 _ammoniaConsumptionMassRate = _currentMassRate * (tmp / (_currentMassRate / _ammoniaDensity));
                 
                 var hydrogenMassRate = _ammoniaConsumptionMassRate * GameConstants.AmmoniaHydrogenFractionByMass;
                 var nitrogenMassRate = _ammoniaConsumptionMassRate * (1 - GameConstants.AmmoniaHydrogenFractionByMass);
 
                 _hydrogenProductionMassRate = hydrogenMassRate;
-                resMan.ProduceResource(ResourceName.HydrogenLqd, hydrogenMassRate / _hydrogenDensity);
+                resMan.Produce(ResourceName.HydrogenLqd, hydrogenMassRate / _hydrogenDensity);
                 _nitrogenProductionMassRate = nitrogenMassRate;
-                resMan.ProduceResource(ResourceName.NitrogenLqd, nitrogenMassRate / _nitrogenDensity);
+                resMan.Produce(ResourceName.NitrogenLqd, nitrogenMassRate / _nitrogenDensity);
             }
 
             UpdateStatusMessage();

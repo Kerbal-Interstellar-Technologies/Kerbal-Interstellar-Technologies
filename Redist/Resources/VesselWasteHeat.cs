@@ -88,12 +88,12 @@ namespace KIT.Resources
             // Eh, I am not sure this is working correctly at the moment. TBD.
 
             /*
-            var stats = resMan.ResourceProductionStats(ResourceName.WasteHeat);
+            var stats = resMan.ProductionStats(ResourceName.WasteHeat);
 
-            double availableAmount = resMan.ResourceCurrentCapacity(ResourceName.WasteHeat);
+            double availableAmount = resMan.CurrentCapacity(ResourceName.WasteHeat);
 
             double supply = stats.CurrentSupplied() - stats.CurrentlyRequested();
-            double missingAmount = resMan.ResourceSpareCapacity(ResourceName.WasteHeat);
+            double missingAmount = resMan.SpareCapacity(ResourceName.WasteHeat);
 
             double powerToExtract = AdjustSupplyComplete(-supply);
 
@@ -101,7 +101,7 @@ namespace KIT.Resources
 
             Debug.Log($"[VesselHeatDissipation] powerToExtract is {powerToExtract}, missingAmount is {missingAmount}, and availableAmount is {availableAmount}");
 
-            resMan.ConsumeResource(ResourceName.WasteHeat, Math.Min(availableAmount, powerToExtract));
+            resMan.Consume(ResourceName.WasteHeat, Math.Min(availableAmount, powerToExtract));
             */
         }
 

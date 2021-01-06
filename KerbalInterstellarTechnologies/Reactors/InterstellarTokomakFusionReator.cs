@@ -116,7 +116,7 @@ namespace KIT.Reactors
                 startingReactor = false;
 
                 var myFusionPowerRequirement = PowerRequirement;
-                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, myFusionPowerRequirement);
+                var availablePower = resMan.Consume(ResourceName.ElectricCharge, myFusionPowerRequirement);
 
                 // determine if we have received enough power
 
@@ -141,10 +141,10 @@ namespace KIT.Reactors
             var requestedPower = fusionPowerRequirement + ((plasmaBufferSize - storedPlasmaEnergyRatio) * PowerRequirement);
 
             // consume power from managed power source
-            power_consumed = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
+            power_consumed = resMan.Consume(ResourceName.ElectricCharge, requestedPower);
 
             if (maintenancePowerWasteheatRatio > 0)
-                resMan.ProduceResource(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * power_consumed);
+                resMan.Produce(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * power_consumed);
 
             if (isSwappingFuelMode)
             {
@@ -162,12 +162,12 @@ namespace KIT.Reactors
                 allowJumpStart = plasma_ratio > 0.99;
             }
 
-            var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+            var stats = resMan.ProductionStats(ResourceName.ElectricCharge);
 
             demandRatio = stats.PreviousDataSupplied() ?
                 stats.PreviouslyRequested() / stats.PreviouslySupplied() :
                 stats.CurrentlyRequested() / stats.CurrentlyRequested();
-            resourceRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
+            resourceRatio = resMan.FillFraction(ResourceName.ElectricCharge);
 
         }
 
@@ -177,7 +177,7 @@ namespace KIT.Reactors
             {
                 if (allowJumpStart)
                 {
-                    if (startDisabled)
+                    if (StartDisabled)
                         allowJumpStart = false;
                     else
                     {

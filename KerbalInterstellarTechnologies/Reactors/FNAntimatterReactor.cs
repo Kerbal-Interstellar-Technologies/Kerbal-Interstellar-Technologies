@@ -19,7 +19,7 @@ namespace KIT.Reactors
 
         public override string TypeName => (isupgraded ? upgradedName != "" ? upgradedName : originalName : originalName) + " Antimatter Reactor";
 
-        public override double CurrentMeVPerChargedProduct => CurrentFuelMode != null ? CurrentFuelMode.MeVPerChargedProduct * chargedProductMult * Math.Pow(massDifference, chargedProductExp) : 0;
+        public override double CurrentMeVPerChargedProduct => CurrentFuelMode != null ? CurrentFuelMode.MeVPerChargedProduct * chargedProductMult * Math.Pow(MassDifference, chargedProductExp) : 0;
 
         public double MaximumChargedIspMult => maximumChargedIspMult;
 

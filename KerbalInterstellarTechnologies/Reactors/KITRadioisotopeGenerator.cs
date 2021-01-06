@@ -137,7 +137,7 @@ namespace KIT.Reactors
             }
 
             var densityRatio = decayResource.density / decayProductResource.density;
-            resMan.ProduceResource(decayProductID, productsToGenerateInKG * densityRatio);
+            resMan.Produce(decayProductID, productsToGenerateInKG * densityRatio);
 
             // decay products being generated.
         }
@@ -163,8 +163,8 @@ namespace KIT.Reactors
             if (!HighLogic.LoadedSceneIsFlight) return;
 
             PowerGeneratedPerSecond(out var energyExtractedInKW, out var wasteHeatInKW);
-            resMan.ProduceResource(ResourceName.ElectricCharge, energyExtractedInKW);
-            resMan.ProduceResource(ResourceName.WasteHeat, wasteHeatInKW);
+            resMan.Produce(ResourceName.ElectricCharge, energyExtractedInKW);
+            resMan.Produce(ResourceName.WasteHeat, wasteHeatInKW);
             
             DecayFuel(resMan);
         }

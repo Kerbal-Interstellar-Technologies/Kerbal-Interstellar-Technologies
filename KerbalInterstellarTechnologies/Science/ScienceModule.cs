@@ -591,7 +591,7 @@ namespace KIT.Science
             {
                 var powerRequest = powerReqMult * PluginSettings.Config.BasePowerConsumption;
 
-                double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
+                double electrical_power_provided = resMan.Consume(ResourceName.ElectricCharge, powerRequest);
 
                 electrical_power_ratio = electrical_power_provided / PluginSettings.Config.BasePowerConsumption / powerReqMult;
 
@@ -608,7 +608,7 @@ namespace KIT.Science
             {
                 var powerRequestInMegajoules = powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption;
 
-                var energy_provided_in_megajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequestInMegajoules);
+                var energy_provided_in_megajoules = resMan.Consume(ResourceName.ElectricCharge, powerRequestInMegajoules);
 
                 electrical_power_ratio = powerRequestInMegajoules > 0 ? energy_provided_in_megajoules / powerRequestInMegajoules : 0;
                 antimatterGenerator.Produce(energy_provided_in_megajoules * global_rate_multipliers);
@@ -624,7 +624,7 @@ namespace KIT.Science
                 {
                     var powerRequest = powerReqMult * PluginSettings.Config.BaseCentriPowerConsumption;
 
-                    double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
+                    double electrical_power_provided = resMan.Consume(ResourceName.ElectricCharge, powerRequest);
 
                     electrical_power_ratio = electrical_power_provided  / PluginSettings.Config.BaseCentriPowerConsumption / powerReqMult;
                     global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;

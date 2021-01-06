@@ -16,7 +16,7 @@ namespace KIT.Propulsion
     class TECZeroResourceManagerInterface : IResourceManager
     {
         public ICheatOptions CheatOptions() => RealCheatOptions.Instance;
-        public double ConsumeResource(ResourceName resource, double wanted)
+        public double Consume(ResourceName resource, double wanted)
         {
             throw new NotImplementedException();
         }
@@ -24,24 +24,24 @@ namespace KIT.Propulsion
         {
             throw new NotImplementedException();
         }
-        public double ProduceResource(ResourceName resource, double amount, double max = -1)
+        public double Produce(ResourceName resource, double amount, double max = -1)
         {
             throw new NotImplementedException();
         }
-        public double ResourceCurrentCapacity(ResourceName resourceIdentifier)
+        public double CurrentCapacity(ResourceName resourceIdentifier)
         {
             throw new NotImplementedException();
         }
-        public double ResourceFillFraction(ResourceName resourceIdentifier)
+        public double FillFraction(ResourceName resourceIdentifier)
         {
             if (resourceIdentifier == ResourceName.WasteHeat) return 0;
 
             throw new NotImplementedException();
         }
 
-        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier) => null;
+        public IResourceProduction ProductionStats(ResourceName resourceIdentifier) => null;
 
-        public double ResourceSpareCapacity(ResourceName resourceIdentifier)
+        public double SpareCapacity(ResourceName resourceIdentifier)
         {
             throw new NotImplementedException();
         }
@@ -554,7 +554,7 @@ namespace KIT.Propulsion
             get
             {
                 var baseWasteheatEfficiency = isPlasmaNozzle ? wasteheatEfficiencyHighTemperature : wasteheatEfficiencyLowTemperature;
-                var reactorWasteheatModifier = AttachedReactor == null ? 1 : isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMult : AttachedReactor.EngineWasteheatProductionMult;
+                var reactorWasteheatModifier = AttachedReactor == null ? 1 : isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMultiplier : AttachedReactor.EngineWasteheatProductionMultiplier;
                 var wasteheatEfficiencyModifier = (1 - baseWasteheatEfficiency) * reactorWasteheatModifier;
                 if (_fuelCoolingFactor > 0)
                     wasteheatEfficiencyModifier /= _fuelCoolingFactor;
@@ -1307,7 +1307,7 @@ namespace KIT.Propulsion
 
                 _atmosphereCurve.Add(0, effectiveIsp, 0, 0);
 
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
                 var wasteheatModifier = wasteheatRatioDecelerationMult > 0 ? Math.Max((1 - wasteheatRatio) * wasteheatRatioDecelerationMult, 1) : 1;
 
                 if (AttachedReactor != null)
@@ -1564,11 +1564,11 @@ namespace KIT.Propulsion
         {
             //TODO - fix this
 
-            var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+            var stats = resMan.ProductionStats(ResourceName.ElectricCharge);
             if (stats == null || stats.PreviousDataSupplied() == false) return maximumElectricPower;
 
             var currentUnfilledResourceDemand = stats.PreviousUnmetDemand();
-            var spareResourceCapacity = resMan.ResourceSpareCapacity(ResourceName.ElectricCharge);
+            var spareResourceCapacity = resMan.SpareCapacity(ResourceName.ElectricCharge);
 
             return Math.Min(maximumElectricPower, (currentUnfilledResourceDemand + spareResourceCapacity) * mhdPowerGenerationPercentage * 0.01);
         }
@@ -1583,12 +1583,12 @@ namespace KIT.Propulsion
             if (requiredMegajouleRatio > 0)
             {
                 var requestedMegajoules = (currentMaxThermalPower + currentMaxChargedPower) * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
-                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedMegajoules);
+                var availablePower = resMan.Consume(ResourceName.ElectricCharge, requestedMegajoules);
                 receivedMegajoulesRatio = requestedMegajoules > 0 ? availablePower / requestedMegajoules : 0;
                 
                 requestedElectricPowerMegajoules = availablePower * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
                 //var receivedMegajoules = consumeFNResourcePerSecond(requestedElectricPowerMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
-                var receivedMegajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedElectricPowerMegajoules);
+                var receivedMegajoules = resMan.Consume(ResourceName.ElectricCharge, requestedElectricPowerMegajoules);
                 requiredElectricalPowerFromMhd = CalculateElectricalPowerCurrentlyNeeded(resMan, availablePower * requiredMegajouleRatio * 2);
                 var electricalPowerCurrentlyNeedRatio = availablePower > 0 ? Math.Min(1, requiredElectricalPowerFromMhd / requestedElectricPowerMegajoules) : 0;
                 receivedMegajoulesRatio = Math.Min(1, Math.Max(electricalPowerCurrentlyNeedRatio, requestedElectricPowerMegajoules > 0 ? receivedMegajoules / requestedElectricPowerMegajoules : 0));
@@ -1605,15 +1605,15 @@ namespace KIT.Propulsion
 
             requested_thermal_power = receivedMegajoulesRatio * currentMaxThermalPower;
 
-            availableThermalPower = reactor_power_received = resMan.ConsumeResource(ResourceName.ThermalPower, requested_thermal_power);
+            availableThermalPower = reactor_power_received = resMan.Consume(ResourceName.ThermalPower, requested_thermal_power);
 
-            // thermalResourceRatio = resMan.ResourceFillFraction(ResourceName.ThermalPower);
-            // chargedResourceRatio = resMan.ResourceFillFraction(ResourceName.ChargedParticle); // does not work anymore.
+            // thermalResourceRatio = resMan.FillFraction(ResourceName.ThermalPower);
+            // chargedResourceRatio = resMan.FillFraction(ResourceName.ChargedParticle); // does not work anymore.
 
             if (currentMaxChargedPower > 0)
             {
                 requested_charge_particles = receivedMegajoulesRatio * currentMaxChargedPower;
-                availableChargedPower = resMan.ConsumeResource(ResourceName.ChargedParticle, requested_charge_particles);
+                availableChargedPower = resMan.Consume(ResourceName.ChargedParticle, requested_charge_particles);
                 reactor_power_received += availableChargedPower;
             }
             else
@@ -1635,13 +1635,13 @@ namespace KIT.Propulsion
 
                 var baseWasteheatEfficiency = isPlasmaNozzle ? wasteheatEfficiencyHighTemperature : wasteheatEfficiencyLowTemperature;
 
-                var reactorWasteheatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMult : AttachedReactor.EngineWasteheatProductionMult;
+                var reactorWasteheatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMultiplier : AttachedReactor.EngineWasteheatProductionMultiplier;
 
                 var wasteheatEfficiencyModifier = (1 - baseWasteheatEfficiency) * reactorWasteheatModifier;
                 if (_fuelCoolingFactor > 0)
                     wasteheatEfficiencyModifier /= _fuelCoolingFactor;
 
-                resMan.ProduceResource(ResourceName.WasteHeat, sootModifier * (1 - wasteheatEfficiencyModifier) * reactor_power_received);
+                resMan.Produce(ResourceName.WasteHeat, sootModifier * (1 - wasteheatEfficiencyModifier) * reactor_power_received);
             }
 
             if (reactor_power_received > 0 && _maxISP > 0)
@@ -1783,9 +1783,9 @@ namespace KIT.Propulsion
             // act as open cycle cooler
             if (isOpenCycleCooler)
             {
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
                 fuelFlowForCooling = currentMassFlow;
-                resMan.ConsumeResource(ResourceName.WasteHeat, _fuelCoolingFactor * wasteheatRatio * fuelFlowForCooling);
+                resMan.Consume(ResourceName.WasteHeat, _fuelCoolingFactor * wasteheatRatio * fuelFlowForCooling);
             }
 
             // give back propellant
@@ -1800,11 +1800,11 @@ namespace KIT.Propulsion
                 ispHeatModifier =  Math.Sqrt(realIspEngine) * (UsePlasmaPower ? plasmaAfterburnerHeatModifier : thermalHeatModifier);
                 powerToMass = part.mass > 0 ? Math.Sqrt(maxThrustOnEngine / part.mass) : 0;
                 radiusHeatModifier = Math.Pow(radius * radiusHeatProductionMult, radiusHeatProductionExponent);
-                engineHeatProductionMult = AttachedReactor.EngineHeatProductionMult;
-                var reactorHeatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaHeatProductionMult : AttachedReactor.EngineHeatProductionMult;
+                engineHeatProductionMult = AttachedReactor.EngineHeatProductionMultiplier;
+                var reactorHeatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaHeatProductionMultiplier : AttachedReactor.EngineHeatProductionMultiplier;
                 var jetHeatProduction = baseJetHeatproduction > 0 ? baseJetHeatproduction : spaceHeatProduction;
 
-                spaceHeatProduction = heatProductionMultiplier * reactorHeatModifier * AttachedReactor.EngineHeatProductionMult * _ispPropellantMultiplier * ispHeatModifier * radiusHeatModifier * powerToMass / _fuelCoolingFactor;
+                spaceHeatProduction = heatProductionMultiplier * reactorHeatModifier * AttachedReactor.EngineHeatProductionMultiplier * _ispPropellantMultiplier * ispHeatModifier * radiusHeatModifier * powerToMass / _fuelCoolingFactor;
                 engineHeatProduction = _currentPropellantIsJet
                     ? jetHeatProduction * (1 + airflowHeatModifier * PluginSettings.Config.AirflowHeatMult)
                     : spaceHeatProduction;
@@ -2252,9 +2252,9 @@ namespace KIT.Propulsion
             // when in jet mode apply extra cooling from intake air
             if (isOpenCycleCooler && isJet && part.atmDensity > 0)
             {
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
-                airFlowForCooling = maxFuelFlowRate * resMan.ResourceFillFraction(ResourceName.IntakeOxygenAir);
-                resMan.ConsumeResource(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
+                airFlowForCooling = maxFuelFlowRate * resMan.FillFraction(ResourceName.IntakeOxygenAir);
+                resMan.Consume(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling);
             }
 
             // effectiveChargedSupply, effectiveThermalSupply

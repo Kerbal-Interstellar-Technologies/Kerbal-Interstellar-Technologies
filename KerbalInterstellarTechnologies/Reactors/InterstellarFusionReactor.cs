@@ -4,7 +4,6 @@ using System.Linq;
 using KIT.Powermanagement.Interfaces;
 using UnityEngine;
 using KIT.ResourceScheduler;
-using KIT.Resources;
 
 namespace KIT.Reactors
 {
@@ -80,9 +79,9 @@ namespace KIT.Reactors
         {
             get
             {
-                var modifier = CheatOptions.InfinitePropellant || !powerIsAffectedByLithium || minimumLithiumModifier == 1 ? 1
-                    : totalAmountLithium > 0
-                        ? Math.Min(maximumLithiumModifier, Math.Max(minimumLithiumModifier, Math.Pow(totalAmountLithium / totalMaxAmountLithium, lithiumModifierExponent)))
+                var modifier = CheatOptions.InfinitePropellant || !powerIsAffectedByLithium || ChargedPowerRatio >= 1 || minimumLithiumModifier == 1 ? 1
+                    : TotalAmountLithium > 0
+                        ? Math.Min(maximumLithiumModifier, Math.Max(minimumLithiumModifier, Math.Pow(TotalAmountLithium / TotalMaxAmountLithium, lithiumModifierExponent)))
                         : minimumLithiumModifier;
 
                 return modifier;
@@ -139,15 +138,15 @@ namespace KIT.Reactors
 
         private void SwitchToNextFuelMode(int initialFuelMode)
         {
-            if (fuelModes == null || fuelModes.Count == 0)
+            if (FuelModes == null || FuelModes.Count == 0)
                 return;
 
             fuel_mode++;
-            if (fuel_mode >= fuelModes.Count)
+            if (fuel_mode >= FuelModes.Count)
                 fuel_mode = 0;
 
             stored_fuel_ratio = 1;
-            CurrentFuelMode = fuelModes[fuel_mode];
+            CurrentFuelMode = FuelModes[fuel_mode];
             fuel_mode_name = CurrentFuelMode.ModeGUIName;
 
             UpdateFuelMode();
@@ -160,14 +159,14 @@ namespace KIT.Reactors
 
         private void SwitchToPreviousFuelMode(int initialFuelMode)
         {
-            if (fuelModes == null || fuelModes.Count == 0)
+            if (FuelModes == null || FuelModes.Count == 0)
                 return;
 
             fuel_mode--;
             if (fuel_mode < 0)
-                fuel_mode = fuelModes.Count - 1;
+                fuel_mode = FuelModes.Count - 1;
 
-            CurrentFuelMode = fuelModes[fuel_mode];
+            CurrentFuelMode = FuelModes[fuel_mode];
             fuel_mode_name = CurrentFuelMode.ModeGUIName;
 
             UpdateFuelMode();
@@ -189,7 +188,7 @@ namespace KIT.Reactors
                 return true;
 
             var hasAllFuels = true;
-            foreach (var fuel in currentFuelVariantsSorted.First().ReactorFuels)
+            foreach (var fuel in CurrentFuelVariantsSorted.First().ReactorFuels)
             {
                 if (!(GetFuelRatio(fuel, FuelEfficiency, NormalisedMaximumPower) < 1)) continue;
 
@@ -215,7 +214,7 @@ namespace KIT.Reactors
             }
             GUILayout.EndHorizontal();
 
-            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_FissionPB_CurrentMaxMaintenance"), electricPowerMaintenance, boldStyle, textStyle);//"Current/Max Fusion Maintenance"
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_FissionPB_CurrentMaxMaintenance"), electricPowerMaintenance, BoldStyle, TextStyle);//"Current/Max Fusion Maintenance"
         }
 
         public new void KITFixedUpdate(IResourceManager resMan)
@@ -231,34 +230,34 @@ namespace KIT.Reactors
         {
             Debug.Log("[KSPI]: FusionReactor SetDefaultFuelMode");
 
-            if (fuelModes == null)
+            if (FuelModes == null)
             {
                 Debug.Log("[KSPI]: FusionReactor SetDefaultFuelMode - load fuel modes");
-                fuelModes = GetReactorFuelModes();
+                FuelModes = GetReactorFuelModes();
             }
 
-            if (!string.IsNullOrEmpty(fuel_mode_name) && fuelModes.Any(m => m.ModeGUIName == fuel_mode_name))
+            if (!string.IsNullOrEmpty(fuel_mode_name) && FuelModes.Any(m => m.ModeGUIName == fuel_mode_name))
             {
-                CurrentFuelMode = fuelModes.First(m => m.ModeGUIName == fuel_mode_name);
+                CurrentFuelMode = FuelModes.First(m => m.ModeGUIName == fuel_mode_name);
             }
-            else if (!string.IsNullOrEmpty(fuel_mode_variant) && fuelModes.Any(m => m.Variants.Any(l => l.Name == fuel_mode_variant)))
+            else if (!string.IsNullOrEmpty(fuel_mode_variant) && FuelModes.Any(m => m.Variants.Any(l => l.Name == fuel_mode_variant)))
             {
-                CurrentFuelMode = fuelModes.First(m => m.Variants.Any(l => l.Name == fuel_mode_variant));
+                CurrentFuelMode = FuelModes.First(m => m.Variants.Any(l => l.Name == fuel_mode_variant));
             }
-            else if (fuelmode_index >= 0 && fuelModes.Any(m => m.Index == fuelmode_index))
+            else if (fuelmode_index >= 0 && FuelModes.Any(m => m.Index == fuelmode_index))
             {
-                CurrentFuelMode = fuelModes.First(m => m.Index == fuelmode_index);
+                CurrentFuelMode = FuelModes.First(m => m.Index == fuelmode_index);
             }
-            else if (fuelModes.Any(m => m.Index == fuel_mode))
+            else if (FuelModes.Any(m => m.Index == fuel_mode))
             {
-                CurrentFuelMode = fuelModes.First(m => m.Index == fuel_mode);
+                CurrentFuelMode = FuelModes.First(m => m.Index == fuel_mode);
             }
             else
             {
-                CurrentFuelMode = (fuel_mode < fuelModes.Count) ? fuelModes[fuel_mode] : fuelModes.FirstOrDefault();
+                CurrentFuelMode = (fuel_mode < FuelModes.Count) ? FuelModes[fuel_mode] : FuelModes.FirstOrDefault();
             }
 
-            fuel_mode = fuelModes.IndexOf(CurrentFuelMode);
+            fuel_mode = FuelModes.IndexOf(CurrentFuelMode);
         }
 
         public new bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)

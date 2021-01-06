@@ -100,15 +100,15 @@ namespace KIT.Refinery.Activity
                 _consumptionStorageRatio = Math.Min(fixedMaxPossibleHydrogenRate / fixedMaxHydrogenRate, fixedMaxPossibleDioxideRate / fixedMaxDioxideRate);
 
                 // now we do the real electrolysis
-                _waterConsumptionRate = resMan.ConsumeResource(ResourceName.WaterPure, WaterMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _water.density) / _water.density;
-                _monoxideConsumptionRate = resMan.ConsumeResource(ResourceName.CarbonMonoxideGas, MonoxideMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _monoxide.density) / _monoxide.density;
+                _waterConsumptionRate = resMan.Consume(ResourceName.WaterPure, WaterMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _water.density) / _water.density;
+                _monoxideConsumptionRate = resMan.Consume(ResourceName.CarbonMonoxideGas, MonoxideMassByFraction * _consumptionStorageRatio * _fixedConsumptionRate / _monoxide.density) / _monoxide.density;
                 var combinedConsumptionRate = _waterConsumptionRate + _monoxideConsumptionRate;
 
                 var hydrogenRateTemp = combinedConsumptionRate * HydrogenMassByFraction;
                 var dioxideRateTemp = combinedConsumptionRate * DioxideMassByFraction;
 
-                resMan.ProduceResource(ResourceName.HydrogenLqd, hydrogenRateTemp / _hydrogen.density);
-                resMan.ProduceResource(ResourceName.CarbonDioxideLqd, dioxideRateTemp / _dioxide.density);
+                resMan.Produce(ResourceName.HydrogenLqd, hydrogenRateTemp / _hydrogen.density);
+                resMan.Produce(ResourceName.CarbonDioxideLqd, dioxideRateTemp / _dioxide.density);
 
                 _hydrogenProductionRate = hydrogenRateTemp;
                 _dioxideProductionRate = dioxideRateTemp;

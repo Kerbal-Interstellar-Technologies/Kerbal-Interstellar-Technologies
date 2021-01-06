@@ -391,11 +391,11 @@ namespace KIT.ResourceScheduler
                 double n0 = resource.amount;
                 resource.amount = n0 * Math.Exp(-config.DecayConstant * fixedDeltaTime);
 
-                // As this uses the ProduceResource API, we get time handling done for free.
+                // As this uses the Produce API, we get time handling done for free.
                 var decayAmount = Math.Exp(-config.DecayConstant);
                 var nChange = n0 - (n0 * decayAmount);
 
-                resourceManager.ProduceResource(config.DecayProduct, nChange * config.DensityRatio);
+                resourceManager.Produce(config.DecayProduct, nChange * config.DensityRatio);
             }
         }
 

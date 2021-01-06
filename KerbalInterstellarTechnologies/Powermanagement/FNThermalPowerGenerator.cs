@@ -121,8 +121,8 @@ namespace KIT.Powermanagement
 
             var wasteheatInMegaJoules = (1 - _thermalConversionEfficiency) * tmp;
 
-            resMan.ProduceResource(ResourceName.WasteHeat, wasteheatInMegaJoules);
-            resMan.ProduceResource(ResourceName.ElectricCharge, tmp);
+            resMan.Produce(ResourceName.WasteHeat, wasteheatInMegaJoules);
+            resMan.Produce(ResourceName.ElectricCharge, tmp);
 
             return true;
         }

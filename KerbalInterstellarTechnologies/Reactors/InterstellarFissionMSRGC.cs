@@ -99,7 +99,7 @@ namespace KIT.Reactors
         [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_SwapFuel", guiActiveEditor = true, guiActive = false)]//Swap Fuel
         public void EditorSwapFuel()
         {
-            if (fuelModes.Count == 1)
+            if (FuelModes.Count == 1)
                 return;
 
             DisableResources();
@@ -121,15 +121,15 @@ namespace KIT.Reactors
             do
             {
                 fuel_mode++;
-                if (fuel_mode >= fuelModes.Count)
+                if (fuel_mode >= FuelModes.Count)
                     fuel_mode = 0;
 
-                CurrentFuelMode = fuelModes[fuel_mode];
+                CurrentFuelMode = FuelModes[fuel_mode];
                 currentFirstFuelType = CurrentFuelMode.Variants.First().ReactorFuels.First();
             }
             while (currentFirstFuelType.ResourceName != startFirstFuelType.ResourceName);
 
-            fuelModeStr = CurrentFuelMode.ModeGUIName;
+            FuelModeStr = CurrentFuelMode.ModeGUIName;
 
             int modesAvailable = CheckFuelModes();
             // Hide Switch Mode button if there's only one mode for the selected fuel type available
@@ -212,14 +212,14 @@ namespace KIT.Reactors
 
         protected override void WindowReactorStatusSpecificOverride()
         {
-            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_FissionMSRGC_Actinides_Poisoning"), (100 - actinidesModifer * 100).ToString("0.000000") + "%", boldStyle, textStyle);
+            PrintToGuiLayout(Localizer.Format("#LOC_KSPIE_FissionMSRGC_Actinides_Poisoning"), (100 - actinidesModifer * 100).ToString("0.000000") + "%", BoldStyle, TextStyle);
         }
 
         public override double CoreTemperature
         {
             get
             {
-                if (!CheatOptions.IgnoreMaxTemperature && HighLogic.LoadedSceneIsFlight && !isupgraded && PowerPercent >= minThrottle * 100)
+                if (!CheatOptions.IgnoreMaxTemperature && HighLogic.LoadedSceneIsFlight && !isupgraded && PowerPercent >= MinThrottle * 100)
                 {
                     var baseCoreTemperature = base.CoreTemperature;
 
@@ -243,13 +243,13 @@ namespace KIT.Reactors
         public override void OnUpdate()
         {
             Events[nameof(ManualShutdown)].active = Events[nameof(ManualShutdown)].guiActiveUnfocused = IsEnabled;
-            Events[nameof(Refuel)].active = Events[nameof(Refuel)].guiActiveUnfocused = !IsEnabled && !decay_ongoing;
+            Events[nameof(Refuel)].active = Events[nameof(Refuel)].guiActiveUnfocused = !IsEnabled && !DecayOngoing;
             Events[nameof(Refuel)].guiName = "Refuel " + (CurrentFuelMode != null ? CurrentFuelMode.ModeGUIName : "");
-            Events[nameof(SwapFuelMode)].active = Events[nameof(SwapFuelMode)].guiActiveUnfocused = fuelModes.Count > 1 && !IsEnabled && !decay_ongoing;
-            Events[nameof(SwapFuelMode)].guiActive = Events[nameof(SwapFuelMode)].guiActiveUnfocused = fuelModes.Count > 1;
+            Events[nameof(SwapFuelMode)].active = Events[nameof(SwapFuelMode)].guiActiveUnfocused = FuelModes.Count > 1 && !IsEnabled && !DecayOngoing;
+            Events[nameof(SwapFuelMode)].guiActive = Events[nameof(SwapFuelMode)].guiActiveUnfocused = FuelModes.Count > 1;
 
             Events[nameof(SwitchMode)].guiActiveEditor = Events[nameof(SwitchMode)].guiActive = Events[nameof(SwitchMode)].guiActiveUnfocused = CheckFuelModes() > 1;
-            Events[nameof(EditorSwapFuel)].guiActiveEditor = fuelModes.Count > 1;
+            Events[nameof(EditorSwapFuel)].guiActiveEditor = FuelModes.Count > 1;
             Events[nameof(DumpActinides)].guiActive = canDumpActinides;
 
             base.OnUpdate();
@@ -266,13 +266,13 @@ namespace KIT.Reactors
             if (IsCurrentFuelDepleted())
             {
                 fuel_mode++;
-                if (fuel_mode >= fuelModes.Count)
+                if (fuel_mode >= FuelModes.Count)
                     fuel_mode = 0;
 
-                CurrentFuelMode = fuelModes[fuel_mode];
+                CurrentFuelMode = FuelModes[fuel_mode];
             }
 
-            fuelModeStr = CurrentFuelMode.ModeGUIName;
+            FuelModeStr = CurrentFuelMode.ModeGUIName;
 
             _manualRestartEvent = Events[nameof(ManualRestart)];
 
@@ -290,7 +290,7 @@ namespace KIT.Reactors
             if (mainReactorFuel != null)
                 _reactorFuelMaxAmount = part.Resources.Get(CurrentFuelMode.Variants.First().ReactorFuels.First().ResourceName).maxAmount;
 
-            foreach (ReactorFuelType fuelMode in fuelModes)
+            foreach (ReactorFuelType fuelMode in FuelModes)
             {
                 foreach (ReactorFuel fuel in fuelMode.Variants.First().ReactorFuels)
                 {
@@ -303,8 +303,8 @@ namespace KIT.Reactors
 
             Events[nameof(DumpActinides)].guiActive = canDumpActinides;
             Events[nameof(SwitchMode)].guiActiveEditor = Events[nameof(SwitchMode)].guiActive = Events[nameof(SwitchMode)].guiActiveUnfocused = CheckFuelModes() > 1;
-            Events[nameof(SwapFuelMode)].guiActive = Events[nameof(SwapFuelMode)].guiActiveUnfocused = fuelModes.Count > 1;
-            Events[nameof(EditorSwapFuel)].guiActiveEditor = fuelModes.Count > 1;
+            Events[nameof(SwapFuelMode)].guiActive = Events[nameof(SwapFuelMode)].guiActiveUnfocused = FuelModes.Count > 1;
+            Events[nameof(EditorSwapFuel)].guiActiveEditor = FuelModes.Count > 1;
         }
 
         public override void OnFixedUpdate()
@@ -366,13 +366,13 @@ namespace KIT.Reactors
         // This Methods loads the correct fuel mode
         public override void SetDefaultFuelMode()
         {
-            if (fuelModes == null)
+            if (FuelModes == null)
             {
                 Debug.Log("[KSPI]: MSRC SetDefaultFuelMode - load fuel modes");
-                fuelModes = GetReactorFuelModes();
+                FuelModes = GetReactorFuelModes();
             }
 
-            CurrentFuelMode = (fuel_mode < fuelModes.Count) ? fuelModes[fuel_mode] : fuelModes.FirstOrDefault();
+            CurrentFuelMode = (fuel_mode < FuelModes.Count) ? FuelModes[fuel_mode] : FuelModes.FirstOrDefault();
         }
 
         private void DisableResources()
@@ -420,15 +420,15 @@ namespace KIT.Reactors
             do
             {
                 fuel_mode++;
-                if (fuel_mode >= fuelModes.Count)
+                if (fuel_mode >= FuelModes.Count)
                     fuel_mode = 0;
 
-                CurrentFuelMode = fuelModes[fuel_mode];
+                CurrentFuelMode = FuelModes[fuel_mode];
                 currentFirstFuelType = CurrentFuelMode.Variants.First().ReactorFuels.First();
             }
             while (currentFirstFuelType.ResourceName == startFirstFuelType.ResourceName);
 
-            fuelModeStr = CurrentFuelMode.ModeGUIName;
+            FuelModeStr = CurrentFuelMode.ModeGUIName;
         }
 
         private void DefuelCurrentFuel()
@@ -459,7 +459,7 @@ namespace KIT.Reactors
         {
             int modesAvailable = 0;
             var fuelType = CurrentFuelMode.Variants.First().ReactorFuels.First().FuelName;
-            foreach (var reactorFuelType in fuelModes)
+            foreach (var reactorFuelType in FuelModes)
             {
                 var currentMode = reactorFuelType.Variants.First().ReactorFuels.First().FuelName;
                 if (currentMode == fuelType)

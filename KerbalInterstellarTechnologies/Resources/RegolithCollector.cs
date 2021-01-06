@@ -265,7 +265,7 @@ namespace KIT.Resources
 
             double dPowerRequirementsMW = PluginSettings.Config.PowerConsumptionMultiplier * mwRequirements; // change the mwRequirements number in part config to change the power consumption
 
-            dRegolithSpareCapacity = resMan.ResourceSpareCapacity(ResourceName.Regolith);
+            dRegolithSpareCapacity = resMan.SpareCapacity(ResourceName.Regolith);
 
             /*
             if (offlineCollecting)
@@ -278,7 +278,7 @@ namespace KIT.Resources
             if (dConcentrationRegolith > 0 && (dRegolithSpareCapacity > 0))
             {
                 // Determine available power, using EC if below 2 MW required
-                double powerreceivedMW = resMan.ConsumeResource(ResourceName.ElectricCharge, dPowerRequirementsMW);
+                double powerreceivedMW = resMan.Consume(ResourceName.ElectricCharge, dPowerRequirementsMW);
 
                 // show in GUI
                 strCollectingStatus = Localizer.Format("#LOC_KSPIE_RegolithCollector_Collectingregolith");//"Collecting regolith"
@@ -301,7 +301,7 @@ namespace KIT.Resources
             double dResourceChange = resourceProduction;
 
             // this is the second important bit - do the actual change of the resource amount in the vessel
-            resMan.ProduceResource(ResourceName.Regolith, dResourceChange); 
+            resMan.Produce(ResourceName.Regolith, dResourceChange); 
 
             /* This takes care of wasteheat production (but takes into account if waste heat mechanics weren't disabled).
              * It's affected by two properties of the drill part - its power requirements and waste heat production percentage.
@@ -313,7 +313,7 @@ namespace KIT.Resources
 
             dTotalWasteHeatProduction = dPowerRequirementsMW * wasteHeatModifier; // calculate amount of heat to be produced
 
-            resMan.ProduceResource(ResourceName.WasteHeat, dTotalWasteHeatProduction);
+            resMan.Produce(ResourceName.WasteHeat, dTotalWasteHeatProduction);
         }
 
         public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)

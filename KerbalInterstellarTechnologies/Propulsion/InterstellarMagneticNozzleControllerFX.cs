@@ -13,8 +13,10 @@ namespace KIT.Propulsion
         public const string GROUP = "MagneticNozzleController";
         public const string GROUP_TITLE = "#LOC_KSPIE_MagneticNozzleControllerFX_groupName";
 
+        private const bool DebugController = false;
+        
         //Persistent
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_SimulatedThrottle"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]//Simulated Throttle
+        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = DebugController, guiActiveEditor = true, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_SimulatedThrottle"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]//Simulated Throttle
         public float simulatedThrottle = 0.5f;
         [KSPField(isPersistant = true)]
         double powerBufferStore;
@@ -43,44 +45,44 @@ namespace KIT.Propulsion
         [KSPField]
         public string powerEffectName = String.Empty;
 
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_ChargedParticleMaximumPercentageUsage", guiFormat = "F3")]//CP max fraction usage
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_ChargedParticleMaximumPercentageUsage", guiFormat = "F3", guiActive = DebugController)]//CP max fraction usage
         private double _chargedParticleMaximumPercentageUsage;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_MaxChargedParticlesPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Max CP Power
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_MaxChargedParticlesPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2", guiActive = DebugController)]//Max CP Power
         private double _max_charged_particles_power;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RequestedParticles", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Requested Particles
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RequestedParticles", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2", guiActive = DebugController)]//Requested Particles
         private double _charged_particles_requested;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RecievedParticles", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Recieved Particles
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RecievedParticles", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2", guiActive = DebugController)]//Recieved Particles
         private double _charged_particles_received;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RequestedElectricity", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Requested Electricity
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RequestedElectricity", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2", guiActive = DebugController)]//Requested Electricity
         private double _requestedElectricPower;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RecievedElectricity", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Recieved Electricity
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_RecievedElectricity", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2", guiActive = DebugController)]//Recieved Electricity
         private double _recievedElectricPower;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Thrust", guiUnits = " kN")]//Thrust
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Thrust", guiUnits = " kN", guiActive = DebugController)]//Thrust
         private double _engineMaxThrust;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Consumption", guiUnits = " kg/s")]//Consumption
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Consumption", guiUnits = " kg/s", guiActive = DebugController)]//Consumption
         private double calculatedConsumptionPerSecond;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_ThrotleExponent")]//Throtle Exponent
-        protected double throtleExponent = 1;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_MaximumChargedPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]//Maximum ChargedPower
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_ThrotleExponent", guiActive = DebugController)]//Throtle Exponent
+        protected double throttleExponent = 1;
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_MaximumChargedPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2", guiActive = DebugController)]//Maximum ChargedPower
         protected double maximumChargedPower;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_PowerThrustModifier", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F1")]//Power Thrust Modifier
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_PowerThrustModifier", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F1", guiActive = DebugController)]//Power Thrust Modifier
         protected double powerThrustModifier;
-        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Minimumisp", guiUnits = " s", guiFormat = "F1")]//Minimum isp
+        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Minimumisp", guiUnits = " s", guiFormat = "F1", guiActive = DebugController)]//Minimum isp
         protected double minimum_isp;
-        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Maximumisp", guiUnits = " s", guiFormat = "F1")]//Maximum isp
+        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_Maximumisp", guiUnits = " s", guiFormat = "F1", guiActive = DebugController)]//Maximum isp
         protected double maximum_isp;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_PowerRatio")]//Power Ratio
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_PowerRatio", guiActive = DebugController)]//Power Ratio
         protected double megajoulesRatio;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_EngineIsp")]//Engine Isp
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_EngineIsp", guiActive = DebugController)]//Engine Isp
         protected double engineIsp;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_EngineFuelFlow")]//Engine Fuel Flow
+        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_MagneticNozzleControllerFX_EngineFuelFlow", guiActive = DebugController)]//Engine Fuel Flow
         protected float engineFuelFlow;
         [KSPField(guiActive = false)]
         protected double chargedParticleRatio;
         [KSPField(guiActive = false)]
-        protected double max_theoretical_thrust;
+        protected double MaxTheoreticalThrust;
         [KSPField(guiActive = false)]
-        protected double max_theoratical_fuel_flow_rate;
+        protected double MaxTheoreticalFuelFlowRate;
         [KSPField(guiActive = false)]
         protected double currentIsp;
         [KSPField(guiActive = false)]
@@ -113,10 +115,7 @@ namespace KIT.Propulsion
             }
         }
 
-        public double GetNozzleFlowRate()
-        {
-            return _attached_engine.maxFuelFlow;
-        }
+        public double GetNozzleFlowRate() => _attached_engine?.maxFuelFlow ?? 0;
 
         public bool PropellantAbsorbsNeutrons => false;
 
@@ -145,7 +144,7 @@ namespace KIT.Propulsion
 
             max_power_multiplier = Math.Log10(maximum_isp / minimum_isp);
 
-            throtleExponent = Math.Abs(Math.Log10(_attached_reactor.MinimumChargedIspMult / _attached_reactor.MaximumChargedIspMult));
+            throttleExponent = Math.Abs(Math.Log10(_attached_reactor.MinimumChargedIspMult / _attached_reactor.MaximumChargedIspMult));
 
             simulatedThrottleFloatRange = Fields["simulatedThrottle"].uiControlEditor as UI_FloatRange;
             System.Diagnostics.Debug.Assert(simulatedThrottleFloatRange != null, nameof(simulatedThrottleFloatRange) + " != null");
@@ -169,6 +168,8 @@ namespace KIT.Propulsion
                     part.Effect(powerEffectName, 0, -1);
             }
 
+            Debug.Log($"[OnStart] Fields[nameof(partMass)] = {Fields[nameof(partMass)]}");
+            
             Fields[nameof(partMass)].guiActiveEditor = showPartMass;
             Fields[nameof(partMass)].guiActive = showPartMass;
         }
@@ -284,7 +285,7 @@ namespace KIT.Propulsion
 
             if (useThrustCurve)
             {
-                var currentIsp = Math.Min(maximum_isp, minimum_isp / Math.Pow(simulatedThrottle / 100, throtleExponent));
+                var currentIsp = Math.Min(maximum_isp, minimum_isp / Math.Pow(simulatedThrottle / 100, throttleExponent));
 
                 FloatCurve newAtmosphereCurve = new FloatCurve();
                 newAtmosphereCurve.Add(0, (float)currentIsp);
@@ -470,15 +471,15 @@ namespace KIT.Propulsion
                 _charged_particles_requested = exhaustAllowed && _attached_engine.isOperational && _attached_engine.currentThrottle > 0 ? _max_charged_particles_power : 0;
 
                 _charged_particles_received = _charged_particles_requested > 0 ?
-                    resMan.ConsumeResource(ResourceName.ChargedParticle, _charged_particles_requested) : 0;
+                    resMan.Consume(ResourceName.ChargedParticle, _charged_particles_requested) : 0;
 
                 // update Isp
-                currentIsp = !_attached_engine.isOperational || _attached_engine.currentThrottle == 0 ? maximum_isp : Math.Min(maximum_isp, minimum_isp / Math.Pow(_attached_engine.currentThrottle, throtleExponent));
+                currentIsp = !_attached_engine.isOperational || _attached_engine.currentThrottle == 0 ? maximum_isp : Math.Min(maximum_isp, minimum_isp / Math.Pow(_attached_engine.currentThrottle, throttleExponent));
 
-                var powerThrustModifier = GameConstants.BaseThrustPowerMultiplier * powerThrustMultiplier;
-                var max_engine_thrust_at_max_isp = powerThrustModifier * _charged_particles_received / maximum_isp / GameConstants.StandardGravity;
+                var localPowerThrustModifier = GameConstants.BaseThrustPowerMultiplier * powerThrustMultiplier;
+                var maxEngineThrustAtMaxIsp = localPowerThrustModifier * _charged_particles_received / maximum_isp / GameConstants.StandardGravity;
 
-                var calculatedConsumptionInTon = max_engine_thrust_at_max_isp / maximum_isp / GameConstants.StandardGravity;
+                var calculatedConsumptionInTon = maxEngineThrustAtMaxIsp / maximum_isp / GameConstants.StandardGravity;
 
                 UpdatePropellantBuffer(calculatedConsumptionInTon);
 
@@ -510,8 +511,7 @@ namespace KIT.Propulsion
                         _previous_charged_particles_received = 0;
                     }
 
-                    // TODO track this down. resMan.ConsumeResource(ResourceName.WasteHeat, WasteHeatInMegawatt * GameConstants.ecPerMJ);
-                    resMan.ConsumeResource(ResourceName.WasteHeat, wasteheatConsumption);
+                    resMan.Consume(ResourceName.WasteHeat, wasteheatConsumption);
                 }
 
                 if (_charged_particles_received == 0)
@@ -525,12 +525,12 @@ namespace KIT.Propulsion
                 // calculate power cost
                 var ispPowerCostMultiplier = 1 + max_power_multiplier - Math.Log10(currentIsp / minimum_isp);
                 var minimumEnginePower = _attached_reactor.MagneticNozzlePowerMult * _charged_particles_received * ispPowerCostMultiplier * 0.005 * Math.Max(_attached_reactor_distance, 1);
-                var neededBufferPower = Math.Min(resMan.ResourceCurrentCapacity(ResourceName.ElectricCharge), Math.Min(Math.Max(powerBufferMax - powerBufferStore, 0), minimumEnginePower));
+                var neededBufferPower = Math.Min(resMan.CurrentCapacity(ResourceName.ElectricCharge), Math.Min(Math.Max(powerBufferMax - powerBufferStore, 0), minimumEnginePower));
                 _requestedElectricPower = minimumEnginePower + neededBufferPower;
 
                 _recievedElectricPower = CheatOptions.InfiniteElectricity || _requestedElectricPower == 0
                     ? _requestedElectricPower
-                    : resMan.ConsumeResource(ResourceName.ElectricCharge, _requestedElectricPower);
+                    : resMan.Consume(ResourceName.ElectricCharge, _requestedElectricPower);
 
                 // adjust power buffer
                 var powerSurplus = _recievedElectricPower - minimumEnginePower;
@@ -553,15 +553,15 @@ namespace KIT.Propulsion
                 _engineMaxThrust = 0;
                 if (_max_charged_particles_power > 0)
                 {
-                    var max_thrust = powerThrustModifier * _charged_particles_received * scaledPowerFactor / currentIsp / GameConstants.StandardGravity;
+                    var maxThrust = powerThrustModifier * _charged_particles_received * scaledPowerFactor / currentIsp / GameConstants.StandardGravity;
 
-                    var effective_thrust = Math.Max(max_thrust - (radius * radius * vessel.atmDensity * 100), 0);
+                    var effectiveThrust = Math.Max(maxThrust - (radius * radius * vessel.atmDensity * 100), 0);
 
-                    effectiveThrustRatio = max_thrust > 0 ? effective_thrust / max_thrust : 0;
+                    effectiveThrustRatio = maxThrust > 0 ? effectiveThrust / maxThrust : 0;
 
                     _engineMaxThrust = _attached_engine.currentThrottle > 0
-                        ? Math.Max(effective_thrust, 1e-9)
-                        : Math.Max(max_thrust, 1e-9);
+                        ? Math.Max(effectiveThrust, 1e-9)
+                        : Math.Max(maxThrust, 1e-9);
                 }
 
                 // set isp
@@ -570,15 +570,15 @@ namespace KIT.Propulsion
                 newAtmosphereCurve.Add(0, (float)engineIsp, 0, 0);
                 _attached_engine.atmosphereCurve = newAtmosphereCurve;
 
-                var max_effective_fuel_flow_rate = !double.IsInfinity(_engineMaxThrust) && !double.IsNaN(_engineMaxThrust) && currentIsp > 0
+                var maxEffectiveFuelFlowRate = !double.IsInfinity(_engineMaxThrust) && !double.IsNaN(_engineMaxThrust) && currentIsp > 0
                     ? _engineMaxThrust / currentIsp / GameConstants.StandardGravity / (_attached_engine.currentThrottle > 0 ? _attached_engine.currentThrottle : 1)
                     : 0;
 
-                max_theoretical_thrust = powerThrustModifier * maximumChargedPower * _chargedParticleMaximumPercentageUsage / currentIsp / GameConstants.StandardGravity;
-                max_theoratical_fuel_flow_rate = max_theoretical_thrust / currentIsp / GameConstants.StandardGravity;
+                MaxTheoreticalThrust = powerThrustModifier * maximumChargedPower * _chargedParticleMaximumPercentageUsage / currentIsp / GameConstants.StandardGravity;
+                MaxTheoreticalFuelFlowRate = MaxTheoreticalThrust / currentIsp / GameConstants.StandardGravity;
 
                 // set maximum flow
-                engineFuelFlow = _attached_engine.currentThrottle > 0 ? Math.Max((float)max_effective_fuel_flow_rate, 1e-9f) : (float)max_theoratical_fuel_flow_rate;
+                engineFuelFlow = _attached_engine.currentThrottle > 0 ? Math.Max((float)maxEffectiveFuelFlowRate, 1e-9f) : (float)MaxTheoreticalFuelFlowRate;
 
                 _attached_engine.maxFuelFlow = engineFuelFlow;
                 _attached_engine.useThrustCurve = false;

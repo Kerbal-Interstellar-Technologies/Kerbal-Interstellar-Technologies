@@ -118,7 +118,7 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource to consume</param>
         /// <param name="wanted">How much you want</param>
         /// <returns>How much you got</returns>
-        public double ConsumeResource(ResourceName resource, double wanted)
+        public double Consume(ResourceName resource, double wanted)
         {
             KITResourceSettings.ValidateResource(resource);
 
@@ -126,7 +126,7 @@ namespace KIT.ResourceScheduler
             if (!_inExecuteKITModules || wanted < 0)
             {
                 Debug.Log(
-                    $"[KITResourceManager.ConsumeResource] don't{(_inExecuteKITModules ? " use outside of IKITModules" : "")} {(wanted < 0 ? " consume negative amounts" : "")}");
+                    $"[KITResourceManager.Consume] don't{(_inExecuteKITModules ? " use outside of IKITModules" : "")} {(wanted < 0 ? " consume negative amounts" : "")}");
                 return 0;
             }
 
@@ -177,18 +177,21 @@ namespace KIT.ResourceScheduler
                 return wanted;
             }
 
-            var surplusWanted = _currentMaxResources[resource];
-            if (resource == ResourceName.ChargedParticle) surplusWanted = 0;
+            double surplusWanted = 0;
+            if(resource != ResourceName.ChargedParticle) _currentMaxResources.TryGetValue(resource, out surplusWanted);
 
             // Convert to seconds
             obtainedAmount = wanted * (obtainedAmount / modifiedAmount);
+            // Debug.Log($"[Consume] calling variable suppliers for {KITResourceSettings.ResourceToName(resource)}, already have {obtainedAmount}, want a total of {wanted}, with a surplus of {surplusWanted}");
             obtainedAmount = CallVariableSuppliers(resource, obtainedAmount, wanted, surplusWanted);
 
             // We do not need to account for InternalCurrentlySupplied here, as the modules called above will call
-            // ProduceResource which credits the InternalCurrentlySupplied field here.
+            // Produce which credits the InternalCurrentlySupplied field here.
 
             // is it close enough to being fully requested? (accounting for precision issues)
             var result = (obtainedAmount < (wanted * fudgeFactor)) ? wanted * (obtainedAmount / wanted) : wanted;
+
+            // Debug.Log($"[Consume] after calling variable suppliers, obtainedAmount is {obtainedAmount}, fudged value is {wanted * fudgeFactor}, and result is {result}");
 
             tmpPPRI.Amount += result;
             if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
@@ -210,16 +213,18 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource to produce</param>
         /// <param name="amount">Amount you are providing</param>
         /// <param name="max">Maximum amount that could be provided</param>
-        public double ProduceResource(ResourceName resource, double amount, double max = -1)
+        public double Produce(ResourceName resource, double amount, double max = -1)
         {
             KITResourceSettings.ValidateResource(resource);
 
             if (!_inExecuteKITModules)
             {
                 Debug.Log(
-                    $"[KITResourceManager.ProduceResource] don't{(_inExecuteKITModules ? " use outside of IKITModules" : "")} {(amount < 0 ? " produce negative amounts" : "")}");
+                    $"[KITResourceManager.Produce] don't{(_inExecuteKITModules ? " use outside of IKITModules" : "")} {(amount < 0 ? " produce negative amounts" : "")}");
                 return 0;
             }
+
+            // Debug.Log($"[Produce] called with resource = {KITResourceSettings.ResourceToName(resource)}, amount = {amount} and max as {max}");
 
             if (TrackableResource(resource))
             {
@@ -594,15 +599,17 @@ namespace KIT.ResourceScheduler
                 _currentResources[resource] -= tmp;
                 reducedObtainedAmount += tmp;
 
+                // Debug.Log($"[CallVariableSuppliers] _currentResources[resource] is {_currentResources[resource]}, reducedOriginalAmount - reducedObtainedAmount is {reducedOriginalAmount - reducedObtainedAmount} and tmp is {tmp}, reducedObtainedAmount is now {reducedObtainedAmount}");
+
                 _modsCurrentlyRunning.Remove(kitMod);
 
                 if (reducedObtainedAmount >= reducedOriginalAmount) return originalAmount;
             }
 
-            return obtainedAmount * (reducedObtainedAmount / reducedOriginalAmount);
+            return originalAmount * (reducedObtainedAmount / reducedOriginalAmount);
         }
 
-        public double ResourceSpareCapacity(ResourceName resourceIdentifier)
+        public double SpareCapacity(ResourceName resourceIdentifier)
         {
             if (_currentMaxResources.TryGetValue(resourceIdentifier, out var maxResourceAmount) && _currentResources.TryGetValue(resourceIdentifier, out var currentResourceAmount))
                 return maxResourceAmount - currentResourceAmount;
@@ -610,7 +617,7 @@ namespace KIT.ResourceScheduler
             return 0;
         }
 
-        public double ResourceCurrentCapacity(ResourceName resourceIdentifier)
+        public double CurrentCapacity(ResourceName resourceIdentifier)
         {
             if (_currentResources.TryGetValue(resourceIdentifier, out var currentResourceAmount))
                 return currentResourceAmount;
@@ -618,7 +625,7 @@ namespace KIT.ResourceScheduler
             return 0;
         }
 
-        public double ResourceFillFraction(ResourceName resourceIdentifier)
+        public double FillFraction(ResourceName resourceIdentifier)
         {
             if (_myCheatOptions.IgnoreMaxTemperature && resourceIdentifier == ResourceName.WasteHeat) return 0;
 
@@ -634,7 +641,7 @@ namespace KIT.ResourceScheduler
 
         private readonly ResourceProduction[] _resourceProductionStats;
 
-        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier)
+        public IResourceProduction ProductionStats(ResourceName resourceIdentifier)
         {
             if (resourceIdentifier >= ResourceName.ElectricCharge && resourceIdentifier <= ResourceName.WasteHeat)
                 return _resourceProductionStats[resourceIdentifier - ResourceName.ElectricCharge];

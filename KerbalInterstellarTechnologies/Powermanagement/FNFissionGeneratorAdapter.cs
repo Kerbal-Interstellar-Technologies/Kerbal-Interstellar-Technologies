@@ -1,5 +1,4 @@
-﻿using KIT.Resources;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 using System;
 using UnityEngine;
 
@@ -76,7 +75,7 @@ namespace KIT.Powermanagement
             efficiency = generatorEfficiency.ToString("P2");
 
             //extract power otherwise we end up with double power
-            resMan.ConsumeResource(ResourceName.ElectricCharge, generatorRate);
+            resMan.Consume(ResourceName.ElectricCharge, generatorRate);
 
             double megajoulesRate = generatorRate / GameConstants.ecPerMJ;
             double maxMegajoulesRate = generatorMax / GameConstants.ecPerMJ;

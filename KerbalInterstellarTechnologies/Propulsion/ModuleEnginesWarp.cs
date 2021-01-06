@@ -310,26 +310,26 @@ namespace KIT.Propulsion
             if (propellantResourceDefinition1 != null && ratio1 > 0)
             {
                 fuelRequestAmount1 = fuelWithMassPercentage1 > 0 ? fuelWithMassPercentage1 * propellantWithMassNeededInLiter : masslessFuelPercentage1 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID1) / fuelRequestAmount1);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID1) / fuelRequestAmount1);
 
                 Debug.Log($"[CollectFuel] first availableRatio is {availableRatio}");
             }
             if (propellantResourceDefinition2 != null && ratio2 > 0)
             {
                 fuelRequestAmount2 = fuelWithMassPercentage2 > 0 ? fuelWithMassPercentage2 * propellantWithMassNeededInLiter : masslessFuelPercentage2 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID2) / fuelRequestAmount2);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID2) / fuelRequestAmount2);
 
                 Debug.Log($"[CollectFuel] second availableRatio is {availableRatio}");
             }
             if (propellantResourceDefinition3 != null && ratio3 > 0)
             {
                 fuelRequestAmount3 = fuelWithMassPercentage3 > 0 ? fuelWithMassPercentage3 * propellantWithMassNeededInLiter : masslessFuelPercentage3 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID3) / fuelRequestAmount3);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID3) / fuelRequestAmount3);
             }
             if (propellantResourceDefinition4 != null && ratio4 > 0)
             {
                 fuelRequestAmount4 = fuelWithMassPercentage4 > 0 ? fuelWithMassPercentage4 * propellantWithMassNeededInLiter : masslessFuelPercentage4 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID4) / fuelRequestAmount4);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID4) / fuelRequestAmount4);
             }
 
             // ignore insignificant amount
@@ -344,26 +344,26 @@ namespace KIT.Propulsion
             double receivedRatio = 1;
             if (fuelRequestAmount1 > 0 && !double.IsNaN(fuelRequestAmount1) && !double.IsInfinity(fuelRequestAmount1))
             {
-                consumedPropellant1 = resMan.ConsumeResource(propellantResourceID1, fuelRequestAmount1 * availableRatio);
+                consumedPropellant1 = resMan.Consume(propellantResourceID1, fuelRequestAmount1 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount1 > 0 ? consumedPropellant1 / fuelRequestAmount1 : 0);
 
                 Debug.Log($"[CollectFuel] first receivedRatio is {receivedRatio}");
             }
             if (fuelRequestAmount2 > 0 && !double.IsNaN(fuelRequestAmount2) && !double.IsInfinity(fuelRequestAmount2))
             {
-                consumedPropellant2 = resMan.ConsumeResource(propellantResourceID2, fuelRequestAmount2 * availableRatio);
+                consumedPropellant2 = resMan.Consume(propellantResourceID2, fuelRequestAmount2 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount2 > 0 ? consumedPropellant2 / fuelRequestAmount2 : 0);
 
                 Debug.Log($"[CollectFuel] second receivedRatio is {receivedRatio}");
             }
             if (fuelRequestAmount3 > 0 && !double.IsNaN(fuelRequestAmount3) && !double.IsInfinity(fuelRequestAmount3))
             {
-                consumedPropellant3 = resMan.ConsumeResource(propellantResourceID3, fuelRequestAmount3 * availableRatio);
+                consumedPropellant3 = resMan.Consume(propellantResourceID3, fuelRequestAmount3 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount3 > 0 ? consumedPropellant3 / fuelRequestAmount3 : 0);
             }
             if (fuelRequestAmount4 > 0 && !double.IsNaN(fuelRequestAmount4) && !double.IsInfinity(fuelRequestAmount4))
             {
-                consumedPropellant4 = resMan.ConsumeResource(propellantResourceID4, fuelRequestAmount4 * availableRatio);
+                consumedPropellant4 = resMan.Consume(propellantResourceID4, fuelRequestAmount4 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
             }
 

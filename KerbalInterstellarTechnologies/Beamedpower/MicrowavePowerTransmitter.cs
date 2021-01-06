@@ -936,19 +936,19 @@ namespace KIT.BeamedPower
                 double transmissionWasteRatio = (100 - activeBeamGenerator.efficiencyPercentage) / 100d;
                 double transmissionEfficiencyRatio = activeBeamGenerator.efficiencyPercentage / 100d;
 
-                var megajoulesRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+                var megajoulesRatio = resMan.FillFraction(ResourceName.ElectricCharge);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
 
                 var effectiveResourceThrottling = Math.Min(megajoulesRatio > 0.5 ? 1 : megajoulesRatio * 2, wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10);
 
                 requestedPower = Math.Min(power_capacity * powerTransmissionRatio, effectiveResourceThrottling * /*availablePower*/ power_capacity);
-                availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedPower);
+                availablePower = resMan.Consume(ResourceName.ElectricCharge, requestedPower);
 
                 nuclear_power += transmissionEfficiencyRatio * availablePower;
                 solar_power += transmissionEfficiencyRatio * solarCells.Sum(m => m.SolarPower);
 
                 // generate wasteheat for converting electric power to beamed power
-                resMan.ProduceResource(ResourceName.WasteHeat, availablePower * transmissionWasteRatio);
+                resMan.Produce(ResourceName.WasteHeat, availablePower * transmissionWasteRatio);
             }
 
             // extract solar power from stable power

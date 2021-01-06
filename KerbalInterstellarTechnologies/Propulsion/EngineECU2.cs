@@ -1,5 +1,4 @@
-﻿using KIT.Resources;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;

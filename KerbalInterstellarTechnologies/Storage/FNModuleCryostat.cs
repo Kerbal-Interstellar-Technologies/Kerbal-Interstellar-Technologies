@@ -191,7 +191,7 @@ namespace KIT.Storage
 
             if (!isDisabled && currentPowerReq > 0.0)
             {
-                receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq);
+                receivedPowerKW = resMan.Consume(ResourceName.ElectricCharge, currentPowerReq);
             }
             else
                 receivedPowerKW = 0;

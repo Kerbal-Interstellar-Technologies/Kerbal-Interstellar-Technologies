@@ -385,8 +385,8 @@ namespace KIT.Propulsion
                 // XXX - is this the amount correct, might need a * ec in MJ conversion.
 
                 var wanted = requested + Math.Min(requested, Math.Max(0.0, maxStoredPower - storedPower));
-                received = resMan.ConsumeResource(ResourceName.ElectricCharge, wanted);
-                resMan.ProduceResource(ResourceName.WasteHeat, received * (1.0 - efficiency));
+                received = resMan.Consume(ResourceName.ElectricCharge, wanted);
+                resMan.Produce(ResourceName.WasteHeat, received * (1.0 - efficiency));
 
                 double totalPower = storedPower + received, energyNeed = requested;
                 if (totalPower >= energyNeed)

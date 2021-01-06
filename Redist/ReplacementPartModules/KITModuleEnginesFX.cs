@@ -1,5 +1,4 @@
-﻿using KIT.Resources;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 
 namespace KIT.ReplacementPartModules
 { 

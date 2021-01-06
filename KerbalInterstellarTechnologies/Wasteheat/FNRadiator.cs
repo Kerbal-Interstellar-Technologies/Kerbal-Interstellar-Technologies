@@ -337,7 +337,7 @@ namespace KIT.Wasteheat
             // what does electricity look like, anyways?
 
             var powerNeeded = powerDrawInJoules;
-            var powerAvail = resMan.ConsumeResource(ResourceName.ElectricCharge, powerNeeded);
+            var powerAvail = resMan.Consume(ResourceName.ElectricCharge, powerNeeded);
 
             return Math.Round(powerAvail / powerNeeded, 2);
         }
@@ -369,7 +369,7 @@ namespace KIT.Wasteheat
             var efficiency = DrawPower(resMan);
             if (efficiency == 0) return;
 
-            maxSupplyOfHeat = resMan.ResourceCurrentCapacity(ResourceName.WasteHeat);
+            maxSupplyOfHeat = resMan.CurrentCapacity(ResourceName.WasteHeat);
             if (maxSupplyOfHeat == 0) return;
 
             airHeatTransferrable = waterHeatTransferrable = steamHeatTransferrable = heatTransferrable = 0;
@@ -378,9 +378,9 @@ namespace KIT.Wasteheat
             // case of negative numbers later on, but that "should not happen".
             double coldTemp = Math.Max(PhysicsGlobals.SpaceTemperature, Math.Min(part.skinTemperature, Math.Min(part.temperature, Math.Min(vessel.atmosphericTemperature, vessel.externalTemperature))));
 
-            // Peter Han has mentioned performance concerns with Get Average Radiator Temp, and suggested I use ResourceFillFraction as a short cut.
+            // Peter Han has mentioned performance concerns with Get Average Radiator Temp, and suggested I use FillFraction as a short cut.
             // AntaresMC mentioned that the upgrade system should max out at 1800K, and that 900K should be the starting point.
-            double hotTemp = Math.Max(coldTemp + 0.1, coldTemp + (resMan.ResourceFillFraction(ResourceName.WasteHeat) * maxExternalTemp));
+            double hotTemp = Math.Max(coldTemp + 0.1, coldTemp + (resMan.FillFraction(ResourceName.WasteHeat) * maxExternalTemp));
 
             if (intakeAtmAmount > 0)
             {
@@ -517,12 +517,12 @@ namespace KIT.Wasteheat
                  */
             }
 
-            var heatTransferred = resMan.ConsumeResource(ResourceName.WasteHeat, actuallyReduced);
+            var heatTransferred = resMan.Consume(ResourceName.WasteHeat, actuallyReduced);
 
             if (heatTransferred == 0) return;
 
-            if (intakeAtmAmount > 0) resMan.ConsumeResource(ResourceName.IntakeAtmosphere, intakeAtmAmount * intakeReduction);
-            if (intakeLqdAmount > 0) resMan.ConsumeResource(ResourceName.IntakeLiquid, intakeLqdAmount * intakeReduction);
+            if (intakeAtmAmount > 0) resMan.Consume(ResourceName.IntakeAtmosphere, intakeAtmAmount * intakeReduction);
+            if (intakeLqdAmount > 0) resMan.Consume(ResourceName.IntakeLiquid, intakeLqdAmount * intakeReduction);
 
         }
 
@@ -1711,7 +1711,9 @@ namespace KIT.Wasteheat
         private void InitializeRadiatorAreaWhenMissing()
         {
             if (radiatorArea != 0) return;
-
+            
+            colorRatioExponent = 4;
+            
             clarifyFunction = true;
 
             radiatorArea = Math.PI * part.partInfo.partSize;
@@ -2118,12 +2120,12 @@ namespace KIT.Wasteheat
                 if (_newlyBrokenRadiator)
                 {
                     // Remove WasteHeat with this one simple trick! Vessel planners /hate/ it!
-                    resMan.ConsumeResource(ResourceName.WasteHeat, _brokenRadiatorWasteHeatAmount);
+                    resMan.Consume(ResourceName.WasteHeat, _brokenRadiatorWasteHeatAmount);
                     return;
                 }
                 
                 // ToDo replace wasteheatManager.SqrtResourceBarRatioBegin by ResourceBarRatioBegin after generators hotbath takes into account expected temperature
-                radiator_temperature_temp_val = Math.Min(maxRadiatorTemperature * resMan.ResourceFillFraction(ResourceName.WasteHeat), maxCurrentRadiatorTemperature);
+                radiator_temperature_temp_val = Math.Min(maxRadiatorTemperature * resMan.FillFraction(ResourceName.WasteHeat), maxCurrentRadiatorTemperature);
 
                 atmosphericMultiplier = Math.Sqrt(vessel.atmDensity);
 
@@ -2132,7 +2134,7 @@ namespace KIT.Wasteheat
 
                 if (radiatorIsEnabled)
                 {
-                    if (!CheatOptions.IgnoreMaxTemperature && resMan.ResourceFillFraction(ResourceName.WasteHeat) >= 1 && CurrentRadiatorTemperature >= maxRadiatorTemperature)
+                    if (!CheatOptions.IgnoreMaxTemperature && resMan.FillFraction(ResourceName.WasteHeat) >= 1 && CurrentRadiatorTemperature >= maxRadiatorTemperature)
                     {
                         _explodeCounter++;
                         if (_explodeCounter > 25)
@@ -2141,12 +2143,12 @@ namespace KIT.Wasteheat
                     else
                         _explodeCounter = 0;
 
-                    _thermalPowerDissipationPerSecond = resMan.ResourceFillFraction(ResourceName.WasteHeat) * deltaTempToPowerFour * _stefanArea;
+                    _thermalPowerDissipationPerSecond = resMan.FillFraction(ResourceName.WasteHeat) * deltaTempToPowerFour * _stefanArea;
 
                     if (double.IsNaN(_thermalPowerDissipationPerSecond))
                         Debug.LogWarning("[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in _thermalPowerDissipationPerSecond");
 
-                    _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
+                    _radiatedThermalPower = canRadiateHeat ? resMan.Consume(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
 
                     if (double.IsNaN(_radiatedThermalPower))
                         Debug.LogError($"[KSPI]: FNRadiator: FixedUpdate Double.IsNaN detected in radiatedThermalPower after call consumeWasteHeat ({_thermalPowerDissipationPerSecond})");
@@ -2160,9 +2162,9 @@ namespace KIT.Wasteheat
                 }
                 else
                 {
-                    _thermalPowerDissipationPerSecond = resMan.ResourceFillFraction(ResourceName.WasteHeat) * deltaTempToPowerFour * _stefanArea * 0.5;
+                    _thermalPowerDissipationPerSecond = resMan.FillFraction(ResourceName.WasteHeat) * deltaTempToPowerFour * _stefanArea * 0.5;
 
-                    _radiatedThermalPower = canRadiateHeat ? resMan.ConsumeResource(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
+                    _radiatedThermalPower = canRadiateHeat ? resMan.Consume(ResourceName.WasteHeat, _thermalPowerDissipationPerSecond) : 0;
 
                     _instantaneousRadTemp = CalculateInstantaneousRadTemp();
 
@@ -2192,9 +2194,9 @@ namespace KIT.Wasteheat
                     if (canRadiateHeat)
                     {
                         if (convPowerDissipation > 0)
-                            resMan.ConsumeResource(ResourceName.WasteHeat, convPowerDissipation);
+                            resMan.Consume(ResourceName.WasteHeat, convPowerDissipation);
                         else
-                            resMan.ProduceResource(ResourceName.WasteHeat, -convPowerDissipation);
+                            resMan.Produce(ResourceName.WasteHeat, -convPowerDissipation);
                         
                     }
                     if (_radiatorDeployDelay >= DEPLOYMENT_DELAY)
