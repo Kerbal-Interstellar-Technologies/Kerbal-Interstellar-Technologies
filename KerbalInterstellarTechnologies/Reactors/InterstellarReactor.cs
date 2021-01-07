@@ -2380,7 +2380,8 @@ namespace KIT.Reactors
                     Debug.Log($"[InterstellarReactor.GetMaxProductAvailability] Unknown resource {product.Definition.name}");
                     return 0;
                 }
-                return resMan.CurrentCapacity(resID) + resMan.SpareCapacity(resID);
+
+                return resMan.MaxCapacity(resID);
 
             }
             else
