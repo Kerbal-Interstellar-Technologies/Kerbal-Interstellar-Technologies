@@ -76,7 +76,7 @@ namespace KIT.ResourceScheduler
 
             if (ResourceManager == null)
             {
-                ResourceManager = new ResourceManager(this, RealCheatOptions.Instance);
+                ResourceManager = new ResourceManager(this);
                 _resourceScheduler = ResourceManager;
             }
 
@@ -90,15 +90,18 @@ namespace KIT.ResourceScheduler
                 VesselHeatDissipation = new VesselHeatDissipation(vessel);
 
             RefreshEventOccurred = true;
+
+            if(EqualityComparer<ResourceManagerData>.Default.Equals(_resourceData, default(ResourceManagerData)))
+                _resourceData = new ResourceManagerData(ResourceManager, RealCheatOptions.Instance);
         }
 
         private SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> variableSupplierModules = new SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
 
-        Dictionary<ResourceName, double> _resourceAmounts = new Dictionary<ResourceName, double>(32);
-        Dictionary<ResourceName, double> _resourceMaxAmounts = new Dictionary<ResourceName, double>(32);
 
         private double _trackElectricChargeUsage;
 
+        private ResourceManagerData _resourceData;
+        
         /// <summary>
         /// FixedUpdate() triggers the ExecuteKITModules() function call above. It implements automatic catch up processing for each module.
         /// </summary>
@@ -117,20 +120,20 @@ namespace KIT.ResourceScheduler
             var deltaTime = _lastExecuted - currentTime;
             _lastExecuted = currentTime;
 
-            GatherResources(ref _resourceAmounts, ref _resourceMaxAmounts);
+            GatherResources();
 
-            _dcSystem.UnallocatedElectricChargeConsumption = Math.Max(0, _trackElectricChargeUsage - _resourceAmounts[ResourceName.ElectricCharge]);
+            _dcSystem.UnallocatedElectricChargeConsumption = Math.Max(0, _trackElectricChargeUsage - _resourceData.AvailableResources[ResourceName.ElectricCharge]);
 
             if (_catchUpNeeded)
             {
-                _resourceScheduler.ExecuteKITModules(deltaTime, ref _resourceAmounts, ref _resourceMaxAmounts);
+                _resourceScheduler.ExecuteKITModules(deltaTime, _resourceData);
                 _catchUpNeeded = false;
             }
 
-            _resourceScheduler.ExecuteKITModules(TimeWarp.fixedDeltaTime, ref _resourceAmounts, ref _resourceMaxAmounts);
-
-            _trackElectricChargeUsage = _resourceAmounts[ResourceName.ElectricCharge];
-            DisperseResources(ref _resourceAmounts, ref _resourceMaxAmounts);
+            _resourceScheduler.ExecuteKITModules(TimeWarp.fixedDeltaTime, _resourceData);
+            _trackElectricChargeUsage = _resourceData.AvailableResources[ResourceName.ElectricCharge];
+            
+            DisperseResources();
         }
 
         bool IVesselResources.VesselModified()
@@ -257,10 +260,10 @@ namespace KIT.ResourceScheduler
             moduleList.Add(VesselHeatDissipation);
         }
 
-        void GatherResources(ref Dictionary<ResourceName, double> amounts, ref Dictionary<ResourceName, double> maxAmounts)
+        void GatherResources()
         {
-            _resourceAmounts.Clear();
-            _resourceMaxAmounts.Clear();
+            _resourceData.AvailableResources.Clear();
+            _resourceData.MaxResources.Clear();
 
             var ignoreFlow = HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
                 .IgnoreResourceFlowRestrictions;
@@ -276,67 +279,67 @@ namespace KIT.ResourceScheduler
                         continue;
                     }
 
-                    if (amounts.ContainsKey(resourceID) == false)
+                    if (_resourceData.AvailableResources.ContainsKey(resourceID) == false)
                     {
-                        amounts[resourceID] = maxAmounts[resourceID] = 0;
+                        _resourceData.AvailableResources[resourceID] = _resourceData.MaxResources[resourceID] = 0;
                     }
 
-                    amounts[resourceID] += resource.amount;
-                    maxAmounts[resourceID] += resource.maxAmount;
+                    _resourceData.AvailableResources[resourceID] += resource.amount;
+                    _resourceData.MaxResources[resourceID] += resource.maxAmount;
                 }
             }
         }
 
-        private void HandleSpecialResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
+        private void HandleSpecialResources()
         {
             // Per FreeThinker, "charged particle  power should technically not be able to be stored. The only reason it existed was to have some consumption
             // balancing when there are more than one consumer.", "charged particles should become Thermal heat when unconsumed and if no Thermal
             // storage available it should become waste heat."
 
-            var hasChargedParticles = available.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount);
-            var hasThermalPower = available.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount);
+            var hasChargedParticles = _resourceData.AvailableResources.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount);
+            var hasThermalPower = _resourceData.AvailableResources.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount);
 
-            if (! available.ContainsKey(ResourceName.WasteHeat))
+            if (!_resourceData.AvailableResources.ContainsKey(ResourceName.WasteHeat))
             {
                 // Seems unlikely to have Charged Particles and/or Thermal Power without WasteHeat, but just in case
-                available[ResourceName.WasteHeat] = 0;
+                _resourceData.AvailableResources[ResourceName.WasteHeat] = 0;
             }
 
 
             if (hasChargedParticles)
             {
-                available[ResourceName.ChargedParticle] = 0;
+                _resourceData.AvailableResources[ResourceName.ChargedParticle] = 0;
 
                 // Store any remaining charged particles in either ThermalPower or WasteHeat
-                available[hasThermalPower ? ResourceName.ThermalPower : ResourceName.WasteHeat] += chargedParticleAmount;
+                _resourceData.AvailableResources[hasThermalPower ? ResourceName.ThermalPower : ResourceName.WasteHeat] += chargedParticleAmount;
             }
 
             if (hasThermalPower)
             {
                 // Have we exceeded the storage capacity for Thermal Power?
-                if (maxAmounts.ContainsKey(ResourceName.ThermalPower))
+                if (_resourceData.MaxResources.ContainsKey(ResourceName.ThermalPower))
                 {
-                    var diff = thermalPowerAmount - maxAmounts[ResourceName.ThermalPower];
+                    var diff = thermalPowerAmount - _resourceData.MaxResources[ResourceName.ThermalPower];
 
                     if (diff > 0)
                     {
-                        available[ResourceName.WasteHeat] += diff;
-                        available[ResourceName.ThermalPower] = maxAmounts[ResourceName.ThermalPower];
+                        _resourceData.AvailableResources[ResourceName.WasteHeat] += diff;
+                        _resourceData.AvailableResources[ResourceName.ThermalPower] = _resourceData.AvailableResources[ResourceName.ThermalPower];
                     }
                 }
                 else
                 {
                     // no Thermal Power storage. Seems unlikely, but just in case
-                    
-                    available.Remove(ResourceName.ThermalPower);
-                    available[ResourceName.WasteHeat] += thermalPowerAmount;
+
+                    _resourceData.AvailableResources.Remove(ResourceName.ThermalPower);
+                    _resourceData.AvailableResources[ResourceName.WasteHeat] += thermalPowerAmount;
                 }
             }
         }
 
-        void DisperseResources(ref Dictionary<ResourceName, double> available, ref Dictionary<ResourceName, double> maxAmounts)
+        void DisperseResources()
         {
-            HandleSpecialResources(ref available, ref maxAmounts);
+            HandleSpecialResources();
 
             var ignoreFlow = HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
                 .IgnoreResourceFlowRestrictions;
@@ -354,9 +357,9 @@ namespace KIT.ResourceScheduler
                         continue;
                     }
 
-                    if (available.ContainsKey(resourceID) == false || maxAmounts.ContainsKey(resourceID) == false) return;
+                    if (_resourceData.AvailableResources.ContainsKey(resourceID) == false || _resourceData.MaxResources.ContainsKey(resourceID) == false) return;
 
-                    var tmp = available[resourceID] / maxAmounts[resourceID];
+                    var tmp = _resourceData.AvailableResources[resourceID] / _resourceData.MaxResources[resourceID];
                     var multiplier = (tmp > 1) ? 1 : (tmp < 0) ? 0 : tmp;
                     resource.amount = resource.maxAmount * multiplier;
                 }

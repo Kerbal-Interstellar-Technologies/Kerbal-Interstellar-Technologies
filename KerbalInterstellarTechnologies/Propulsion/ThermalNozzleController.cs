@@ -15,15 +15,34 @@ namespace KIT.Propulsion
 {
     class TECZeroResourceManagerInterface : IResourceManager
     {
+        public double MaxCapacity(ResourceName resourceIdentifier)
+        {
+            throw new NotImplementedException();
+        }
+
         public ICheatOptions CheatOptions() => RealCheatOptions.Instance;
         public double Consume(ResourceName resource, double wanted)
         {
             throw new NotImplementedException();
         }
+
+        public bool CapacityInformation(ResourceName resourceIdentifier, out double maxCapacity, out double spareCapacity,
+            out double currentCapacity, out double fillFraction)
+        {
+            throw new NotImplementedException();
+        }
+
         public double FixedDeltaTime()
         {
             throw new NotImplementedException();
         }
+
+        public double ScaledConsumptionProduction(List<KeyValuePair<ResourceName, double>> consumeResources, List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
+        {
+            throw new NotImplementedException();
+        }
+
         public double Produce(ResourceName resource, double amount, double max = -1)
         {
             throw new NotImplementedException();
