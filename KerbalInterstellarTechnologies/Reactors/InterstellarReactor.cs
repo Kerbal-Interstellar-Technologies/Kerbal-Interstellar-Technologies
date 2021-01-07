@@ -2726,23 +2726,23 @@ namespace KIT.Reactors
         /// electricChargeGeneratedLastUpdate indicates how much ElectricCharge was generated in the since the previous FixedUpdate()
         /// call.
         /// </summary>
-        private double electricChargeGeneratedLastUpdate;
+        private double _electricChargeGeneratedLastUpdate;
 
         /// <summary>
         /// electricChargeMissingLastUpdate indicates how much ElectricCharge we could not provide in the last FixedUpdate call.
         /// It is the result of electricChargeBeingRequestedThisUpdate - electricChargeBeingSuppliedThisUpdate
         /// </summary>
-        private double electricChargeMissingLastUpdate;
+        private double _electricChargeMissingLastUpdate;
 
         /// <summary>
         ///  electricChargeBeingRequestedThisUpdate provides a running total of Electric Charge being requested this cycle.
         /// </summary>
-        private double electricChargeBeingRequestedThisUpdate;
+        private double _electricChargeBeingRequestedThisUpdate;
 
         /// <summary>
         /// electricChargeBeingSuppliedThisUpdate provides a running total of how much Electric Charge we've been able to provide.
         /// </summary>
-        private double electricChargeBeingSuppliedThisUpdate;
+        private double _electricChargeBeingSuppliedThisUpdate;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -2756,9 +2756,9 @@ namespace KIT.Reactors
             ongoing_total_power_generated = 0;
 
             // KITFixedUpdate always runs before each power draw attempt.
-            electricChargeGeneratedLastUpdate = electricChargeBeingSuppliedThisUpdate;
-            electricChargeMissingLastUpdate = electricChargeBeingRequestedThisUpdate - electricChargeBeingSuppliedThisUpdate;
-            electricChargeBeingRequestedThisUpdate = electricChargeBeingSuppliedThisUpdate = 0;
+            _electricChargeGeneratedLastUpdate = _electricChargeBeingSuppliedThisUpdate;
+            _electricChargeMissingLastUpdate = _electricChargeBeingRequestedThisUpdate - _electricChargeBeingSuppliedThisUpdate;
+            _electricChargeBeingRequestedThisUpdate = _electricChargeBeingSuppliedThisUpdate = 0;
 
             if (!IsEnabled)
             {
@@ -2938,19 +2938,19 @@ namespace KIT.Reactors
         // TODO - is this right?
         // Removed the subclass that it got the implementation from. https://github.com/sswelm/KSP-Interstellar-Extended/blob/19b77a81af0f12f6c081d925e919c2aa2f93e5e0/FNPlugin/Powermanagement/ResourceSuppliableModule.cs
 
-        protected readonly Dictionary<Guid, double> connectedReceivers = new Dictionary<Guid, double>();
-        protected readonly Dictionary<Guid, double> connectedReceiversFraction = new Dictionary<Guid, double>();
+        protected readonly Dictionary<Guid, double> ConnectedReceivers = new Dictionary<Guid, double>();
+        public readonly Dictionary<Guid, double> connectedReceiversFraction = new Dictionary<Guid, double>();
 
         public void AttachThermalReceiver(Guid key, double radius)
         {
-            if (!connectedReceivers.ContainsKey(key))
-                connectedReceivers.Add(key, radius);
+            if (!ConnectedReceivers.ContainsKey(key))
+                ConnectedReceivers.Add(key, radius);
         }
 
         public void DetachThermalReceiver(Guid key)
         {
-            if (connectedReceivers.ContainsKey(key))
-                connectedReceivers.Remove(key);
+            if (ConnectedReceivers.ContainsKey(key))
+                ConnectedReceivers.Remove(key);
         }
 
         public double GetFractionThermalReceiver(Guid key)
@@ -2961,8 +2961,8 @@ namespace KIT.Reactors
                 return 0;
         }
 
-        private ResourceName[] thermalResourcesProvided = new[] { ResourceName.ThermalPower };
-        private ResourceName[] chargedResourcesProvided = new[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
+        private readonly ResourceName[] thermalResourcesProvided = new[] { ResourceName.ThermalPower };
+        public ResourceName[] chargedResourcesProvided = new[] { ResourceName.ThermalPower, ResourceName.ChargedParticle };
 
         // What resources can this reactor provide, either as intended, or by side effect.
         // an example might be that we can generate ThermalPower when generating ElectricCharge.
