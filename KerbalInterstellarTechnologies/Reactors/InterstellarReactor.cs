@@ -611,7 +611,7 @@ namespace KIT.Reactors
                 if (_currentFuelMode != null)
                     return _currentFuelMode;
 
-                Debug.Log("[KSPI]: CurrentFuelMode setting default fuelmode");
+                Debug.Log("[KSPI]: CurrentFuelMode setting default FuelMode");
                 SetDefaultFuelMode();
 
                 return _currentFuelMode;
@@ -672,18 +672,18 @@ namespace KIT.Reactors
 
             foreach (var product in _reactorProduction)
             {
-                if (product.mass <= 0) continue;
+                if (product.Mass <= 0) continue;
 
-                var effectiveMass = ratio * product.mass;
+                var effectiveMass = ratio * product.Mass;
 
                 // remove product from store
-                var fuelAmount = product.fuelmode.DensityInTon > 0 ? (effectiveMass / product.fuelmode.DensityInTon) : 0;
+                var fuelAmount = product.FuelMode.DensityInTon > 0 ? (effectiveMass / product.FuelMode.DensityInTon) : 0;
                 if (fuelAmount == 0) continue;
 
-                resID = KITResourceSettings.NameToResource(product.fuelmode.ResourceName);
+                resID = KITResourceSettings.NameToResource(product.FuelMode.ResourceName);
                 if (resID == ResourceName.Unknown)
                 {
-                    part.RequestResource(product.fuelmode.ResourceName, fuelAmount * resMan.FixedDeltaTime());
+                    part.RequestResource(product.FuelMode.ResourceName, fuelAmount * resMan.FixedDeltaTime());
                 }
                 else
                 {
@@ -3092,7 +3092,7 @@ namespace KIT.Reactors
             {
                 var massProduced = ProduceReactorProduct(resMan, product, totalPowerReceivedFixed / GeeForceModifier);
                 if (product.IsPropellant)
-                    _reactorProduction.Add(new ReactorProduction() { fuelmode = product, mass = massProduced });
+                    _reactorProduction.Add(new ReactorProduction() { FuelMode = product, Mass = massProduced });
             }
 
 
