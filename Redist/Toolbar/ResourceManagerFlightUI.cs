@@ -9,11 +9,11 @@ namespace KIT.Toolbar
 
     public class ResourceUI
     {
-        readonly ResourceManager _vesselResourceManager;
+        readonly KITResourceVesselModule _kitResourceVesselModule;
 
-        public ResourceUI(ResourceManager vesselResourceManager)
+        public ResourceUI(KITResourceVesselModule kitResourceVesselModule)
         {
-            this._vesselResourceManager = vesselResourceManager;
+            this._kitResourceVesselModule = kitResourceVesselModule;
         }
 
         readonly ResourceName[] _resources = new[] { ResourceName.ElectricCharge, ResourceName.ThermalPower, ResourceName.ChargedParticle, ResourceName.WasteHeat };
@@ -25,7 +25,7 @@ namespace KIT.Toolbar
             
             foreach(var resource in _resources)
             {
-                if(_vesselResourceManager.ModProduction.TryGetValue(resource, out var resourceList))
+                if(_kitResourceVesselModule.ResourceData.ModProduction.TryGetValue(resource, out var resourceList))
                 {
                     elements.Add($"<br><b>{KITResourceSettings.ResourceToName(resource)} Producers</b><br>");
                     var mods = resourceList.Keys;
@@ -35,7 +35,7 @@ namespace KIT.Toolbar
                     }
                 }
 
-                if (_vesselResourceManager.ModConsumption.TryGetValue(resource, out resourceList))
+                if (_kitResourceVesselModule.ResourceData.ModConsumption.TryGetValue(resource, out resourceList))
                 {
                     elements.Add($"<br><b>{KITResourceSettings.ResourceToName(resource)} Consumers</b><br>");
                     var mods = resourceList.Keys;
@@ -50,9 +50,9 @@ namespace KIT.Toolbar
             return string.Join("", elements);
         }
 
-        public static PopupDialog CreateDialog(string vesselName, KITResourceVesselModule vesselResourceManager)
+        public static PopupDialog CreateDialog(string vesselName, KITResourceVesselModule kitResourceVesselModule)
         {
-            var resourceUI = new ResourceUI(vesselResourceManager.ResourceManager);
+            var resourceUI = new ResourceUI(kitResourceVesselModule);
 
             List<DialogGUIBase> layout = new List<DialogGUIBase>
             {
@@ -83,7 +83,7 @@ namespace KIT.Toolbar
 
         public void Update()
         {
-            Vessel vessel = FlightGlobals.ActiveVessel;
+            var vessel = FlightGlobals.ActiveVessel;
             if (vessel == null || vessel.vesselModules == null || (ShowWindow == false && CloseWindow == false)) {
                 // is this needed? show_window = close_window = false;
                 return;
@@ -93,9 +93,9 @@ namespace KIT.Toolbar
             {
                 if(_dialog == null)
                 {
-                    var vrm = FindVesselResourceManager(vessel);
+                    var vrm = vessel.FindVesselModuleImplementing<KITResourceVesselModule>();
                     _dialog = ResourceUI.CreateDialog(vessel.vesselName, vrm);
-                    _dialog.OnDismiss = dismissDialog;
+                    _dialog.OnDismiss = DismissDialog;
                 }
                 ShowWindow = false;
                 return;
@@ -103,30 +103,16 @@ namespace KIT.Toolbar
 
             // otherwise, close_window is true
 
-            dismissDialog();
+            DismissDialog();
             CloseWindow = false;
         }
 
-        private void dismissDialog()
+        private void DismissDialog()
         {
             if (_dialog == null) return;
 
             _dialog.Dismiss();
             _dialog = null;
-        }
-
-        private KITResourceVesselModule FindVesselResourceManager(Vessel vessel)
-        {
-            KITResourceVesselModule vesselResourceManager = null;
-
-            foreach (var t in vessel.vesselModules)
-            {
-                if (t == null) continue;
-                vesselResourceManager = t as KITResourceVesselModule;
-
-                if (vesselResourceManager != null) break;
-            }
-            return vesselResourceManager == null ? null : vesselResourceManager.ResourceManager == null ? null : vesselResourceManager;
         }
     }
 }

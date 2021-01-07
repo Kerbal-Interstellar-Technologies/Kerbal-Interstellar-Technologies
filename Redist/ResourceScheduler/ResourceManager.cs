@@ -36,12 +36,17 @@ namespace KIT.ResourceScheduler
         public double Amount, MaxAmount;
     }
 
-    public struct ResourceManagerData : IResourceManager
+    public struct ResourceData : IResourceManager
     {
-        internal ResourceManager ResourceManager;
+        internal KITResourceVesselModule ResourceManager;
 
         private readonly ICheatOptions _myCheatOptions;
         internal double FixedDeltaTimeValue;
+
+        internal List<IKITModule> AvailableKITModules;
+        internal SortedDictionary<ResourceName, List<IKITVariableSupplier>> VariableSupplierModules;
+
+        internal HashSet<IKITVariableSupplier> TappedOutMods;
 
         internal List<IKITModule> FixedUpdateCalledMods;
         internal List<IKITModule> ModsCurrentlyRunning;
@@ -49,10 +54,19 @@ namespace KIT.ResourceScheduler
         internal Dictionary<ResourceName, double> AvailableResources;
         internal Dictionary<ResourceName, double> MaxResources;
 
-        public ResourceManagerData(ResourceManager resourceManager, ICheatOptions cheatOptions)
+        internal ResourceProduction[] ResourceProductionStats;
+        internal Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModConsumption;
+        internal Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModProduction;
+
+        public ResourceData(KITResourceVesselModule resourceManager, ICheatOptions cheatOptions)
         {
             ResourceManager = resourceManager;
             _myCheatOptions = cheatOptions;
+
+            AvailableKITModules = new List<IKITModule>(128);
+            VariableSupplierModules = new SortedDictionary<ResourceName, List<IKITVariableSupplier>>();
+
+            TappedOutMods = new HashSet<IKITVariableSupplier>(128);
 
             FixedUpdateCalledMods = new List<IKITModule>(128);
             ModsCurrentlyRunning = new List<IKITModule>(32);
@@ -61,6 +75,16 @@ namespace KIT.ResourceScheduler
             MaxResources = new Dictionary<ResourceName, double>();
 
             FixedDeltaTimeValue = 0;
+
+            ResourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat + 1)];
+
+            ModProduction = new Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>>();
+            ModConsumption = new Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>>();
+            for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
+            {
+                ModProduction[i] = new Dictionary<IKITModule, PerPartResourceInformation>();
+                ModConsumption[i] = new Dictionary<IKITModule, PerPartResourceInformation>();
+            }
         }
 
         public void Update(double fixedDeltaTime, Dictionary<ResourceName, double> availableResources, Dictionary<ResourceName, double> maxResources, List<IKITModule> modsCurrentlyRunning, List<IKITModule> fixedUpdateCalledMods)
@@ -170,42 +194,36 @@ namespace KIT.ResourceScheduler
 
         public IResourceProduction ProductionStats(ResourceName resourceIdentifier)
         {
-            throw new NotImplementedException();
+            if (ResourceProductionStats == null) return null;
+
+            if (resourceIdentifier >= ResourceName.ElectricCharge && resourceIdentifier <= ResourceName.WasteHeat)
+                return ResourceProductionStats[(int) resourceIdentifier];
+
+            return null;
         }
     }
 
-    public class ResourceManager : IResourceScheduler
+    public partial class KITResourceVesselModule : IResourceScheduler
     {
-        private readonly IVesselResources _vesselResources;
+        // private readonly IVesselResources _vesselResources;
         private static double fudgeFactor = 0.99999;
 
         private double _fixedDeltaTime;
 
-        private readonly HashSet<IKITModule> _fixedUpdateCalledMods = new HashSet<IKITModule>(128);
-        private readonly List<IKITModule> _modsCurrentlyRunning = new List<IKITModule>(128);
+        // private readonly HashSet<IKITModule> _fixedUpdateCalledMods = new HashSet<IKITModule>(128);
+        // private readonly List<IKITModule> _modsCurrentlyRunning = new List<IKITModule>(128);
 
         public bool UseThisToHelpWithTesting;
 
-        public Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModConsumption;
-        public Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModProduction;
+        // public Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModConsumption;
+        // public Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModProduction;
 
         private readonly OverHeatingResourceManager _overHeatingResourceManager;
         private readonly WasteHeatEquilibriumResourceManager _wasteHeatEquilibriumResourceManager;
         private IResourceManager _topLevelInterface;
 
-        public ResourceManager(IVesselResources vesselResources)
+        public KITResourceVesselModule()
         {
-            _vesselResources = vesselResources;
-
-            _resourceProductionStats = new ResourceProduction[ResourceName.WasteHeat - ResourceName.ElectricCharge + 1];
-
-            ModProduction = new Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>>();
-            ModConsumption = new Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>>();
-            for (var i = ResourceName.ElectricCharge; i <= ResourceName.WasteHeat; i++)
-            {
-                ModProduction[i] = new Dictionary<IKITModule, PerPartResourceInformation>();
-                ModConsumption[i] = new Dictionary<IKITModule, PerPartResourceInformation>();
-            }
 
             _wasteHeatEquilibriumResourceManager = new WasteHeatEquilibriumResourceManager();
             _overHeatingResourceManager = new OverHeatingResourceManager();
@@ -213,7 +231,7 @@ namespace KIT.ResourceScheduler
 
         #region IResourceManager implementation
 
-        public double ScaledConsumptionProduction(ResourceManagerData data, List<KeyValuePair<ResourceName, double>> consumeResources, List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
+        public double ScaledConsumptionProduction(ResourceData data, List<KeyValuePair<ResourceName, double>> consumeResources, List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
             throw new NotImplementedException();
@@ -225,13 +243,13 @@ namespace KIT.ResourceScheduler
         private static bool TrackableResource(ResourceName resource) => resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool UseOverheatingResourceManager(ResourceManagerData data)
+        private bool UseOverheatingResourceManager(ResourceData data)
         {
             // If players don't want the requests scaled back, so be it
             if (HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().DisableResourceConsumptionRateLimit) return false;
 
             var found = data.CapacityInformation(ResourceName.WasteHeat, out _, out _, out _, out var wasteHeatRatio);
-            
+
             var ratio = wasteHeatRatio;
             if (ratio < 0.90) return false;
 
@@ -248,10 +266,11 @@ namespace KIT.ResourceScheduler
         /// Called by the IKITModule to consume resources present on a vessel. It automatically converts the wanted amount by the appropriate value to
         /// give you a per-second resource consumption.
         /// </summary>
+        /// <param name="data">Resource Data to consume against</param>
         /// <param name="resource">Resource to consume</param>
         /// <param name="wanted">How much you want</param>
         /// <returns>How much you got</returns>
-        public double Consume(ResourceManagerData data, ResourceName resource, double wanted)
+        public double Consume(ResourceData data, ResourceName resource, double wanted)
         {
             KITResourceSettings.ValidateResource(resource);
 
@@ -265,25 +284,25 @@ namespace KIT.ResourceScheduler
 
             tmpPPRI.Amount = tmpPPRI.MaxAmount = 0;
 
-            var lastMod = _modsCurrentlyRunning.Last();
+            var lastMod = data.ModsCurrentlyRunning.Last();
 
-            var trackResourceUsage = TrackableResource(resource);
+            var trackResourceUsage = TrackableResource(resource) && data.ModConsumption != null && data.ModProduction != null && data.ResourceProductionStats != null;
             if (trackResourceUsage)
             {
-                _resourceProductionStats[resource - ResourceName.ElectricCharge].InternalCurrentlyRequested += wanted;
+                data.ResourceProductionStats[(int)ResourceName.ElectricCharge].InternalCurrentlyRequested += wanted;
 
-                if (!ModConsumption[resource].ContainsKey(lastMod))
+                if (!data.ModConsumption[resource].ContainsKey(lastMod))
                 {
-                    ModConsumption[resource][lastMod] = new PerPartResourceInformation();
+                    data.ModConsumption[resource][lastMod] = new PerPartResourceInformation();
                 }
-                tmpPPRI = ModConsumption[resource][lastMod];
+                tmpPPRI = data.ModConsumption[resource][lastMod];
                 tmpPPRI.MaxAmount += wanted;
             }
 
             if (data.CheatOptions().InfiniteElectricity && resource == ResourceName.ElectricCharge)
             {
                 tmpPPRI.Amount += wanted;
-                ModConsumption[resource][lastMod] = tmpPPRI;
+                data.ModConsumption[resource][lastMod] = tmpPPRI;
                 return wanted;
             }
 
@@ -300,12 +319,12 @@ namespace KIT.ResourceScheduler
             data.AvailableResources[resource] -= tmp;
 
             if (trackResourceUsage && tmp > 0)
-                _resourceProductionStats[resource - ResourceName.ElectricCharge].InternalCurrentlySupplied += tmp;
+                data.ResourceProductionStats[(int)resource].InternalCurrentlySupplied += tmp;
 
             if (obtainedAmount >= modifiedAmount)
             {
                 tmpPPRI.Amount += wanted;
-                if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
+                if (trackResourceUsage) data.ModConsumption[resource][lastMod] = tmpPPRI;
 
                 return wanted;
             }
@@ -327,16 +346,9 @@ namespace KIT.ResourceScheduler
             // Debug.Log($"[Consume] after calling variable suppliers, obtainedAmount is {obtainedAmount}, fudged value is {wanted * fudgeFactor}, and result is {result}");
 
             tmpPPRI.Amount += result;
-            if (trackResourceUsage) ModConsumption[resource][lastMod] = tmpPPRI;
+            if (trackResourceUsage) data.ModConsumption[resource][lastMod] = tmpPPRI;
 
             return result;
-        }
-
-        public double FixedDeltaTime() => _fixedDeltaTime;
-
-        void RefreshActiveModules()
-        {
-            _vesselResources.VesselKITModules(ref _activeKITModules, ref _variableSupplierModules);
         }
 
         /// <summary>
@@ -346,7 +358,7 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource to produce</param>
         /// <param name="amount">Amount you are providing</param>
         /// <param name="max">Maximum amount that could be provided</param>
-        public double Produce(ResourceManagerData data, ResourceName resource, double amount, double max = -1)
+        public double Produce(ResourceData data, ResourceName resource, double amount, double max = -1)
         {
             KITResourceSettings.ValidateResource(resource);
 
@@ -359,23 +371,24 @@ namespace KIT.ResourceScheduler
 
             // Debug.Log($"[Produce] called with resource = {KITResourceSettings.ResourceToName(resource)}, amount = {amount} and max as {max}");
 
-            if (TrackableResource(resource))
+            var trackResourceUsage = TrackableResource(resource) && data.ModConsumption != null && data.ModProduction != null && data.ResourceProductionStats != null;
+            if (trackResourceUsage)
             {
-                _resourceProductionStats[resource - ResourceName.ElectricCharge].InternalCurrentlySupplied += amount;
+                data.ResourceProductionStats[(int)resource].InternalCurrentlySupplied += amount;
 
-                var lastMod = _modsCurrentlyRunning.Last();
+                var lastMod = data.ModsCurrentlyRunning.Last();
 
-                if (!ModProduction[resource].ContainsKey(lastMod))
+                if (!data.ModProduction[resource].ContainsKey(lastMod))
                 {
                     var tmpPPRI = new PerPartResourceInformation { Amount = amount, MaxAmount = (max == -1) ? 0 : max };
-                    ModProduction[resource][lastMod] = tmpPPRI;
+                    data.ModProduction[resource][lastMod] = tmpPPRI;
                 }
                 else
                 {
-                    var tmpPPRI = ModProduction[resource][lastMod];
+                    var tmpPPRI = data.ModProduction[resource][lastMod];
                     tmpPPRI.Amount += amount;
                     tmpPPRI.MaxAmount += (max == -1) ? 0 : max;
-                    ModProduction[resource][lastMod] = tmpPPRI;
+                    data.ModProduction[resource][lastMod] = tmpPPRI;
                 }
             }
 
@@ -394,8 +407,8 @@ namespace KIT.ResourceScheduler
         #endregion
         #region IResourceScheduler implementation
 
-        private List<IKITModule> _activeKITModules = new List<IKITModule>(128);
-        private Dictionary<ResourceName, List<IKITVariableSupplier>> _variableSupplierModules = new Dictionary<ResourceName, List<IKITVariableSupplier>>();
+        // private List<IKITModule> _activeKITModules = new List<IKITModule>(128);
+        // private Dictionary<ResourceName, List<IKITVariableSupplier>> _variableSupplierModules = new Dictionary<ResourceName, List<IKITVariableSupplier>>();
 
         private bool _complainedToWaiterAboutOrder;
 
@@ -415,7 +428,7 @@ namespace KIT.ResourceScheduler
         bool _informWhenHighTimeWarpPossible;
         private const double EquilibriumDifference = 0.00001;
 
-        private void PickTopLevelInterface(ResourceManagerData resourceData)
+        private void PickTopLevelInterface(ResourceData resourceData)
         {
             _topLevelInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager : (IResourceManager)resourceData;
 
@@ -461,7 +474,7 @@ namespace KIT.ResourceScheduler
         /// </summary>
         /// <param name="deltaTime">the amount of delta time that each module should use</param>
         /// <param name="resourceData">What resources are available for this call.</param>
-        public void ExecuteKITModules(double deltaTime, ResourceManagerData resourceData)
+        public void ExecuteKITModules(double deltaTime, ResourceData resourceData)
         {
             var index = 0;
 
@@ -505,7 +518,7 @@ namespace KIT.ResourceScheduler
             {
                 if (i == ResourceName.WasteHeat - ResourceName.ElectricCharge && _wasteHeatEquilibriumAchieved) continue;
 
-                var currentResourceProduction = _resourceProductionStats[i];
+                var currentResourceProduction = resourceData.ResourceProductionStats[i];
 
                 currentResourceProduction.InternalPreviouslyRequested = currentResourceProduction.InternalCurrentlyRequested;
                 currentResourceProduction.InternalPreviouslySupplied = currentResourceProduction.InternalCurrentlySupplied;
@@ -517,104 +530,87 @@ namespace KIT.ResourceScheduler
             {
                 if (i == ResourceName.WasteHeat && _wasteHeatEquilibriumAchieved) continue;
 
-                ModConsumption[i].Clear();
-                ModProduction[i].Clear();
+                resourceData.ModConsumption[i].Clear();
+                resourceData.ModProduction[i].Clear();
             }
 
-            tappedOutMods.Clear();
-            _fixedUpdateCalledMods.Clear();
+            resourceData.TappedOutMods.Clear();
+            resourceData.FixedUpdateCalledMods.Clear();
 
             PickTopLevelInterface(resourceData);
 
-            if (_modsCurrentlyRunning.Count > 0)
+            if (resourceData.ModsCurrentlyRunning.Count > 0)
             {
                 if (!_complainedToWaiterAboutOrder)
                     Debug.Log("[ResourceManager.ExecuteKITModules] URGENT modsCurrentlyRunning.Count != 0. there may be resource production / consumption issues.");
                 else
                     _complainedToWaiterAboutOrder = true;
 
-                _modsCurrentlyRunning.Clear();
+                resourceData.ModsCurrentlyRunning.Clear();
             }
 
-            if (_vesselResources.VesselModified())
+            if (VesselModified())
             {
-                RefreshActiveModules();
-                if (_activeKITModules.Count == 0)
+                RefreshActiveModules(resourceData);
+                if (resourceData.AvailableKITModules.Count == 0)
                 {
                     Debug.Log("No KIT Modules found");
                     return;
                 }
-                Debug.Log($"[resource manager] got {_activeKITModules.Count} modules and also {_variableSupplierModules.Count} variable modules");
+                Debug.Log($"[resource manager] got {resourceData.AvailableKITModules.Count} modules and also {resourceData.VariableSupplierModules.Count} variable modules");
             }
 
-            if (_activeKITModules.Count >= 1 && _activeKITModules[0] is IDCElectricalSystem dc)
+            if (resourceData.AvailableKITModules.Count >= 1 && resourceData.AvailableKITModules[0] is IDCElectricalSystem dc)
             {
-                ModConsumption[ResourceName.ElectricCharge][_activeKITModules[0]] = new PerPartResourceInformation { Amount = dc.UnallocatedElectricChargeConsumption() };
-                _activeKITModules.Remove(_activeKITModules[0]);
+                resourceData.ModConsumption[ResourceName.ElectricCharge][resourceData.AvailableKITModules[0]] = new PerPartResourceInformation { Amount = dc.UnallocatedElectricChargeConsumption() };
+                resourceData.AvailableKITModules.Remove(resourceData.AvailableKITModules[0]);
             }
 
             _inExecuteKITModules = true;
 
             _fixedDeltaTime = deltaTime;
 
-            while (index != _activeKITModules.Count)
+            while (index != resourceData.AvailableKITModules.Count)
             {
-                var mod = _activeKITModules[index];
+                var mod = resourceData.AvailableKITModules[index];
                 index++;
 
-                if (_modsCurrentlyRunning.Contains(mod))
+                if (resourceData.ModsCurrentlyRunning.Contains(mod))
                 {
                     Debug.Log($"[KITResourceManager.ExecuteKITModules] This module {mod.KITPartName()} should not be marked busy at this stage");
                     continue;
                 }
-                _modsCurrentlyRunning.Add(mod);
+                resourceData.ModsCurrentlyRunning.Add(mod);
 
-                InitializeModuleIfNeeded(mod);
+                InitializeModuleIfNeeded(resourceData, mod);
 
-                if (_vesselResources.VesselModified())
+                if (VesselModified())
                 {
                     index = 0;
-                    RefreshActiveModules();
+                    RefreshActiveModules(resourceData);
                 }
 
-                if (_modsCurrentlyRunning.Last() != mod)
+                if (resourceData.ModsCurrentlyRunning.Last() != mod)
                 {
                     // there is an ordering problem in the above mod.KITFixedUpdate(), and we did not correctly track which module is
                     // currently running.
                     throw new InvalidOperationException("[KITResourceManager.ExecuteKITModules] the currently running mod is not the last running mod");
                 }
-                _modsCurrentlyRunning.Remove(mod);
+                resourceData.ModsCurrentlyRunning.Remove(mod);
             }
 
             RechargeBatteries(resourceData);
-            _vesselResources.OnKITProcessingFinished(resourceData);
-
-            /* if (!_wasteHeatEquilibriumAchieved)
-            {
-                resourceAmounts.TryGetValue(ResourceName.WasteHeat, out _wasteHeatAtEndOfProcessing);
-            }
-            else
-            {
-                resourceAmounts[ResourceName.WasteHeat] = _wasteHeatAtEndOfProcessing;
-            }
-            */
+            OnKITProcessingFinished(resourceData);
 
             CheckIfEmergencyStopIsNeeded(resourceData);
 
             _inExecuteKITModules = false;
         }
 
-        private void CheckIfEmergencyStopIsNeeded(ResourceManagerData resourceData)
+        private void CheckIfEmergencyStopIsNeeded(ResourceData resourceData)
         {
-            var found = resourceData.CapacityInformation(ResourceName.WasteHeat,
-                maxCapacity: out var maxCapacity,
-                spareCapacity: out _,
-                currentCapacity: out var currentCapacity,
-                fillFraction: out _);
+            var ratio = resourceData.FillFraction(ResourceName.WasteHeat);
 
-            if (!found) return;
-
-            var ratio = currentCapacity / maxCapacity;
             if (ratio < HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
                 .EmergencyShutdownTemperaturePercentage)
             {
@@ -647,71 +643,62 @@ namespace KIT.ResourceScheduler
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RechargeBatteries(ResourceManagerData resourceData)
+        private void RechargeBatteries(ResourceData resourceData)
         {
-            var found = resourceData.CapacityInformation(
-                resourceIdentifier: ResourceName.ElectricCharge,
-                maxCapacity: out var maxCapacity,
-                spareCapacity: out _,
-                currentCapacity: out var currentCapacity,
-                fillFraction: out _);
-
-            if (!found) return;
-
             // Check to see if the variable suppliers can be used to fill any missing EC from the vessel. This will charge
             // any batteries present on the ship.
-            double fillBattery = maxCapacity - currentCapacity;
+            double fillBattery = resourceData.SpareCapacity(ResourceName.ElectricCharge);
             if (fillBattery <= 0) return;
 
             resourceData.AvailableResources[ResourceName.ElectricCharge] += CallVariableSuppliers(resourceData, ResourceName.ElectricCharge, 0, fillBattery);
         }
 
-        readonly HashSet<IKITVariableSupplier> tappedOutMods = new HashSet<IKITVariableSupplier>(128);
+        // readonly HashSet<IKITVariableSupplier> tappedOutMods = new HashSet<IKITVariableSupplier>(128);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitializeModuleIfNeeded(IKITModule ikitModule)
+        private void InitializeModuleIfNeeded(ResourceData data, IKITModule ikitModule)
         {
-            if (!_fixedUpdateCalledMods.Contains(ikitModule))
-            {
-                // Hasn't had it's KITFixedUpdate() yet? call that first.
-                _fixedUpdateCalledMods.Add(ikitModule);
-                UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.InitializeModuleIfNeeded.Init.{ikitModule.KITPartName()}");
+            if (data.FixedUpdateCalledMods.Contains(ikitModule)) return;
 
-                try
-                {
-                    ikitModule.KITFixedUpdate(_topLevelInterface);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log($"[KITResourceManager.InitializeModuleIfNeeded] Exception when processing [{ikitModule.KITPartName()}, {(ikitModule as PartModule)?.ClassName}]: {ex}");
-                }
-                finally
-                {
-                    UnityEngine.Profiling.Profiler.EndSample();
-                }
+            // Hasn't had it's KITFixedUpdate() yet? call that first.
+            data.FixedUpdateCalledMods.Add(ikitModule);
+            UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.InitializeModuleIfNeeded.Init.{ikitModule.KITPartName()}");
+
+            try
+            {
+                ikitModule.KITFixedUpdate(_topLevelInterface);
             }
+            catch (Exception ex)
+            {
+                Debug.Log($"[KITResourceManager.InitializeModuleIfNeeded] Exception when processing [{ikitModule.KITPartName()}, {(ikitModule as PartModule)?.ClassName}]: {ex}");
+            }
+            finally
+            {
+                UnityEngine.Profiling.Profiler.EndSample();
+            }
+
         }
 
-        private double CallVariableSuppliers(ResourceManagerData resourceData, ResourceName resource, double obtainedAmount, double originalAmount, double resourceFiller = 0)
+        private double CallVariableSuppliers(ResourceData resourceData, ResourceName resource, double obtainedAmount, double originalAmount, double resourceFiller = 0)
         {
-            if (!_variableSupplierModules.ContainsKey(resource)) return 0;
+            if (!resourceData.VariableSupplierModules.ContainsKey(resource)) return 0;
 
             var reducedObtainedAmount = obtainedAmount * _fixedDeltaTime;
             var reducedOriginalAmount = originalAmount * _fixedDeltaTime;
 
-            IResourceManager secondaryInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager : (IResourceManager)this;
+            IResourceManager secondaryInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager : (IResourceManager)resourceData;
 
-            foreach (var mod in _variableSupplierModules[resource])
+            foreach (var mod in resourceData.VariableSupplierModules[resource])
             {
                 var kitMod = mod as IKITModule;
                 if (kitMod == null) continue;
 
-                if (tappedOutMods.Contains(mod)) continue; // it's tapped out for this cycle.
-                if (_modsCurrentlyRunning.Contains(kitMod)) continue;
+                if (resourceData.TappedOutMods.Contains(mod)) continue; // it's tapped out for this cycle.
+                if (resourceData.ModsCurrentlyRunning.Contains(kitMod)) continue;
 
-                _modsCurrentlyRunning.Add(kitMod);
+                resourceData.ModsCurrentlyRunning.Add(kitMod);
 
-                InitializeModuleIfNeeded(kitMod);
+                InitializeModuleIfNeeded(resourceData, kitMod);
 
                 double perSecondAmount = originalAmount * (1 - (reducedObtainedAmount / reducedOriginalAmount));
 
@@ -720,7 +707,7 @@ namespace KIT.ResourceScheduler
                     UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{kitMod.KITPartName()}");
 
                     var canContinue = mod.ProvideResource(secondaryInterface, resource, perSecondAmount + resourceFiller);
-                    if (!canContinue) tappedOutMods.Add(mod);
+                    if (!canContinue) resourceData.TappedOutMods.Add(mod);
                 }
                 catch (Exception ex)
                 {
@@ -738,7 +725,7 @@ namespace KIT.ResourceScheduler
 
                 // Debug.Log($"[CallVariableSuppliers] _currentResources[resource] is {_currentResources[resource]}, reducedOriginalAmount - reducedObtainedAmount is {reducedOriginalAmount - reducedObtainedAmount} and tmp is {tmp}, reducedObtainedAmount is now {reducedObtainedAmount}");
 
-                _modsCurrentlyRunning.Remove(kitMod);
+                resourceData.ModsCurrentlyRunning.Remove(kitMod);
 
                 if (reducedObtainedAmount >= reducedOriginalAmount) return originalAmount;
             }
@@ -746,15 +733,6 @@ namespace KIT.ResourceScheduler
             return originalAmount * (reducedObtainedAmount / reducedOriginalAmount);
         }
 
-        private readonly ResourceProduction[] _resourceProductionStats;
-
-        public IResourceProduction ProductionStats(ResourceName resourceIdentifier)
-        {
-            if (resourceIdentifier >= ResourceName.ElectricCharge && resourceIdentifier <= ResourceName.WasteHeat)
-                return _resourceProductionStats[resourceIdentifier - ResourceName.ElectricCharge];
-
-            return null;
-        }
         #endregion
 
     }

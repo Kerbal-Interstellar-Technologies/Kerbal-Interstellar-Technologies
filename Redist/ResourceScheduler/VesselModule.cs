@@ -4,12 +4,13 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace KIT.ResourceScheduler
 {
 
     // ReSharper disable once InconsistentNaming
-    public class KITDCElectricalSystem : IKITModule, IDCElectricalSystem
+    public class KITDirectCurrentElectricalSystem : IKITModule, IDCElectricalSystem
     {
         public double UnallocatedElectricChargeConsumption;
 
@@ -50,14 +51,12 @@ namespace KIT.ResourceScheduler
     /// 
     /// <para>It also manages what resources are available each FixedUpdate() tick for the modules, and once all modules have ran, it finalizes the results. This eliminates the need for resource buffering implementations.</para>
     /// </summary>
-    public class KITResourceVesselModule : VesselModule, IVesselResources
+    public partial class KITResourceVesselModule : VesselModule
     {
         public bool RefreshEventOccurred = true;
 
         [KSPField] double _lastExecuted;
         [KSPField] bool _catchUpNeeded;
-        public ResourceManager ResourceManager;
-        IResourceScheduler _resourceScheduler;
 
         private bool NeedsRefresh
         {
@@ -67,40 +66,34 @@ namespace KIT.ResourceScheduler
 
         Dictionary<string, DecayConfiguration> _resourceDecayConfiguration;
 
-        private KITDCElectricalSystem _dcSystem;
+        private KITDirectCurrentElectricalSystem _dcSystem;
         public VesselHeatDissipation VesselHeatDissipation;
 
         protected override void OnAwake()
         {
             base.OnAwake();
 
-            if (ResourceManager == null)
-            {
-                ResourceManager = new ResourceManager(this);
-                _resourceScheduler = ResourceManager;
-            }
-
             if (_resourceDecayConfiguration == null)
                 _resourceDecayConfiguration = ResourceDecayConfiguration.Instance();
 
             if (_dcSystem == null)
-                _dcSystem = new KITDCElectricalSystem();
+                _dcSystem = new KITDirectCurrentElectricalSystem();
 
             if (VesselHeatDissipation == null)
                 VesselHeatDissipation = new VesselHeatDissipation(vessel);
 
             RefreshEventOccurred = true;
 
-            if(EqualityComparer<ResourceManagerData>.Default.Equals(_resourceData, default(ResourceManagerData)))
-                _resourceData = new ResourceManagerData(ResourceManager, RealCheatOptions.Instance);
+            if(EqualityComparer<ResourceData>.Default.Equals(ResourceData, default(ResourceData)))
+                ResourceData = new ResourceData(this, RealCheatOptions.Instance);
         }
 
-        private SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> variableSupplierModules = new SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
+        // private SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> variableSupplierModules = new SortedDictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
 
 
         private double _trackElectricChargeUsage;
 
-        private ResourceManagerData _resourceData;
+        public ResourceData ResourceData;
         
         /// <summary>
         /// FixedUpdate() triggers the ExecuteKITModules() function call above. It implements automatic catch up processing for each module.
@@ -122,21 +115,23 @@ namespace KIT.ResourceScheduler
 
             GatherResources();
 
-            _dcSystem.UnallocatedElectricChargeConsumption = Math.Max(0, _trackElectricChargeUsage - _resourceData.AvailableResources[ResourceName.ElectricCharge]);
+            _dcSystem.UnallocatedElectricChargeConsumption = Math.Max(0, _trackElectricChargeUsage - ResourceData.AvailableResources[ResourceName.ElectricCharge]);
 
             if (_catchUpNeeded)
             {
-                _resourceScheduler.ExecuteKITModules(deltaTime, _resourceData);
+                ExecuteKITModules(deltaTime, ResourceData);
                 _catchUpNeeded = false;
             }
 
-            _resourceScheduler.ExecuteKITModules(TimeWarp.fixedDeltaTime, _resourceData);
-            _trackElectricChargeUsage = _resourceData.AvailableResources[ResourceName.ElectricCharge];
+            ExecuteKITModules(TimeWarp.fixedDeltaTime, ResourceData);
+            _trackElectricChargeUsage = ResourceData.AvailableResources[ResourceName.ElectricCharge];
             
             DisperseResources();
         }
 
-        bool IVesselResources.VesselModified()
+        #region Vessel Interface information
+
+        bool VesselModified()
         {
             bool ret = _catchUpNeeded | RefreshEventOccurred;
             RefreshEventOccurred = false;
@@ -144,24 +139,26 @@ namespace KIT.ResourceScheduler
             return ret;
         }
 
-        readonly SortedDictionary<int, List<IKITModule>> sortedModules = new SortedDictionary<int, List<IKITModule>>();
-        readonly Dictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> tmpVariableSupplierModules = new Dictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
+        readonly SortedDictionary<int, List<IKITModule>> _sortedModules = new SortedDictionary<int, List<IKITModule>>();
+        readonly Dictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>> _tmpVariableSupplierModules = new Dictionary<ResourceName, SortedDictionary<int, List<IKITVariableSupplier>>>();
 
         List<PartResource> _decayPartResourceList = new List<PartResource>(64);
 
-        void IVesselResources.VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules)
+        // void VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules)
+        
+        void RefreshActiveModules(ResourceData resourceData)
         {
             // Clear the inputs
 
-            moduleList.Clear();
-            moduleList.Add(_dcSystem);
+            resourceData.AvailableKITModules.Clear();
+            resourceData.AvailableKITModules.Add(_dcSystem);
 
-            variableSupplierModules.Clear();
+            resourceData.VariableSupplierModules.Clear();
 
             // Clear the temporary variables
 
-            sortedModules.Clear();
-            tmpVariableSupplierModules.Clear();
+            _sortedModules.Clear();
+            _tmpVariableSupplierModules.Clear();
 
             foreach (var part in vessel.parts)
             {
@@ -175,18 +172,18 @@ namespace KIT.ResourceScheduler
                     var working = mod.ModuleConfiguration(out var priority, out var prepend, out var hasLocalResources);
                     if (!working) continue;
                     
-                    if (!sortedModules.TryGetValue(priority, out _))
+                    if (!_sortedModules.TryGetValue(priority, out _))
                     {
-                        sortedModules[priority] = new List<IKITModule>(32);
+                        _sortedModules[priority] = new List<IKITModule>(32);
                     }
 
                     if (prepend)
                     {
-                        sortedModules[priority].Insert(0, mod);
+                        _sortedModules[priority].Insert(0, mod);
                     }
                     else
                     {
-                        sortedModules[priority].Add(mod);
+                        _sortedModules[priority].Add(mod);
                     }
 
                     // Now handle the variable consumption side of things
@@ -196,11 +193,11 @@ namespace KIT.ResourceScheduler
 
                     foreach (ResourceName resource in supplierModule.ResourcesProvided())
                     {
-                        if (tmpVariableSupplierModules.ContainsKey(resource) == false)
+                        if (_tmpVariableSupplierModules.ContainsKey(resource) == false)
                         {
-                            tmpVariableSupplierModules[resource] = new SortedDictionary<int, List<IKITVariableSupplier>>();
+                            _tmpVariableSupplierModules[resource] = new SortedDictionary<int, List<IKITVariableSupplier>>();
                         }
-                        var modules = tmpVariableSupplierModules[resource];
+                        var modules = _tmpVariableSupplierModules[resource];
 
                         if (modules.ContainsKey(priority) == false)
                         {
@@ -233,7 +230,7 @@ namespace KIT.ResourceScheduler
                 #endregion
             }
 
-            if (!sortedModules.Any())
+            if (!_sortedModules.Any())
             {
                 // Nothing found
                 NeedsRefresh = false;
@@ -242,28 +239,28 @@ namespace KIT.ResourceScheduler
 
             NeedsRefresh = false;
 
-            foreach (List<IKITModule> list in sortedModules.Values)
+            foreach (List<IKITModule> list in _sortedModules.Values)
             {
-                moduleList.AddRange(list);
+                resourceData.AvailableKITModules.AddRange(list);
             }
 
-            foreach (var resource in tmpVariableSupplierModules.Keys)
+            foreach (var resource in _tmpVariableSupplierModules.Keys)
             {
-                variableSupplierModules[resource] = new List<IKITVariableSupplier>(16);
+                resourceData.VariableSupplierModules[resource] = new List<IKITVariableSupplier>(16);
 
-                foreach (var list in tmpVariableSupplierModules[resource].Values)
+                foreach (var list in _tmpVariableSupplierModules[resource].Values)
                 {
-                    variableSupplierModules[resource].AddRange(list);
+                    resourceData.VariableSupplierModules[resource].AddRange(list);
                 }
             }
 
-            moduleList.Add(VesselHeatDissipation);
+            resourceData.AvailableKITModules.Add(VesselHeatDissipation);
         }
 
         void GatherResources()
         {
-            _resourceData.AvailableResources.Clear();
-            _resourceData.MaxResources.Clear();
+            ResourceData.AvailableResources.Clear();
+            ResourceData.MaxResources.Clear();
 
             var ignoreFlow = HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
                 .IgnoreResourceFlowRestrictions;
@@ -279,13 +276,13 @@ namespace KIT.ResourceScheduler
                         continue;
                     }
 
-                    if (_resourceData.AvailableResources.ContainsKey(resourceID) == false)
+                    if (ResourceData.AvailableResources.ContainsKey(resourceID) == false)
                     {
-                        _resourceData.AvailableResources[resourceID] = _resourceData.MaxResources[resourceID] = 0;
+                        ResourceData.AvailableResources[resourceID] = ResourceData.MaxResources[resourceID] = 0;
                     }
 
-                    _resourceData.AvailableResources[resourceID] += resource.amount;
-                    _resourceData.MaxResources[resourceID] += resource.maxAmount;
+                    ResourceData.AvailableResources[resourceID] += resource.amount;
+                    ResourceData.MaxResources[resourceID] += resource.maxAmount;
                 }
             }
         }
@@ -296,43 +293,43 @@ namespace KIT.ResourceScheduler
             // balancing when there are more than one consumer.", "charged particles should become Thermal heat when unconsumed and if no Thermal
             // storage available it should become waste heat."
 
-            var hasChargedParticles = _resourceData.AvailableResources.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount);
-            var hasThermalPower = _resourceData.AvailableResources.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount);
+            var hasChargedParticles = ResourceData.AvailableResources.TryGetValue(ResourceName.ChargedParticle, out var chargedParticleAmount);
+            var hasThermalPower = ResourceData.AvailableResources.TryGetValue(ResourceName.ThermalPower, out var thermalPowerAmount);
 
-            if (!_resourceData.AvailableResources.ContainsKey(ResourceName.WasteHeat))
+            if (!ResourceData.AvailableResources.ContainsKey(ResourceName.WasteHeat))
             {
                 // Seems unlikely to have Charged Particles and/or Thermal Power without WasteHeat, but just in case
-                _resourceData.AvailableResources[ResourceName.WasteHeat] = 0;
+                ResourceData.AvailableResources[ResourceName.WasteHeat] = 0;
             }
 
 
             if (hasChargedParticles)
             {
-                _resourceData.AvailableResources[ResourceName.ChargedParticle] = 0;
+                ResourceData.AvailableResources[ResourceName.ChargedParticle] = 0;
 
                 // Store any remaining charged particles in either ThermalPower or WasteHeat
-                _resourceData.AvailableResources[hasThermalPower ? ResourceName.ThermalPower : ResourceName.WasteHeat] += chargedParticleAmount;
+                ResourceData.AvailableResources[hasThermalPower ? ResourceName.ThermalPower : ResourceName.WasteHeat] += chargedParticleAmount;
             }
 
             if (hasThermalPower)
             {
                 // Have we exceeded the storage capacity for Thermal Power?
-                if (_resourceData.MaxResources.ContainsKey(ResourceName.ThermalPower))
+                if (ResourceData.MaxResources.ContainsKey(ResourceName.ThermalPower))
                 {
-                    var diff = thermalPowerAmount - _resourceData.MaxResources[ResourceName.ThermalPower];
+                    var diff = thermalPowerAmount - ResourceData.MaxResources[ResourceName.ThermalPower];
 
                     if (diff > 0)
                     {
-                        _resourceData.AvailableResources[ResourceName.WasteHeat] += diff;
-                        _resourceData.AvailableResources[ResourceName.ThermalPower] = _resourceData.AvailableResources[ResourceName.ThermalPower];
+                        ResourceData.AvailableResources[ResourceName.WasteHeat] += diff;
+                        ResourceData.AvailableResources[ResourceName.ThermalPower] = ResourceData.AvailableResources[ResourceName.ThermalPower];
                     }
                 }
                 else
                 {
                     // no Thermal Power storage. Seems unlikely, but just in case
 
-                    _resourceData.AvailableResources.Remove(ResourceName.ThermalPower);
-                    _resourceData.AvailableResources[ResourceName.WasteHeat] += thermalPowerAmount;
+                    ResourceData.AvailableResources.Remove(ResourceName.ThermalPower);
+                    ResourceData.AvailableResources[ResourceName.WasteHeat] += thermalPowerAmount;
                 }
             }
         }
@@ -357,9 +354,9 @@ namespace KIT.ResourceScheduler
                         continue;
                     }
 
-                    if (_resourceData.AvailableResources.ContainsKey(resourceID) == false || _resourceData.MaxResources.ContainsKey(resourceID) == false) return;
+                    if (ResourceData.AvailableResources.ContainsKey(resourceID) == false || ResourceData.MaxResources.ContainsKey(resourceID) == false) return;
 
-                    var tmp = _resourceData.AvailableResources[resourceID] / _resourceData.MaxResources[resourceID];
+                    var tmp = ResourceData.AvailableResources[resourceID] / ResourceData.MaxResources[resourceID];
                     var multiplier = (tmp > 1) ? 1 : (tmp < 0) ? 0 : tmp;
                     resource.amount = resource.maxAmount * multiplier;
                 }
@@ -371,18 +368,20 @@ namespace KIT.ResourceScheduler
             PerformResourceDecay(resourceManager);
         }
 
+        #endregion
+
         #region Vessel Wide Decay
         /*
          * Implement decay for across the vessel
          */
 
 
-        private bool decayDisabled = false;
-        private static Dictionary<string, double> _decayConfiguration = new Dictionary<string, double>();
+        private bool _decayDisabled = false;
+        public static Dictionary<string, double> Configuration { get; } = new Dictionary<string, double>();
 
-        public static void PerformResourceDecayEffect(IResourceManager resourceManager, PartResourceList partResources, Dictionary<String, DecayConfiguration> decayConfiguration)
+        public static void PerformResourceDecayEffect(IResourceManager resourceManager, PartResourceList partResources,
+            [NotNull] Dictionary<string, DecayConfiguration> decayConfiguration)
         {
-            
             double fixedDeltaTime = resourceManager.FixedDeltaTime();
 
             foreach (var resource in partResources)
@@ -404,7 +403,7 @@ namespace KIT.ResourceScheduler
 
         private void PerformResourceDecay(IResourceManager resourceManager)
         {
-            if (decayDisabled || resourceManager.CheatOptions().UnbreakableJoints) return;
+            if (_decayDisabled || resourceManager.CheatOptions().UnbreakableJoints) return;
 
             var configuration = ResourceDecayConfiguration.Instance();
 
@@ -414,15 +413,5 @@ namespace KIT.ResourceScheduler
             }
         }
         #endregion
-
-        #region Vessel Wide Resource Buffering
-
-
-        private void VesselWideResourceBuffering(double fixedDeltaTime)
-        {
-            // Removed for now.
-        }
-        #endregion
-
     }
 }

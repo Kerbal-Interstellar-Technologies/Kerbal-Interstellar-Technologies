@@ -162,7 +162,7 @@ namespace KIT.ResourceScheduler
 
     public interface IResourceScheduler
     {
-        void ExecuteKITModules(double deltaTime, ResourceManagerData resourceData);
+        void ExecuteKITModules(double deltaTime, ResourceData resourceData);
     }
 
     public interface IVesselResources
