@@ -6,12 +6,12 @@ namespace KIT.External
 {
     public static class Kerbalism
     {
-        public static int versionMajor;
-        public static int versionMinor;
-        public static int versionMajorRevision;
-        public static int versionMinorRevision;
-        public static int versionBuild;
-        public static int versionRevision;
+        public static int VersionMajor;
+        public static int VersionMinor;
+        public static int VersionMajorRevision;
+        public static int VersionMinorRevision;
+        public static int VersionBuild;
+        public static int VersionRevision;
 
         static readonly Type Sim;
         static readonly MethodInfo VesselTemperature;
@@ -30,15 +30,15 @@ namespace KIT.External
 
                     AssemblyName assemblyName = kerbalismAssembly.GetName();
 
-                    versionMajor = assemblyName.Version.Major;
-                    versionMinor = assemblyName.Version.Minor;
-                    versionMajorRevision = assemblyName.Version.MajorRevision;
-                    versionMinorRevision = assemblyName.Version.MinorRevision;
-                    versionBuild = assemblyName.Version.Build;
-                    versionRevision = assemblyName.Version.Revision;
+                    VersionMajor = assemblyName.Version.Major;
+                    VersionMinor = assemblyName.Version.Minor;
+                    VersionMajorRevision = assemblyName.Version.MajorRevision;
+                    VersionMinorRevision = assemblyName.Version.MinorRevision;
+                    VersionBuild = assemblyName.Version.Build;
+                    VersionRevision = assemblyName.Version.Revision;
 
                     var kerbalismversionstr =
-                        $"{versionMajor}.{versionMinor}.{versionRevision}.{versionBuild}.{versionMajorRevision}.{versionMinorRevision}";
+                        $"{VersionMajor}.{VersionMinor}.{VersionRevision}.{VersionBuild}.{VersionMajorRevision}.{VersionMinorRevision}";
                     Debug.Log("[KSPI]: Found Kerbalism assemblyName Version " + kerbalismversionstr);
 
                     try { Sim = kerbalismAssembly.GetType("KERBALISM.Sim"); } catch (Exception e) { Debug.LogException(e); }
@@ -68,9 +68,9 @@ namespace KIT.External
             Debug.Log("[KSPI]: KERBALISM was not found");
         }
 
-        public static bool IsLoaded => versionMajor > 0;
+        public static bool IsLoaded => VersionMajor > 0;
 
-        public static bool HasRadiationFixes => versionMajor >= 3 && versionMinor >= 1;
+        public static bool HasRadiationFixes => VersionMajor >= 3 && VersionMinor >= 1;
 
         // return proportion of ionizing radiation not blocked by atmosphere
         public static double GammaTransparency(CelestialBody body, double altitude)

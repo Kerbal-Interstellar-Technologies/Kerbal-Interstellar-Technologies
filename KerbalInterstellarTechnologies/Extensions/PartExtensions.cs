@@ -39,8 +39,8 @@ namespace KIT.Extensions
 
             if (_windowListField == null)
             {
-                Type cntrType = typeof(UIPartActionController);
-                foreach (FieldInfo info in cntrType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+                Type counterType = typeof(UIPartActionController);
+                foreach (FieldInfo info in counterType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
                 {
                     if (info.FieldType == typeof(List<UIPartActionWindow>))
                     {

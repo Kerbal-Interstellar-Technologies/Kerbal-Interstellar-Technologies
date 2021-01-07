@@ -92,10 +92,10 @@ namespace KIT.Propulsion
         public string powerEffectName = String.Empty;
 
         //Internal
-        private UI_FloatRange simulatedThrottleFloatRange;
+        private UI_FloatRange _simulatedThrottleFloatRange;
         private ModuleEnginesFX _attachedEngine;
         private ModuleEnginesWarp _attachedWarpableEngine;
-        private PartResourceDefinition propellantBufferResourceDefinition;
+        private PartResourceDefinition _propellantBufferResourceDefinition;
         readonly Guid _id = Guid.NewGuid();
 
         IFNChargedParticleSource _attachedReactor;
@@ -131,7 +131,7 @@ namespace KIT.Propulsion
         public override void OnStart(StartState state)
         {
             if (maintainsPropellantBuffer)
-                propellantBufferResourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellantBufferResourceName);
+                _propellantBufferResourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellantBufferResourceName);
 
             if (state == StartState.Editor)
             {
@@ -161,10 +161,10 @@ namespace KIT.Propulsion
 
             throttleExponent = Math.Abs(Math.Log10(_attachedReactor.MinimumChargedIspMult / _attachedReactor.MaximumChargedIspMult));
 
-            simulatedThrottleFloatRange = Fields["simulatedThrottle"].uiControlEditor as UI_FloatRange;
-            System.Diagnostics.Debug.Assert(simulatedThrottleFloatRange != null, nameof(simulatedThrottleFloatRange) + " != null");
+            _simulatedThrottleFloatRange = Fields["simulatedThrottle"].uiControlEditor as UI_FloatRange;
+            System.Diagnostics.Debug.Assert(_simulatedThrottleFloatRange != null, nameof(_simulatedThrottleFloatRange) + " != null");
 
-            simulatedThrottleFloatRange.onFieldChanged += UpdateFromGUI;
+            _simulatedThrottleFloatRange.onFieldChanged += UpdateFromGUI;
 
             if (_attachedReactor == null)
             {
@@ -345,8 +345,7 @@ namespace KIT.Propulsion
 
         public override void OnFixedUpdate()
         {
-            base.OnFixedUpdate();
-
+            // base.OnFixedUpdate();
         }
 
         private void UpdatePowerEffect()
@@ -378,15 +377,15 @@ namespace KIT.Propulsion
 
         public void UpdatePropellantBuffer(double calculatedConsumptionInTon)
         {
-            if (propellantBufferResourceDefinition == null)
+            if (_propellantBufferResourceDefinition == null)
                 return;
 
             PartResource propellantPartResource = part.Resources[propellantBufferResourceName];
 
-            if (propellantPartResource == null || propellantBufferResourceDefinition.density == 0)
+            if (propellantPartResource == null || _propellantBufferResourceDefinition.density == 0)
                 return;
 
-            var newMaxAmount = Math.Max(minimumPropellantBuffer, 2 * TimeWarp.fixedDeltaTime * calculatedConsumptionInTon / propellantBufferResourceDefinition.density);
+            var newMaxAmount = Math.Max(minimumPropellantBuffer, 2 * TimeWarp.fixedDeltaTime * calculatedConsumptionInTon / _propellantBufferResourceDefinition.density);
 
             var storageShortage = Math.Max(0, propellantPartResource.amount - newMaxAmount);
 
@@ -482,6 +481,7 @@ namespace KIT.Propulsion
 
             if (_chargedParticleMaximumPercentageUsage > 0)
             {
+                // ReSharper disable once PossibleNullReferenceException -- will not be null if the above is > 0
                 maximumChargedPower = _attachedReactor.MaximumChargedPower;
                 var currentMaximumChargedPower = maximum_isp == minimum_isp ? maximumChargedPower * _attachedEngine.currentThrottle : maximumChargedPower;
 

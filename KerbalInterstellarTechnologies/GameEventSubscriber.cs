@@ -40,9 +40,9 @@ namespace KIT
             GameEvents.onVesselSOIChanged.Remove(OnVesselSOIChanged);
 
             var kerbalismVersionStr =
-                $"{Kerbalism.versionMajor}.{Kerbalism.versionMajorRevision}.{Kerbalism.versionMinor}.{Kerbalism.versionMinorRevision}";
+                $"{Kerbalism.VersionMajor}.{Kerbalism.VersionMajorRevision}.{Kerbalism.VersionMinor}.{Kerbalism.VersionMinorRevision}";
 
-            if (Kerbalism.versionMajor > 0)
+            if (Kerbalism.VersionMajor > 0)
                 Debug.Log("[KSPI]: Loaded Kerbalism " + kerbalismVersionStr);
 
             Debug.Log("[KSPI]: GameEventSubscriber Deinitialised");

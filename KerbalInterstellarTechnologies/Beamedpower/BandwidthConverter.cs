@@ -6,7 +6,7 @@ namespace KIT.BeamedPower
     class BandwidthConverter
     {
         [KSPField(groupName = BeamedPowerReceiver.GROUP, groupDisplayName = BeamedPowerReceiver.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = false)]
-        public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthCoverter_missing");//"missing"
+        public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthConverter_missing");//"missing"
         [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double targetWavelength;
 

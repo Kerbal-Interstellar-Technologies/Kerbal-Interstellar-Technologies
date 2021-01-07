@@ -120,7 +120,7 @@ namespace KIT.Wasteheat
 
         public void Start()
         {
-            if (PluginHelper.usingToolbar)
+            if (PluginHelper.UsingToolbar)
                 RenderWindow = false;
         }
 
