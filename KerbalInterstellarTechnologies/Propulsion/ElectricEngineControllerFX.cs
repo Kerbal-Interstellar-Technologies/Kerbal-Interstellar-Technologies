@@ -44,24 +44,24 @@ namespace KIT.Propulsion
         [KSPField]
         public string gearsTechReq = "";
         [KSPField]
-        public double powerReqMultWithoutReactor = 0;
+        public double powerReqMultWithoutReactor;
         [KSPField]
         public double powerReqMult = 1;
         [KSPField]
         public int type;
         [KSPField]
-        public int upgradedtype = 0;
+        public int upgradedtype;
         [KSPField]
         public double baseISP = 1000;
         [KSPField]
         public double ispGears = 1;
         [KSPField]
-        public double exitArea = 0;
+        public double exitArea;
         [KSPField]
         public double powerThrustMultiplier = 1;
 
         [KSPField]
-        public double powerThrustMultiplierWithoutReactors = 0;
+        public double powerThrustMultiplierWithoutReactors;
 
         [KSPField]
         public float upgradeCost;
@@ -80,13 +80,13 @@ namespace KIT.Propulsion
         [KSPField]
         public double baseEfficiency = 1;
         [KSPField]
-        public double variableEfficiency = 0;
+        public double variableEfficiency;
         [KSPField]
         public float storedThrottle;
         [KSPField]
         public double particleEffectMult = 1;
         [KSPField]
-        public bool ignoreWasteheat = false;
+        public bool ignoreWasteheat;
         [KSPField]
         public double GThreshold = 9;
         [KSPField]

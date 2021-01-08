@@ -17,7 +17,7 @@ namespace KIT.Storage
 
         // Persistant
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_IFS_Cryostat_Cooling"), UI_Toggle(disabledText = "#LOC_IFS_Cryostat_On", enabledText = "#LOC_IFS_Cryostat_Off")]//Cooling--On--Off
-        public bool isDisabled = false;
+        public bool isDisabled;
 
         [KSPField(isPersistant = true)]
         public double storedTemp;
@@ -25,12 +25,12 @@ namespace KIT.Storage
         // Confiration
         [KSPField] public string resourceName = "";
         [KSPField] public string resourceGUIName = "";
-        [KSPField] public double boilOffRate = 0;
-        [KSPField] public double powerReqKW = 0;
+        [KSPField] public double boilOffRate;
+        [KSPField] public double powerReqKW;
         [KSPField] public double powerReqMult = 1;
-        [KSPField] public double boilOffMultiplier = 0;
+        [KSPField] public double boilOffMultiplier;
         [KSPField] public double boilOffBase = 10000;
-        [KSPField] public double boilOffAddition = 0;
+        [KSPField] public double boilOffAddition;
         [KSPField] public double boilOffTemp = 20.271;
         [KSPField] public double convectionMod = 1;
         [KSPField] public bool showPower = true;

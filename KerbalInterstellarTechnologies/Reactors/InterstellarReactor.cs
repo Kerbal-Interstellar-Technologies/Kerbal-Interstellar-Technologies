@@ -41,7 +41,7 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_powerPercentage"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 10)]
         public float powerPercentage = 100;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_ForcedMinimumThrotle"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0)]//Forced Minimum Throtle
-        public float forcedMinimumThrottle = 0;
+        public float forcedMinimumThrottle;
 
         // Persistent True
         [KSPField(isPersistant = true)] public int fuelmode_index = -1;
@@ -53,8 +53,8 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_ReactorIsStated")]
         public bool IsStarted;
 
-        [KSPField(isPersistant = true)] public bool isDeployed = false;
-        [KSPField(isPersistant = true)] public bool isupgraded = false;
+        [KSPField(isPersistant = true)] public bool isDeployed;
+        [KSPField(isPersistant = true)] public bool isupgraded;
         [KSPField(isPersistant = true)] public bool breedtritium;
         [KSPField(isPersistant = true)] public double ongoing_consumption_rate;
         [KSPField(isPersistant = true)] public double ongoing_wasteheat_rate;
@@ -107,10 +107,10 @@ namespace KIT.Reactors
 
         [KSPField] public string upgradeTechReqMk2;
         [KSPField] public string upgradeTechReqMk3;
-        [KSPField] public string upgradeTechReqMk4 = null;
-        [KSPField] public string upgradeTechReqMk5 = null;
-        [KSPField] public string upgradeTechReqMk6 = null;
-        [KSPField] public string upgradeTechReqMk7 = null;
+        [KSPField] public string upgradeTechReqMk4;
+        [KSPField] public string upgradeTechReqMk5;
+        [KSPField] public string upgradeTechReqMk6;
+        [KSPField] public string upgradeTechReqMk7;
 
         [KSPField] public double minimumThrottleMk1;
         [KSPField] public double minimumThrottleMk2;
@@ -128,13 +128,13 @@ namespace KIT.Reactors
         [KSPField] public double fuelEfficiencyMk6;
         [KSPField] public double fuelEfficiencyMk7;
 
-        [KSPField] public double hotBathTemperatureMk1 = 0;
-        [KSPField] public double hotBathTemperatureMk2 = 0;
-        [KSPField] public double hotBathTemperatureMk3 = 0;
-        [KSPField] public double hotBathTemperatureMk4 = 0;
-        [KSPField] public double hotBathTemperatureMk5 = 0;
-        [KSPField] public double hotBathTemperatureMk6 = 0;
-        [KSPField] public double hotBathTemperatureMk7 = 0;
+        [KSPField] public double hotBathTemperatureMk1;
+        [KSPField] public double hotBathTemperatureMk2;
+        [KSPField] public double hotBathTemperatureMk3;
+        [KSPField] public double hotBathTemperatureMk4;
+        [KSPField] public double hotBathTemperatureMk5;
+        [KSPField] public double hotBathTemperatureMk6;
+        [KSPField] public double hotBathTemperatureMk7;
 
         [KSPField] public double coreTemperatureMk1;
         [KSPField] public double coreTemperatureMk2;
@@ -144,13 +144,13 @@ namespace KIT.Reactors
         [KSPField] public double coreTemperatureMk6;
         [KSPField] public double coreTemperatureMk7;
 
-        [KSPField] public double basePowerOutputMk1 = 0;
-        [KSPField] public double basePowerOutputMk2 = 0;
-        [KSPField] public double basePowerOutputMk3 = 0;
-        [KSPField] public double basePowerOutputMk4 = 0;
-        [KSPField] public double basePowerOutputMk5 = 0;
-        [KSPField] public double basePowerOutputMk6 = 0;
-        [KSPField] public double basePowerOutputMk7 = 0;
+        [KSPField] public double basePowerOutputMk1;
+        [KSPField] public double basePowerOutputMk2;
+        [KSPField] public double basePowerOutputMk3;
+        [KSPField] public double basePowerOutputMk4;
+        [KSPField] public double basePowerOutputMk5;
+        [KSPField] public double basePowerOutputMk6;
+        [KSPField] public double basePowerOutputMk7;
 
         [KSPField] public double fusionEnergyGainFactorMk1 = 10;
         [KSPField] public double fusionEnergyGainFactorMk2;
@@ -191,7 +191,7 @@ namespace KIT.Reactors
         [KSPField] public bool showPowerGeneratorConnectionInfo = true;
         [KSPField] public bool mayExhaustInAtmosphereHomeworld = true;
         [KSPField] public bool mayExhaustInLowSpaceHomeworld = true;
-        [KSPField] public double minThermalNozzleTempRequired = 0;
+        [KSPField] public double minThermalNozzleTempRequired;
         [KSPField] public bool canUseAllPowerForPlasma = true;
         [KSPField] public bool updateModuleCost = true;
         [KSPField] public int minCoolingFactor = 1;
@@ -199,13 +199,13 @@ namespace KIT.Reactors
         [KSPField] public double plasmaHeatProductionMult = 1;
         [KSPField] public double engineWasteheatProductionMult = 1;
         [KSPField] public double plasmaWasteheatProductionMult = 1;
-        [KSPField] public bool supportMHD = false;
-        [KSPField] public int reactorModeTechBonus = 0;
-        [KSPField] public bool canBeCombinedWithLab = false;
-        [KSPField] public bool canBreedTritium = false;
+        [KSPField] public bool supportMHD;
+        [KSPField] public int reactorModeTechBonus;
+        [KSPField] public bool canBeCombinedWithLab;
+        [KSPField] public bool canBreedTritium;
         [KSPField] public bool canDisableTritiumBreeding = true;
-        [KSPField] public bool showShutDownInFlight = false;
-        [KSPField] public bool showForcedMinimumThrottle = false;
+        [KSPField] public bool showShutDownInFlight;
+        [KSPField] public bool showForcedMinimumThrottle;
         [KSPField] public bool showPowerPercentage = true;
         [KSPField] public double powerScaleExponent = 3;
         [KSPField] public double costScaleExponent = 1.86325;
@@ -215,12 +215,12 @@ namespace KIT.Reactors
         [KSPField] public double bonusBufferFactor = 0.05;
         [KSPField] public double thermalPowerBufferMult = 4;
         [KSPField] public double chargedPowerBufferMult = 4;
-        [KSPField] public double massCoreTempExp = 0;
-        [KSPField] public double massPowerExp = 0;
+        [KSPField] public double massCoreTempExp;
+        [KSPField] public double massPowerExp;
         [KSPField] public double heatTransportationEfficiency = 0.9;
-        [KSPField] public double ReactorTemp = 0;
+        [KSPField] public double ReactorTemp;
         [KSPField] public double powerOutputMultiplier = 1;
-        [KSPField] public double upgradedReactorTemp = 0;
+        [KSPField] public double upgradedReactorTemp;
         [KSPField] public string animName = "";
         [KSPField] public double animExponent = 1;
         [KSPField] public string loopingAnimationName = "";
@@ -234,17 +234,17 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiFormat = "F2", guiName = "#LOC_KSPIE_Reactor_connectionRadius")]
         public double radius = 2.5;
 
-        [KSPField] public double minimumThrottle = 0;
+        [KSPField] public double minimumThrottle;
         [KSPField] public bool canShutdown = true;
-        [KSPField] public int reactorType = 0;
+        [KSPField] public int reactorType;
         [KSPField] public double fuelEfficiency = 1;
-        [KSPField] public bool containsPowerGenerator = false;
+        [KSPField] public bool containsPowerGenerator;
         [KSPField] public double fuelUsePerMJMult = 1;
         [KSPField] public double wasteHeatMultiplier = 1;
         [KSPField] public double wasteHeatBufferMassMult = 2.0e+5;
         [KSPField] public double wasteHeatBufferMult = 1;
         [KSPField] public double hotBathTemperature;
-        [KSPField] public bool usePropellantBaseIsp = false;
+        [KSPField] public bool usePropellantBaseIsp;
         [KSPField] public double emergencyPowerShutdownFraction = 0.99;
         [KSPField] public double thermalPropulsionEfficiency = 1;
         [KSPField] public double plasmaPropulsionEfficiency = 1;
@@ -253,7 +253,7 @@ namespace KIT.Reactors
         [KSPField] public double thermalEnergyEfficiency = 1;
         [KSPField] public double chargedParticleEnergyEfficiency = 1;
         [KSPField] public double plasmaEnergyEfficiency = 1;
-        [KSPField] public double maxGammaRayPower = 0;
+        [KSPField] public double maxGammaRayPower;
 
         [KSPField] public double maxChargedParticleUtilisationRatio = 1;
         [KSPField] public double maxChargedParticleUtilisationRatioMk1 = 1;
@@ -262,10 +262,10 @@ namespace KIT.Reactors
         [KSPField] public double maxChargedParticleUtilisationRatioMk4 = 1;
         [KSPField] public double maxChargedParticleUtilisationRatioMk5 = 1;
 
-        [KSPField] public string maxChargedParticleUtilisationTechMk2 = null;
-        [KSPField] public string maxChargedParticleUtilisationTechMk3 = null;
-        [KSPField] public string maxChargedParticleUtilisationTechMk4 = null;
-        [KSPField] public string maxChargedParticleUtilisationTechMk5 = null;
+        [KSPField] public string maxChargedParticleUtilisationTechMk2;
+        [KSPField] public string maxChargedParticleUtilisationTechMk3;
+        [KSPField] public string maxChargedParticleUtilisationTechMk4;
+        [KSPField] public string maxChargedParticleUtilisationTechMk5;
 
         [KSPField] public bool hasBuoyancyEffects = true;
         [KSPField] public double geeForceMultiplier = 0.1;
@@ -281,9 +281,9 @@ namespace KIT.Reactors
 
         [KSPField] public string soundRunningFilePath = "";
         [KSPField] public double soundRunningPitchMin = 0.4;
-        [KSPField] public double soundRunningPitchExp = 0;
-        [KSPField] public double soundRunningVolumeExp = 0;
-        [KSPField] public double soundRunningVolumeMin = 0;
+        [KSPField] public double soundRunningPitchExp;
+        [KSPField] public double soundRunningVolumeExp;
+        [KSPField] public double soundRunningVolumeMin;
 
         [KSPField] public string soundTerminateFilePath = "";
         [KSPField] public string soundInitiateFilePath = "";
@@ -299,7 +299,7 @@ namespace KIT.Reactors
         [KSPField] public bool canUseNeutronicFuels = true;
         [KSPField] public bool canUseGammaRayFuels = true;
         [KSPField] public double maxNeutronsRatio = 1.04;
-        [KSPField] public double minNeutronsRatio = 0;
+        [KSPField] public double minNeutronsRatio;
 
         [KSPField] public int FuelModeTechLevel;
         [KSPField] public string BiModelUpgradeTechReq = string.Empty;
@@ -309,8 +309,8 @@ namespace KIT.Reactors
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_rawPowerOutput", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
         public double CurrentRawPowerOutput;
 
-        [KSPField] public double PowerOutput = 0;
-        [KSPField] public double UpgradedPowerOutput = 0;
+        [KSPField] public double PowerOutput;
+        [KSPField] public double UpgradedPowerOutput;
         [KSPField] public string UpgradeTechReq = string.Empty;
         [KSPField] public bool shouldApplyBalance;
         [KSPField] public double TritiumMolarMassRatio = 3.0160 / 7.0183;
@@ -333,7 +333,7 @@ namespace KIT.Reactors
         [KSPField] protected double MaxThermalToSupplyPerSecond;
         [KSPField] protected double RequestedChargedToSupplyPerSecond;
         [KSPField] protected double MaxChargedToSupplyPerSecond;
-        [KSPField] protected double MinThrottle = 0;
+        [KSPField] protected double MinThrottle;
         [KSPField] public double MassCostExponent = 2.5;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_InitialCost")]//Initial Cost
@@ -351,7 +351,7 @@ namespace KIT.Reactors
         [KSPField(guiActive = false, guiActiveEditor = false)]
         public float MassDifference;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_CalibratedMass", guiUnits = " t")]//calibrated mass
-        public float PartMass = 0;
+        public float PartMass;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorMass", guiFormat = "F3", guiUnits = " t")]
         public float CurrentMass;
         [KSPField]
@@ -382,7 +382,7 @@ namespace KIT.Reactors
         protected bool MessagedRanOutOfFuel;
 
         protected double CurrentGeeForce;
-        protected double AnimationStarted = 0;
+        protected double AnimationStarted;
         protected double PowerPercent;
         protected double TotalAmountLithium;
         protected double TotalMaxAmountLithium;

@@ -42,7 +42,7 @@ namespace KIT.Powermanagement
         [KSPField(isPersistant = true)] public bool IsEnabled = true;
         [KSPField(isPersistant = true)] public bool generatorInit;
         [KSPField(isPersistant = true)] public bool isupgraded;
-        [KSPField(isPersistant = true)] public bool chargedParticleMode = false;
+        [KSPField(isPersistant = true)] public bool chargedParticleMode;
         [KSPField(isPersistant = true)] public double storedMassMultiplier;
         [KSPField(isPersistant = true)] public double maximumElectricPower;
 
@@ -50,12 +50,12 @@ namespace KIT.Powermanagement
         [KSPField] public float powerCapacityMaxValue = 100;
         [KSPField] public float powerCapacityMinValue = 0.5f;
         [KSPField] public float powerCapacityStepIncrement = 0.5f;
-        [KSPField] public bool isHighPower = false;
-        [KSPField] public bool isMHD = false;
-        [KSPField] public bool isLimitedByMinThrottle = false;          // old name isLimitedByMinThrotle
+        [KSPField] public bool isHighPower;
+        [KSPField] public bool isMHD;
+        [KSPField] public bool isLimitedByMinThrottle;          // old name isLimitedByMinThrotle
         [KSPField] public double powerOutputMultiplier = 1;
         [KSPField] public double hotColdBathRatio;
-        [KSPField] public bool calculatedMass = false;
+        [KSPField] public bool calculatedMass;
 
         [KSPField] public double efficiencyMk1;
         [KSPField] public double efficiencyMk2;
@@ -80,7 +80,7 @@ namespace KIT.Powermanagement
         [KSPField] public string upgradeTechReq = "";
         [KSPField] public float upgradeCost = 1;
         [KSPField] public double wasteHeatMultiplier = 1;
-        [KSPField] public bool fullPowerBuffer = false;
+        [KSPField] public bool fullPowerBuffer;
         [KSPField] public bool showSpecialisedUI = true;
         [KSPField] public bool showDetailedInfo = true;
         [KSPField] public double rawPowerToMassDivider = 1000;
@@ -180,8 +180,8 @@ namespace KIT.Powermanagement
         protected bool hasrequiredupgrade;
 
         protected int partDistance;
-        protected int shutdown_counter = 0;
-        protected int startcount = 0;
+        protected int shutdown_counter;
+        protected int startcount;
 
         private PowerStates _powerState;
         private IFNPowerSource attachedPowerSource;

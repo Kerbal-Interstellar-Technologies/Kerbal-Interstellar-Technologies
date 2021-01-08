@@ -7,9 +7,9 @@ namespace KIT.Wasteheat
     {
         // configuration
         [KSPField(guiActiveEditor = true, guiActive = false, guiName = "Deployed Surface Area", guiUnits = " m\xB2", guiFormat = "F3")]
-        public double deployedSurfaceArea = 0;
+        public double deployedSurfaceArea;
         [KSPField(guiActiveEditor = true, guiActive = false, guiName = "Folded Surface Area", guiUnits = " m\xB2", guiFormat = "F3")]
-        public double foldedSurfaceArea = 0;
+        public double foldedSurfaceArea;
         [KSPField]
         public double thermalMassModifier = 1;
         [KSPField] 

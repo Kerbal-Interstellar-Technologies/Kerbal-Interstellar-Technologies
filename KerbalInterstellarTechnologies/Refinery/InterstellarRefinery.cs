@@ -23,7 +23,7 @@ namespace KIT.Refinery
         protected string lastClassName = "";
 
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Refinery_RefineryType")]//Refinery Type
-        public int refineryType = 0;
+        public int refineryType;
 
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Refinery_PowerControl"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]//Power Control
         public float powerPercentage = 100;

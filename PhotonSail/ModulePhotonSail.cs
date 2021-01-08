@@ -275,9 +275,9 @@ namespace PhotonSail
         [KSPField(guiActive = false, guiName = "#LOC_PhotonSail_maxNetworkPower", guiFormat = "F4", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Network power
         public double maxNetworkPower;
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_PhotonSail_KSCBeamedPowerThrottle", guiUnits = "%"), UI_FloatRange(stepIncrement = 1, maxValue = 100, minValue = 0, requireFullControl = false)]//KCS Power Throttle
-        public float kcsBeamedPowerThrottle = 0;
+        public float kcsBeamedPowerThrottle;
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_PhotonSail_BeamedPowerThrottle", guiUnits = "%"), UI_FloatRange(stepIncrement = 1, maxValue = 100, minValue = 0, requireFullControl = false)]//Beamed Power Throttle
-        public float beamedPowerThrottle = 0;
+        public float beamedPowerThrottle;
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_PhotonSail_BeamedPowerForwardDirection"), UI_Toggle(disabledText = "#LOC_PhotonSail_Backward", enabledText = "#LOC_PhotonSail_Forward", requireFullControl = false)]//Beamed Push Direction-Backward-Forward
         public bool beamedPowerForwardDirection = true;
 

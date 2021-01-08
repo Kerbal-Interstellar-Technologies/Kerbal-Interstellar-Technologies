@@ -44,7 +44,7 @@ namespace KIT.Resources
         [KSPField(groupName = GROUP, guiActiveEditor = false, guiName = "#LOC_KSPIE_SolarwindCollector_surfaceArea", guiUnits = " m\xB2")]
         public double surfaceArea; // Surface area of the panel.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_SolarwindCollector_magneticArea", guiUnits = " m\xB2")]
-        public double magneticArea = 0; // Magnetic area of the panel.
+        public double magneticArea; // Magnetic area of the panel.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_SolarwindCollector_effectiveness", guiFormat = "P1")]
         public double effectiveness = 1; // Effectiveness of the panel. Lower in part config (to a 0.5, for example) to slow down resource collecting.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_SolarwindCollector_mwRequirements", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]

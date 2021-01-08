@@ -34,9 +34,9 @@ namespace KIT.Reactors
         [KSPField(guiActive = false)]
         public double temp_diff;
         [KSPField(guiActive = false)]
-        public double minimumTemperature = 0;
+        public double minimumTemperature;
         [KSPField(guiActive = false)]
-        public bool canDumpActinides = false;
+        public bool canDumpActinides;
 
         BaseEvent _manualRestartEvent;
 

@@ -27,7 +27,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)]
         public bool IsEnabled;
         [KSPField(isPersistant = true)]
-        bool Launched = false;
+        bool Launched;
         [KSPField(isPersistant = true)]
         public bool hideEmpty;
         [KSPField(isPersistant = true)]
@@ -707,7 +707,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_FuelConfiguration")]//Fuel Configuration
         public string fuelConfigurationName = "";
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_RequiredTechLevel")]//Required Tech Level
-        public int requiredTechLevel = 0;
+        public int requiredTechLevel;
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_Fuels")]//Fuels
         public string fuels = "";
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_Ratios")]//Ratios
@@ -743,17 +743,17 @@ namespace KIT.Propulsion
         public double minIsp = 100;
 
         [KSPField]
-        public bool atmChangeFlow = false;
+        public bool atmChangeFlow;
         [KSPField]
-        public bool useVelCurve = false;
+        public bool useVelCurve;
         [KSPField]
-        public bool useAtmCurve = false;
+        public bool useAtmCurve;
         [KSPField]
-        public bool clampPropReceived = false;
+        public bool clampPropReceived;
         [KSPField]
-        public bool useEngineResponseTime = false;
+        public bool useEngineResponseTime;
         [KSPField]
-        public string effectname = null;
+        public string effectname;
         [KSPField(isPersistant = true)]
         private string akConfigName = "";
         [KSPField]
@@ -763,7 +763,7 @@ namespace KIT.Propulsion
         [KSPField]
         public double exhaustDamageMultiplier = 165;
         [KSPField]
-        public double exhaustDamageDistanceOffset = 0;
+        public double exhaustDamageDistanceOffset;
         [KSPField]
         public float engineAccelerationSpeed = 0.2f;
         [KSPField]

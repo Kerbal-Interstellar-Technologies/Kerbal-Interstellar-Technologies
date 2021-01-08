@@ -23,7 +23,7 @@ namespace KIT.BeamedPower
         public int selectedBeamConfiguration;
 
         [KSPField(isPersistant = true)]
-        public bool isInitialized = false;
+        public bool isInitialized;
         [KSPField(isPersistant = true)]
         public double maximumPower;
 
@@ -73,9 +73,9 @@ namespace KIT.BeamedPower
         [KSPField]
         public double powerMassFraction = 0.5;
         [KSPField]
-        public bool fixedMass = false;
+        public bool fixedMass;
         [KSPField]
-        public bool isInitialzed = false;
+        public bool isInitialzed;
 
         ConfigNode[] _beamConfigurationNodes;
         BeamConfiguration _activeConfiguration;

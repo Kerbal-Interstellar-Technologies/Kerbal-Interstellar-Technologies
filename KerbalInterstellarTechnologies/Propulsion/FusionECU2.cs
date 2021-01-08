@@ -30,35 +30,35 @@ namespace KIT.Propulsion
         public double powerRequirementMax;
 
         [KSPField]
-        public double powerRequirement = 0;
+        public double powerRequirement;
         [KSPField]
-        public double powerRequirementUpgraded1 = 0;
+        public double powerRequirementUpgraded1;
         [KSPField]
-        public double powerRequirementUpgraded2 = 0;
+        public double powerRequirementUpgraded2;
         [KSPField]
-        public double powerRequirementUpgraded3 = 0;
+        public double powerRequirementUpgraded3;
         [KSPField]
-        public double powerRequirementUpgraded4 = 0;
+        public double powerRequirementUpgraded4;
 
         [KSPField]
-        public double powerProduction = 0;
+        public double powerProduction;
         [KSPField]
-        public double powerProductionUpgraded1 = 0;
+        public double powerProductionUpgraded1;
         [KSPField]
-        public double powerProductionUpgraded2 = 0;
+        public double powerProductionUpgraded2;
         [KSPField]
-        public double powerProductionUpgraded3 = 0;
+        public double powerProductionUpgraded3;
         [KSPField]
-        public double powerProductionUpgraded4 = 0;
+        public double powerProductionUpgraded4;
 
         [KSPField]
-        public bool selectableIsp = false;
+        public bool selectableIsp;
         [KSPField]
         public double maxAtmosphereDensity = -1;
         [KSPField]
         public double lethalDistance = 2000;
         [KSPField]
-        public double killDivider = 0;
+        public double killDivider;
         [KSPField]
         public int powerPriority = 4;
 
@@ -91,23 +91,23 @@ namespace KIT.Propulsion
         public double neutronbsorbionBonus;
 
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_AvailablePower", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Available Power
-        public double availablePower = 0;
+        public double availablePower;
         [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_FusionECU2_MaxPowerRequirement", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Max Power Requirement
-        public double currentMaximumPowerRequirement = 0;
+        public double currentMaximumPowerRequirement;
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_MaxPowerProduction", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Max Power Production
-        public double currentMaximumPowerProduction = 0;
+        public double currentMaximumPowerProduction;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionECU2_LaserWasteheat", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Laser Wasteheat
-        public double laserWasteheat = 0;
+        public double laserWasteheat;
         [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionECU2_AbsorbedWasteheat", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Absorbed Wasteheat
-        public double absorbedWasteheat = 0;
+        public double absorbedWasteheat;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_RadiatorTemp")]//Radiator Temp
-        public double coldBathTemp = 0;
+        public double coldBathTemp;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_MaxRadiatorTemp")]//Max Radiator Temp
-        public float maxTempatureRadiators = 0;
+        public float maxTempatureRadiators;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_PerformanceRadiators")]//Performance Radiators
-        public double radiatorPerformance = 0;
+        public double radiatorPerformance;
         [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_FusionECU2_Emisiveness")]//Emisiveness
-        public double partEmissiveConstant = 0;
+        public double partEmissiveConstant;
         [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_Temperature")]//Temperature
         public string temperatureStr = "";
         [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_Radhazardstr")]//Radiation Hazard To
@@ -130,9 +130,9 @@ namespace KIT.Propulsion
         protected abstract bool ShowIspThrottle { get; set; }
 
         // protected
-        protected bool hasrequiredupgrade = false;
+        protected bool hasrequiredupgrade;
         protected bool radhazard;
-        protected double standard_tritium_rate = 0;
+        protected double standard_tritium_rate;
         protected string FuelConfigName = "Fusion Type";
         protected double Altitude;
         protected double lastAltitude;

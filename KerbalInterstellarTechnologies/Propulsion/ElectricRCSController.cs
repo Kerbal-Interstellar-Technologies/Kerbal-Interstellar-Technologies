@@ -38,7 +38,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = false)]
         public double bufferMult = 8;
         [KSPField(isPersistant = false)]
-        public int rcsIndex = 0;
+        public int rcsIndex;
 
         [KSPField(isPersistant = true, guiActive = false)]
         public double storedPower;

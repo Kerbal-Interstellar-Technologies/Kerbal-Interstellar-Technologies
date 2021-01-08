@@ -67,7 +67,7 @@ namespace KIT.Storage
         public double storedAmount;
 
         [KSPField]
-        public double maxStorage = 0;
+        public double maxStorage;
 
         [KSPField]
         public double Mk1AmountRatio = 1;
@@ -137,13 +137,13 @@ namespace KIT.Storage
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_AntimatterStorageTank_CurMaxGeeforce")]//Cur/Max Geeforce
         public string GeeforceStr;
         [KSPField]
-        public bool canExplodeFromHeat = false;
+        public bool canExplodeFromHeat;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterStorageTank_PartMass", guiUnits = " t", guiFormat = "F3")]//Part Mass
         public double partMass;
         [KSPField]
-        public bool calculatedMass = false;
+        public bool calculatedMass;
         [KSPField]
-        public bool canExplodeFromGeeForce = false;
+        public bool canExplodeFromGeeForce;
         [KSPField]
         public double currentGeeForce;
         [KSPField]

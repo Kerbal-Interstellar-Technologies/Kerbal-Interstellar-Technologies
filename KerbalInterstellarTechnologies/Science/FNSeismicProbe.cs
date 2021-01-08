@@ -9,7 +9,7 @@ namespace KIT.Science
         [KSPField(isPersistant = true)]
         public bool probeIsEnabled;
 
-        protected long active_count = 0;
+        protected long active_count;
         protected string science_vess_ref;
 
         [KSPEvent(guiActive = true, guiName = "#LOC_KSPIE_SeismicProbe_RecordData", active = true)]//Record Seismic Data

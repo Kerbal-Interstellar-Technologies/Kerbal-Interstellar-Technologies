@@ -15,7 +15,7 @@ namespace KIT.Reactors
         [KSPField]
         public double chargedProductMult = 1;
         [KSPField]
-        public double chargedProductExp = 0;
+        public double chargedProductExp;
 
         public override string TypeName => (isupgraded ? upgradedName != "" ? upgradedName : originalName : originalName) + " Antimatter Reactor";
 

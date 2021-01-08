@@ -13,7 +13,7 @@ namespace KIT.Reactors
         [KSPField(isPersistant = true)] public bool allowJumpStart = true;
 
         [KSPField] public double magneticNozzlePowerMult = 1;
-        [KSPField] public int powerPriority = 0;
+        [KSPField] public int powerPriority;
         [KSPField] public bool powerIsAffectedByLithium = true;
 
         [KSPField] public double minimumLithiumModifier = 0.001;
@@ -33,7 +33,7 @@ namespace KIT.Reactors
         public bool isSwappingFuelMode;
 
         [KSPField] public double reactorRatioThreshold = 0.000005;
-        [KSPField] public double minReactorRatio = 0;
+        [KSPField] public double minReactorRatio;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_FissionPB_RequiredRatio", guiFormat = "F3")]//Required Ratio
         public double required_reactor_ratio;

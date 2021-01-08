@@ -32,10 +32,10 @@ namespace KIT.Wasteheat
         public float surfaceArea = 1;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "Surface Area Upgrade", guiFormat = "F0", guiUnits = " m2"), UI_FloatRange(stepIncrement = 1F, maxValue = 128F, minValue = 0F)]
-        public float surfaceAreaUpgrade = 0;
+        public float surfaceAreaUpgrade;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "Pump Speed Upgrade", guiFormat = "F0", guiUnits = " m/s"), UI_FloatRange(stepIncrement = 1F, maxValue = 1024F, minValue = 0F)]
-        public float pumpSpeedUpgrade = 0;
+        public float pumpSpeedUpgrade;
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Pump Speed"), UI_FloatRange(stepIncrement = 1.0F, maxValue = 1000F, minValue = 0F)]
         public float pumpSpeed = 1;
@@ -692,7 +692,7 @@ namespace KIT.Wasteheat
 
         // persitent
         [KSPField(isPersistant = true)] public bool radiatorInit;
-        [KSPField(isPersistant = true)] public bool showRetractButton = false;
+        [KSPField(isPersistant = true)] public bool showRetractButton;
         [KSPField(isPersistant = true)] public bool showControls = true;
         [KSPField(isPersistant = true)] public double currentRadTemp;
         [KSPField(isPersistant = true)] public bool clarifyFunction;
@@ -739,10 +739,10 @@ namespace KIT.Wasteheat
 
         [KSPField] public bool canRadiateHeat = true;
         [KSPField] public bool showColorHeat = true;
-        [KSPField] public string surfaceAreaUpgradeTechReq = null;
+        [KSPField] public string surfaceAreaUpgradeTechReq;
         [KSPField] public double surfaceAreaUpgradeMult = 1.6;
-        [KSPField] public bool isDeployable = false;
-        [KSPField] public bool isPassive = false;
+        [KSPField] public bool isDeployable;
+        [KSPField] public bool isPassive;
         [KSPField] public string animName = "";
         [KSPField] public string thermalAnim = "";
         [KSPField] public string originalName = "";
