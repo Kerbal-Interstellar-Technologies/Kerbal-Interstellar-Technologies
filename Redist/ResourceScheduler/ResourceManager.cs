@@ -419,7 +419,7 @@ namespace KIT.ResourceScheduler
 
         private void PickTopLevelInterface(ResourceData resourceData)
         {
-            _topLevelInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager : (IResourceManager)resourceData;
+            _topLevelInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager.Update(resourceData) : (IResourceManager)resourceData;
 
             if (UseOverheatingResourceManager(resourceData))
                 _topLevelInterface = _overHeatingResourceManager.SetBaseResourceManager(_topLevelInterface);
@@ -587,6 +587,8 @@ namespace KIT.ResourceScheduler
                 }
                 resourceData.ModsCurrentlyRunning.Remove(mod);
             }
+
+            _wasteHeatAtEndOfProcessing = resourceData.CurrentCapacity(ResourceName.WasteHeat);
 
             RechargeBatteries(resourceData);
             OnKITProcessingFinished(resourceData);
