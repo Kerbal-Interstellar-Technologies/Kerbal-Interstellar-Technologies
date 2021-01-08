@@ -205,18 +205,10 @@ namespace KIT.ResourceScheduler
 
     public partial class KITResourceVesselModule : IResourceScheduler
     {
-        // private readonly IVesselResources _vesselResources;
         private static double fudgeFactor = 0.99999;
 
         private double _fixedDeltaTime;
-
-        // private readonly HashSet<IKITModule> _fixedUpdateCalledMods = new HashSet<IKITModule>(128);
-        // private readonly List<IKITModule> _modsCurrentlyRunning = new List<IKITModule>(128);
-
         public bool UseThisToHelpWithTesting;
-
-        // public Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModConsumption;
-        // public Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModProduction;
 
         private readonly OverHeatingResourceManager _overHeatingResourceManager;
         private readonly WasteHeatEquilibriumResourceManager _wasteHeatEquilibriumResourceManager;
@@ -406,9 +398,6 @@ namespace KIT.ResourceScheduler
 
         #endregion
         #region IResourceScheduler implementation
-
-        // private List<IKITModule> _activeKITModules = new List<IKITModule>(128);
-        // private Dictionary<ResourceName, List<IKITVariableSupplier>> _variableSupplierModules = new Dictionary<ResourceName, List<IKITVariableSupplier>>();
 
         private bool _complainedToWaiterAboutOrder;
 
@@ -652,8 +641,6 @@ namespace KIT.ResourceScheduler
 
             resourceData.AvailableResources[ResourceName.ElectricCharge] += CallVariableSuppliers(resourceData, ResourceName.ElectricCharge, 0, fillBattery);
         }
-
-        // readonly HashSet<IKITVariableSupplier> tappedOutMods = new HashSet<IKITVariableSupplier>(128);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InitializeModuleIfNeeded(ResourceData data, IKITModule ikitModule)
