@@ -14,65 +14,65 @@ using UnityEngine;
 
 namespace KIT.BeamedPower
 {
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName1")]//Solar Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName1")]//Solar Power Receiver Dish
     class SolarBeamedPowerReceiverDish : SolarBeamedPowerReceiver { } // receives less of a power capacity nerve in NF mode
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName2")]//Solar Power Receiver
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName2")]//Solar Power Receiver
     class SolarBeamedPowerReceiver : BeamedPowerReceiver { } // receives less of a power capacity nerve in NF mode
 
     //---------------------------------------------------------
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName3")]//Microwave Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName3")]//Microwave Power Receiver Dish
     class MicrowavePowerReceiverDish : MicrowavePowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName4")]//Microwave Power Receiver Panel
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName4")]//Microwave Power Receiver Panel
     class MicrowavePowerReceiverPanel : MicrowavePowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName5")]//Microwave Power Receiver
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName5")]//Microwave Power Receiver
     class MicrowavePowerReceiver : BeamedPowerReceiver { }
 
     //---------------------------------------------------
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName6")]//Photovoltaic Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName6")]//Photovoltaic Power Receiver Dish
     class PhotovoltaicPowerReceiverDish : PhotovoltaicPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName7")]//Photovoltaic Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName7")]//Photovoltaic Power Receiver Dish
     class PhotovoltaicPowerReceiverPanel : PhotovoltaicPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName8")]//Photovoltaic Power Receiver
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName8")]//Photovoltaic Power Receiver
     class PhotovoltaicPowerReceiver : BeamedPowerReceiver { }
 
     //---------------------------------------------------
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName9")]//Rectenna Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName9")]//Rectenna Power Receiver Dish
     class RectennaPowerReceiverDish : RectennaPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName10")]//Rectenna Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName10")]//Rectenna Power Receiver Dish
     class RectennaPowerReceiverPanel : RectennaPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName11")]//Rectenna Power Receiver
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName11")]//Rectenna Power Receiver
     class RectennaPowerReceiver : BeamedPowerReceiver { }
 
     //---------------------------------------------------
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName12")]//Thermal Power Panel Receiver Panel
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName12")]//Thermal Power Panel Receiver Panel
     class ThermalPowerReceiverPanel : ThermalPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName13")]//Thermal Power Panel Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName13")]//Thermal Power Panel Receiver Dish
     class ThermalPowerReceiverDish : ThermalPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName14")]//Thermal Power Receiver
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName14")]//Thermal Power Receiver
     class ThermalPowerReceiver : BeamedPowerReceiver { }
 
     //------------------------------------------------------
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName15")]//Beamed Power Receiver Panel
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName15")]//Beamed Power Receiver Panel
     class BeamedPowerReceiverPanel : BeamedPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName16")]//Beamed Power Receiver Dish
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName16")]//Beamed Power Receiver Dish
     class BeamedPowerReceiverDish : BeamedPowerReceiver { }
 
-    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModulueName17")]//Beamed Power Receiver
+    [KSPModule("#LOC_KSPIE_BeamPowerReceiver_ModuleName17")]//Beamed Power Receiver
     class BeamedPowerReceiver : PartModule, IKITModule, IKITVariableSupplier, IFNPowerSource, IElectricPowerGeneratorSource, IBeamedPowerReceiver // tweakscales with exponent 2.5
     {
         internal const string GROUP = "BeamedPowerReceiver";
