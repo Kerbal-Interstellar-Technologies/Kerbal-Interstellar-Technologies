@@ -26,17 +26,17 @@ namespace KIT.Animate
                 LightsAreOn = !LightsAreOn;
             _myLight.enabled = LightsAreOn;
 
-            List<MeshRenderer> pRenderers = part.FindModelComponents<MeshRenderer>();
+            var pRenderers = part.FindModelComponents<MeshRenderer>();
             foreach (var mr in pRenderers)
             {
                 if (mr.gameObject.name == Emissive)
                 {
-                    float lightAlpha = 1f;
+                    var lightAlpha = 1f;
                     if (!LightsAreOn)
                         lightAlpha = 0f;
 
-                    Color oldColor = mr.material.GetColor("_EmissiveColor");
-                    Color newColor = new Color(oldColor.r, oldColor.g, oldColor.b, lightAlpha);
+                    var oldColor = mr.material.GetColor("_EmissiveColor");
+                    var newColor = new Color(oldColor.r, oldColor.g, oldColor.b, lightAlpha);
                     mr.material.SetColor("_EmissiveColor", newColor);
                 }
             }

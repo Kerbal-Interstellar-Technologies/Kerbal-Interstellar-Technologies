@@ -24,8 +24,8 @@ namespace KIT.Wasteheat
 			if (_isInitialized)
 				return;
 
-			Debug.Log("[KSPI]: RadiatorProperties - Attempting to read " + PluginHelper.KIT_PLUGIN_SETTINGS_FILEPATH);
-			ConfigNode plugin_settings = GameDatabase.Instance.GetConfigNode(PluginHelper.KIT_PLUGIN_SETTINGS_FILEPATH);
+			Debug.Log("[KSPI]: RadiatorProperties - Attempting to read " + PluginHelper.KITPluginSettingsFilepath);
+			ConfigNode plugin_settings = GameDatabase.Instance.GetConfigNode(PluginHelper.KITPluginSettingsFilepath);
 
 			if (plugin_settings != null)
 			{

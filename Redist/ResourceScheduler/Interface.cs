@@ -80,25 +80,17 @@ namespace KIT.ResourceScheduler
         double Produce(ResourceName resource, double amount, double max = -1);
 
         /// <summary>
-        /// Checks to see how much storage is available for the given resource, returning 0 if there is none.
+        /// Capacity information returns all you need to know about available resources and it's associated storage information
         /// </summary>
-        /// <param name="resourceIdentifier"></param>
-        /// <returns></returns>
-        double SpareCapacity(ResourceName resourceIdentifier);
-
-        /// <summary>
-        /// CurrentCapacity returns how much of a resource is available, ship wide.
-        /// </summary>
-        /// <param name="resourceIdentifier"></param>
-        /// <returns></returns>
-        double CurrentCapacity(ResourceName resourceIdentifier);
-
-        /// <summary>
-        /// FillFraction returns how full the resource is, expressed between 0 and 1.
-        /// </summary>
-        /// <param name="resourceIdentifier"></param>
-        /// <returns></returns>
-        double FillFraction(ResourceName resourceIdentifier);
+        /// <param name="resourceIdentifier">Resource to get information from</param>
+        /// <param name="maxCapacity">Total storage information available</param>
+        /// <param name="spareCapacity">Spare capacity for this resource</param>
+        /// <param name="currentCapacity">How much of this resource we have</param>
+        /// <param name="fillFraction">Fraction of how full it is</param>
+        /// <returns>Returns false if there is no resource of this type defined, otherwise true</returns>
+        bool CapacityInformation(
+            ResourceName resourceIdentifier, out double maxCapacity,
+            out double spareCapacity, out double currentCapacity, out double fillFraction);
 
         /// <summary>Provides access to the (equivalent) of TimeWarp.fixedDeltaTime.</summary>
         /// <remarks>
@@ -106,6 +98,50 @@ namespace KIT.ResourceScheduler
         /// access to this in special cases.
         /// </remarks>
         double FixedDeltaTime();
+
+        /// <summary>
+        /// ScaledConsumptionProduction scales resource production by the lowest ratio of consumed resources
+        /// </summary>
+        /// <param name="consumeResources">Resources to consume in this request</param>
+        /// <param name="produceResources">Resources to produce in this request</param>
+        /// <param name="minimumRatio">Minimum ratio needed, if calculated ratio is less than this, 0 is returned</param>
+        /// <param name="flags">Flags controlling the function</param>
+        /// <returns>Ratio used, between 0 and 1</returns>
+
+        double ScaledConsumptionProduction(
+            List<KeyValuePair<ResourceName, double>> consumeResources,
+            List<KeyValuePair<ResourceName, double>> produceResources,
+            double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty
+        );
+
+        /// <summary>
+        /// CurrentCapacity returns current amount of the indicated resource available
+        /// </summary>
+        /// <param name="resourceIdentifier">Resource to get information about</param>
+        /// <returns>Amount</returns>
+        double CurrentCapacity(ResourceName resourceIdentifier);
+        
+        /// <summary>
+        /// FillFraction returns how full the storage is of the indicated resource
+        /// </summary>
+        /// <param name="resourceIdentifier">Resource to get information about</param>
+        /// <returns>How full, between 0 to 1.</returns>
+        double FillFraction(ResourceName resourceIdentifier);
+        
+        /// <summary>
+        /// SpareCapacity returns how much storage space is available
+        /// </summary>
+        /// <param name="resourceIdentifier">Resource to get information about</param>
+        /// <returns></returns>
+        double SpareCapacity(ResourceName resourceIdentifier);
+        
+        /// <summary>
+        /// MaxCapacity returns the maximum storage space available for this resource
+        /// </summary>
+        /// <param name="resourceIdentifier"></param>
+        /// <returns></returns>
+        double MaxCapacity(ResourceName resourceIdentifier);
 
         /// <summary>
         /// Access to the cheat options that the code should use.  Use this instead of the global variable CheatOptions
@@ -117,9 +153,16 @@ namespace KIT.ResourceScheduler
 
     }
 
+    public enum ConsumptionProductionFlags
+    {
+        Empty = 0,
+        DoNotOverFill = 1,
+    }
+
+
     public interface IResourceScheduler
     {
-        void ExecuteKITModules(double deltaTime, ref Dictionary<ResourceName, double> resourceAmount, ref Dictionary<ResourceName, double> resourceMaxAmount);
+        void ExecuteKITModules(double deltaTime, ResourceData resourceData);
     }
 
     public interface IVesselResources
@@ -144,7 +187,7 @@ namespace KIT.ResourceScheduler
         /// <param name="hasLocalResources">does this module use resources specific to that part? (radioactive, no flow, etc) The ResourceManager interface will give access to those if true</param>
         /// <returns>true if the module is ready to run, false otherwise</returns>
         bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources);
-        
+
         /// <summary>
         /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules. 
         /// </summary>

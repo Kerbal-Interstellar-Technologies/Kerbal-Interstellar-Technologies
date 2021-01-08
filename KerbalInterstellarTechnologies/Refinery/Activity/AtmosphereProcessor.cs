@@ -19,16 +19,18 @@ namespace KIT.Refinery.Activity
         }
 
         // persistent
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AtmosphericExtractor_SurfaceArea", guiFormat = "F3")]//Surface Area
+        public double surfaceArea = 1;
+
+        
         [KSPField(isPersistant = true)]
         protected int lastBodyID = -1; // ID of the last body. Allows us to skip some expensive calls
-
         [KSPField(isPersistant = true)]
         public bool isDeployed;
         [KSPField(guiActive = false)]
         public float normalizedTime = -1;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AtmosphericExtractor_SurfaceArea", guiFormat = "F3")]//Surface Area
-        public double surfaceArea = 1;
+
         [KSPField]
         public double buildInAirIntake;
         [KSPField]
@@ -240,7 +242,7 @@ namespace KIT.Refinery.Activity
         double _spareRoomKryptonMass;
         double _spareRoomSodiumMass;
 
-        List<AtmosphericIntake> _intakesList; // create a new list for keeping track of atmo intakes
+        List<AtmosphericIntake> _intakesList; // create a new list for keeping track of atmosphere intakes
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
