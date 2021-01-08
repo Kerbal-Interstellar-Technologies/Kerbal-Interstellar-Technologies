@@ -20,7 +20,7 @@ namespace KIT.Resources
 
         // Part properties
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_RegolithCollector_Drillsize", guiUnits = " m\xB3")]//Drill size
-        public double drillSize = 0; // Volume of the collector's drill. Raise in part config (for larger drills) to make collecting faster.
+        public double drillSize; // Volume of the collector's drill. Raise in part config (for larger drills) to make collecting faster.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_RegolithCollector_Effectiveness", guiFormat = "P1")]//Drill effectiveness
         public double effectiveness = 1; // Effectiveness of the drill. Lower in part config (to a 0.5, for example) to slow down resource collecting.
         [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_RegolithCollector_MWRequirements", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//MW Requirements

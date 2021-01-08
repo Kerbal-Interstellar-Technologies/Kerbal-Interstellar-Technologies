@@ -81,7 +81,7 @@ namespace KIT.Science
         [KSPField(isPersistant = false)]
         public string animName2 = "";
         [KSPField(isPersistant = false)]
-        public string upgradeTechReq = null;
+        public string upgradeTechReq;
         [KSPField(isPersistant = false)]
         public float upgradeCost = 20;
         [KSPField(isPersistant = true)]
@@ -92,7 +92,7 @@ namespace KIT.Science
         public float baseDataStorage = 750;
 
         protected int techLevel;
-        protected float megajoules_supplied = 0;
+        protected float megajoules_supplied;
         protected String[] modes = { "Scanning", "Reprocessing", "Producing Antimatter", "Electrolysing", "Centrifuging" };
         protected double science_rate_f;
         protected double reprocessing_rate_f;

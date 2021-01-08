@@ -376,7 +376,7 @@ namespace KIT.ResourceScheduler
          */
 
 
-        private bool _decayDisabled = false;
+        private bool _decayDisabled;
         public static Dictionary<string, double> Configuration { get; } = new Dictionary<string, double>();
 
         public static void PerformResourceDecayEffect(IResourceManager resourceManager, PartResourceList partResources,

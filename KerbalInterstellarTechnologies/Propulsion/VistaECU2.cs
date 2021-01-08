@@ -31,7 +31,7 @@
         [KSPField]
         public float minIsp = defaultMinIsp;
         [KSPField]
-        public float initialGearRatio = 0;
+        public float initialGearRatio;
 
         private FloatCurve _atmosphereCurve;
 

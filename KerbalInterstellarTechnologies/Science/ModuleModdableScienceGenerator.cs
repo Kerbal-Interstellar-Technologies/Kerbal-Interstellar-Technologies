@@ -9,7 +9,7 @@ namespace KIT.Science
     class ModuleModdableScienceGenerator : PartModule, IKITModule, IScienceDataContainer
     {
         [KSPField(isPersistant = false)]
-        public bool canDeploy = false;
+        public bool canDeploy;
         [KSPField(isPersistant = true)]
         public bool Deployed;
         [KSPField(isPersistant = true)]
@@ -30,7 +30,7 @@ namespace KIT.Science
         public bool data_gend;
 
         [KSPField(isPersistant = false)]
-        public bool rerunnable = false;
+        public bool rerunnable;
         [KSPField(isPersistant = false)]
         public string deployEventName = "";
         [KSPField(isPersistant = false)]

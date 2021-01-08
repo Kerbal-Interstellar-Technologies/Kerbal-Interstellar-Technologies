@@ -65,7 +65,7 @@ namespace KIT.Science
         [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_DataCollectionRate")]//Data Collection Rate
         public string scienceRate;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_AIOnline", guiActive = true, guiActiveEditor = true), UI_Toggle(disabledText = "#LOC_KSPIE_ComputerCore_AIOnline_Off", enabledText = "#LOC_KSPIE_ComputerCore_AIOnline_On", scene = UI_Scene.All)]//AI Online--Off--On
-        public bool IsEnabled = false;
+        public bool IsEnabled;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_IsPowered", guiActive = true, guiActiveEditor = false)]//Powered
         public bool IsPowered;
         [KSPField(isPersistant = true, guiActiveEditor = true)]
@@ -75,8 +75,8 @@ namespace KIT.Science
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_Datastored", guiActive = true, guiActiveEditor = false)]//Data stored
         public double science_to_add;
 
-        [KSPField(isPersistant = true)] public bool coreInit = false;
-        [KSPField] public string upgradeTechReq = null;
+        [KSPField(isPersistant = true)] public bool coreInit;
+        [KSPField] public string upgradeTechReq;
         [KSPField] public string upgradedName = "";
         [KSPField] public string originalName = "";
         [KSPField] public float upgradeCost = 100;

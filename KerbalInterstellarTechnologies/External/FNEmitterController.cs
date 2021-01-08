@@ -19,9 +19,9 @@ namespace KIT.External
         [KSPField(isPersistant = true)]
         public double radioactiveFuelLeakFraction;
         [KSPField(isPersistant = true)]
-        public bool exhaustProducesNeutronRadiation = false;
+        public bool exhaustProducesNeutronRadiation;
         [KSPField(isPersistant = true)]
-        public bool exhaustProducesGammaRadiation = false;
+        public bool exhaustProducesGammaRadiation;
 
         //Setting
         [KSPField(guiActiveEditor = true, guiName = "#LOC_KSPIE_FNEmitterController_MaxGammaRadiation")]//Max Gamma Radiation

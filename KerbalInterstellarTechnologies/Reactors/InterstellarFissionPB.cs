@@ -12,7 +12,7 @@ namespace KIT.Reactors
     class InterstellarFissionPB : InterstellarReactor
     {
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_FissionPB_HeatThrottling")]//Heat Throttling
-        public bool heatThrottling = false;
+        public bool heatThrottling;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiActive = true, guiUnits = "%", guiName = "#LOC_KSPIE_FissionPB_Overheating", guiFormat = "F3")]//Overheating
         public double overheatPercentage;
         [KSPField(isPersistant = false)]

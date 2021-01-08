@@ -27,12 +27,12 @@ namespace KIT.Reactors
         [KSPField] public bool CanJumpStart = true;
         [KSPField] public bool canChargeJumpStart = true;
         [KSPField] public float startupPowerMultiplier = 1;
-        [KSPField] public float startupCostGravityMultiplier = 0;
+        [KSPField] public float startupCostGravityMultiplier;
         [KSPField] public float startupCostGravityExponent = 1;
         [KSPField] public float startupMaximumGeforce = 10000;
-        [KSPField] public float startupMinimumChargePercentage = 0;
-        [KSPField] public double geeForceMaintenancePowerMultiplier = 0;
-        [KSPField] public bool showSecondaryPowerUsage = false;
+        [KSPField] public float startupMinimumChargePercentage;
+        [KSPField] public double geeForceMaintenancePowerMultiplier;
+        [KSPField] public bool showSecondaryPowerUsage;
         [KSPField] public double gravityDivider;
 
         // Persistent

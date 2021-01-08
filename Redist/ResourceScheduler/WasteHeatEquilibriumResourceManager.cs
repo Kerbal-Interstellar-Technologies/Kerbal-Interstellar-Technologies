@@ -9,6 +9,12 @@ namespace KIT.ResourceScheduler
     {
         public IResourceManager BaseImpl;
 
+        public IResourceManager Update(IResourceManager baseImpl)
+        {
+            BaseImpl = baseImpl;
+            return this;
+        }
+        
         #region proxy implementation
 
         public double ScaledConsumptionProduction(List<KeyValuePair<ResourceName, double>> consumeResources,

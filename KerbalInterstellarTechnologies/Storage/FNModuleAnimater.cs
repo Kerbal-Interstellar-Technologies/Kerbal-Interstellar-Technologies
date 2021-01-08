@@ -26,7 +26,7 @@ namespace KIT.Storage
         [KSPField]
         public float animationSpeed = 1f;
         [KSPField]
-        public bool oneShot = false;
+        public bool oneShot;
         [KSPField]
         public bool activeEditor = true;
         [KSPField]

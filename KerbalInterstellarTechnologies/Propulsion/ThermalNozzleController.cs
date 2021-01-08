@@ -96,7 +96,7 @@ namespace KIT.Propulsion
 
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IspThrottle")
          , UI_FloatRange(stepIncrement = 1, maxValue = 100, minValue = 0, affectSymCounterparts = UI_Scene.All)]//Isp Throttle
-        public float ispThrottle = 0;
+        public float ispThrottle;
         [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowThrottle")
          , UI_FloatRange(stepIncrement = 10, maxValue = 1000, minValue = 100, affectSymCounterparts = UI_Scene.All)]//Fuel Flow Throttle
         public float fuelflowThrottle = 100;
@@ -129,8 +129,8 @@ namespace KIT.Propulsion
         [KSPField] public float runningEffectRatio;
         [KSPField] public double startupHeatReductionRatio;
         [KSPField] public double missingPrecoolerProportionExponent = 0.5;
-        [KSPField] public double minimumBaseIsp = 0;
-        [KSPField] public bool canUsePureChargedPower = false;
+        [KSPField] public double minimumBaseIsp;
+        [KSPField] public bool canUsePureChargedPower;
         [KSPField] public float takeoffIntakeBonus = 0.002f;
         [KSPField] public float jetengineAccelerationBaseSpeed = 0.2f;
         [KSPField] public float jetengineDecelerationBaseSpeed = 0.4f;
@@ -142,8 +142,8 @@ namespace KIT.Propulsion
         [KSPField] public bool useEngineResponseTime;
         [KSPField] public bool initialized;
         [KSPField] public float wasteHeatMultiplier = 1;
-        [KSPField] public int jetPerformanceProfile = 0;
-        [KSPField] public bool isJet = false;
+        [KSPField] public int jetPerformanceProfile;
+        [KSPField] public bool isJet;
         [KSPField] public float powerTrustMultiplier = 1;
         [KSPField] public float powerTrustMultiplierJet = 1;
         [KSPField] public double IspTempMultOffset = -1.371670613;
@@ -165,7 +165,7 @@ namespace KIT.Propulsion
         [KSPField] public string deployAnimationName = "";
         [KSPField] public string pulseAnimationName = "";
         [KSPField] public string emiAnimationName = "";
-        [KSPField] public float pulseDuration = 0;
+        [KSPField] public float pulseDuration;
         [KSPField] public float recoveryAnimationDivider = 1;
         [KSPField] public double wasteheatEfficiencyLowTemperature = 0.99;
         [KSPField] public double wasteheatEfficiencyHighTemperature = 0.99;
@@ -181,7 +181,7 @@ namespace KIT.Propulsion
         [KSPField] public string powerEffectNameLFO = "";
         [KSPField] public string powerEffectNameNonLFO = "";
         [KSPField] public float windowWidth = 200;
-        [KSPField] public double ispCoreTempMult = 0;
+        [KSPField] public double ispCoreTempMult;
         [KSPField] public bool showPartTemperature = true;
         [KSPField] public double baseMaxIsp;
         [KSPField] public bool allowUseOfChargedPower = true;
@@ -190,10 +190,10 @@ namespace KIT.Propulsion
         [KSPField] public bool overrideAtmosphereCurve = true;
         [KSPField] public bool overrideAccelerationSpeed = true;
         [KSPField] public bool overrideDecelerationSpeed = true;
-        [KSPField] public bool usePropellantBaseIsp = false;
-        [KSPField] public bool isPlasmaNozzle = false;
-        [KSPField] public bool canUsePlasmaPower = false;
-        [KSPField] public double requiredMegajouleRatio = 0;
+        [KSPField] public bool usePropellantBaseIsp;
+        [KSPField] public bool isPlasmaNozzle;
+        [KSPField] public bool canUsePlasmaPower;
+        [KSPField] public double requiredMegajouleRatio;
         [KSPField] public double exitArea = 1;
         [KSPField] public double exitAreaScaleExponent = 2;
         [KSPField] public double plasmaAfterburnerRange = 2;
@@ -371,7 +371,7 @@ namespace KIT.Propulsion
         [KSPField] public float effectiveJetengineAccelerationSpeed;
         [KSPField] public float effectiveJetengineDecelerationSpeed;
 
-        [KSPField] public double baseJetHeatproduction = 0;
+        [KSPField] public double baseJetHeatproduction;
         [KSPField] public double coreTemperature = 3000;
         [KSPField] public double minimumThrust = 0.000001;
 
@@ -386,7 +386,7 @@ namespace KIT.Propulsion
         [KSPField] public double adjustedFuelFlowMult;
         [KSPField] public double adjustedFuelFlowExponent = 2;
         [KSPField] public double receivedMegajoulesRatio;
-        [KSPField] public double minThrottle = 0;
+        [KSPField] public double minThrottle;
 
         // Constants
         private const double HydroloxDecompositionEnergy = 16.2137;

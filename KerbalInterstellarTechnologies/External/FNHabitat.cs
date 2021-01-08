@@ -59,9 +59,9 @@ namespace KIT.External
         public string actionGUIName = "";
 
         [KSPField]
-        public int undeployedCrewCapacity = 0;
+        public int undeployedCrewCapacity;
         [KSPField]
-        public int deployedCrewCapacity = 0;
+        public int deployedCrewCapacity;
 
         [KSPField]
         public string deployAnimationName = Localizer.Format("#LOC_KSPIE_FNHabitat_Deploy");//"Deploy"
@@ -78,7 +78,7 @@ namespace KIT.External
         public float inflatedCost;
 
         [KSPField]
-        public bool inflatable = false;
+        public bool inflatable;
 
         [KSPField]
         public int PrimaryLayer = 2;
@@ -89,7 +89,7 @@ namespace KIT.External
         public float inflatedMultiplier = -1;
 
         [KSPField]
-        public bool shedOnInflate = false;
+        public bool shedOnInflate;
 
         [KSPField]
         public string ResourceCosts = "";

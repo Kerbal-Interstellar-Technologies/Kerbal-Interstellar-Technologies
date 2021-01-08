@@ -29,8 +29,8 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)] public bool IsEnabled;
         [KSPField(isPersistant = true)] public bool radiationSafetyFeatures = true;
 
-        [KSPField] public double massThrustExp = 0;
-        [KSPField] public double massIspExp = 0;
+        [KSPField] public double massThrustExp;
+        [KSPField] public double massIspExp;
         [KSPField] public double higherScaleThrustExponent = 3;
         [KSPField] public double lowerScaleThrustExponent = 4;
         [KSPField] public double higherScaleIspExponent = 0.25;
@@ -58,8 +58,8 @@ namespace KIT.Propulsion
         [KSPField] public string fuelName3 = string.Empty;
 
         [KSPField] public double fuelRatio1 = 1;
-        [KSPField] public double fuelRatio2 = 0;
-        [KSPField] public double fuelRatio3 = 0;
+        [KSPField] public double fuelRatio2;
+        [KSPField] public double fuelRatio3;
         [KSPField] public string effectName = string.Empty;
 
         [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_temperatureStr")]
@@ -120,35 +120,35 @@ namespace KIT.Propulsion
         [KSPField] public float maxThrustMk8 = 3000;
         [KSPField] public float maxThrustMk9 = 3500;
 
-        [KSPField] public float wasteheatMk1 = 0;
-        [KSPField] public float wasteheatMk2 = 0;
-        [KSPField] public float wasteheatMk3 = 0;
-        [KSPField] public float wasteheatMk4 = 0;
-        [KSPField] public float wasteheatMk5 = 0;
-        [KSPField] public float wasteheatMk6 = 0;
-        [KSPField] public float wasteheatMk7 = 0;
-        [KSPField] public float wasteheatMk8 = 0;
-        [KSPField] public float wasteheatMk9 = 0;
+        [KSPField] public float wasteheatMk1;
+        [KSPField] public float wasteheatMk2;
+        [KSPField] public float wasteheatMk3;
+        [KSPField] public float wasteheatMk4;
+        [KSPField] public float wasteheatMk5;
+        [KSPField] public float wasteheatMk6;
+        [KSPField] public float wasteheatMk7;
+        [KSPField] public float wasteheatMk8;
+        [KSPField] public float wasteheatMk9;
 
-        [KSPField] public double powerRequirementMk1 = 0;
-        [KSPField] public double powerRequirementMk2 = 0;
-        [KSPField] public double powerRequirementMk3 = 0;
-        [KSPField] public double powerRequirementMk4 = 0;
-        [KSPField] public double powerRequirementMk5 = 0;
-        [KSPField] public double powerRequirementMk6 = 0;
-        [KSPField] public double powerRequirementMk7 = 0;
-        [KSPField] public double powerRequirementMk8 = 0;
-        [KSPField] public double powerRequirementMk9 = 0;
+        [KSPField] public double powerRequirementMk1;
+        [KSPField] public double powerRequirementMk2;
+        [KSPField] public double powerRequirementMk3;
+        [KSPField] public double powerRequirementMk4;
+        [KSPField] public double powerRequirementMk5;
+        [KSPField] public double powerRequirementMk6;
+        [KSPField] public double powerRequirementMk7;
+        [KSPField] public double powerRequirementMk8;
+        [KSPField] public double powerRequirementMk9;
 
-        [KSPField] public double powerProductionMk1 = 0;
-        [KSPField] public double powerProductionMk2 = 0;
-        [KSPField] public double powerProductionMk3 = 0;
-        [KSPField] public double powerProductionMk4 = 0;
-        [KSPField] public double powerProductionMk5 = 0;
-        [KSPField] public double powerProductionMk6 = 0;
-        [KSPField] public double powerProductionMk7 = 0;
-        [KSPField] public double powerProductionMk8 = 0;
-        [KSPField] public double powerProductionMk9 = 0;
+        [KSPField] public double powerProductionMk1;
+        [KSPField] public double powerProductionMk2;
+        [KSPField] public double powerProductionMk3;
+        [KSPField] public double powerProductionMk4;
+        [KSPField] public double powerProductionMk5;
+        [KSPField] public double powerProductionMk6;
+        [KSPField] public double powerProductionMk7;
+        [KSPField] public double powerProductionMk8;
+        [KSPField] public double powerProductionMk9;
 
         [KSPField] public double thrustIspMk1 = 83886;
         [KSPField] public double thrustIspMk2 = 104857;
@@ -164,7 +164,7 @@ namespace KIT.Propulsion
         [KSPField] public int numberOfAvailableUpgradeTechs;
 
         [KSPField] public float throttle;
-        [KSPField] public float maxAtmosphereDensity = 0;
+        [KSPField] public float maxAtmosphereDensity;
         [KSPField] public float lethalDistance = 2000;
         [KSPField] public float killDivider = 50;
         [KSPField] public float wasteHeatMultiplier = 1;
@@ -183,14 +183,14 @@ namespace KIT.Propulsion
         [KSPField] public string originalName = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_originalName");//"Prototype Daedalus IC Fusion Engine"
         [KSPField] public string upgradedName = Localizer.Format("#LOC_KSPIE_DaedalusEngineController_upgradedName");//"Daedalus IC Fusion Engine"
 
-        [KSPField] public string upgradeTechReq1 = null;
-        [KSPField] public string upgradeTechReq2 = null;
-        [KSPField] public string upgradeTechReq3 = null;
-        [KSPField] public string upgradeTechReq4 = null;
-        [KSPField] public string upgradeTechReq5 = null;
-        [KSPField] public string upgradeTechReq6 = null;
-        [KSPField] public string upgradeTechReq7 = null;
-        [KSPField] public string upgradeTechReq8 = null;
+        [KSPField] public string upgradeTechReq1;
+        [KSPField] public string upgradeTechReq2;
+        [KSPField] public string upgradeTechReq3;
+        [KSPField] public string upgradeTechReq4;
+        [KSPField] public string upgradeTechReq5;
+        [KSPField] public string upgradeTechReq6;
+        [KSPField] public string upgradeTechReq7;
+        [KSPField] public string upgradeTechReq8;
 
         [KSPField] public double fuelFactor1;
         [KSPField] public double fuelFactor2;
