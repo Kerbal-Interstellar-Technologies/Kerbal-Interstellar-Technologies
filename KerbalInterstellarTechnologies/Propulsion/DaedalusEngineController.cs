@@ -19,9 +19,9 @@ namespace KIT.Propulsion
     [KSPModule("Confinement Fusion Engine")]
     class DaedalusEngineController : PartModule, IKITModule, IUpgradeableModule , IRescalable<DaedalusEngineController>
     {
-        const string LightBlue = "#7fdfffff";
-        const string GROUP = "FusionEngine";
-        const string GROUP_TITLE = "#LOC_KSPIE_FusionEngine_groupName";
+        const string LightBlue = "<color=#7fdfffff>";
+        const string Group = "FusionEngine";
+        const string GroupTitle = "#LOC_KSPIE_FusionEngine_groupName";
 
         // Persistent
         [KSPField(isPersistant = true)] public double thrustMultiplier = 1;
@@ -35,17 +35,17 @@ namespace KIT.Propulsion
         [KSPField] public double lowerScaleThrustExponent = 4;
         [KSPField] public double higherScaleIspExponent = 0.25;
         [KSPField] public double lowerScaleIspExponent = 1;
-        [KSPField] public double GThreshold = 9;
+        [KSPField] public double GThreshold = 15;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_speedLimit", guiUnits = "c"), UI_FloatRange(stepIncrement = 0.005f, maxValue = 1, minValue = 0.005f)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_speedLimit", guiUnits = "c"), UI_FloatRange(stepIncrement = 0.005f, maxValue = 1, minValue = 0.005f)]
         public float speedLimit = 1;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_fuelLimit", guiUnits = "%"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0.5f)]
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_fuelLimit", guiUnits = "%"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0.5f)]
         public float fuelLimit = 100;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_maximizeThrust"), UI_Toggle(disabledText = "Off", enabledText = "On")]
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_maximizeThrust"), UI_Toggle(disabledText = "Off", enabledText = "On")]
         public bool maximizeThrust = true;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_powerUsage")]
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_powerUsage")]
         public string powerUsage;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_wasteHeat", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_wasteHeat", guiFormat = "F2", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]
         public double wasteHeat;
 
         [KSPField] public double finalRequestedPower;
@@ -62,53 +62,53 @@ namespace KIT.Propulsion
         [KSPField] public double fuelRatio3;
         [KSPField] public string effectName = string.Empty;
 
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_temperatureStr")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_temperatureStr")]
         public string temperatureStr = "";
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_speedOfLight", guiUnits = " m/s")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_speedOfLight", guiUnits = " m/s")]
         public double engineSpeedOfLight;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_lightSpeedRatio", guiFormat = "F9", guiUnits = "c")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_lightSpeedRatio", guiFormat = "F9", guiUnits = "c")]
         public double lightSpeedRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_relativity", guiFormat = "F10")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_relativity", guiFormat = "F10")]
         public double relativity;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_timeDilation", guiFormat = "F10")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_timeDilation", guiFormat = "F10")]
         public double timeDilation;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_radhazardstr")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_radhazardstr")]
         public string radiationHazardString = "";
-        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_partMass", guiFormat = "F3", guiUnits = " t")]
+        [KSPField(groupName = Group, guiActiveEditor = true, guiName = "#LOC_KSPIE_FusionEngine_partMass", guiFormat = "F3", guiUnits = " t")]
         public float partMass = 1;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fusionRatio", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fusionRatio", guiFormat = "F3")]
         public double fusionRatio;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsCurrent")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsCurrent", guiFormat = "F3")]
         public double fuelAmounts;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsMax")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsMax", guiFormat = "F3")]
         public double fuelAmountsMax;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsRatio")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_fuelAmountsRatio")]
         public string fuelAmountsRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_thrustPowerInTeraWatt", guiFormat = "F2", guiUnits = " TW")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_thrustPowerInTeraWatt", guiFormat = "F2", guiUnits = " TW")]
         public double thrustPowerInTeraWatt;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_calculatedFuelflow", guiFormat = "F6", guiUnits = " U")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_calculatedFuelflow", guiFormat = "F6", guiUnits = " U")]
         public double calculatedFuelflow;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_massFlowRateKgPerSecond", guiFormat = "F6", guiUnits = " kg/s")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_massFlowRateKgPerSecond", guiFormat = "F6", guiUnits = " kg/s")]
         public double massFlowRateKgPerSecond;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_massFlowRateTonPerHour", guiFormat = "F6", guiUnits = " t/h")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_massFlowRateTonPerHour", guiFormat = "F6", guiUnits = " t/h")]
         public double massFlowRateTonPerHour;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_storedThrotle")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_FusionEngine_storedThrotle")]
         public float storedThrotle;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_effectiveMaxThrustInKiloNewton", guiFormat = "F2", guiUnits = " kN")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_effectiveMaxThrustInKiloNewton", guiFormat = "F2", guiUnits = " kN")]
         public double effectiveMaxThrustInKiloNewton;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_effectiveIsp", guiFormat = "F1", guiUnits = "s")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_effectiveIsp", guiFormat = "F1", guiUnits = "s")]
         public double effectiveIsp;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_worldSpaceVelocity", guiFormat = "F2", guiUnits = " m/s")]
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_worldSpaceVelocity", guiFormat = "F2", guiUnits = " m/s")]
         public double worldSpaceVelocity;
 
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk1;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk2;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk3;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk4;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk5;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk6;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk7;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk8;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk1;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk2;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk3;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk4;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk5;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk6;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk7;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk8;
 
         [KSPField] public float maxThrustMk1 = 300;
         [KSPField] public float maxThrustMk2 = 500;
@@ -170,12 +170,10 @@ namespace KIT.Propulsion
         [KSPField] public float wasteHeatMultiplier = 1;
         [KSPField] public float powerRequirementMultiplier = 1;
         [KSPField] public float maxTemp = 3200;
-        [KSPField] public float upgradeCost = 100;
 
         [KSPField] public double demandMass;
         [KSPField] public double fuelRatio;
         [KSPField] public double averageDensity;
-        [KSPField] public double powerThrottleExponent = 0.5;
         [KSPField] public double ispThrottleExponent = 0.5;
         [KSPField] public double fuelNeutronsFraction = 0.005;
         [KSPField] public double ratioHeadingVersusRequest;
@@ -200,7 +198,7 @@ namespace KIT.Propulsion
         [KSPField] public double fusionFuelRequestAmount2;
         [KSPField] public double fusionFuelRequestAmount3;
 
-        [KSPField] public double timeDilationMaximumThrust;
+        // [KSPField] public double timeDilationMaximumThrust;
 
         FNEmitterController _emitterController;
         ModuleEngines _curEngineT;
@@ -216,27 +214,28 @@ namespace KIT.Propulsion
         ResourceName _fuelResourceID2;
         ResourceName _fuelResourceID3;
 
-        bool _radHazard;
-        bool _warpToReal;
-        double _engineIsp;
-        double _universalTime;
-        double _percentageFuelRemaining;
-        int _vesselChangedSioCountdown;
+        private bool _radHazard;
+        private bool _warpToReal;
+        private double _engineIsp;
+        private double _universalTime;
+        private double _percentageFuelRemaining;
+        private int _vesselChangedSioCountdown;
 
         private int _engineGenerationType;
+        
         public GenerationType EngineGenerationType
         {
             get => (GenerationType) _engineGenerationType;
             private set => _engineGenerationType = (int) value;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DaedalusEngineController_DeactivateRadSafety", active = true)]//Disable Radiation Safety
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_DaedalusEngineController_DeactivateRadSafety", active = true)]//Disable Radiation Safety
         public void DeactivateRadSafety()
         {
             radiationSafetyFeatures = false;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_DaedalusEngineController_ActivateRadSafety", active = false)]//Activate Radiation Safety
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_DaedalusEngineController_ActivateRadSafety", active = false)]//Activate Radiation Safety
         public void ActivateRadSafety()
         {
             radiationSafetyFeatures = true;
@@ -655,14 +654,14 @@ namespace KIT.Propulsion
             if (HighLogic.LoadedSceneIsEditor)
                 return;
 
-            if (!IsEnabled)
-            {
-                if (!string.IsNullOrEmpty(effectName))
-                    part.Effect(effectName, 0, -1);
-                UpdateTime();
-            }
-
             temperatureStr = part.temperature.ToString("0.0") + "K / " + part.maxTemp.ToString("0.0") + "K";
+
+            if (IsEnabled) return;
+            
+            if (!string.IsNullOrEmpty(effectName))
+                part.Effect(effectName, 0, -1);
+            
+            UpdateTime();
         }
 
         private void UpdateTime()
@@ -679,7 +678,7 @@ namespace KIT.Propulsion
             _curEngineT.atmosphereCurve = newAtmosphereCurve;
         }
 
-        private void PersistentThrust(IResourceManager resMan, float modifiedFixedDeltaTime, double modifiedUniversalTime, Vector3d thrustVector, double vesselMass)
+        private void PersistentThrust(IResourceManager resMan, double modifiedFixedDeltaTime, double modifiedUniversalTime, Vector3d thrustVector, double vesselMass)
         {
             ratioHeadingVersusRequest = vessel.PersistHeading(_vesselChangedSioCountdown > 0, ratioHeadingVersusRequest == 1);
             if (ratioHeadingVersusRequest != 1)
@@ -688,9 +687,9 @@ namespace KIT.Propulsion
                 return;
             }
 
-            timeDilationMaximumThrust = timeDilation * timeDilation * MaximumThrust * (maximizeThrust ? 1 : storedThrotle);
+            var timeDilationMaximumThrust = timeDilation * timeDilation * MaximumThrust * (maximizeThrust ? 1 : storedThrotle);
 
-            var deltaVv = thrustVector.CalculateDeltaVV(vesselMass, modifiedFixedDeltaTime, timeDilationMaximumThrust * fusionRatio, timeDilation * _engineIsp, out demandMass);
+            var deltaVv = PluginHelper.CalculateDeltaVV(thrustVector, vesselMass, modifiedFixedDeltaTime, timeDilationMaximumThrust * fusionRatio, timeDilation * _engineIsp, out demandMass);
 
             double persistentThrustDot = Vector3d.Dot(part.transform.up, vessel.obt_velocity);
             if (persistentThrustDot < 0 && (vessel.obt_velocity.magnitude <= deltaVv.magnitude * 2))
@@ -848,7 +847,7 @@ namespace KIT.Propulsion
 
             if (!string.IsNullOrEmpty(upgradeTechReq1))
             {
-                sb.Append("<color=#7fdfffff>").Append(Localizer.Format("#LOC_KSPIE_Generic_upgradeTechnologies")).AppendLine(":</color><size=10>");
+                sb.Append(LightBlue).Append(Localizer.Format("#LOC_KSPIE_Generic_upgradeTechnologies")).AppendLine(":</color><size=10>");
                 sb.Append("- ").AppendLine(Localizer.Format(PluginHelper.GetTechTitleById(upgradeTechReq1)));
                 if (!string.IsNullOrEmpty(upgradeTechReq2))
                     sb.Append("- ").AppendLine(Localizer.Format(PluginHelper.GetTechTitleById(upgradeTechReq2)));
@@ -867,7 +866,7 @@ namespace KIT.Propulsion
                 sb.AppendLine("</size>");
             }
 
-            sb.Append("<color=#7fdfffff>").Append(Localizer.Format("#LOC_KSPIE_Generic_EnginePerformance")).AppendLine(":</color><size=10>");
+            sb.Append(LightBlue).Append(Localizer.Format("#LOC_KSPIE_Generic_EnginePerformance")).AppendLine(":</color><size=10>");
             sb.AppendLine(FormatThrustStatistics(maxThrustMk1, thrustIspMk1));
             if (!string.IsNullOrEmpty(upgradeTechReq1))
                 sb.AppendLine(FormatThrustStatistics(maxThrustMk2, thrustIspMk2));
@@ -887,7 +886,7 @@ namespace KIT.Propulsion
                 sb.AppendLine(FormatThrustStatistics(maxThrustMk9, thrustIspMk9));
             sb.AppendLine("</size>");
 
-            sb.Append("<color=#7fdfffff>").Append(Localizer.Format("#LOC_KSPIE_Generic_PowerRequirementAndWasteheat")).AppendLine(":</color><size=10>");
+            sb.Append(LightBlue).Append(Localizer.Format("#LOC_KSPIE_Generic_PowerRequirementAndWasteheat")).AppendLine(":</color><size=10>");
             sb.AppendLine(FormatPowerStatistics(powerRequirementMk1, wasteheatMk1));
             if (!string.IsNullOrEmpty(upgradeTechReq1))
                 sb.AppendLine(FormatPowerStatistics(powerRequirementMk2, wasteheatMk2));
@@ -999,10 +998,12 @@ namespace KIT.Propulsion
                 calculatedFuelflow = effectiveIsp > 0 ? fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / PhysicsGlobals.GravitationalAcceleration : 0;
                 massFlowRateKgPerSecond = calculatedFuelflow * 0.001;
 
-                if (TimeWarp.fixedDeltaTime > 20)
+                var fixedDeltaTime = resMan.FixedDeltaTime();
+
+                if (fixedDeltaTime > 20)
                 {
-                    var deltaCalculations = (float)Math.Ceiling(TimeWarp.fixedDeltaTime * 0.05);
-                    var deltaTimeStep = TimeWarp.fixedDeltaTime / deltaCalculations;
+                    var deltaCalculations = Math.Ceiling(fixedDeltaTime * 0.05);
+                    var deltaTimeStep = fixedDeltaTime / deltaCalculations;
 
                     for (var step = 0; step < deltaCalculations; step++)
                     {
@@ -1011,7 +1012,7 @@ namespace KIT.Propulsion
                     }
                 }
                 else
-                    PersistentThrust(resMan, TimeWarp.fixedDeltaTime, _universalTime, part.transform.up, vessel.totalMass);
+                    PersistentThrust(resMan, fixedDeltaTime, _universalTime, part.transform.up, vessel.totalMass);
 
                 if (fuelRatio < 0.999)
                 {
