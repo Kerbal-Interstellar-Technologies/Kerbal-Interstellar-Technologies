@@ -222,7 +222,7 @@ namespace KIT.Propulsion
         private int _vesselChangedSioCountdown;
 
         private int _engineGenerationType;
-        
+
         public GenerationType EngineGenerationType
         {
             get => (GenerationType) _engineGenerationType;
@@ -657,10 +657,10 @@ namespace KIT.Propulsion
             temperatureStr = part.temperature.ToString("0.0") + "K / " + part.maxTemp.ToString("0.0") + "K";
 
             if (IsEnabled) return;
-            
+
             if (!string.IsNullOrEmpty(effectName))
                 part.Effect(effectName, 0, -1);
-            
+
             UpdateTime();
         }
 

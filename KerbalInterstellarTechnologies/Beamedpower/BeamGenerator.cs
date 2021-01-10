@@ -15,10 +15,10 @@ namespace KIT.BeamedPower
     [KSPModule("Beam Generator")]//#LOC_KSPIE_BeamGenerator_ModuleName2
     class BeamGenerator : PartModule, IPartMassModifier, IRescalable<BeamGenerator>
     {
-        public const string GROUP = "BeamGenerator";
-        public const string GROUP_TITLE = "#LOC_KSPIE_BeamGenerator_groupName";
+        public const string Group = "BeamGenerator";
+        public const string GroupTitle = "#LOC_KSPIE_BeamGenerator_groupName";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_Wavelength")]//Wavelength
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_Wavelength")]//Wavelength
         [UI_ChooseOption(affectSymCounterparts = UI_Scene.None, scene = UI_Scene.All, suppressEditorShipModified = true)]
         public int selectedBeamConfiguration;
 
@@ -27,27 +27,27 @@ namespace KIT.BeamedPower
         [KSPField(isPersistant = true)]
         public double maximumPower;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_GeneratorType")]//Generator Type
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_GeneratorType")]//Generator Type
         public string beamTypeName = "";
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_WavelengthName")]//Wavelength Name
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_WavelengthName")]//Wavelength Name
         public string beamWaveName = "";
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_BeamGenerator_Wavelengthinmeter", guiFormat = "F9", guiUnits = " m")]//Wavelength in meter
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_BeamGenerator_Wavelengthinmeter", guiFormat = "F9", guiUnits = " m")]//Wavelength in meter
         public double wavelength;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_WaveLengthinSI")]//WaveLength in SI
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_WaveLengthinSI")]//WaveLength in SI
         public string wavelengthText;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_AtmosphericAbsorption", guiFormat = "F3", guiUnits = "%")]//Atmospheric Absorption
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_AtmosphericAbsorption", guiFormat = "F3", guiUnits = "%")]//Atmospheric Absorption
         public double atmosphericAbsorptionPercentage = 10;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_WaterAbsorption", guiFormat = "F3", guiUnits = "%")]//Water Absorption
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_WaterAbsorption", guiFormat = "F3", guiUnits = "%")]//Water Absorption
         public double waterAbsorptionPercentage = 10;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_EfficiencyPercentage", guiFormat = "F0", guiUnits = "%")]//Power to Beam Efficiency
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_BeamGenerator_EfficiencyPercentage", guiFormat = "F0", guiUnits = "%")]//Power to Beam Efficiency
         public double efficiencyPercentage = 90;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_BeamGenerator_StoredMass")]//Stored Mass
+        [KSPField(groupName = Group, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_BeamGenerator_StoredMass")]//Stored Mass
         public double storedMassMultiplier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_BeamGenerator_InitialMass", guiUnits = " t")]//Initial Mass
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_BeamGenerator_InitialMass", guiUnits = " t")]//Initial Mass
         public double initialMass;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_BeamGenerator_TargetMass", guiUnits = " t")]//Target Mass
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_BeamGenerator_TargetMass", guiUnits = " t")]//Target Mass
         public double targetMass = 1;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_PartMass", guiUnits = " t")]//Part Mass
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_BeamGenerator_PartMass", guiUnits = " t")]//Part Mass
         public float partMass;
 
         [KSPField]

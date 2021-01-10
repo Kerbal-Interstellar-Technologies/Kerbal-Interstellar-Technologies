@@ -36,7 +36,7 @@ namespace KIT.ResourceScheduler
             out double spareCapacity,
             out double currentCapacity, out double fillFraction) => BaseImpl.CapacityInformation(resourceIdentifier,
             out maxCapacity, out spareCapacity, out currentCapacity, out fillFraction);
-        
+
         public double FixedDeltaTime() => BaseImpl.FixedDeltaTime();
         public double Produce(ResourceName resource, double amount, double max = -1) => BaseImpl.Produce(resource, amount, max);
         public IResourceProduction ProductionStats(ResourceName resourceIdentifier) => BaseImpl.ProductionStats(resourceIdentifier);
@@ -63,8 +63,8 @@ namespace KIT.ResourceScheduler
             return BaseImpl.Consume(resource, wanted);
         }
 
-        public double ScaledConsumptionProduction(List<KeyValuePair<ResourceName, double>> consumeResources,
-            List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
             // TODO implement consumption reduction across the board

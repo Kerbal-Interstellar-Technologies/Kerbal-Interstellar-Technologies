@@ -1,8 +1,8 @@
 ﻿namespace KIT.Interfaces
-{   
+{
     /// <summary>
     /// ICheatOptions provides an interface the same as the CheatOptions static global class.
-    /// 
+    ///
     /// This interface is used to ensure that code can be tested without relying on global
     /// variables that would otherwise have to modify global state to ensure they operate as
     /// intended. For release code / production code, use RealCheatOptions.Instance to get a
@@ -44,7 +44,7 @@
     }
 
     /// <summary>
-    /// ConfigurableCheatOptions provides a class that can be easily used for testing code, and does not 
+    /// ConfigurableCheatOptions provides a class that can be easily used for testing code, and does not
     /// interfere with other code that may be under test at the same time.
     /// </summary>
     public class ConfigurableCheatOptions : ICheatOptions

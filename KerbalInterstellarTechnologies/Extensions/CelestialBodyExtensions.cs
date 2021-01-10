@@ -22,7 +22,7 @@ namespace KIT.Extensions
         {
             if (body.flightGlobalsIndex != 0 && altitude <= PluginHelper.GetMaxAtmosphericAltitude(body))
                 return 0;
-            
+
             if (!BeltDataCache.TryGetValue(body.name, out BeltData beltData))
             {
                 double relrp = body.Radius / homeworld.Radius;

@@ -6,7 +6,7 @@ namespace KIT.ResourceScheduler
     /// VesselEventData is used to track game events occurring. Once it picks up an event occurring, it tries to
     /// find the corresponding KITResourceManager and lets it know to refresh it's part module cache.
     /// </summary>
-    
+
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     // ReSharper disable once UnusedMember.Global - KSP will initialize and use this class
     public class VesselEventData : MonoBehaviour

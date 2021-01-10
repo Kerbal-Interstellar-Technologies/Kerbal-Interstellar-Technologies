@@ -88,7 +88,7 @@ namespace KIT.Reactors
                         return t.amount;
 
                 return 0;
-            }  
+            }
             else
                 return part.FindAmountOfAvailableFuel(ResourceName, 4);
         }

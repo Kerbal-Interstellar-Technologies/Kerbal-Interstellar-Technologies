@@ -21,14 +21,14 @@ namespace KIT.Wasteheat
     [KSPModule("Solar Panel Adapter")]
     class FNSolarPanelWasteHeatModule : PartModule, IKITModule, ISolarPower
     {
-        public const string GROUP = "FNSolarPanelWasteHeatModule";
-        public const string GROUP_TITLE = "Interstellar Solar Generator";
+        public const string Group = "FNSolarPanelWasteHeatModule";
+        public const string GroupTitle = "Interstellar Solar Generator";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_SolarPanelWH_CurrentSolarPower")]//Current Solar Power
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_SolarPanelWH_CurrentSolarPower")]//Current Solar Power
         public string mjSolarSupply;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_SolarPanelWH_MaximumSolarPower")]//Maximum Solar Power
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_SolarPanelWH_MaximumSolarPower")]//Maximum Solar Power
         public string mjMaxSupply;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "AU", guiFormat = "F0", guiUnits = " m")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "AU", guiFormat = "F0", guiUnits = " m")]
         public double astronomicalUnit;
 
         [KSPField]

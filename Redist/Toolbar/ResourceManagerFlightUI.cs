@@ -22,7 +22,7 @@ namespace KIT.Toolbar
         public string TextUI()
         {
             List<string> elements = new List<string>(128);
-            
+
             foreach(var resource in _resources)
             {
                 if(_kitResourceVesselModule.ResourceData.ModProduction.TryGetValue(resource, out var resourceList))

@@ -38,17 +38,16 @@ namespace KIT.ResourceScheduler
             return _KITPartName;
         }
 
-        
 
         double IDCElectricalSystem.UnallocatedElectricChargeConsumption() => UnallocatedElectricChargeConsumption;
     }
 
     /// <summary>
     /// KITResourceManager implements the Resource Manager code for Kerbal Interstellar Technologies.
-    /// 
-    /// <para>It acts as a scheduler for the KIT Part Modules (denoted by the IKITModule interface), calling them by their self reported priority. This occurs 
+    ///
+    /// <para>It acts as a scheduler for the KIT Part Modules (denoted by the IKITModule interface), calling them by their self reported priority. This occurs
     /// every FixedUpdate(), and the IKITMods do not implemented their own FixedUpdate() interface.</para>
-    /// 
+    ///
     /// <para>It also manages what resources are available each FixedUpdate() tick for the modules, and once all modules have ran, it finalizes the results. This eliminates the need for resource buffering implementations.</para>
     /// </summary>
     public partial class KITResourceVesselModule : VesselModule
@@ -94,7 +93,7 @@ namespace KIT.ResourceScheduler
         private double _trackElectricChargeUsage;
 
         public ResourceData ResourceData;
-        
+
         /// <summary>
         /// FixedUpdate() triggers the ExecuteKITModules() function call above. It implements automatic catch up processing for each module.
         /// </summary>
@@ -125,7 +124,7 @@ namespace KIT.ResourceScheduler
 
             ExecuteKITModules(TimeWarp.fixedDeltaTime, ResourceData);
             _trackElectricChargeUsage = ResourceData.AvailableResources[ResourceName.ElectricCharge];
-            
+
             DisperseResources();
         }
 
@@ -145,7 +144,7 @@ namespace KIT.ResourceScheduler
         List<PartResource> _decayPartResourceList = new List<PartResource>(64);
 
         // void VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules)
-        
+
         void RefreshActiveModules(ResourceData resourceData)
         {
             // Clear the inputs
@@ -171,7 +170,7 @@ namespace KIT.ResourceScheduler
 
                     var working = mod.ModuleConfiguration(out var priority, out var prepend, out var hasLocalResources);
                     if (!working) continue;
-                    
+
                     if (!_sortedModules.TryGetValue(priority, out _))
                     {
                         _sortedModules[priority] = new List<IKITModule>(32);

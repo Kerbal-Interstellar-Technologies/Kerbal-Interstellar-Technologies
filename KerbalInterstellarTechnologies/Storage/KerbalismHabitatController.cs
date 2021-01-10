@@ -11,7 +11,7 @@
 
 		public double Volume
 		{
-			get 
+			get
 			{
 				if (isInitialized == false)
 					InitializeKerbalismHabitat();

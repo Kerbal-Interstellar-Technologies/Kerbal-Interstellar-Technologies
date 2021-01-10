@@ -91,7 +91,7 @@ namespace KIT.Science
                             vessel_name = probe_data.GetValue("vesselname");
                         if (probe_data.HasValue("distribution_factor"))
                             distribution_factor = float.Parse(probe_data.GetValue("distribution_factor"));
-                        
+
                         if (!transmitted)
                         {
                             ScienceSubject subject = ResearchAndDevelopment.GetExperimentSubject(experiment, ExperimentSituations.SrfLanded, vessel.mainBody, vessel.mainBody.name + "'s surface.", vessel.mainBody.name + "'s surface.");

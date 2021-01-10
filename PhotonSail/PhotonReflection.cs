@@ -7,7 +7,7 @@ namespace PhotonSail
     class PhotonReflectionDefinition : PartModule
     {
         [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
-        public double targetWavelength;        
+        public double targetWavelength;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double minimumWavelength = 0.001;
         [KSPField(guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
@@ -103,11 +103,11 @@ namespace PhotonSail
 
         public double TargetWavelength
         {
-            get 
+            get
             {
                 if (targetWavelength == 0)
                     targetWavelength = (minimumWavelength + maximumWavelength) / 2;
-                
+
                 return targetWavelength;
             }
         }

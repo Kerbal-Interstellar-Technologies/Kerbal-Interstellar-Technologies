@@ -51,7 +51,6 @@ namespace KIT.Refinery.Activity
         private double _nitrogenProductionRate;
         private double _neonProductionRate;
 
-  
         public RefineryType RefineryType => RefineryType.Cryogenics;
 
         public bool HasActivityRequirements ()
@@ -99,7 +98,7 @@ namespace KIT.Refinery.Activity
         private double _maxCapacityNeonMass;
 
         private double _storedSolarWindMass;
-        
+
         private double _spareRoomHydrogenMass;
         private double _spareRoomDeuteriumMass;
         private double _spareRoomHelium3Mass;

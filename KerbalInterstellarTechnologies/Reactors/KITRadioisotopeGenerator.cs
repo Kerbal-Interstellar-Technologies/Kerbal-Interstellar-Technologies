@@ -165,7 +165,7 @@ namespace KIT.Reactors
             PowerGeneratedPerSecond(out var energyExtractedInKW, out var wasteHeatInKW);
             resMan.Produce(ResourceName.ElectricCharge, energyExtractedInKW);
             resMan.Produce(ResourceName.WasteHeat, wasteHeatInKW);
-            
+
             DecayFuel(resMan);
         }
 

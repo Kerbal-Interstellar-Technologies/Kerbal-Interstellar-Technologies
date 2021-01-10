@@ -1,7 +1,7 @@
 ﻿using KIT.Interfaces;
 using KIT.ResourceScheduler;
 
-namespace KIT.Powermanagement.Interfaces
+namespace KIT.PowerManagement.Interfaces
 {
     public interface IFNPowerSource : IPowerSource
     {

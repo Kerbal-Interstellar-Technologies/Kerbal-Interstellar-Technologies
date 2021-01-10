@@ -335,7 +335,7 @@ namespace KIT
             else
                 return power.ToString("0.00") + suffix;
         }
-        
+
         public ApplicationLauncherButton InitializeApplicationButton()
         {
             _appIcon = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/Category/WarpPlugin", false);

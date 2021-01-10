@@ -25,7 +25,7 @@
         public const double DeuteriumTimescale = 0.0016667;
         public const double BaseReprocessingRate = 400;
         public const double BaseScienceRate = 0.1;
-        public const double BaseUraniumAmmonolysisRate = 0.0002383381;   
+        public const double BaseUraniumAmmonolysisRate = 0.0002383381;
         public const double MicrowaveAngle = 3.64773814E-10;
         public const double MicrowaveDishEfficiency = 0.85;
         public const double MicrowaveAlpha = 0.00399201596806387225548902195609;

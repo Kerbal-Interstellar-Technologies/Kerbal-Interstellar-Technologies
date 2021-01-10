@@ -2,14 +2,14 @@
 using System;
 using UnityEngine;
 
-namespace KIT.Powermanagement
+namespace KIT.PowerManagement
 {
     [KSPModule("Near Future Fission Generator Adapter")]
     class FNFissionGeneratorAdapter : PartModule, IKITModule
     {
-        [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Currentpower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F5")]//Generator current power
+        [KSPField(groupName = FNGenerator.Group, groupDisplayName = FNGenerator.GroupTitle, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Currentpower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F5")]//Generator current power
         public double megaJouleGeneratorPowerSupply;
-        [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Efficiency")]//Efficiency
+        [KSPField(groupName = FNGenerator.Group, groupDisplayName = FNGenerator.GroupTitle, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Efficiency")]//Efficiency
         public string efficiency;
 
         [KSPField]

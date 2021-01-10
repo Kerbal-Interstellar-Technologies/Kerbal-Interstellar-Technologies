@@ -288,7 +288,7 @@ namespace KIT.Refinery
 
             return true;
         }
-        
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             currentPowerReq = 0;

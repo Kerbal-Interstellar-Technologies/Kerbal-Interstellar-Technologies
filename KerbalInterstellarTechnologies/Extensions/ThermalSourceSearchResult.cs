@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using KIT.Powermanagement.Interfaces;
+using KIT.PowerManagement.Interfaces;
 using KIT.Reactors;
 
 namespace KIT.Extensions
@@ -54,8 +54,8 @@ namespace KIT.Extensions
 
             var thermalCostModifier = currentPart.FindModuleImplementing<ThermalPowerTransport>();
 
-            double stackDepthCost = thermalCostModifier != null 
-                ? thermalCostModifier.thermalCost 
+            double stackDepthCost = thermalCostModifier != null
+                ? thermalCostModifier.thermalCost
                 : 1;
 
             // first look at docked parts

@@ -1,10 +1,10 @@
 ﻿using KIT.Resources;
 
-namespace KIT.Wasteheat 
+namespace KIT.Wasteheat
 {
     class FNWasteheatExplode : PartModule
     {
-        [KSPField] 
+        [KSPField]
         public bool activeOnlyWhenActivated = true;
         [KSPField]
         public double explodeFrame = 25;    // half a second

@@ -13,7 +13,7 @@ namespace KIT.Extensions
             return part.vessel.parts.SelectMany(p => p.Resources.Where(r => r.resourceName == resourceName));
         }
 
-        public static void GetResourceMass(this Part part, PartResourceDefinition definition,  out double spareRoomMass, out double maximumMass) 
+        public static void GetResourceMass(this Part part, PartResourceDefinition definition,  out double spareRoomMass, out double maximumMass)
         {
             part.GetConnectedResourceTotals(definition.id, out var currentAmount, out var maxAmount);
 

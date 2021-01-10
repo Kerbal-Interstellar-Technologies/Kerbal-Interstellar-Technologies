@@ -1,6 +1,6 @@
 ﻿using KIT.Extensions;
 using KIT.External;
-using KIT.Powermanagement;
+using KIT.PowerManagement;
 using KIT.Propulsion;
 using KIT.Resources;
 using KIT.ResourceScheduler;
@@ -11,7 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using KIT.Interfaces;
-using KIT.Powermanagement.Interfaces;
+using KIT.PowerManagement.Interfaces;
 using TweakScale;
 using UnityEngine;
 
@@ -20,8 +20,8 @@ namespace KIT.Reactors
     [KSPModule("#LOC_KSPIE_Reactor_moduleName")]
     class InterstellarReactor : PartModule, IKITModule, IKITVariableSupplier, IFNPowerSource, IRescalable<InterstellarReactor>, IPartCostModifier
     {
-        public const string GROUP = "InterstellarReactor";
-        public const string GROUP_TITLE = "#LOC_KSPIE_Reactor_groupName";
+        public const string Group = "InterstellarReactor";
+        public const string GroupTitle = "#LOC_KSPIE_Reactor_groupName";
 
         public const string UpgradesGroup = "ReactorUpgrades";
         public const string UpgradesGroupDisplayName = "#LOC_KSPIE_Reactor_upgrades";
@@ -36,11 +36,11 @@ namespace KIT.Reactors
         //    ANTIMATTER = 32
         //}
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_electricPriority"), UI_FloatRange(stepIncrement = 1, maxValue = 5, minValue = 0)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_electricPriority"), UI_FloatRange(stepIncrement = 1, maxValue = 5, minValue = 0)]
         public float electricPowerPriority = 2;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_powerPercentage"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 10)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_powerPercentage"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 10)]
         public float powerPercentage = 100;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_ForcedMinimumThrotle"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0)]//Forced Minimum Throtle
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_ForcedMinimumThrotle"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 0)]//Forced Minimum Throtle
         public float forcedMinimumThrottle;
 
         // Persistent True
@@ -48,9 +48,9 @@ namespace KIT.Reactors
         [KSPField(isPersistant = true)] public string fuel_mode_name = string.Empty;
         [KSPField(isPersistant = true)] public string fuel_mode_variant = string.Empty;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_ReactorIsEnabled")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_ReactorIsEnabled")]
         public bool IsEnabled;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_ReactorIsStated")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_ReactorIsStated")]
         public bool IsStarted;
 
         [KSPField(isPersistant = true)] public bool isDeployed;
@@ -95,11 +95,11 @@ namespace KIT.Reactors
 
         [KSPField(isPersistant = true)]
         public double ongoing_total_power_generated;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_thermalPower", guiFormat = "F6")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_thermalPower", guiFormat = "F6")]
         protected double ongoing_thermal_power_generated;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_chargedPower ", guiFormat = "F6")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiName = "#LOC_KSPIE_Reactor_chargedPower ", guiFormat = "F6")]
         protected double ongoing_charged_power_generated;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Reactor_LithiumModifier", guiFormat = "F6")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Reactor_LithiumModifier", guiFormat = "F6")]
         public double lithium_modifier = 1;
 
         [KSPField] public double maximumPower;
@@ -231,7 +231,7 @@ namespace KIT.Reactors
         [KSPField] public string upgradedName = "";
         [KSPField] public string originalName = "";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiFormat = "F2", guiName = "#LOC_KSPIE_Reactor_connectionRadius")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiActive = false, guiFormat = "F2", guiName = "#LOC_KSPIE_Reactor_connectionRadius")]
         public double radius = 2.5;
 
         [KSPField] public double minimumThrottle;
@@ -306,7 +306,7 @@ namespace KIT.Reactors
         [KSPField] public string PowerUpgradeTechReq = string.Empty;
         [KSPField] public double PowerUpgradeCoreTempMult = 1;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_rawPowerOutput", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_rawPowerOutput", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
         public double CurrentRawPowerOutput;
 
         [KSPField] public double PowerOutput;
@@ -317,15 +317,15 @@ namespace KIT.Reactors
         [KSPField] public double HeliumMolarMassRatio = 4.0023 / 7.0183;
 
         // GUI strings
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_reactorStatus")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_reactorStatus")]
         public string StatusStr = string.Empty;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_coreTemperature")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_coreTemperature")]
         public string CoretempStr = string.Empty;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorFuelMode")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorFuelMode")]
         public string FuelModeStr = string.Empty;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_connectedRecievers")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_connectedRecievers")]
         public string ConnectedReceiversStr = string.Empty;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_reactorSurface", guiUnits = " m\xB3")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_reactorSurface", guiUnits = " m\xB3")]
         public double ReactorSurface;
 
         [KSPField] protected double MaxPowerToSupply;
@@ -336,40 +336,40 @@ namespace KIT.Reactors
         [KSPField] protected double MinThrottle;
         [KSPField] public double MassCostExponent = 2.5;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_InitialCost")]//Initial Cost
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_InitialCost")]//Initial Cost
         public double InitialCost;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_CalculatedCost")]//Calculated Cost
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_CalculatedCost")]//Calculated Cost
         public double CalculatedCost;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_MaxResourceCost")]//Max Resource Cost
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_MaxResourceCost")]//Max Resource Cost
         public double MaxResourceCost;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_ModuleCost")]//Module Cost
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_ModuleCost")]//Module Cost
         public float ModuleCost;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_NeutronEmbrittlementCost")]//Neutron Embrittlement Cost
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_NeutronEmbrittlementCost")]//Neutron Embrittlement Cost
         public double NeutronEmbrittlementCost;
 
         // Gui
         [KSPField(guiActive = false, guiActiveEditor = false)]
         public float MassDifference;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_CalibratedMass", guiUnits = " t")]//calibrated mass
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_CalibratedMass", guiUnits = " t")]//calibrated mass
         public float PartMass;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorMass", guiFormat = "F3", guiUnits = " t")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorMass", guiFormat = "F3", guiUnits = " t")]
         public float CurrentMass;
         [KSPField]
         public double MaximumThermalPowerEffective;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_EmbrittlementFraction", guiFormat = "F4")]//Embrittlement Fraction
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_EmbrittlementFraction", guiFormat = "F4")]//Embrittlement Fraction
         public double EmbrittlementModifier;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_BuoyancyFraction", guiFormat = "F4")]//Buoyancy Fraction
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_BuoyancyFraction", guiFormat = "F4")]//Buoyancy Fraction
         public double GeeForceModifier = 1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_OverheatFraction", guiFormat = "F4")]//Overheat Fraction
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_OverheatFraction", guiFormat = "F4")]//Overheat Fraction
         public double OverheatModifier = 1;
 
         [KSPField] public double LithiumNeutronAbsorption = 1;
         [KSPField] public bool IsConnectedToThermalGenerator;
         [KSPField] public bool IsConnectedToChargedGenerator;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorControlWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_reactorControlWindow_Hidden", enabledText = "#LOC_KSPIE_Reactor_reactorControlWindow_Shown", affectSymCounterparts = UI_Scene.None)]//Hidden-Shown
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_reactorControlWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_reactorControlWindow_Hidden", enabledText = "#LOC_KSPIE_Reactor_reactorControlWindow_Shown", affectSymCounterparts = UI_Scene.None)]//Hidden-Shown
         public bool RenderWindow;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_startEnabled"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_startEnabled_True", enabledText = "#LOC_KSPIE_Reactor_startEnabled_False")]//True-False
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Reactor_startEnabled"), UI_Toggle(disabledText = "#LOC_KSPIE_Reactor_startEnabled_True", enabledText = "#LOC_KSPIE_Reactor_startEnabled_False")]//True-False
         public bool StartDisabled;
 
         // This field is NOT used for catch up processing, it is used to determine
@@ -1079,7 +1079,7 @@ namespace KIT.Reactors
             }
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_activateReactor", active = false)]
+        [KSPEvent(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_activateReactor", active = false)]
         public void ActivateReactor()
         {
             Debug.Log("[KSPI]: InterstellarReactor on " + part.name + " was Force Activated");
@@ -1100,7 +1100,7 @@ namespace KIT.Reactors
             IsStarted = true;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_deactivateReactor", active = true)]
+        [KSPEvent(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_Reactor_deactivateReactor", active = true)]
         public void DeactivateReactor()
         {
             if (HighLogic.LoadedSceneIsEditor)
@@ -1116,7 +1116,7 @@ namespace KIT.Reactors
             }
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Reactor_enableTritiumBreeding", active = false)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Reactor_enableTritiumBreeding", active = false)]
         public void StartBreedTritiumEvent()
         {
             if (!IsFuelNeutronRich) return;
@@ -1124,7 +1124,7 @@ namespace KIT.Reactors
             breedtritium = true;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Reactor_disableTritiumBreeding", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Reactor_disableTritiumBreeding", active = true)]
         public void StopBreedTritiumEvent()
         {
             breedtritium = false;
@@ -2271,7 +2271,6 @@ namespace KIT.Reactors
             if (!fuel.ConsumeGlobal)
                 return GetLocalResourceAmount(fuel);
 
-            
             // This crashes, and I'm not sure why. 
             part.GetConnectedResourceTotals(fuel.Definition.id, out var amount, out _);
             return amount;
@@ -3045,7 +3044,7 @@ namespace KIT.Reactors
             // Is the above right? Is there cases where we want to be able to exceed the limit on one of them? :\
 
             // Debug.Log($"[Interstellar Reactor] got request for {KITResourceSettings.ResourceToName(resource)} of {requestedAmount}. tmp is {tmp}, ThermalPowerRatio is {ThermalPowerRatio}, ChargedPowerRatio is {ChargedPowerRatio}, and tmp * ThermalPowerRatio is {tmp * ThermalPowerRatio} and also {tmp * ChargedPowerRatio}");
-            
+
             _maxThermalToSupplyPerSecondAvail -= tmp * ThermalPowerRatio;
             _maxChargedToSupplyPerSecondAvail -= tmp * ChargedPowerRatio;
 

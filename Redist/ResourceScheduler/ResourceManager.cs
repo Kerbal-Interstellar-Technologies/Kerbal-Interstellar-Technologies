@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Smooth.Collections;
+using Smooth.Delegates;
 using UnityEngine;
 
 namespace KIT.ResourceScheduler
@@ -157,12 +158,56 @@ namespace KIT.ResourceScheduler
             return true;
         }
 
+        private double CalculateAvailableSpaceCapacity(ResourceKeyValue resource)
+        {
+            var spareCapacity = SpareCapacity(resource.Resource);
+            if (spareCapacity == 0) return 0;
 
-        public double ScaledConsumptionProduction(List<KeyValuePair<ResourceName, double>> consumeResources, List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
+            var value = spareCapacity / resource.Amount;
+
+            return (value <= double.Epsilon) ? 0 : (value >= 1) ? 1 : value;
+        }
+
+        private double CalculateAvailableResourceCapacity(ResourceKeyValue resource)
+        {
+            var availableCapacity = CurrentCapacity(resource.Resource);
+            if (availableCapacity == 0) return 0;
+
+            var value = availableCapacity / resource.Amount;
+
+            return (value <= double.Epsilon) ? 0 : (value >= 1) ? 1 : value;
+        }
+
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
-            return ResourceManager.ScaledConsumptionProduction(this, consumeResources, produceResources, minimumRatio,
-                flags);
+            double ratio = 1;
+
+            if ((flags & ConsumptionProductionFlags.DoNotOverFill) != 0)
+            {
+                foreach (var resourceInfo in produceResources)
+                {
+                    var capacityRatio = CalculateAvailableSpaceCapacity(resourceInfo);
+                    ratio = (capacityRatio < ratio) ? capacityRatio : ratio;
+                }
+
+                if (ratio == 0) return 0;
+            }
+
+            foreach (var resourceInfo in consumeResources)
+            {
+                // We may get resources on demand, so skip accounting for those at the moment
+                if (VariableSupplierModules.ContainsKey(resourceInfo.Resource)) continue;
+                
+                var capacityRatio = CalculateAvailableResourceCapacity(resourceInfo);
+                ratio = (capacityRatio < ratio) ? capacityRatio : ratio;
+
+                if (ratio == 0) return 0;
+            }
+
+            consumeResources.ForEach(kv => kv.Amount *= ratio);
+            produceResources.ForEach(kv => kv.Amount *= ratio);
+            return ResourceManager.ScaledConsumptionProduction(this, consumeResources, produceResources, minimumRatio, flags);
         }
 
         public double CurrentCapacity(ResourceName resourceIdentifier)
@@ -223,7 +268,7 @@ namespace KIT.ResourceScheduler
 
         #region IResourceManager implementation
 
-        public double ScaledConsumptionProduction(ResourceData data, List<KeyValuePair<ResourceName, double>> consumeResources, List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
+        public double ScaledConsumptionProduction(ResourceData data, List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
             throw new NotImplementedException();

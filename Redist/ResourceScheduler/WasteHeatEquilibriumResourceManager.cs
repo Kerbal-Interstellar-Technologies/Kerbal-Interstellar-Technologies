@@ -14,11 +14,11 @@ namespace KIT.ResourceScheduler
             BaseImpl = baseImpl;
             return this;
         }
-        
+
         #region proxy implementation
 
-        public double ScaledConsumptionProduction(List<KeyValuePair<ResourceName, double>> consumeResources,
-            List<KeyValuePair<ResourceName, double>> produceResources, double minimumRatio = 0,
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty) =>
             BaseImpl.ScaledConsumptionProduction(consumeResources, produceResources, minimumRatio, flags);
 

@@ -10,8 +10,8 @@ namespace KIT.Propulsion
 {
     class ElectricRCSController : PartModule, IKITModule
     {
-        public const string GROUP = "InterstellarRCSModule";
-        public const string GROUP_TITLE = "#LOC_KSPIE_RCSModule_groupName";
+        public const string Group = "InterstellarRCSModule";
+        public const string GroupTitle = "#LOC_KSPIE_RCSModule_groupName";
 
         [KSPField(isPersistant = true)]
         public int fuel_mode;
@@ -45,26 +45,26 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true, guiActive = false)]
         public double maxStoredPower;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_HasSufficientPower")]//Is Powered
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_HasSufficientPower")]//Is Powered
         public bool hasSufficientPower;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_PropellantName")]//Propellant Name
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_PropellantName")]//Propellant Name
         public string propNameStr = "";
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_PropellantMaximumIsp")]//Propellant Maximum Isp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_PropellantMaximumIsp")]//Propellant Maximum Isp
         public float maxPropellantIsp;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_PropellantThrustMultiplier")]//Propellant Thrust Multiplier
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_PropellantThrustMultiplier")]//Propellant Thrust Multiplier
         public double currentThrustMultiplier = 1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_ThrustIspMultiplier")]//Thrust / ISP Mult
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = false, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_ThrustIspMultiplier")]//Thrust / ISP Mult
         public string thrustIspMultiplier = "";
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_CurrentTotalThrust", guiFormat = "F2", guiUnits = " kN")]//Current Total Thrust
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_CurrentTotalThrust", guiFormat = "F2", guiUnits = " kN")]//Current Total Thrust
         public float currentThrust;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_Mass", guiFormat = "F3", guiUnits = " t")]//Mass
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_ElectricRCSController_Mass", guiFormat = "F3", guiUnits = " t")]//Mass
         public float partMass;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Consumption")]//Consumption
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Consumption")]//Consumption
         public string powerConsumptionStr = "";
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Efficiency")]//Efficiency
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Efficiency")]//Efficiency
         public string efficiencyStr = "";
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Power", advancedTweakable = true), UI_Toggle(disabledText = "#LOC_KSPIE_ElectricRCSController_Power_Off", enabledText = "#LOC_KSPIE_ElectricRCSController_Power_On", affectSymCounterparts = UI_Scene.All)]//Power--Off--On
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_Power", advancedTweakable = true), UI_Toggle(disabledText = "#LOC_KSPIE_ElectricRCSController_Power_Off", enabledText = "#LOC_KSPIE_ElectricRCSController_Power_On", affectSymCounterparts = UI_Scene.All)]//Power--Off--On
         public bool powerEnabled = true;
 
         // internal
@@ -96,13 +96,13 @@ namespace KIT.Propulsion
             TogglePreviousPropellantEvent();
         }
 
-        [KSPEvent(groupName = GROUP, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_NextPropellant", active = true)]//Next Propellant
+        [KSPEvent(groupName = Group, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_NextPropellant", active = true)]//Next Propellant
         public void ToggleNextPropellantEvent()
         {
             SwitchToNextPropellant();
         }
 
-        [KSPEvent(groupName = GROUP, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_PreviousPropellant", active = true)]//Previous Propellant
+        [KSPEvent(groupName = Group, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_ElectricRCSController_PreviousPropellant", active = true)]//Previous Propellant
         public void TogglePreviousPropellantEvent()
         {
             SwitchToPreviousPropellant();

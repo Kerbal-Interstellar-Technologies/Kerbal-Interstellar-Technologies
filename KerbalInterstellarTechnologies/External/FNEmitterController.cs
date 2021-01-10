@@ -39,7 +39,7 @@ namespace KIT.External
         [KSPField]
         public double habitatMassMultiplier = 20;
         [KSPField]
-        public double reactorMassMultiplier = 10; 
+        public double reactorMassMultiplier = 10;
 
         // Gui
         [KSPField(guiActive = false, guiName = "#LOC_KSPIE_FNEmitterController_DistanceRadiationModifier", guiFormat = "F5")]//Distance Radiation Modifier

@@ -186,7 +186,7 @@ namespace KIT.Resources
                 // Lookup homeworld
                 CelestialBody homeworld = FlightGlobals.Bodies.SingleOrDefault(b => b.isHomeWorld);
                 System.Diagnostics.Debug.Assert(homeworld != null, nameof(homeworld) + " != null");
-                
+
                 double pressureAtSurface = celestialBody.GetPressure(0);
 
                 if (celestialBody.Mass < homeworld.Mass * 10 && pressureAtSurface < 1000)

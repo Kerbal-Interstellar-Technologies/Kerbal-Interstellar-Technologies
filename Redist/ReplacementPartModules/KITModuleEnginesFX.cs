@@ -1,7 +1,7 @@
 ﻿using KIT.ResourceScheduler;
 
 namespace KIT.ReplacementPartModules
-{ 
+{
     class KITModuleEnginesFX : ModuleEnginesFX, IKITModule
     {
         public new void FixedUpdate() { }
@@ -10,7 +10,7 @@ namespace KIT.ReplacementPartModules
         {
             // take into account resMan.fixedDeltaTime
         }
-        
+
         protected new double RequiredPropellantMass(float throttleAmount)
         {
             // take into account resMan.fixedDeltaTime

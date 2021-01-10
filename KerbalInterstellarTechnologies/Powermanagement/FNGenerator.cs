@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.Linq;
 using KIT.BeamedPower;
 using KIT.Interfaces;
-using KIT.Powermanagement.Interfaces;
+using KIT.PowerManagement.Interfaces;
 using TweakScale;
 using UnityEngine;
 
-namespace KIT.Powermanagement
+namespace KIT.PowerManagement
 {
     enum PowerStates { PowerOnline, PowerOffline };
 
@@ -35,8 +35,8 @@ namespace KIT.Powermanagement
     [KSPModule(" Generator")]
     class FNGenerator : PartModule, IKITModule, IKITVariableSupplier, IUpgradeableModule, IFNElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
     {
-        public const string GROUP = "FNGenerator";
-        public const string GROUP_TITLE = "#LOC_KSPIE_Generator_groupName";
+        public const string Group = "FNGenerator";
+        public const string GroupTitle = "#LOC_KSPIE_Generator_groupName";
 
         // Persistent
         [KSPField(isPersistant = true)] public bool IsEnabled = true;
@@ -105,33 +105,33 @@ namespace KIT.Powermanagement
         [KSPField] public string upgradeCostStr = "";
         [KSPField] public double coldBathTemp = 500;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_powerCapacity"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_powerCapacity"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
         public float powerCapacity = 100;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Generator_powerControl"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Generator_powerControl"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
         public float powerPercentage = 100;
-        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxGeneratorEfficiency", guiFormat = "P1")]
+        [KSPField(groupName = Group, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxGeneratorEfficiency", guiFormat = "P1")]
         public double maxEfficiency;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_Generator_radius", guiUnits = " m")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_Generator_radius", guiUnits = " m")]
         public double radius = 2.5;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_Generator_maxUsageRatio")]
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_Generator_maxUsageRatio")]
         public double powerUsageEfficiency;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxTheoreticalPower", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxTheoreticalPower", guiFormat = "F2")]
         public string maximumTheoreticalPower;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_partMass", guiUnits = " t", guiFormat = "F3")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_partMass", guiUnits = " t", guiFormat = "F3")]
         public float partMass;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_currentElectricPower", guiUnits = " MW_e", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_currentElectricPower", guiUnits = " MW_e", guiFormat = "F2")]
         public string OutputPower;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_MaximumElectricPower")]//Maximum Electric Power
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_MaximumElectricPower")]//Maximum Electric Power
         public string MaxPowerStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Generator_ElectricEfficiency")]//Electric Efficiency
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_Generator_ElectricEfficiency")]//Electric Efficiency
         public string overallEfficiencyStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_coldBathTemp", guiUnits = " K", guiFormat = "F0")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_coldBathTemp", guiUnits = " K", guiFormat = "F0")]
         public double coldBathTempDisplay = 500;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_hotBathTemp", guiUnits = " K", guiFormat = "F0")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_hotBathTemp", guiUnits = " K", guiFormat = "F0")]
         public double hotBathTemp = 300;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_electricPowerNeeded", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_electricPowerNeeded", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
         public double electrical_power_currently_needed;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_Generator_InitialGeneratorPowerEC", guiUnits = " kW")]//Offscreen Power Generation
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_Generator_InitialGeneratorPowerEC", guiUnits = " kW")]//Offscreen Power Generation
         public double initialGeneratorPowerEC;
 
         // Debug
@@ -191,19 +191,19 @@ namespace KIT.Powermanagement
 
         public String UpgradeTechnology => upgradeTechReq;
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_activateGenerator", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Generator_activateGenerator", active = true)]
         public void ActivateGenerator()
         {
             IsEnabled = true;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_deactivateGenerator", active = false)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Generator_deactivateGenerator", active = false)]
         public void DeactivateGenerator()
         {
             IsEnabled = false;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_retrofitGenerator", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Generator_retrofitGenerator", active = true)]
         public void RetrofitGenerator()
         {
             if (ResearchAndDevelopment.Instance == null) return;
@@ -348,7 +348,7 @@ namespace KIT.Powermanagement
 
             var powerCapacityFloatRange = powerCapacityField.uiControlEditor as UI_FloatRange;
             System.Diagnostics.Debug.Assert(powerCapacityFloatRange != null, nameof(powerCapacityFloatRange) + " != null");
-            
+
             powerCapacityFloatRange.maxValue = powerCapacityMaxValue;
             powerCapacityFloatRange.minValue = powerCapacityMinValue;
             powerCapacityFloatRange.stepIncrement = powerCapacityStepIncrement;
@@ -927,7 +927,7 @@ namespace KIT.Powermanagement
             {
                 priority = 3;
             }
-            
+
             supplierOnly = false;
             hasLocalResources = false;
 

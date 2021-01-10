@@ -63,7 +63,7 @@ namespace KIT.Refinery.Activity
             {
                 var tmp = resMan.Consume(ResourceName.AmmoniaLqd, _currentMassRate / _ammoniaDensity);
                 _ammoniaConsumptionMassRate = _currentMassRate * (tmp / (_currentMassRate / _ammoniaDensity));
-                
+
                 var hydrogenMassRate = _ammoniaConsumptionMassRate * GameConstants.AmmoniaHydrogenFractionByMass;
                 var nitrogenMassRate = _ammoniaConsumptionMassRate * (1 - GameConstants.AmmoniaHydrogenFractionByMass);
 

@@ -1,4 +1,5 @@
-﻿using KIT.Interfaces;
+﻿using System;
+using KIT.Interfaces;
 using KIT.Resources;
 using System.Collections.Generic;
 
@@ -48,14 +49,20 @@ namespace KIT.ResourceScheduler
         /// <returns>resources requested in this KITFixedUpdate()</returns>
         double CurrentlyRequested();
         /// <summary>
-        /// CurrentlySupplied is the total so far that has been supplied in this 
+        /// CurrentlySupplied is the total so far that has been supplied in this
         /// </summary>
         /// <returns></returns>
         double CurrentSupplied();
     }
 
+    public struct ResourceKeyValue
+    {
+        public ResourceName Resource;
+        public double Amount;
+    }
+
     /// <summary>
-    /// This interface is passed to the part modules in IKITModule.KITFixedUpdate. It allows the 
+    /// This interface is passed to the part modules in IKITModule.KITFixedUpdate. It allows the
     /// production and consumption of resources, and access to some wrapper variables to avoid global
     /// variable access.
     /// </summary>
@@ -109,8 +116,8 @@ namespace KIT.ResourceScheduler
         /// <returns>Ratio used, between 0 and 1</returns>
 
         double ScaledConsumptionProduction(
-            List<KeyValuePair<ResourceName, double>> consumeResources,
-            List<KeyValuePair<ResourceName, double>> produceResources,
+            List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources,
             double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty
         );
@@ -121,21 +128,21 @@ namespace KIT.ResourceScheduler
         /// <param name="resourceIdentifier">Resource to get information about</param>
         /// <returns>Amount</returns>
         double CurrentCapacity(ResourceName resourceIdentifier);
-        
+
         /// <summary>
         /// FillFraction returns how full the storage is of the indicated resource
         /// </summary>
         /// <param name="resourceIdentifier">Resource to get information about</param>
         /// <returns>How full, between 0 to 1.</returns>
         double FillFraction(ResourceName resourceIdentifier);
-        
+
         /// <summary>
         /// SpareCapacity returns how much storage space is available
         /// </summary>
         /// <param name="resourceIdentifier">Resource to get information about</param>
         /// <returns></returns>
         double SpareCapacity(ResourceName resourceIdentifier);
-        
+
         /// <summary>
         /// MaxCapacity returns the maximum storage space available for this resource
         /// </summary>
@@ -153,9 +160,13 @@ namespace KIT.ResourceScheduler
 
     }
 
+    [Flags]
     public enum ConsumptionProductionFlags
     {
         Empty = 0,
+        /// <summary>
+        /// DoNotOverFill reduces the amount of consumeResources and produceResources by an amount required to not overfill the storage
+        /// </summary>
         DoNotOverFill = 1,
     }
 
@@ -189,7 +200,7 @@ namespace KIT.ResourceScheduler
         bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources);
 
         /// <summary>
-        /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules. 
+        /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules.
         /// </summary>
         /// <param name="resMan">Interface to the resource manager, and options that should be used when the code is running</param>
         void KITFixedUpdate(IResourceManager resMan);

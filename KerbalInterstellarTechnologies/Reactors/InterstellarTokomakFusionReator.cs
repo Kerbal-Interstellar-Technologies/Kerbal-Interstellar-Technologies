@@ -67,7 +67,7 @@ namespace KIT.Reactors
             }
 
             electricPowerMaintenance = PluginHelper.GetFormattedPowerString(power_consumed) + " / " + PluginHelper.GetFormattedPowerString(heatingPowerRequirements);
-            
+
         }
 
         private double GetPlasmaRatio(double receivedPowerPerSecond, double fusionPowerRequirement)

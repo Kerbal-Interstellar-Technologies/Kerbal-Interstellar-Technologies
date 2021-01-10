@@ -1,10 +1,10 @@
 ﻿using System;
 using KSP.Localization;
 
-namespace KIT.Storage 
+namespace KIT.Storage
 {
     [KSPModule("Radioactive Decay")]
-    class ModuleElementRadioactiveDecay : PartModule 
+    class ModuleElementRadioactiveDecay : PartModule
     {
         // Persistent False
         [KSPField(isPersistant = false)]

@@ -7,7 +7,7 @@ namespace KIT.Extensions
     public static class VesselExtensions
     {
         /// <summary>Tests whether two vessels have line of sight to each other</summary>
-        /// <returns><c>true</c> if a straight line from a to b is not blocked by any celestial body; 
+        /// <returns><c>true</c> if a straight line from a to b is not blocked by any celestial body;
         /// otherwise, <c>false</c>.</returns>
         public static bool HasLineOfSightWith(this Vessel vesselA, Vessel vesselB, double freeDistance = 2500, double minHeight = 5)
         {

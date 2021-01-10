@@ -38,19 +38,19 @@ namespace KIT.Reactors
         // Persistent
         [KSPField(isPersistant = true)]
         public double accumulatedElectricChargeInMW;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_MaxSecondaryPowerUsage"), UI_FloatRange(stepIncrement = 1f / 3f, maxValue = 100, minValue = 1)]//Max Secondary Power Usage
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_MaxSecondaryPowerUsage"), UI_FloatRange(stepIncrement = 1f / 3f, maxValue = 100, minValue = 1)]//Max Secondary Power Usage
         public float maxSecondaryPowerUsage = 90;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_InertialConfinementReactor_PowerAffectsMaintenance")]//Power Affects Maintenance
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_InertialConfinementReactor_PowerAffectsMaintenance")]//Power Affects Maintenance
         public bool powerControlAffectsMaintenance = true;
 
         // UI Display
-        [KSPField(groupName = GROUP, guiActive = false, guiUnits = "%", guiName = "#LOC_KSPIE_InertialConfinementReactor_MinimumThrotle", guiFormat = "F2")]//Minimum Throttle
+        [KSPField(groupName = Group, guiActive = false, guiUnits = "%", guiName = "#LOC_KSPIE_InertialConfinementReactor_MinimumThrotle", guiFormat = "F2")]//Minimum Throttle
         public double minimumThrottlePercentage;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Charge")]//Charge
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Charge")]//Charge
         public string accumulatedChargeStr = string.Empty;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_InertialConfinementReactor_FusionPowerRequirement", guiFormat = "F2")]//Fusion Power Requirement
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_InertialConfinementReactor_FusionPowerRequirement", guiFormat = "F2")]//Fusion Power Requirement
         public double currentLaserPowerRequirements;
-        [KSPField(groupName = GROUP, isPersistant = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Startup"), UI_Toggle(disabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Off", enabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Charging")]//Startup--Off--Charging
+        [KSPField(groupName = Group, isPersistant = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Startup"), UI_Toggle(disabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Off", enabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Charging")]//Startup--Off--Charging
         public bool isChargingForJumpStart;
 
         private double _powerConsumed;

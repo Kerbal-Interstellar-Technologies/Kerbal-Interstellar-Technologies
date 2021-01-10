@@ -43,7 +43,7 @@ namespace KIT
                     DisableResourceConsumptionRateLimit = true;
                     break;
             }
-            
+
             IgnoreResourceFlowRestrictions = ignoreResourceFlowRestrictions;
         }
     }

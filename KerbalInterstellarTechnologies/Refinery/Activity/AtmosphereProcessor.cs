@@ -22,7 +22,6 @@ namespace KIT.Refinery.Activity
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AtmosphericExtractor_SurfaceArea", guiFormat = "F3")]//Surface Area
         public double surfaceArea = 1;
 
-        
         [KSPField(isPersistant = true)]
         protected int lastBodyID = -1; // ID of the last body. Allows us to skip some expensive calls
         [KSPField(isPersistant = true)]

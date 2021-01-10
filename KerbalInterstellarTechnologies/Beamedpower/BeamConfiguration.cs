@@ -53,7 +53,7 @@ namespace KIT.BeamedPower
             node.TryGetValue(nameof(techRequirement2), ref techRequirement2);
             node.TryGetValue(nameof(efficiencyPercentage3), ref efficiencyPercentage3);
             node.TryGetValue(nameof(techRequirement3), ref techRequirement3);
-            
+
             if (! PluginHelper.HasTechRequirementAndNotEmpty(techRequirement3))
             {
                 techRequirement3 = "";

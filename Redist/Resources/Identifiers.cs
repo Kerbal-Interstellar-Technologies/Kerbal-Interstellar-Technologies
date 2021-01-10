@@ -191,7 +191,7 @@ namespace KIT.Resources
         public static string FusionPellets { get; private set; } = "FusionPellets";
         public static string FissionParticles { get; private set; } = "FissionParticles";
         public static string LithiumDeuteride { get; private set; } = "LithiumDeuteride";
-    
+
         #endregion
 
         #region Pseudo resources

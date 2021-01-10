@@ -5,53 +5,53 @@ namespace KIT.BeamedPower
     [KSPModule("Beamed Power Bandwidth Converter")]//#LOC_KSPIE_BeamedPowerBandwidthConverter
     class BandwidthConverter
     {
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, groupDisplayName = BeamedPowerReceiver.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, groupDisplayName = BeamedPowerReceiver.GroupTitle, isPersistant = false, guiActiveEditor = false, guiActive = false)]
         public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthConverter_missing");//"missing"
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double targetWavelength;
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double minimumWavelength = 0.001;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double maximumWavelength = 1;
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public int AvailableTechLevel = -1;
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage0 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage0;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage0;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public string techRequirement0 = "";
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage1 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage1;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage1;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public string techRequirement1 = "";
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage2 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage2;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage2;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public string techRequirement2 = "";
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage3 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage3;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage3;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false)]
         public string techRequirement3 = "";
 
         public bool isValid;
@@ -89,7 +89,7 @@ namespace KIT.BeamedPower
             node.TryGetValue(nameof(techRequirement3), ref techRequirement3);
 
             Initialize();
-            
+
             switch(AvailableTechLevel)
             {
                 case -1:

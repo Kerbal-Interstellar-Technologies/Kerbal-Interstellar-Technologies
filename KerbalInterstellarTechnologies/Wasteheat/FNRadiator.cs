@@ -22,61 +22,61 @@ namespace KIT.Wasteheat
     [KSPModule("Radiator")]
     class ActiveRadiator3 : PartModule, IKITModule, IPartMassModifier, IPartCostModifier
     {
-        public const string GROUP = "ActiveRadiator3";
-        public const string GROUP_TITLE = "Interstellar Active Cooler";
+        public const string Group = "ActiveRadiator3";
+        public const string GroupTitle = "Interstellar Active Cooler";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Power Priority", guiFormat = "F0", guiUnits = ""), UI_FloatRange(stepIncrement = 1.0F, maxValue = 5F, minValue = 0F)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Power Priority", guiFormat = "F0", guiUnits = ""), UI_FloatRange(stepIncrement = 1.0F, maxValue = 5F, minValue = 0F)]
         public float powerPriority = 5;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiName = "Surface Area", guiFormat = "F0"), UI_FloatRange(stepIncrement = 1.0F, maxValue = 1000F, minValue = 1F)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiName = "Surface Area", guiFormat = "F0"), UI_FloatRange(stepIncrement = 1.0F, maxValue = 1000F, minValue = 1F)]
         public float surfaceArea = 1;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "Surface Area Upgrade", guiFormat = "F0", guiUnits = " m2"), UI_FloatRange(stepIncrement = 1F, maxValue = 128F, minValue = 0F)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiName = "Surface Area Upgrade", guiFormat = "F0", guiUnits = " m2"), UI_FloatRange(stepIncrement = 1F, maxValue = 128F, minValue = 0F)]
         public float surfaceAreaUpgrade;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "Pump Speed Upgrade", guiFormat = "F0", guiUnits = " m/s"), UI_FloatRange(stepIncrement = 1F, maxValue = 1024F, minValue = 0F)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiName = "Pump Speed Upgrade", guiFormat = "F0", guiUnits = " m/s"), UI_FloatRange(stepIncrement = 1F, maxValue = 1024F, minValue = 0F)]
         public float pumpSpeedUpgrade;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Pump Speed"), UI_FloatRange(stepIncrement = 1.0F, maxValue = 1000F, minValue = 0F)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Pump Speed"), UI_FloatRange(stepIncrement = 1.0F, maxValue = 1000F, minValue = 0F)]
         public float pumpSpeed = 1;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "compressedAirSpecificHeatCapacity", guiFormat = "F0", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "compressedAirSpecificHeatCapacity", guiFormat = "F0", guiUnits = "")]
         public double compressedAirSpecificHeatCapacity;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "intakeLqdSpecificHeatCapacity", guiFormat = "F0", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "intakeLqdSpecificHeatCapacity", guiFormat = "F0", guiUnits = "")]
         public double intakeLqdSpecificHeatCapacity;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Air Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Air Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
         public double airHeatTransferrable;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Water Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Water Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
         public double waterHeatTransferrable;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Steam Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Steam Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
         public double steamHeatTransferrable;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Max Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Max Heat Transferrable", guiFormat = "F2", guiUnits = " K")]
         public double heatTransferrable;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Max Heat Supply", guiFormat = "F2", guiUnits = " K")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Max Heat Supply", guiFormat = "F2", guiUnits = " K")]
         public double maxSupplyOfHeat;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Coolant Supply Used", guiFormat = "F2", guiUnits = "%")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Coolant Supply Used", guiFormat = "F2", guiUnits = "%")]
         public double intakeReduction;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Intake ATM Amount", guiFormat = "F2", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Intake ATM Amount", guiFormat = "F2", guiUnits = "")]
         public double intakeAtmAmount;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Intake Lqd Amount", guiFormat = "F2", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Intake Lqd Amount", guiFormat = "F2", guiUnits = "")]
         public double intakeLqdAmount;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Air Coolant Total", guiFormat = "F2", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Air Coolant Total", guiFormat = "F2", guiUnits = "")]
         public double airCoolantTotal;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Water Coolant Total", guiFormat = "F2", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Water Coolant Total", guiFormat = "F2", guiUnits = "")]
         public double waterCoolantTotal;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "Steam Coolant Total", guiFormat = "F2", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "Steam Coolant Total", guiFormat = "F2", guiUnits = "")]
         public double steamCoolantTotal;
 
         // https://www.engineersedge.com/heat_transfer/convective_heat_transfer_coefficients__13378.htm
@@ -92,14 +92,14 @@ namespace KIT.Wasteheat
 
         private int intakeLqdID;
         private int intakeAtmID;
-        
+
         private double intakeLqdDensity;
         private double compressedAirDensity;
         private double intakeAtmDensity;
 
         private double waterBoilPointInKelvin = 400; // at some stage, calculate it properly
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Upgrades applied")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Upgrades applied")]
         public string upgradeInformation;
 
         [KSPField] public string surfaceAreaUpgradeMk1 = "";
@@ -117,22 +117,22 @@ namespace KIT.Wasteheat
         [KSPField] public string storageTechUpgradeMk3 = "";
         [KSPField] public string storageTechUpgradeMk4 = "";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk2;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk3"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk3;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk4"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk4;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk1;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk2;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk3"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk3;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasSurfaceUpgradeMk4"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasSurfaceUpgradeMk4;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk2;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk3"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk3;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk4"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk4;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk1;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk2;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk3"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk3;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasFanUpgradeMk4"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasPumpUpgradeMk4;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk2;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk3"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk3;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk4"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk4;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk1"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk1;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk2"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk2;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk3"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk3;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "hasStorageUpgradeMk4"), UI_Toggle(disabledText = "Off", enabledText = "On", affectSymCounterparts = UI_Scene.All)] public bool hasStorageUpgradeMk4;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "Max External Temp")] public double maxExternalTemp;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "Max External Temp")] public double maxExternalTemp;
 
         [KSPField] public double defaultMaxExternalTemp = 900;
         [KSPField] public double defaultPumpSpeed = 1;
@@ -314,7 +314,7 @@ namespace KIT.Wasteheat
             var intakeLqdDefinition = PartResourceLibrary.Instance.GetDefinition("IntakeLqd");
             var compressedAirDefinition = PartResourceLibrary.Instance.GetDefinition("CompressedAir");
             var intakeAirDefinition = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.IntakeOxygenAir);
-            
+
             if (intakeLqdDefinition == null || compressedAirDefinition == null)
             {
                 Debug.Log("[ActiveCoolingSystemv3] Missing definitions :(");
@@ -323,10 +323,10 @@ namespace KIT.Wasteheat
 
             intakeLqdSpecificHeatCapacity = intakeLqdDefinition.specificHeatCapacity;
             compressedAirSpecificHeatCapacity = compressedAirDefinition.specificHeatCapacity;
-            
+
             intakeLqdID = intakeLqdDefinition.id;
             intakeAtmID = intakeAirDefinition.id;
-            
+
             compressedAirDensity = compressedAirDefinition.density;
             intakeLqdDensity = intakeLqdDefinition.density;
             intakeAtmDensity = intakeAirDefinition.density;
@@ -564,29 +564,29 @@ namespace KIT.Wasteheat
 
             return true;
         }
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillReach", guiUnits = " m\xB3")]//Drill reach
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillReach", guiUnits = " m\xB3")]//Drill reach
         public float drillReach = 5; // How far can the drill actually reach? Used in calculating raycasts to hit ground down below the part. The 5 is just about the reach of the generic drill. Change in part cfg for different models.
         // Duplicate code end
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "Distance underground", guiFormat = "F1", guiUnits = "m")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = true, guiName = "Distance underground", guiFormat = "F1", guiUnits = "m")]
         public double undergroundAmount;
 
-        [KSPField(groupName = GROUP, isPersistant = false, guiActive = false, guiName = "Radiator effective size", guiFormat = "F2", guiUnits = "m")]
+        [KSPField(groupName = Group, isPersistant = false, guiActive = false, guiName = "Radiator effective size", guiFormat = "F2", guiUnits = "m")]
         public double effectiveSize;
 
-        [KSPField(groupName = GROUP, isPersistant = false, guiActive = false)]
+        [KSPField(groupName = Group, isPersistant = false, guiActive = false)]
         public double meanGroundTempDistance = 10;
 
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "Cool Temp", guiFormat = "F2", guiUnits = "K")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "Cool Temp", guiFormat = "F2", guiUnits = "K")]
         public double coolTemp;
 
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "Hot Temp", guiFormat = "F2", guiUnits = "K")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "Hot Temp", guiFormat = "F2", guiUnits = "K")]
         public double hotTemp;
 
-        [KSPField(groupName = GROUP, isPersistant = false, guiActive = true, guiName = "Underground Temp", guiFormat = "F2", guiUnits = "K")]
+        [KSPField(groupName = Group, isPersistant = false, guiActive = true, guiName = "Underground Temp", guiFormat = "F2", guiUnits = "K")]
         public double undergroundTemp;
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "Toggle Heat Pump Information", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "Toggle Heat Pump Information", active = true)]
         public void ToggleHeatPumpDebugAction()
         {
             var coolTempField = Fields[nameof(coolTemp)];
@@ -687,8 +687,8 @@ namespace KIT.Wasteheat
     [KSPModule("Radiator")]
     class FNRadiator : PartModule, IKITModule
     {
-        public const string GROUP = "FNRadiator";
-        public const string GROUP_TITLE = "#LOC_KSPIE_Radiator_groupName";
+        public const string Group = "FNRadiator";
+        public const string GroupTitle = "#LOC_KSPIE_Radiator_groupName";
 
         // persitent
         [KSPField(isPersistant = true)] public bool radiatorInit;
@@ -697,37 +697,37 @@ namespace KIT.Wasteheat
         [KSPField(isPersistant = true)] public double currentRadTemp;
         [KSPField(isPersistant = true)] public bool clarifyFunction;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_Cooling"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Radiator Cooling--Off--On
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_Cooling"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Radiator Cooling--Off--On
         public bool radiatorIsEnabled;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_Automated"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Automated-Off-On
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_Automated"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Automated-Off-On
         public bool isAutomated = true;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PivotOff"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Pivot--Off--On
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PivotOff"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Pivot--Off--On
         public bool pivotEnabled = true;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PreventShieldedDeploy"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Prevent Shielded Deploy-Off-On
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PreventShieldedDeploy"), UI_Toggle(disabledText = "#LOC_KSPIE_Radiator_Off", enabledText = "#LOC_KSPIE_Radiator_On", affectSymCounterparts = UI_Scene.All)]//Prevent Shielded Deploy-Off-On
         public bool preventShieldedDeploy = true;
 
         // non persistent
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_Type")]//Type
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_Type")]//Type
         public string radiatorType;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_MaxVacuumTemp", guiFormat = "F0", guiUnits = "K")]//Max Vacuum Temp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_MaxVacuumTemp", guiFormat = "F0", guiUnits = "K")]//Max Vacuum Temp
         public double maxVacuumTemperature = _maximumRadiatorTempInSpace;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_MaxAtmosphereTemp", guiFormat = "F0", guiUnits = "K")]//Max Atmosphere Temp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_MaxAtmosphereTemp", guiFormat = "F0", guiUnits = "K")]//Max Atmosphere Temp
         public double maxAtmosphereTemperature = maximumRadiatorTempAtOneAtmosphere;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_MaxCurrentTemp", guiFormat = "F0", guiUnits = "K")]//Max Current Temp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_MaxCurrentTemp", guiFormat = "F0", guiUnits = "K")]//Max Current Temp
         public double maxCurrentRadiatorTemperature = maximumRadiatorTempAtOneAtmosphere;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_MaxRadiatorTemperature", guiFormat = "F0", guiUnits = "K")]//Max Radiator Temperature
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_MaxRadiatorTemperature", guiFormat = "F0", guiUnits = "K")]//Max Radiator Temperature
         public double maxRadiatorTemperature = _maximumRadiatorTempInSpace;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_SpaceRadiatorBonus", guiFormat = "F0", guiUnits = "K")]//Space Radiator Bonus
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_SpaceRadiatorBonus", guiFormat = "F0", guiUnits = "K")]//Space Radiator Bonus
         public double spaceRadiatorBonus;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_Mass", guiUnits = " t", guiFormat = "F3")]//Mass
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_Mass", guiUnits = " t", guiFormat = "F3")]//Mass
         public float partMass;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_ConverctionBonus", guiUnits = "x")]//Converction Bonus
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_ConverctionBonus", guiUnits = "x")]//Converction Bonus
         public double convectiveBonus = 1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_EffectiveArea", guiFormat = "F2", guiUnits = " m\xB2")]//Effective Area
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_EffectiveArea", guiFormat = "F2", guiUnits = " m\xB2")]//Effective Area
         public double effectiveRadiatorArea;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Radiator_AtmosphereModifier")]//Atmosphere Modifier
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Radiator_AtmosphereModifier")]//Atmosphere Modifier
         public double atmosphere_modifier;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_SurfaceArea", guiFormat = "F2", guiUnits = " m\xB2")]//Surface Area
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_SurfaceArea", guiFormat = "F2", guiUnits = " m\xB2")]//Surface Area
         public double radiatorArea = 1;
 
         [KSPField] public string radiatorTypeMk1 = Localizer.Format("#LOC_KSPIE_Radiator_radiatorTypeMk1");//NaK Loop Radiator
@@ -761,26 +761,26 @@ namespace KIT.Wasteheat
         [KSPField] public int DEPLOYMENT_DELAY = 6;
         [KSPField] public float drapperPoint = 500; // 798
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Radiator_RadiatorTemp")]//Rad Temp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_Radiator_RadiatorTemp")]//Rad Temp
         public string radiatorTempStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PartTemp")]//Part Temp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PartTemp")]//Part Temp
         public string partTempStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PowerRadiated")]//Power Radiated
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PowerRadiated")]//Power Radiated
         public string thermalPowerDissipStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PowerConvected")]//Power Convected
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_Radiator_PowerConvected")]//Power Convected
         public string thermalPowerConvStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_RadUpgradeCost")]//Rad Upgrade Cost
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_RadUpgradeCost")]//Rad Upgrade Cost
         public string upgradeCostStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_RadiatorStartTemp")]//Radiator Start Temp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_RadiatorStartTemp")]//Radiator Start Temp
         public double radiator_temperature_temp_val;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_DynamicPressureStress", guiActive = true, guiFormat = "P2")]//Dynamic Pressure Stress
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_DynamicPressureStress", guiActive = true, guiFormat = "P2")]//Dynamic Pressure Stress
         public double dynamicPressureStress;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_Radiator_MaxEnergyTransfer", guiFormat = "F2")]//Max Energy Transfer
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_Radiator_MaxEnergyTransfer", guiFormat = "F2")]//Max Energy Transfer
         private double _maxEnergyTransfer;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "Part Rotation Distance", guiFormat = "F2", guiUnits = "m/s")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "Part Rotation Distance", guiFormat = "F2", guiUnits = "m/s")]
         public double partRotationDistance;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "Atmosphere Density", guiFormat = "F2", guiUnits = "")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "Atmosphere Density", guiFormat = "F2", guiUnits = "")]
         public double atmDensity;
 
         public bool IsGraphene { get; private set; }
@@ -1241,7 +1241,7 @@ namespace KIT.Wasteheat
             {
                 throw new InvalidOperationException("red keys length must equal green keys length must equal blue green keys length");
             }
-            
+
             for (int i = 0; i < j; i++)
             {
                 _redTempColorChannel.SmoothTangents(i, 0);
@@ -1342,7 +1342,6 @@ namespace KIT.Wasteheat
             RadiatorsByVessel.Clear();
         }
 
-        
         public static bool HasRadiatorsForVessel(Vessel vess)
         {
             return vess.FindPartModuleImplementing<FNRadiator>() != null;
@@ -1384,7 +1383,7 @@ namespace KIT.Wasteheat
             return nRadiators > 0 ? averageTemp / nRadiators : 0.0;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_DeployRadiator", active = true)]//Deploy Radiator
+        [KSPEvent(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_DeployRadiator", active = true)]//Deploy Radiator
         public void DeployRadiator()
         {
             isAutomated = false;
@@ -1420,7 +1419,7 @@ namespace KIT.Wasteheat
             radiatorIsEnabled = true;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_RetractRadiator", active = true)]//Retract Radiator
+        [KSPEvent(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Radiator_RetractRadiator", active = true)]//Retract Radiator
         public void RetractRadiator()
         {
             if (!isDeployable) return;
@@ -1711,9 +1710,9 @@ namespace KIT.Wasteheat
         private void InitializeRadiatorAreaWhenMissing()
         {
             if (radiatorArea != 0) return;
-            
+
             colorRatioExponent = 4;
-            
+
             clarifyFunction = true;
 
             radiatorArea = Math.PI * part.partInfo.partSize;
@@ -2083,7 +2082,7 @@ namespace KIT.Wasteheat
         private bool DeployableRadiatorBroken => _moduleDeployableRadiator != null && _moduleDeployableRadiator.deployState == ModuleDeployablePart.DeployState.BROKEN;
         private bool _newlyBrokenRadiator;
         private double _brokenRadiatorWasteHeatAmount;
-        
+
         public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
         {
             priority = 5;
@@ -2101,7 +2100,7 @@ namespace KIT.Wasteheat
 
             var partResourceDefinition = part.Resources[KITResourceSettings.WasteHeat];
             if (partResourceDefinition == null) return false;
-            
+
             _brokenRadiatorWasteHeatAmount = part.Resources[KITResourceSettings.WasteHeat].amount;
 
             return true;
@@ -2123,7 +2122,7 @@ namespace KIT.Wasteheat
                     resMan.Consume(ResourceName.WasteHeat, _brokenRadiatorWasteHeatAmount);
                     return;
                 }
-                
+
                 // ToDo replace wasteheatManager.SqrtResourceBarRatioBegin by ResourceBarRatioBegin after generators hotbath takes into account expected temperature
                 radiator_temperature_temp_val = Math.Min(maxRadiatorTemperature * resMan.FillFraction(ResourceName.WasteHeat), maxCurrentRadiatorTemperature);
 
@@ -2197,7 +2196,7 @@ namespace KIT.Wasteheat
                             resMan.Consume(ResourceName.WasteHeat, convPowerDissipation);
                         else
                             resMan.Produce(ResourceName.WasteHeat, -convPowerDissipation);
-                        
+
                     }
                     if (_radiatorDeployDelay >= DEPLOYMENT_DELAY)
                         DeploymentControl();

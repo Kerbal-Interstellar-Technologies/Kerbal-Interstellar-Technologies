@@ -57,7 +57,7 @@ namespace KIT.Reactors
 
         public double WasteToReprocess => part.Resources.Contains(KITResourceSettings.Actinides) ? part.Resources[KITResourceSettings.Actinides].amount : 0;
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_Dump_Actinides", guiActiveEditor = false, guiActive = true)]
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_Dump_Actinides", guiActiveEditor = false, guiActive = true)]
         public void DumpActinides()
         {
             var actinides = part.Resources[KITResourceSettings.Actinides];
@@ -82,7 +82,7 @@ namespace KIT.Reactors
             Debug.Log("[KSPI]: " + message);
         }
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_SwapFuel", externalToEVAOnly = true, guiActiveUnfocused = true, guiActive = false, unfocusedRange = 3.5f)]//Swap Fuel
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_SwapFuel", externalToEVAOnly = true, guiActiveUnfocused = true, guiActive = false, unfocusedRange = 3.5f)]//Swap Fuel
         public void SwapFuelMode()
         {
             if (!part.Resources.Contains(KITResourceSettings.Actinides) || part.Resources[KITResourceSettings.Actinides].amount > 0.01) return;
@@ -96,7 +96,7 @@ namespace KIT.Reactors
             }
         }
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_SwapFuel", guiActiveEditor = true, guiActive = false)]//Swap Fuel
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_SwapFuel", guiActiveEditor = true, guiActive = false)]//Swap Fuel
         public void EditorSwapFuel()
         {
             if (FuelModes.Count == 1)
@@ -111,7 +111,7 @@ namespace KIT.Reactors
             Events["SwitchMode"].guiActiveEditor = Events["SwitchMode"].guiActive = Events["SwitchMode"].guiActiveUnfocused = modesAvailable > 1;
         }
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_SwitchMode", guiActiveEditor = true, guiActiveUnfocused = true, guiActive = true)]//Switch Mode
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_SwitchMode", guiActiveEditor = true, guiActiveUnfocused = true, guiActive = true)]//Switch Mode
         public void SwitchMode()
         {
             var startFirstFuelType = CurrentFuelMode.Variants.First().ReactorFuels.First();
@@ -144,7 +144,7 @@ namespace KIT.Reactors
                 return 0;
         }
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_ManualRestart", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Manual Restart
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_ManualRestart", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Manual Restart
         public void ManualRestart()
         {
             // verify any of the fuel types has at least 50% availability inside the reactor
@@ -152,13 +152,13 @@ namespace KIT.Reactors
                 IsEnabled = true;
         }
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_ManualShutdown", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Manual Shutdown
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_ManualShutdown", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Manual Shutdown
         public void ManualShutdown()
         {
             IsEnabled = false;
         }
 
-        [KSPEvent(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiName = "#LOC_KSPIE_FissionMSRGC_Refuel", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Refuel
+        [KSPEvent(groupName = Group, groupDisplayName = GroupTitle, guiName = "#LOC_KSPIE_FissionMSRGC_Refuel", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 3.5f)]//Refuel
         public void Refuel()
         {
             foreach (ReactorFuel fuel in CurrentFuelMode.Variants.First().ReactorFuels)

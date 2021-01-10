@@ -82,7 +82,7 @@ namespace KIT.Resources
             priority = 0;
             supplierOnly = false;
             hasLocalResources = false;
-            
+
             return true;
         }
 
@@ -96,7 +96,7 @@ namespace KIT.Resources
             foreach (var resource in part.Resources)
             {
                 if (!_boilOffConfigurations.TryGetValue(resource.resourceName, out var configuration)) continue;
-                
+
                 
             }
         }

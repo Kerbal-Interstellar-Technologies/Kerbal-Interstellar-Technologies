@@ -327,7 +327,7 @@ namespace KIT.Science
             IsPowered = electrical_power_ratio > 0.99;
 
             if (vessel == null) return;
-            
+
             if (!IsPowered)
             {
                 if (vessel.connection != null)
