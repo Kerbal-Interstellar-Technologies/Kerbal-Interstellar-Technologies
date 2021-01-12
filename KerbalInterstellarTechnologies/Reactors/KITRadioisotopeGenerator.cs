@@ -9,8 +9,8 @@ namespace KIT.Reactors
 {
     public class KITRadioisotopeGenerator : PartModule, IKITModule
     {
-        public const string GROUP_DISPLAY_NAME = "Radioisotope Generator";
-        public const string GROUP_NAME = "KITRadioisotopeGenerator";
+        public const string GroupDisplayName = "Radioisotope Generator";
+        public const string GroupName = "KITRadioisotopeGenerator";
 
         [KSPField(isPersistant = true)] public double peltierEfficiency;
         [KSPField(isPersistant = true)] public double wattsPerGram;
@@ -21,11 +21,11 @@ namespace KIT.Reactors
         // how long has this part existed for?
         [KSPField(isPersistant = true)] public double partLifeStarted;
 
-        [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_MassRemaining", groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massRemaining;
-        [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_RadioactiveIsotope", groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiActive = true, guiActiveEditor = true)] public string radioisotopeFuel;
+        [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_MassRemaining", groupDisplayName = GroupDisplayName, groupName = GroupName, guiActive = true, guiActiveEditor = true, guiUnits = " kg")] public double massRemaining;
+        [KSPField(isPersistant = true, guiName = "#LOC_KIT_RTG_RadioactiveIsotope", groupDisplayName = GroupDisplayName, groupName = GroupName, guiActive = true, guiActiveEditor = true)] public string radioisotopeFuel;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW", guiFormat = "F4")] public double currentPowerOutput;
-        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GROUP_DISPLAY_NAME, groupName = GROUP_NAME, guiName = "#LOC_KIT_RTG_WasteHeatOutput", guiUnits = " KW", guiFormat = "F4")] public double wasteHeatOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GroupDisplayName, groupName = GroupName, guiName = "#LOC_KIT_RTG_Current_Power_Output", guiUnits = " KW", guiFormat = "F4")] public double currentPowerOutput;
+        [KSPField(guiActive = true, guiActiveEditor = true, groupDisplayName = GroupDisplayName, groupName = GroupName, guiName = "#LOC_KIT_RTG_WasteHeatOutput", guiUnits = " KW", guiFormat = "F4")] public double wasteHeatOutput;
 
 
         /*
@@ -60,7 +60,7 @@ namespace KIT.Reactors
          */
 
 
-        private void PowerGeneratedPerSecond(out double electricalCurrentInKW, out double wasteHeatInKW)
+        private static void PowerGeneratedPerSecond(double massRemaining, double massInKilograms, double wattsPerGram, double peltierEfficiency, out double electricalCurrentInKW, out double wasteHeatInKW)
         {
             // convert kg to grams, then calculate the heat generated
             var mass = Math.Max(massRemaining * 1000, massInKilograms * 1000 * HighLogic.CurrentGame.Parameters.CustomParams<KITGamePlayParams>().MinimumRtgOutput);
@@ -72,10 +72,10 @@ namespace KIT.Reactors
             wasteHeatInKW = heatGeneratedInKW - electricalCurrentInKW;
         }
 
-        PartResourceDefinition decayResource;           // source
-        PartResourceDefinition decayProductResource;    // destination
-        bool resourceNotDefined;
-        ResourceName decayProductID;
+        PartResourceDefinition _decayResource;           // source
+        PartResourceDefinition _decayProductResource;    // destination
+        bool _resourceNotDefined;
+        ResourceName _decayProductId;
 
         private void DecayFuel(IResourceManager resMan)
         {
@@ -88,56 +88,56 @@ namespace KIT.Reactors
 
             massRemaining = massInKilograms * Math.Pow(2, (-currentPartLifetime) / halfLife);
 
-            if (resourceNotDefined) return;
+            if (_resourceNotDefined) return;
 
             var productsToGenerateInKG = originalMassRemaining - massRemaining;
-            if(decayResource == null || decayProductResource == null)
+            if (_decayResource == null || _decayProductResource == null)
             {
                 var config = GameDatabase.Instance.GetConfigNodes("KIT_Radioactive_Decay");
-                if(config == null || !config.Any())
+                if (config == null || !config.Any())
                 {
-                    resourceNotDefined = true;
+                    _resourceNotDefined = true;
                     Debug.Log($"[KITRadioisotopeGenerator] can't find KIT_Radioactive_Decay configuration");
                     return;
                 }
 
                 var node = config[0].GetNode(radioisotopeFuel);
-                if(node == null)
+                if (node == null)
                 {
-                    resourceNotDefined = true;
+                    _resourceNotDefined = true;
                     Debug.Log($"[KITRadioisotopeGenerator] {radioisotopeFuel} has no decay products defined");
                     return;
                 }
 
                 string decayProduct = "";
-                if(node.TryGetValue("product", ref decayProduct) == false)
+                if (node.TryGetValue("product", ref decayProduct) == false)
                 {
-                    resourceNotDefined = true;
+                    _resourceNotDefined = true;
                     Debug.Log($"[KITRadioisotopeGenerator] {radioisotopeFuel} configuration has no product to decay into defined");
                     return;
                 }
 
-                decayResource = PartResourceLibrary.Instance.GetDefinition(radioisotopeFuel);
-                decayProductResource = PartResourceLibrary.Instance.GetDefinition(decayProduct);
+                _decayResource = PartResourceLibrary.Instance.GetDefinition(radioisotopeFuel);
+                _decayProductResource = PartResourceLibrary.Instance.GetDefinition(decayProduct);
 
-                if(decayResource == null || decayProductResource == null)
+                if (_decayResource == null || _decayProductResource == null)
                 {
-                    resourceNotDefined = true;
-                    Debug.Log($"[KITRadioisotopeGenerator] could not get definitions for {(decayResource == null ? radioisotopeFuel + " " : "")}{(decayProductResource == null ? decayProduct : "")}");
+                    _resourceNotDefined = true;
+                    Debug.Log($"[KITRadioisotopeGenerator] could not get definitions for {(_decayResource == null ? radioisotopeFuel + " " : "")}{(_decayProductResource == null ? decayProduct : "")}");
                     return;
                 }
 
-                decayProductID = KITResourceSettings.NameToResource(decayProduct);
-                if(decayProductID == ResourceName.Unknown)
+                _decayProductId = KITResourceSettings.NameToResource(decayProduct);
+                if (_decayProductId == ResourceName.Unknown)
                 {
-                    resourceNotDefined = true;
+                    _resourceNotDefined = true;
                     Debug.Log($"[KITRadioisotopeGenerator] could not get KIT definition for {decayProduct}");
                     return;
                 }
             }
 
-            var densityRatio = decayResource.density / decayProductResource.density;
-            resMan.Produce(decayProductID, productsToGenerateInKG * densityRatio);
+            var densityRatio = _decayResource.density / _decayProductResource.density;
+            resMan.Produce(_decayProductId, productsToGenerateInKG * densityRatio);
 
             // decay products being generated.
         }
@@ -146,7 +146,7 @@ namespace KIT.Reactors
         {
             if (partLifeStarted == 0)
             {
-                if(state != StartState.Editor) partLifeStarted = Planetarium.GetUniversalTime();
+                if (state != StartState.Editor) partLifeStarted = Planetarium.GetUniversalTime();
                 massRemaining = massInKilograms;
                 halfLifeInKerbinSeconds = (halfLifeInSeconds / 60 / 60 / 24 / 365) * 426 * 6 * 60 * 60;
             }
@@ -155,14 +155,15 @@ namespace KIT.Reactors
 
         public void Update()
         {
-            PowerGeneratedPerSecond(out currentPowerOutput, out wasteHeatOutput);
+            PowerGeneratedPerSecond(massRemaining, massInKilograms, wattsPerGram, peltierEfficiency, out currentPowerOutput, out wasteHeatOutput);
         }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
-            if (!HighLogic.LoadedSceneIsFlight) return;
+            if (HighLogic.LoadedSceneIsEditor) return;
 
-            PowerGeneratedPerSecond(out var energyExtractedInKW, out var wasteHeatInKW);
+            PowerGeneratedPerSecond(massRemaining, massInKilograms, wattsPerGram, peltierEfficiency, out var energyExtractedInKW, out var wasteHeatInKW);
+
             resMan.Produce(ResourceName.ElectricCharge, energyExtractedInKW);
             resMan.Produce(ResourceName.WasteHeat, wasteHeatInKW);
 

@@ -26,6 +26,13 @@ namespace KIT
             GameEvents.onVesselGoOnRails.Add(OnVesselGoOnRails);
             GameEvents.onVesselGoOffRails.Add(OnVesselGoOnRails);
 
+            var kerbalismVersionStr =
+                $"{Kerbalism.VersionMajor}.{Kerbalism.VersionMajorRevision}.{Kerbalism.VersionMinor}.{Kerbalism.VersionMinorRevision}";
+
+            if (Kerbalism.VersionMajor > 0)
+                Debug.Log("[KSPI]: Loaded Kerbalism " + kerbalismVersionStr);
+
+
             Debug.Log("[KSPI]: GameEventSubscriber Initialized");
         }
         void OnDestroy()
@@ -38,12 +45,6 @@ namespace KIT
             GameEvents.onDockingComplete.Remove(OnDockingComplete);
             GameEvents.onPartDeCoupleComplete.Remove(OnPartDeCoupleComplete);
             GameEvents.onVesselSOIChanged.Remove(OnVesselSOIChanged);
-
-            var kerbalismVersionStr =
-                $"{Kerbalism.VersionMajor}.{Kerbalism.VersionMajorRevision}.{Kerbalism.VersionMinor}.{Kerbalism.VersionMinorRevision}";
-
-            if (Kerbalism.VersionMajor > 0)
-                Debug.Log("[KSPI]: Loaded Kerbalism " + kerbalismVersionStr);
 
             Debug.Log("[KSPI]: GameEventSubscriber Deinitialised");
         }

@@ -78,10 +78,19 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>..\Unity\UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="Waterfall, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\GameData\Waterfall\Plugins\Waterfall.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Animate\AnimatedContainerContent.cs" />
     <Compile Include="Animate\FNLightSwitch.cs" />
+    <Compile Include="BackgroundProcessing\KITPartModuleStructs.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>KITPartModuleStructs.tt</DependentUpon>
+    </Compile>
     <Compile Include="Beamedpower\BeamedPowerTransmitterTag.cs" />
     <Compile Include="Beamedpower\InterstellarBeamedPowerHelper.cs" />
     <Compile Include="GameEventSubscriber.cs" />
@@ -233,6 +242,15 @@
   <ItemGroup>
     <Folder Include="Collectors\" />
     <Folder Include="ResourceScheduler\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BackgroundProcessing\KITPartModuleStructs.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>KITPartModuleStructs.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>

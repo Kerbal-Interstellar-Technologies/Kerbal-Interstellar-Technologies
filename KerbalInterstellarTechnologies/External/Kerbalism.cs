@@ -13,8 +13,6 @@ namespace KIT.External
         public static int VersionBuild;
         public static int VersionRevision;
 
-        static readonly Type Sim;
-        static readonly MethodInfo VesselTemperature;
 
         static Kerbalism()
         {
@@ -37,19 +35,21 @@ namespace KIT.External
                     VersionBuild = assemblyName.Version.Build;
                     VersionRevision = assemblyName.Version.Revision;
 
-                    var kerbalismversionstr =
+                    var kerbalismVersionStr =
                         $"{VersionMajor}.{VersionMinor}.{VersionRevision}.{VersionBuild}.{VersionMajorRevision}.{VersionMinorRevision}";
-                    Debug.Log("[KSPI]: Found Kerbalism assemblyName Version " + kerbalismversionstr);
+                    Debug.Log("[KSPI]: Found Kerbalism assemblyName Version " + kerbalismVersionStr );
 
-                    try { Sim = kerbalismAssembly.GetType("KERBALISM.Sim"); } catch (Exception e) { Debug.LogException(e); }
+                    Type simulation = null;
 
-                    if (Sim != null)
+                    try { simulation = kerbalismAssembly.GetType("KERBALISM.Sim"); } catch (Exception e) { Debug.LogException(e); }
+
+                    if (simulation != null)
                     {
                         Debug.Log("[KSPI]: Found KERBALISM.Sim");
                         try
                         {
-                            VesselTemperature = Sim.GetMethod("Temperature");
-                            if (VesselTemperature != null)
+                            var vesselTemperature = simulation.GetMethod("Temperature");
+                            if (vesselTemperature != null)
                                 Debug.Log("[KSPI]: Found KERBALISM.Sim.Temperature Method");
                             else
                                 Debug.LogError("[KSPI]: Failed to find KERBALISM.Sim.Temperature Method");
@@ -86,10 +86,10 @@ namespace KIT.External
                 double density = body.GetDensity(staticPressure, body.GetTemperature(altitude));
 
                 // math, you know
-                double Ra = body.Radius + altitude;
-                double Ya = body.atmosphereDepth - altitude;
-                double path = Math.Sqrt(Ra * Ra + 2.0 * Ra * Ya + Ya * Ya) - Ra;
-                double factor = body.GetSolarPowerFactor(density) * Ya / path;
+                double radius = body.Radius + altitude;
+                double depth = body.atmosphereDepth - altitude;
+                double path = Math.Sqrt(radius * radius + 2.0 * radius * depth + depth * depth) - radius;
+                double factor = body.GetSolarPowerFactor(density) * depth / path;
 
                 // poor man atmosphere composition contribution
                 if (body.atmosphereContainsOxygen || body.ocean)

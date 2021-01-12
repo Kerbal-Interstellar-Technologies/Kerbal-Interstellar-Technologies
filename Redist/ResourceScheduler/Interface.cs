@@ -170,12 +170,6 @@ namespace KIT.ResourceScheduler
         DoNotOverFill = 1,
     }
 
-
-    public interface IResourceScheduler
-    {
-        void ExecuteKITModules(double deltaTime, ResourceData resourceData);
-    }
-
     public interface IVesselResources
     {
         // since the last call.

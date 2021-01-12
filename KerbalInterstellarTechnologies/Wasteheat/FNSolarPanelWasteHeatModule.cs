@@ -8,11 +8,6 @@ using UnityEngine;
 
 namespace KIT.Wasteheat
 {
-    enum ResourceType
-    {
-        electricCharge, megajoule, other
-    }
-
     public interface ISolarPower
     {
         double SolarPower { get; }

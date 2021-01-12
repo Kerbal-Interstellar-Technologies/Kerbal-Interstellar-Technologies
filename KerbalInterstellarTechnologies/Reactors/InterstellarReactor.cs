@@ -1879,22 +1879,19 @@ namespace KIT.Reactors
             var lithiumRequest = lithiumRate * maximumLithiumConsumptionRatio;
 
             // consume the lithium
-            var lithiumUsed = resMan.CheatOptions().InfinitePropellant ? lithiumRequest : resMan.Consume(ResourceName.Lithium6, lithiumRequest);
+            _lithiumConsumedPerSecond = resMan.CheatOptions().InfinitePropellant ? lithiumRequest : resMan.Consume(ResourceName.Lithium6, lithiumRequest);
 
             // calculate effective lithium used for tritium breeding
-            _lithiumConsumedPerSecond = lithiumUsed;
+            _lithiumConsumedPerSecond = _lithiumConsumedPerSecond;
 
             // calculate products
-            var tritiumProduction = lithiumUsed * _tritiumBreedingMassAdjustment;
-            var heliumProduction = lithiumUsed * _heliumBreedingMassAdjustment;
+            _tritiumProducedPerSecond = _lithiumConsumedPerSecond * _tritiumBreedingMassAdjustment;
+            _heliumProducedPerSecond = _lithiumConsumedPerSecond * _heliumBreedingMassAdjustment;
 
 
             // produce tritium and helium
-            _tritiumProducedPerSecond = tritiumProduction;
-            resMan.Produce(ResourceName.TritiumGas, tritiumProduction);
-
-            _heliumProducedPerSecond = heliumProduction;
-            resMan.Produce(ResourceName.Helium4Gas, heliumProduction);
+            resMan.Produce(ResourceName.TritiumGas, _tritiumProducedPerSecond);
+            resMan.Produce(ResourceName.Helium4Gas, _heliumProducedPerSecond);
         }
 
         public virtual double GetCoreTempAtRadiatorTemp(double radTemp)

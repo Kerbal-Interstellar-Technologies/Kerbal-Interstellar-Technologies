@@ -248,7 +248,7 @@ namespace KIT.ResourceScheduler
         }
     }
 
-    public partial class KITResourceVesselModule : IResourceScheduler
+    public partial class KITResourceVesselModule
     {
         private static double fudgeFactor = 0.99999;
 

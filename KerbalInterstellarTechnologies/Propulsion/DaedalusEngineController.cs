@@ -101,14 +101,14 @@ namespace KIT.Propulsion
         [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionEngine_worldSpaceVelocity", guiFormat = "F2", guiUnits = " m/s")]
         public double worldSpaceVelocity;
 
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk1;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk2;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk3;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk4;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk5;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk6;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk7;
-        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DeadalusEngineController_UpgradeTech")]public string translatedTechMk8;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk1;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk2;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk3;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk4;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk5;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk6;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk7;
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_DaedalusEngineController_UpgradeTech")]public string translatedTechMk8;
 
         [KSPField] public float maxThrustMk1 = 300;
         [KSPField] public float maxThrustMk2 = 500;
@@ -197,8 +197,6 @@ namespace KIT.Propulsion
         [KSPField] public double fusionFuelRequestAmount1;
         [KSPField] public double fusionFuelRequestAmount2;
         [KSPField] public double fusionFuelRequestAmount3;
-
-        // [KSPField] public double timeDilationMaximumThrust;
 
         FNEmitterController _emitterController;
         ModuleEngines _curEngineT;
