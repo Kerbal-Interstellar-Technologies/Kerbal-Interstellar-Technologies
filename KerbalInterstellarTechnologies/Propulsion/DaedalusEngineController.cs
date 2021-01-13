@@ -512,7 +512,7 @@ namespace KIT.Propulsion
                 // configure engine for Kerbal Engineer support
                 UpdateAtmosphericCurve(EngineIsp);
                 effectiveMaxThrustInKiloNewton = MaximumThrust;
-                calculatedFuelflow = effectiveMaxThrustInKiloNewton / EngineIsp / GameConstants.StandardGravity;
+                calculatedFuelflow = effectiveMaxThrustInKiloNewton / EngineIsp / PhysicsGlobals.GravitationalAcceleration;
                 _curEngineT.maxFuelFlow = (float)calculatedFuelflow;
                 _curEngineT.maxThrust = (float)effectiveMaxThrustInKiloNewton;
                 powerUsage = EffectiveMaxPowerRequirement.ToString("0.00") + Localizer.Format("#LOC_KSPIE_Reactor_megawattUnit");
@@ -963,7 +963,7 @@ namespace KIT.Propulsion
 
                 // Update FuelFlow
                 effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.StandardGravity;
+                calculatedFuelflow = fusionRatio * effectiveMaxThrustInKiloNewton / effectiveIsp / PhysicsGlobals.GravitationalAcceleration;
                 massFlowRateKgPerSecond = thrustRatio * _curEngineT.currentThrottle * calculatedFuelflow * 0.001;
 
                 if (!_curEngineT.getFlameoutState && fusionRatio < 0.01)
@@ -1040,7 +1040,7 @@ namespace KIT.Propulsion
                 }
 
                 effectiveMaxThrustInKiloNewton = timeDilation * timeDilation * MaximumThrust;
-                calculatedFuelflow = effectiveMaxThrustInKiloNewton / effectiveIsp / GameConstants.StandardGravity;
+                calculatedFuelflow = effectiveMaxThrustInKiloNewton / effectiveIsp / PhysicsGlobals.GravitationalAcceleration;
                 massFlowRateKgPerSecond = 0;
                 fusionRatio = 0;
             }
@@ -1049,7 +1049,7 @@ namespace KIT.Propulsion
             _curEngineT.maxThrust = Mathf.Max((float)effectiveMaxThrustInKiloNewton, 0.0001f);
 
             massFlowRateTonPerHour = massFlowRateKgPerSecond * 3.6;
-            thrustPowerInTeraWatt = effectiveMaxThrustInKiloNewton * 500 * effectiveIsp * GameConstants.StandardGravity * 1e-12;
+            thrustPowerInTeraWatt = effectiveMaxThrustInKiloNewton * 500 * effectiveIsp * PhysicsGlobals.GravitationalAcceleration * 1e-12;
 
             UpdateKerbalismEmitter();
         }

@@ -454,7 +454,7 @@ namespace KIT.Propulsion
                 // Timewarp mode: perturb orbit using thrust
                 _warpToReal = true; // Set to true for transition to realtime
 
-                _thrustPersistent = requestedFlow * GameConstants.StandardGravity * _realIsp;
+                _thrustPersistent = requestedFlow * PhysicsGlobals.GravitationalAcceleration * _realIsp;
 
                 // only persist thrust if active and non zero throttle or significant thrust
                 if (getIgnitionState && (currentThrottle > 0 || _thrustPersistent > 0.0000005))
@@ -470,7 +470,7 @@ namespace KIT.Propulsion
                     demandMass = requestedFlow * resMan.FixedDeltaTime();
                     remainingMass = totalmassVessel - demandMass;
 
-                    deltaV = _realIsp * GameConstants.StandardGravity * Math.Log(totalmassVessel / remainingMass);
+                    deltaV = _realIsp * PhysicsGlobals.GravitationalAcceleration * Math.Log(totalmassVessel / remainingMass);
 
                     _engineThrustTransform = part.FindModelTransform(thrustVectorTransformName);
                     if (_engineThrustTransform == null)
@@ -500,7 +500,7 @@ namespace KIT.Propulsion
                         remainingMass = vessel.totalMass - (demandMass * fuelRatio); // Mass at end of burn
 
                         massDelta = Math.Log(totalmassVessel / remainingMass);
-                        deltaV = _realIsp * GameConstants.StandardGravity * massDelta; // Delta V from burn
+                        deltaV = _realIsp * PhysicsGlobals.GravitationalAcceleration * massDelta; // Delta V from burn
                         vessel.orbit.Perturb(deltaV * _engineThrustTransformUp, Planetarium.GetUniversalTime()); // Update vessel orbit
 
                         if (fuelRatio < 0.999)

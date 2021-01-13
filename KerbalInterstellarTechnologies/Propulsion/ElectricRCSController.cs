@@ -212,8 +212,7 @@ namespace KIT.Propulsion
             powerConsumptionStrField = Fields[nameof(powerConsumptionStr)];
             powerConsumptionStrField.guiActive = showConsumption;
 
-            maxStoredPower = bufferMult * maxThrust * powerMult * maxIsp * GameConstants.
-                StandardGravity / (efficiency * 1000.0);
+            maxStoredPower = bufferMult * maxThrust * powerMult * maxIsp * PhysicsGlobals.GravitationalAcceleration / (efficiency * 1000.0);
         }
 
         private void MovePropellant(bool moveNext)
@@ -378,8 +377,7 @@ namespace KIT.Propulsion
             {
                 if (currentThrust > 0.0f)
                 {
-                    requested = 0.5 * powerMult * currentThrust * maxIsp * GameConstants.
-                        StandardGravity / (efficiency * 1000.0 * CurrentPropellant.
+                    requested = 0.5 * powerMult * currentThrust * maxIsp * PhysicsGlobals.GravitationalAcceleration / (efficiency * 1000.0 * CurrentPropellant.
                         ThrustMultiplier);
                 }
                 // XXX - is this the amount correct, might need a * ec in MJ conversion.

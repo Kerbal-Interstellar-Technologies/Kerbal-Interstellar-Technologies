@@ -15,7 +15,7 @@ namespace KIT.Science
 
         // Maximum loss of reputation from destroying the AI's home.
         [KSPField]
-        public float destructionPenaltyMax = 150;
+        public float destructionPenaltyMax = 15;
 
         private void OnJustAboutToBeDestroyed()
         {
@@ -104,7 +104,7 @@ namespace KIT.Science
         BaseEvent _retrofitCoreEvent;
         ModuleDataTransmitter _moduleDataTransmitter;
         ModuleCommand _moduleCommand;
-        AIHome _moduleAIHome;
+        AIHome _moduleAiHome;
 
         //Properties
         public string UpgradeTechnology => upgradeTechReq;
@@ -116,9 +116,8 @@ namespace KIT.Science
         {
             if (ResearchAndDevelopment.Instance == null) return;
             if (isUpgraded || ResearchAndDevelopment.Instance.Science < upgradeCost) return;
-
-            if (_moduleAIHome != null)
-                _moduleAIHome.NewHome();
+            
+            _moduleAiHome?.NewHome();
 
             upgradePartModule();
             ResearchAndDevelopment.Instance.AddScience(-upgradeCost, TransactionReasons.RnDPartPurchase);
@@ -151,7 +150,7 @@ namespace KIT.Science
 
             _moduleDataTransmitter = part.FindModuleImplementing<ModuleDataTransmitter>();
             _moduleCommand = part.FindModuleImplementing<ModuleCommand>();
-            _moduleAIHome = part.FindModuleImplementing<AIHome>();
+            _moduleAiHome = part.FindModuleImplementing<AIHome>();
 
             if (isUpgraded || !PluginHelper.TechnologyIsInUse)
                 upgradePartModule();

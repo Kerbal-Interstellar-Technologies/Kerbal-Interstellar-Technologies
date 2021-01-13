@@ -1681,8 +1681,8 @@ namespace KIT.Reactors
                     var engines = vessel.FindPartModulesImplementing<ModuleEngines>();
                     if (engines.Any())
                     {
-                        var totalThrust = engines.Sum(m => m.realIsp * m.requestedMassFlow * GameConstants.StandardGravity * Vector3d.Dot(m.part.transform.up, vessel.transform.up));
-                        CurrentGeeForce = Math.Max(CurrentGeeForce, totalThrust / vessel.totalMass / GameConstants.StandardGravity);
+                        var totalThrust = engines.Sum(m => m.realIsp * m.requestedMassFlow * PhysicsGlobals.GravitationalAcceleration * Vector3d.Dot(m.part.transform.up, vessel.transform.up));
+                        CurrentGeeForce = Math.Max(CurrentGeeForce, totalThrust / vessel.totalMass / PhysicsGlobals.GravitationalAcceleration);
                     }
                 }
 
@@ -2089,7 +2089,7 @@ namespace KIT.Reactors
         {
             var isp = Math.Min(Math.Sqrt(temperature) * 21, maxThermalNozzleIsp);
 
-            var exhaustVelocity = isp * GameConstants.StandardGravity;
+            var exhaustVelocity = isp * PhysicsGlobals.GravitationalAcceleration;
 
             var thrust = powerInMj * 2000.0 * thermalPropulsionEfficiency / (exhaustVelocity * powerOutputMultiplier);
 
@@ -2100,7 +2100,7 @@ namespace KIT.Reactors
         {
             var isp = Math.Sqrt(temperature) * 21;
 
-            var exhaustVelocity = isp * GameConstants.StandardGravity;
+            var exhaustVelocity = isp * PhysicsGlobals.GravitationalAcceleration;
 
             var thrust = powerInMj * 2000.0 * plasmaPropulsionEfficiency / (exhaustVelocity * powerOutputMultiplier);
 
