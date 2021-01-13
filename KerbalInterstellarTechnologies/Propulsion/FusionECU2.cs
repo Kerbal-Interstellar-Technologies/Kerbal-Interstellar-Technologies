@@ -554,7 +554,7 @@ namespace KIT.Propulsion
             maximumThrust = hasIspThrottling ? MaximumThrust : FullThrustMaximum;
 
             // Update FuelFlow
-            maxFuelFlow = maximumThrust / currentIsp / GameConstants.StandardGravity;
+            maxFuelFlow = maximumThrust / currentIsp / PhysicsGlobals.GravitationalAcceleration;
 
             curEngineT.maxFuelFlow = (float)maxFuelFlow;
             curEngineT.maxThrust = (float)maximumThrust;

@@ -62,25 +62,26 @@ namespace KIT
     string ConvertCollectionName(string input)
     {
             var pieces = input.Split('`');
-            var firstPiece = pieces[0];
-
+            var firstPiece = pieces[0].Split('.').Last().Split('+').Last();
+            
             if (pieces.Length == 1) return input;
 
             var firstIndex = pieces[1].IndexOf('[');
             var lastIndex = pieces[1].LastIndexOf(']');
-            var subString = pieces[1].Substring(firstIndex + 1, lastIndex - firstIndex);
+            var subString = pieces[1].Substring(firstIndex + 1, lastIndex - firstIndex - 1);
 
             return $"{firstPiece}<{subString}>";
     }
 
     void BuildOutput(Assembly a)
     {
-    	var types = a.GetTypes();
+    	var types = a.GetTypes().OrderBy(t => t.Namespace).ToList();
 
         string[] stopFields = { "isEnabled", "moduleName" };
 
-        foreach (var type in types) {
+        string previousNamespace = "";
 
+        foreach (var type in types) {
             if(type.Namespace == null || type.Namespace == "") continue;
             if(type.IsClass == false) continue;
             var fields = type.GetFields();
@@ -99,10 +100,28 @@ namespace KIT
             }
 
             if(foundKSPFieldAttribute == false) continue;
+
+            if(! previousNamespace.Equals(type.Namespace))
+            {
+                if(previousNamespace != "") {
 #>
+}
+#endregion // <#= type.Namespace #>
+
+
+<#
+                }
+#>
+#region <#= type.Namespace #>
 namespace <#= type.Namespace #>
 {
-    class <#= type.Name #>Config {
+<#
+                previousNamespace = type.Namespace;
+            }
+#>
+
+    class <#= type.Name #>Config
+    {
         public ConfigStructType ConfigStructType => this._<#= type.Name #> != null ? ConfigStructType.PartModule : ConfigStructType.Test;
         private <#= type.Name #> _<#= type.Name #>;
         public <#= type.Name #>Config(<#= type.Name #> p = null) {
@@ -115,12 +134,13 @@ namespace <#= type.Namespace #>
             if (stopProcessing) break;
             if(f.FieldType.IsNotPublic) continue;
             if(f.FieldType.IsNestedPrivate) continue;
+            if(f.IsLiteral) continue;
 
             #>
 
         // Field: <#= f #> <#= f.Name #> 
-        private <#= ConvertCollectionName(f.FieldType.Name) #> _<#= f.Name #>;
-        public <#= ConvertCollectionName(f.FieldType.Name) #> <#= f.Name #> {
+        private <#= ConvertCollectionName(f.FieldType.ToString() /*FieldType.Name*/) #> _<#= f.Name #>;
+        public <#= ConvertCollectionName(f.FieldType.ToString() /*FieldType.Name*/) #> <#= f.Name #> {
             get {
                 if (_<#= type.Name #> != null) return _<#= type.Name #>.<#= f.Name #>;
                 return _<#= f.Name #>;
@@ -130,11 +150,10 @@ namespace <#= type.Namespace #>
                 _<#= f.Name #> = value;
             }
         }
- 
-        <# } #>
-
+<# } #>
     }
 }
+#endregion
 
 <#
         }

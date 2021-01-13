@@ -86,7 +86,7 @@
   <ItemGroup>
     <Compile Include="Animate\AnimatedContainerContent.cs" />
     <Compile Include="Animate\FNLightSwitch.cs" />
-    <Compile Include="BackgroundProcessing\KITPartModuleStructs.cs">
+    <Compile Include="BackgroundProcessing\KITPartModuleStructs1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>KITPartModuleStructs.tt</DependentUpon>
@@ -249,7 +249,7 @@
   <ItemGroup>
     <Content Include="BackgroundProcessing\KITPartModuleStructs.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>KITPartModuleStructs.cs</LastGenOutput>
+      <LastGenOutput>KITPartModuleStructs1.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <PropertyGroup>

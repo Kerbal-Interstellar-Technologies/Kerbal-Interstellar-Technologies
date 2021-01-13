@@ -829,7 +829,7 @@ namespace KIT.Storage
             {
                 var acceleration = PluginHelper.GForcesIgnored ? 0 : (Math.Max(0, (Math.Abs(_previousSpeed - vessel.obt_speed) / (Math.Max(resMan.FixedDeltaTime(), _previousFixedTime)))));
                 currentGeeForce = _geeforceQueue.Any(m => m > 0) ? _geeforceQueue.Where(m => m > 0).Min() : _geeforceQueue.Average();
-                _geeforceQueue.Enqueue(acceleration / GameConstants.StandardGravity);
+                _geeforceQueue.Enqueue(acceleration / PhysicsGlobals.GravitationalAcceleration);
                 if (_geeforceQueue.Count > 20)
                     _geeforceQueue.Dequeue();
             }

@@ -521,7 +521,7 @@ namespace KIT.Propulsion
 
             if (curEngineT != null)
             {
-                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * GameConstants.StandardGravity / 2e6;
+                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * PhysicsGlobals.GravitationalAcceleration / 2e6;
                 UpdateEngineWarpFuels();
             }
 

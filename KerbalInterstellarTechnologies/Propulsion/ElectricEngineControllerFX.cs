@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TweakScale;
 using UnityEngine;
+using Waterfall;
 
 namespace KIT.Propulsion
 {
@@ -34,9 +35,7 @@ namespace KIT.Propulsion
         public bool propellantIsSaved;
 
         [KSPField(isPersistant = true)]
-        public int fuel_mode;
-        [KSPField(isPersistant = true)]
-        public bool vacplasmaadded;
+        public int propellantIndex;
 
         //Persistent False
         [KSPField]
@@ -196,7 +195,7 @@ namespace KIT.Propulsion
         [KSPField(guiActive = false)]
         protected double effectiveMaximumPower;
         [KSPField(guiActive = false)]
-        protected double effectiveRecievedPower;
+        protected double effectiveReceivedPower;
         [KSPField(guiActive = false)]
         protected double modifiedThrottle;
         [KSPField(guiActive = false)]
@@ -237,32 +236,37 @@ namespace KIT.Propulsion
         [KSPField]
         public double ratioHeadingVersusRequest;
 
-        int _rep;
-        int _initializationCountdown;
-        int _vesselChangedSioCountdown;
-        int _numberOfAvailableUpgradeTechs;
+        private int _initializationCountdown;
+        private int _vesselChangedSioCountdown;
+        private int _numberOfAvailableUpgradeTechs;
 
-        bool _hasRequiredUpgrade;
-        bool _hasGearTechnology;
-        bool _warpToReal;
-        bool _isFullyStarted;
+        private bool _hasRequiredUpgrade;
+        private bool _hasGearTechnology;
+        private bool _warpToReal;
+        private bool _isFullyStarted;
 
-        double _maximumThrustInSpace;
-        double _effectiveSpeedOfLight;
-        double _modifiedEngineBaseIsp;
-        double _electricalShareF;
-        double _electricalConsumptionF;
-        double _heatProductionF;
-        double _modifiedCurrentPropellantIspMultiplier;
-        double _maxIsp;
-        double _effectiveIsp;
-        double _ispPersistent;
+        private double _maximumThrustInSpace;
+        private double _effectiveSpeedOfLight;
+        private double _modifiedEngineBaseIsp;
+        private double _electricalShareF;
+        private double _electricalConsumptionF;
+        private double _heatProductionF;
+        private double _modifiedCurrentPropellantIspMultiplier;
+        private double _maxIsp;
+        private double _effectiveIsp;
+        private double _ispPersistent;
 
-        FloatCurve _ispFloatCurve;
-        ModuleEngines _attachedEngine;
+        private FloatCurve _ispFloatCurve;
+        private ModuleEngines _attachedEngine;
 
-        List<ElectricEnginePropellant> _vesselPropellants;
-        List<string> _allPropellantsFx;
+        private List<ElectricEnginePropellant> _vesselPropellants;
+        private List<string> _allPropellantsFx;
+
+        private ConfigNode _effectNameToWaterfallValuesConfigNode;
+        private float _waterfallFxControllerValue;
+        private ModuleWaterfallFX _waterfallFx;
+        private bool _updateWaterfallModule;
+        private static readonly string WaterfallFxControllerName = "propellantFuel";
 
         // Properties
         public string UpgradeTechnology => upgradeTechReq;
@@ -324,7 +328,7 @@ namespace KIT.Propulsion
 
                 _currentPropellant = value;
                 propellantIsSaved = true;
-                fuel_mode = _vesselPropellants.IndexOf(_currentPropellant);
+                propellantIndex = _vesselPropellants.IndexOf(_currentPropellant);
                 propellantName = _currentPropellant.PropellantName;
                 propellantGUIName = _currentPropellant.PropellantGUIName;
                 _modifiedCurrentPropellantIspMultiplier = CurrentIspMultiplier;
@@ -507,11 +511,18 @@ namespace KIT.Propulsion
             UpdateEngineTypeString();
             InitializePropellantMode();
 
-            SetupPropellants(true);
-
-            UpdateIsp();
+            ConfigurePropellant(true);
 
             _attachedEngine.maxThrust = (float)maximumThrustFromPower;
+
+            _effectNameToWaterfallValuesConfigNode =
+                GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT_TO_WATERFALL_INDEX")?[0];
+            if (_effectNameToWaterfallValuesConfigNode == null)
+            {
+                Debug.Log("[ElectricEngineControllerFX] Unable to find ELECTRIC_PROPELLANT_TO_WATERFALL_INDEX");
+            }
+
+            _waterfallFx = part.FindModuleImplementing<ModuleWaterfallFX>();
         }
 
         private void InitializePropellantMode()
@@ -541,7 +552,7 @@ namespace KIT.Propulsion
             }
             else if (CurrentPropellant == null)
             {
-                CurrentPropellant = fuel_mode < _vesselPropellants.Count ? _vesselPropellants[fuel_mode] : _vesselPropellants.First();
+                CurrentPropellant = propellantIndex < _vesselPropellants.Count ? _vesselPropellants[propellantIndex] : _vesselPropellants.First();
             }
         }
 
@@ -557,71 +568,78 @@ namespace KIT.Propulsion
             realIspField.guiActive = false;
         }
 
-        private void SetupPropellants(bool moveNext)
+        private void ConfigurePropellant(bool moveNext)
         {
-            try
+            var index = propellantIndex;
+
+            // Debug.Log($"[ConfigurePropellant] propellants count {_vesselPropellants.Count}");
+
+            if (index >= _vesselPropellants.Count)
             {
-                CurrentPropellant = fuel_mode < _vesselPropellants.Count ? _vesselPropellants[fuel_mode] : _vesselPropellants.First();
-
-                if ((CurrentPropellant.SupportedEngines & type) != type)
-                {
-                    _rep++;
-                    Debug.LogWarning("[KSPI]: SetupPropellants TogglePropellant");
-                    TogglePropellant(moveNext);
-                    return;
-                }
-
-                var listOfPropellants = new List<Propellant>
-                {
-                    CurrentPropellant.Propellant
-                };
-
-                // if all propellant exist
-                if (!listOfPropellants.Exists(prop => PartResourceLibrary.Instance.GetDefinition(prop.name) == null))
-                {
-                    //Get the Ignition state, i.e. is the engine shutdown or activated
-                    var engineState = _attachedEngine.getIgnitionState;
-
-                    _attachedEngine.Shutdown();
-
-                    var newPropNode = new ConfigNode();
-                    foreach (var prop in listOfPropellants)
-                    {
-                        ConfigNode propellantConfigNode = newPropNode.AddNode("PROPELLANT");
-                        propellantConfigNode.AddValue("name", prop.name);
-                        propellantConfigNode.AddValue("ratio", prop.ratio);
-                        propellantConfigNode.AddValue("DrawGauge", prop.drawStackGauge);
-                    }
-                    _attachedEngine.Load(newPropNode);
-
-                    if (engineState)
-                        _attachedEngine.Activate();
-                }
-                else if (_rep < _vesselPropellants.Count)
-                {
-                    _rep++;
-                    TogglePropellant(moveNext);
-                    return;
-                }
-
-                if (HighLogic.LoadedSceneIsFlight)
-                {
-                    // you can have any fuel you want in the editor but not in flight
-                    var allVesselResourcesNames = part.vessel.parts.SelectMany(m => m.Resources).Select(m => m.resourceName).Distinct();
-                    if (!listOfPropellants.All(prop => allVesselResourcesNames.Contains(prop.name)) && _rep < _vesselPropellants.Count)
-                    {
-                        _rep++;
-                        TogglePropellant(moveNext);
-                        return;
-                    }
-                }
-
-                _rep = 0;
+                // Debug.Log($"[ConfigurePropellant] should not have reached this state (propellants count {_vesselPropellants.Count}");
+                propellantIndex = 0;
             }
-            catch (Exception e)
+
+            var vesselResources = part.vessel.parts.SelectMany(p => p.Resources).Select(m => m.resourceName).Distinct()
+                .ToArray();
+
+            var found = false;
+
+            for (index = propellantIndex + (moveNext ? 1 : -1);
+                index != propellantIndex;
+                index += (moveNext ? 1 : -1))
             {
-                Debug.LogError("[KSPI]: SetupPropellants ElectricEngineControllerFX " + e.Message);
+                if (moveNext)
+                {
+                    if (index >= _vesselPropellants.Count) index = 0;
+                }
+                else if (index < 0) index = _vesselPropellants.Count - 1;
+
+                // Debug.Log($"[ConfigurePropellant] index is {index} - {_vesselPropellants[index].PropellantName}");
+
+                // During flight, it must be on the ship
+                if (HighLogic.LoadedSceneIsFlight && !vesselResources.Contains(_vesselPropellants[index].Propellant.name)) continue;
+
+                // Propellant requires a different engine? Skip
+                if ((_vesselPropellants[index].SupportedEngines & type) != type) continue;
+
+                // Are all required fuels defined?
+                if (PartResourceLibrary.Instance.GetDefinition(_vesselPropellants[index].Propellant.name) ==
+                    null) continue;
+
+                found = true;
+                break;
             }
+
+            if (!found) return;
+
+            propellantIndex = index;
+            CurrentPropellant = _vesselPropellants[index];
+            var prop = CurrentPropellant.Propellant;
+
+            // Debug.Log($"at end of processing, changing propellant. creating new node with name = {prop.name}, ratio = {prop.ratio} and DrawGauge = {prop.drawStackGauge}");
+
+            //Get the Ignition state, i.e. is the engine shutdown or activated
+            var engineState = _attachedEngine.getIgnitionState;
+
+            _attachedEngine.Shutdown();
+
+            var newPropNode = new ConfigNode();
+            var propellantConfigNode = newPropNode.AddNode("PROPELLANT");
+            propellantConfigNode.AddValue("name", prop.name);
+            propellantConfigNode.AddValue("ratio", prop.ratio);
+            propellantConfigNode.AddValue("DrawGauge", prop.drawStackGauge);
+
+            _attachedEngine.Load(newPropNode);
+
+            UpdateIsp();
+
+            if (engineState)
+                _attachedEngine.Activate();
+
+            _effectNameToWaterfallValuesConfigNode?.TryGetValue(CurrentPropellant.ParticleFXName,
+                ref _waterfallFxControllerValue);
+            _updateWaterfallModule = _waterfallFx?.GetControllerNames().Contains(WaterfallFxControllerName) ?? false;
         }
 
         public override void OnUpdate()
@@ -687,6 +705,8 @@ namespace KIT.Propulsion
                 Fields[nameof(heatProductionStr)].guiActive = false;
                 Fields[nameof(efficiencyStr)].guiActive = false;
             }
+
+            if (_updateWaterfallModule && _waterfallFx != null) _waterfallFx.SetControllerValue(WaterfallFxControllerName, _waterfallFxControllerValue);
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -705,6 +725,12 @@ namespace KIT.Propulsion
 
         private double ThrottleModifiedIsp()
         {
+            if (double.IsNaN(_attachedEngine.currentThrottle))
+            {
+                // Debug.Log("[ElectricEngineControllerFX] ThrottleModifiedISP is NaN - returning 0");
+                return 0;
+            }
+
             var currentThrottle = (double)(decimal)_attachedEngine.currentThrottle;
 
             return CurrentPropellant.SupportedEngines == 8
@@ -723,6 +749,12 @@ namespace KIT.Propulsion
         private void IdleEngine()
         {
             thrust_d = 0;
+
+            if (double.IsNaN(_maxFuelFlowRate))
+            {
+                // Debug.Log($"[IdleEngine] _maxFuelFlowRate is NaN");
+                return;
+            }
 
             if (IsValidPositiveNumber(simulated_max_thrust) && IsValidPositiveNumber(simulatedThrustInSpace))
             {
@@ -809,9 +841,8 @@ namespace KIT.Propulsion
             _vesselPropellants = ElectricEnginePropellant.GetPropellantsEngineForType(type);
             engineTypeStr = upgradedName;
 
-            if (!vacplasmaadded && type == (int)ElectricEngineType.VACUUMTHRUSTER)
+            if (type == (int)ElectricEngineType.VACUUMTHRUSTER && !part.Resources.Contains(KITResourceSettings.VacuumPlasma))
             {
-                vacplasmaadded = true;
                 var node = new ConfigNode("RESOURCE");
                 node.AddValue("name", KITResourceSettings.VacuumPlasma);
                 node.AddValue("maxAmount", scaledMaxPower * 0.0000001);
@@ -836,25 +867,17 @@ namespace KIT.Propulsion
         private void ToggleNextPropellant()
         {
             Debug.Log("[KSPI]: ElectricEngineControllerFX toggleNextPropellant");
-            fuel_mode++;
-            if (fuel_mode >= _vesselPropellants.Count)
-                fuel_mode = 0;
+            if (_vesselPropellants.Count == 0) return;
 
-            SetupPropellants(true);
-
-            UpdateIsp();
+            ConfigurePropellant(true);
         }
 
         private void TogglePreviousPropellant()
         {
             Debug.Log("[KSPI]: ElectricEngineControllerFX togglePreviousPropellant");
-            fuel_mode--;
-            if (fuel_mode < 0)
-                fuel_mode = _vesselPropellants.Count - 1;
+            if (_vesselPropellants.Count == 0) return;
 
-            SetupPropellants(false);
-
-            UpdateIsp();
+            ConfigurePropellant(false);
         }
 
         private double EvaluateMaxThrust(double powerSupply)
@@ -863,15 +886,30 @@ namespace KIT.Propulsion
 
             if (_modifiedCurrentPropellantIspMultiplier <= 0) return 0;
 
-            return CurrentPropellantEfficiency * GetPowerThrustModifier() * powerSupply / (_modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * GameConstants.StandardGravity);
+            return CurrentPropellantEfficiency * GetPowerThrustModifier() * powerSupply / (_modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * PhysicsGlobals.GravitationalAcceleration);
         }
 
         private void UpdateIsp(double ispEfficiency = 1)
         {
+            // Debug.Log("before calling ThrottleModifiedIsp()");
+
+            var throttleModifiedIsp = ThrottleModifiedIsp();
+
+            // Debug.Log($"[UpdateIsp] timeDilation is {timeDilation}, ispEfficiency is {ispEfficiency}, _modifiedEngineBaseIsp is {_modifiedEngineBaseIsp}, _modifiedCurrentPropellantIspMultiplier is {_modifiedCurrentPropellantIspMultiplier}, CurrentPropellantThrustMultiplier is {CurrentPropellantThrustMultiplier} and throttleModifiedIsp is {throttleModifiedIsp}");
+
+            engineIsp = timeDilation * ispEfficiency * _modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * CurrentPropellantThrustMultiplier * throttleModifiedIsp;
+
+            if (Double.IsNaN(engineIsp))
+            {
+                // Debug.Log($"[ElectricEngineControllerFX] refusing to set a NaN engineIsp");
+                return;
+            }
+
             _ispFloatCurve.Curve.RemoveKey(0);
-            engineIsp = timeDilation * ispEfficiency * _modifiedEngineBaseIsp * _modifiedCurrentPropellantIspMultiplier * CurrentPropellantThrustMultiplier * ThrottleModifiedIsp();
             _ispFloatCurve.Add(0, (float)engineIsp);
             _attachedEngine.atmosphereCurve = _ispFloatCurve;
+
+            _changeFlipFlop = true;
         }
 
         private double GetPowerThrustModifier()
@@ -897,13 +935,14 @@ namespace KIT.Propulsion
             else
                 propellantList = configNodes.Select(prop => new ElectricEnginePropellant(prop)).ToList();
 
+
             return propellantList;
         }
 
         public static Vector3d CalculateDeltaVV(Vector3d thrustDirection, double totalMass, double deltaTime, double thrust, double isp, out double demandMass)
         {
             // Mass flow rate
-            var massFlowRate = thrust / (isp * GameConstants.StandardGravity);
+            var massFlowRate = thrust / (isp * PhysicsGlobals.GravitationalAcceleration);
             // Change in mass over time interval dT
             var dm = massFlowRate * deltaTime;
             // Resource demand from propellants with mass
@@ -912,7 +951,7 @@ namespace KIT.Propulsion
             var finalMass = totalMass - dm;
             // deltaV amount
             var deltaV = finalMass > 0 && totalMass > 0
-                ? isp * GameConstants.StandardGravity * Math.Log(totalMass / finalMass)
+                ? isp * PhysicsGlobals.GravitationalAcceleration * Math.Log(totalMass / finalMass)
                 : 0;
 
             // Return deltaV vector
@@ -929,10 +968,18 @@ namespace KIT.Propulsion
             return true;
         }
 
+        private bool _changeFlipFlop;
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (_attachedEngine == null || !HighLogic.LoadedSceneIsFlight) return;
 
+            if (_changeFlipFlop)
+            {
+                _changeFlipFlop = false;
+                return;
+            }
+            
             _mostRecentWasteHeatRatio = resMan.FillFraction(ResourceName.WasteHeat);
 
             // disable exhaust effects
@@ -971,17 +1018,31 @@ namespace KIT.Propulsion
             currentPropellantEfficiency = CurrentPropellantEfficiency;
 
             var sumOfAllEffectivePower = vessel.FindPartModulesImplementing<ElectricEngineControllerFX>().Where(ee => ee.IsOperational).Sum(ee => ee.MaxEffectivePower);
-            _electricalShareF = sumOfAllEffectivePower > 0 ? maxEffectivePower / sumOfAllEffectivePower : 1;
+            _electricalShareF = 1; // sumOfAllEffectivePower > 0 ? maxEffectivePower / sumOfAllEffectivePower : 1;
+
+            if (Double.IsNaN(_attachedEngine.currentThrottle))
+            {
+                Debug.Log($"[TEST] _attachedEngine.currentThrottle is {_attachedEngine.currentThrottle}");
+                _attachedEngine.currentThrottle = 0;
+
+                return;
+            }
 
             modifiedThrottle = ModifiedThrottle;
             modifiedMaxThrottlePower = maxEffectivePower * modifiedThrottle;
 
-            if (!_attachedEngine.getIgnitionState) maxPower = 0;
+            if (!_attachedEngine.getIgnitionState)
+            {
+                totalPowerSupplied = resMan.Consume(ResourceName.ElectricCharge, maxPower);
+            }
+            else
+            {
+                totalPowerSupplied = maxPower;
+            }
 
-            totalPowerSupplied = resMan.Consume(ResourceName.ElectricCharge, maxPower * storedThrottle);
 
             var stats = resMan.ProductionStats(ResourceName.ElectricCharge);
-            availableMaximumPower = stats.PreviousDataSupplied() ? stats.PreviouslySupplied() : stats.CurrentSupplied();
+            availableMaximumPower = totalPowerSupplied; // stats.PreviousDataSupplied() ? stats.PreviouslySupplied() : stats.CurrentSupplied();
             availableCurrentPower = totalPowerSupplied;
 
             maximumAvailablePowerForEngine = availableMaximumPower * _electricalShareF;
@@ -999,14 +1060,12 @@ namespace KIT.Propulsion
             // request electric power
             actualPowerReceived = totalPowerSupplied;
 
-
             // produce waste heat
             var heatModifier = (1 - currentPropellantEfficiency) * CurrentPropellant.WasteHeatMultiplier;
-            var heatToProduce = actualPowerReceived * heatModifier;
+            _heatProductionF = actualPowerReceived * heatModifier;
             var maxHeatToProduce = maximumAvailablePowerForEngine * heatModifier;
 
-            _heatProductionF = heatToProduce;
-            resMan.Produce(ResourceName.WasteHeat, heatToProduce);
+            resMan.Produce(ResourceName.WasteHeat, _heatProductionF);
 
             // update GUI Values
             _electricalConsumptionF = actualPowerReceived;
@@ -1019,16 +1078,18 @@ namespace KIT.Propulsion
             effectivePowerThrustModifier = timeDilation * currentPropellantEfficiency * CurrentPropellantThrustMultiplier * GetPowerThrustModifier();
 
             effectiveMaximumPower = effectivePowerThrustModifier * modifiedMaxThrottlePower * throttleModifier;
-            effectiveRecievedPower = effectivePowerThrustModifier * actualPowerReceived * throttleModifier;
+            effectiveReceivedPower = effectivePowerThrustModifier * actualPowerReceived * throttleModifier;
 
-            _maximumThrustInSpace = effectiveMaximumPower / _effectiveIsp / GameConstants.StandardGravity;
-            currentThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveRecievedPower / _effectiveIsp / GameConstants.StandardGravity;
-            simulatedThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveRecievedPower / _effectiveIsp / GameConstants.StandardGravity;
+            _maximumThrustInSpace = effectiveMaximumPower / _effectiveIsp / PhysicsGlobals.GravitationalAcceleration;
+            currentThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveReceivedPower / _effectiveIsp / PhysicsGlobals.GravitationalAcceleration;
+            simulatedThrustInSpace = _effectiveIsp <= 0 ? 0 : effectiveReceivedPower / _effectiveIsp / PhysicsGlobals.GravitationalAcceleration;
 
+            // Debug.Log($"maxThrust is {simulatedThrustInSpace}, and _maxIsp is {_maxIsp}, effectiveReceivedPower is {effectiveReceivedPower}, _effectiveIsp is {_effectiveIsp}, and PhysicsGlobals.GravitationalAcceleration is {PhysicsGlobals.GravitationalAcceleration}, and _effectiveIsp is {_effectiveIsp}, and effectivePowerThrustModifier is {effectivePowerThrustModifier}, and  {effectiveMaximumPower} is {effectiveMaximumPower}, and CurrentPropellantThrustMultiplier is {CurrentPropellantThrustMultiplier}, and _modifiedEngineBaseIsp is {_modifiedEngineBaseIsp}, and _modifiedCurrentPropellantIspMultiplier is {_modifiedCurrentPropellantIspMultiplier}");
+            
             _attachedEngine.maxThrust = (float)Math.Max(simulatedThrustInSpace, 0.001);
 
-            _currentSpaceFuelFlowRate = _maxIsp <= 0 ? 0 : currentThrustInSpace / _maxIsp / GameConstants.StandardGravity;
-            _simulatedSpaceFuelFlowRate = _maxIsp <= 0 ? 0 : simulatedThrustInSpace / _maxIsp / GameConstants.StandardGravity;
+            _currentSpaceFuelFlowRate = _maxIsp <= 0 ? 0 : currentThrustInSpace / _maxIsp / PhysicsGlobals.GravitationalAcceleration;
+            _simulatedSpaceFuelFlowRate = _maxIsp <= 0 ? 0 : simulatedThrustInSpace / _maxIsp / PhysicsGlobals.GravitationalAcceleration;
 
             var maxThrustWithCurrentThrottle = currentThrustInSpace * throttleModifier;
 
@@ -1057,6 +1118,7 @@ namespace KIT.Propulsion
                         : ModifiedThrottle / throttle;
 
                     _maxFuelFlowRate = (float)Math.Max(_atmosphereThrustEfficiency * _currentSpaceFuelFlowRate * _fuelFlowModifier, 0);
+                    // Debug.Log($"[ElectricEngineControllerFX] _maxFuelFlowRate is {_maxFuelFlowRate}");
                     _attachedEngine.maxFuelFlow = _maxFuelFlowRate;
                 }
                 else
@@ -1075,7 +1137,7 @@ namespace KIT.Propulsion
                     _isFullyStarted = true;
                     _ispPersistent = _attachedEngine.realIsp;
 
-                    thrust_d = _attachedEngine.requestedMassFlow * GameConstants.StandardGravity * _ispPersistent;
+                    thrust_d = _attachedEngine.requestedMassFlow * PhysicsGlobals.GravitationalAcceleration * _ispPersistent;
 
                     ratioHeadingVersusRequest = 0;
                 }
@@ -1100,8 +1162,8 @@ namespace KIT.Propulsion
             if (_attachedEngine is ModuleEnginesFX && particleEffectMult > 0)
             {
                 var engineFuelFlow = _currentSpaceFuelFlowRate * _attachedEngine.currentThrottle;
-                var currentMaxFuelFlowRate = _attachedEngine.maxThrust / _attachedEngine.realIsp / GameConstants.StandardGravity;
-                var engineMaxFuelFlowRat = _maximumThrustInSpace / _attachedEngine.realIsp / GameConstants.StandardGravity;
+                var currentMaxFuelFlowRate = _attachedEngine.maxThrust / _attachedEngine.realIsp / PhysicsGlobals.GravitationalAcceleration;
+                var engineMaxFuelFlowRat = _maximumThrustInSpace / _attachedEngine.realIsp / PhysicsGlobals.GravitationalAcceleration;
 
                 var currentEffectPower = Math.Min(1, particleEffectMult * (engineFuelFlow / currentMaxFuelFlowRate));
                 var maximumEffectPower = Math.Min(1, particleEffectMult * (engineFuelFlow / engineMaxFuelFlowRat));
@@ -1112,11 +1174,14 @@ namespace KIT.Propulsion
             var vacuumPlasmaResource = part.Resources[KITResourceSettings.VacuumPlasma];
             if (isupgraded && vacuumPlasmaResource != null)
             {
-                var calculatedConsumptionInTon = vessel.packed ? 0 : simulatedThrustInSpace / engineIsp / GameConstants.StandardGravity;
+                var calculatedConsumptionInTon = vessel.packed ? 0 : simulatedThrustInSpace / engineIsp / PhysicsGlobals.GravitationalAcceleration;
                 var vacuumPlasmaResourceAmount = calculatedConsumptionInTon * 2000 * TimeWarp.fixedDeltaTime;
                 vacuumPlasmaResource.maxAmount = vacuumPlasmaResourceAmount;
                 part.RequestResource(KITResourceSettings.VacuumPlasma, -vacuumPlasmaResource.maxAmount);
             }
+
+            // Debug.Log($"[testing] currentThrustInSpace is {currentThrustInSpace}, simulatedThrustInSpace is {simulatedThrustInSpace}, effectiveMaximumPower is {effectiveMaximumPower}, ModifiedThrottle is {ModifiedThrottle}, calculated_thrust is {calculated_thrust}, and simulated_max_thrust is {simulated_max_thrust}");
+
         }
 
         public string KITPartName() => $"{part.partInfo.title}{(CurrentPropellant != null ? " (" + CurrentPropellant.PropellantGUIName + ")" : "")}";

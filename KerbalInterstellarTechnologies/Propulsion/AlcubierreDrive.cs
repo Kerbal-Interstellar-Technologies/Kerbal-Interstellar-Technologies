@@ -1769,7 +1769,7 @@ namespace KIT.Propulsion
             closestCelestrialBodyName = _closestCelestialBody.name;
 
             gravityPull = FlightGlobals.getGeeForceAtPosition(vessel.GetWorldPos3D()).magnitude;
-            gravityAtSeaLevel = _closestCelestialBody.GeeASL * GameConstants.StandardGravity;
+            gravityAtSeaLevel = _closestCelestialBody.GeeASL * PhysicsGlobals.GravitationalAcceleration;
             gravityRatio = gravityAtSeaLevel > 0 ? Math.Min(1, gravityPull / gravityAtSeaLevel) : 0;
             gravityDragRatio = Math.Pow(Math.Min(1, 1 - gravityRatio), Math.Max(1, Math.Sqrt(gravityAtSeaLevel)));
             gravityDragPercentage = (1 - gravityDragRatio) * 100;

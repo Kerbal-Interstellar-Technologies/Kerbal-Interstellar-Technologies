@@ -294,7 +294,7 @@ namespace KIT.Propulsion
 
             // set Isp
             var joulesPerAmu = _attachedReactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ElectronCharge / GameConstants.DilutionFactor;
-            var calculatedIsp = Math.Sqrt(joulesPerAmu * 2 / GameConstants.AtomicMassUnit) / GameConstants.StandardGravity;
+            var calculatedIsp = Math.Sqrt(joulesPerAmu * 2 / GameConstants.AtomicMassUnit) / PhysicsGlobals.GravitationalAcceleration;
 
             // calculate max and min isp
             minimum_isp = calculatedIsp * _attachedReactor.MinimumChargedIspMult;
@@ -315,8 +315,8 @@ namespace KIT.Propulsion
                 _powerBufferMax = maximumChargedPower / 10000;
 
 
-                _engineMaxThrust = powerThrustModifierLocal * maximumChargedPower / currentIsp / GameConstants.StandardGravity;
-                var maxFuelFlowRate = _engineMaxThrust / currentIsp / GameConstants.StandardGravity;
+                _engineMaxThrust = powerThrustModifierLocal * maximumChargedPower / currentIsp / PhysicsGlobals.GravitationalAcceleration;
+                var maxFuelFlowRate = _engineMaxThrust / currentIsp / PhysicsGlobals.GravitationalAcceleration;
                 _attachedEngine.maxFuelFlow = (float)maxFuelFlowRate;
                 _attachedEngine.maxThrust = (float)_engineMaxThrust;
 
@@ -495,9 +495,9 @@ namespace KIT.Propulsion
                 currentIsp = !_attachedEngine.isOperational || _attachedEngine.currentThrottle == 0 ? maximum_isp : Math.Min(maximum_isp, minimum_isp / Math.Pow(_attachedEngine.currentThrottle, throttleExponent));
 
                 var localPowerThrustModifier = GameConstants.BaseThrustPowerMultiplier * powerThrustMultiplier;
-                var maxEngineThrustAtMaxIsp = localPowerThrustModifier * _charged_particles_received / maximum_isp / GameConstants.StandardGravity;
+                var maxEngineThrustAtMaxIsp = localPowerThrustModifier * _charged_particles_received / maximum_isp / PhysicsGlobals.GravitationalAcceleration;
 
-                var calculatedConsumptionInTon = maxEngineThrustAtMaxIsp / maximum_isp / GameConstants.StandardGravity;
+                var calculatedConsumptionInTon = maxEngineThrustAtMaxIsp / maximum_isp / PhysicsGlobals.GravitationalAcceleration;
 
                 UpdatePropellantBuffer(calculatedConsumptionInTon);
 
@@ -571,7 +571,7 @@ namespace KIT.Propulsion
                 _engineMaxThrust = 0;
                 if (_max_charged_particles_power > 0)
                 {
-                    var maxThrust = powerThrustModifier * _charged_particles_received * scaledPowerFactor / currentIsp / GameConstants.StandardGravity;
+                    var maxThrust = powerThrustModifier * _charged_particles_received * scaledPowerFactor / currentIsp / PhysicsGlobals.GravitationalAcceleration;
 
                     var effectiveThrust = Math.Max(maxThrust - (radius * radius * vessel.atmDensity * 100), 0);
 
@@ -589,11 +589,11 @@ namespace KIT.Propulsion
                 _attachedEngine.atmosphereCurve = newAtmosphereCurve;
 
                 var maxEffectiveFuelFlowRate = !double.IsInfinity(_engineMaxThrust) && !double.IsNaN(_engineMaxThrust) && currentIsp > 0
-                    ? _engineMaxThrust / currentIsp / GameConstants.StandardGravity / (_attachedEngine.currentThrottle > 0 ? _attachedEngine.currentThrottle : 1)
+                    ? _engineMaxThrust / currentIsp / PhysicsGlobals.GravitationalAcceleration / (_attachedEngine.currentThrottle > 0 ? _attachedEngine.currentThrottle : 1)
                     : 0;
 
-                MaxTheoreticalThrust = powerThrustModifier * maximumChargedPower * _chargedParticleMaximumPercentageUsage / currentIsp / GameConstants.StandardGravity;
-                MaxTheoreticalFuelFlowRate = MaxTheoreticalThrust / currentIsp / GameConstants.StandardGravity;
+                MaxTheoreticalThrust = powerThrustModifier * maximumChargedPower * _chargedParticleMaximumPercentageUsage / currentIsp / PhysicsGlobals.GravitationalAcceleration;
+                MaxTheoreticalFuelFlowRate = MaxTheoreticalThrust / currentIsp / PhysicsGlobals.GravitationalAcceleration;
 
                 // set maximum flow
                 engineFuelFlow = _attachedEngine.currentThrottle > 0 ? Math.Max((float)maxEffectiveFuelFlowRate, 1e-9f) : (float)MaxTheoreticalFuelFlowRate;
