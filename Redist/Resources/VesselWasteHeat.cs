@@ -52,7 +52,7 @@ namespace KIT.Resources
         {
             // passive dissipation of waste heat - a little bit of this
             double vesselMass = Vessel.totalMass;
-            powerToExtract += 2.0 * PassiveTempP4 * GameConstants.StefanConst * vesselMass;
+            powerToExtract += 2.0 * PassiveTempP4 * PhysicsGlobals.StefanBoltzmanConstant * vesselMass;
 
             if (Vessel.mainBody.atmosphere && Vessel.altitude <= Vessel.mainBody.atmosphereDepth)
             {

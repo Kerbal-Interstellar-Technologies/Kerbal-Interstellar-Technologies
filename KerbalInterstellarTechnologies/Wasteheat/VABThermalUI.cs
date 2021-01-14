@@ -586,7 +586,7 @@ namespace KIT.Wasteheat
                 _vesselMaxRadConvection += maxRadiatorConvection;
 
                 var tempToPowerFour = maxRadTemperature * maxRadTemperature * maxRadTemperature * maxRadTemperature;
-                _vesselMaxRadDissipation += GameConstants.StefanConst * radiator.EffectiveRadiatorArea * tempToPowerFour / 1e6;
+                _vesselMaxRadDissipation += PhysicsGlobals.StefanBoltzmanConstant * radiator.EffectiveRadiatorArea * tempToPowerFour / 1e6;
                 totalConvectiveTempArea += maxRadTemperature * baseRadiatorArea;
                 _totalConvectiveBonusArea += radiator.radiatorArea * radiator.convectiveBonus;
             }

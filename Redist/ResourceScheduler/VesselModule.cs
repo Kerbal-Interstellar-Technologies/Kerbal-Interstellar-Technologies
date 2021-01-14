@@ -92,6 +92,8 @@ namespace KIT.ResourceScheduler
 
         private double _trackElectricChargeUsage;
 
+        private bool _useBackgroundProcessing = false;
+        
         public ResourceData ResourceData;
 
         /// <summary>
@@ -99,13 +101,24 @@ namespace KIT.ResourceScheduler
         /// </summary>
         public void FixedUpdate()
         {
+            if (vessel.vesselType == VesselType.SpaceObject || vessel.isEVA || vessel.vesselType == VesselType.Debris)
+            {
+                return;
+            }
+            
             if (!vessel.loaded)
             {
+                if (_useBackgroundProcessing)
+                {
+                    PerformBackgroundProcessing();
+                    return;
+                }
+                
                 _catchUpNeeded = true;
                 return;
             }
 
-            if (vessel.vesselType == VesselType.SpaceObject || vessel.isEVA || vessel.vesselType == VesselType.Debris) return;
+            
 
             if (_lastExecuted == 0) _catchUpNeeded = false;
             double currentTime = Planetarium.GetUniversalTime();
