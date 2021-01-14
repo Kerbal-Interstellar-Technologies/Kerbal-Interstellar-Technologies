@@ -1,9 +1,11 @@
 ﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="$(SolutionDir)\bin\Debug\0_KerbalInterstellarTechnologies_Redist.dll" #>
-<#@ assembly name="$(SolutionDir)\bin\Debug\KerbalInterstellarTechnologies.dll" #>
-<#@ assembly name="$(SolutionDir)\bin\Debug\999_Scale_Redist.dll" #>
-<#@ assembly name="$(SolutionDir)\bin\Debug\Assembly-CSharp.dll" #>
+<#@ assembly name="$(SolutionDir)\GameData\Kerbal-Interstellar-Technologies\Plugins\0_KerbalInterstellarTechnologies_Redist.dll" #>
+<#@ assembly name="$(SolutionDir)\GameData\Kerbal-Interstellar-Technologies\Plugins\KerbalInterstellarTechnologies.dll" #>
+<#@ assembly name="$(SolutionDir)\GameData\999_Scale_Redist.dll" #>
+<#@ assembly name="$(SolutionDir)\..\Unity\Assembly-CSharp.dll" #>
+<#@ assembly name="$(SolutionDir)\..\Unity\UnityEngine.CoreModule.dll" #>
+<#@ assembly name="$(SolutionDir)\..\Unity\UnityEngine.AnimationModule.dll" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
@@ -62,9 +64,9 @@ namespace KIT
     string ConvertCollectionName(string input)
     {
             var pieces = input.Split('`');
-            var firstPiece = pieces[0].Split('.').Last().Split('+').Last();
+            var firstPiece = pieces[0].Replace('+', '.');
             
-            if (pieces.Length == 1) return input;
+            if (pieces.Length == 1) return firstPiece;
 
             var firstIndex = pieces[1].IndexOf('[');
             var lastIndex = pieces[1].LastIndexOf(']');
@@ -101,11 +103,12 @@ namespace KIT
 
             if(foundKSPFieldAttribute == false) continue;
 
-            if(! previousNamespace.Equals(type.Namespace))
+            if(! previousNamespace.Equals(type.Namespace, StringComparison.Ordinal))
             {
                 if(previousNamespace != "") {
 #>
 }
+// <#= type.Namespace #> vs <#= previousNamespace #>
 #endregion // <#= type.Namespace #>
 
 
@@ -134,32 +137,32 @@ namespace <#= type.Namespace #>
             if (stopProcessing) break;
             if(f.FieldType.IsNotPublic) continue;
             if(f.FieldType.IsNestedPrivate) continue;
-            if(f.IsLiteral) continue;
-
+            if(f.IsLiteral || f.IsStatic) continue;
             #>
 
         // Field: <#= f #> <#= f.Name #> 
-        private <#= ConvertCollectionName(f.FieldType.ToString() /*FieldType.Name*/) #> _<#= f.Name #>;
+        private <#= ConvertCollectionName(f.FieldType.ToString() /*FieldType.Name*/) #> _collision_<#= f.Name #>;
         public <#= ConvertCollectionName(f.FieldType.ToString() /*FieldType.Name*/) #> <#= f.Name #> {
             get {
                 if (_<#= type.Name #> != null) return _<#= type.Name #>.<#= f.Name #>;
-                return _<#= f.Name #>;
+                return _collision_<#= f.Name #>;
             }
+<# if (!f.IsInitOnly && !f.IsLiteral)
+{
+#>
             set {
                 if (_<#= type.Name #> != null) { _<#= type.Name #>.<#= f.Name #> = value; return; }
-                _<#= f.Name #> = value;
+                _collision_<#= f.Name #> = value;
             }
+<# } #>            
         }
 <# } #>
     }
-}
-#endregion
-
 <#
         }
     }
 
-    var disabled = true;
+    var disabled = false;
 
     try
     {
@@ -177,5 +180,8 @@ namespace <#= type.Namespace #>
     }
 
 #>
+
+}
+#endregion
 
 // all done!

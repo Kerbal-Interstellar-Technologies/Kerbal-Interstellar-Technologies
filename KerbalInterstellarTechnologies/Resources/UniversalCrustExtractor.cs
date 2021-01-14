@@ -3,6 +3,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace KIT.Resources
@@ -17,8 +18,6 @@ namespace KIT.Resources
     {
         public const string Group = "UniversalCrustExtractor";
         public const string GroupTitle = "#LOC_KSPIE_UniversalCrustExtractor_groupName";
-
-        List<CrustalResource> localResources; // list of resources
 
         // state of the extractor
         [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_DrillEnabled")]//Drill Enabled
@@ -59,25 +58,25 @@ namespace KIT.Resources
         private const double minimumPowerNeeded = 0.15;
 
         // GUI elements declaration
-        private Rect _window_position = new Rect(50, 50, labelWidth + valueWidth * 5, 150);
-        private int _window_ID;
-        private bool _render_window;
+        private Rect _windowPosition = new Rect(50, 50, labelWidth + valueWidth * 5, 150);
+        private int _windowId;
+        private bool _renderWindow;
 
 
         private ModuleScienceExperiment _moduleScienceExperiment;
 
-        private Animation deployAnimation;
-        private Animation loopAnimation;
+        private Animation _deployAnimation;
+        private Animation _loopAnimation;
 
         private const int labelWidth = 200;
         private const int valueWidth = 100;
 
-        private GUIStyle _bold_label;
-        private GUIStyle _normal_label;
+        private GUIStyle _boldLabel;
+        private GUIStyle _normalLabel;
 
         private KSPParticleEmitter[] _particleEmitters;
 
-        Dictionary<string, CrustalResourceAbundance> CrustalResourceAbundanceDict = new Dictionary<string, CrustalResourceAbundance>();
+        private readonly Dictionary<string, CrustalResourceAbundance> _crustalResourceAbundanceDict = new Dictionary<string, CrustalResourceAbundance>();
 
         private AbundanceRequest _resourceRequest = new AbundanceRequest // create a new request object that we'll reuse to get the current stock-system resource concentration
         {
@@ -99,11 +98,11 @@ namespace KIT.Resources
         public void DeployDrill()
         {
             isDeployed = true;
-            if (deployAnimation == null) return;
+            if (_deployAnimation == null) return;
 
-            deployAnimation[deployAnimationName].speed = 1;
-            deployAnimation[deployAnimationName].normalizedTime = 0;
-            deployAnimation.Blend(deployAnimationName);
+            _deployAnimation[deployAnimationName].speed = 1;
+            _deployAnimation[deployAnimationName].normalizedTime = 0;
+            _deployAnimation.Blend(deployAnimationName);
         }
 
         [KSPEvent(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_RetractDrill", active = true)]//Retract Drill
@@ -113,18 +112,18 @@ namespace KIT.Resources
             isDeployed = false;
 
             animationState = 0;
-            if (loopAnimation != null)
+            if (_loopAnimation != null)
             {
-                loopAnimation[loopingAnimationName].speed = -1;
-                loopAnimation[loopingAnimationName].normalizedTime = 0;
-                loopAnimation.Blend(loopingAnimationName);
+                _loopAnimation[loopingAnimationName].speed = -1;
+                _loopAnimation[loopingAnimationName].normalizedTime = 0;
+                _loopAnimation.Blend(loopingAnimationName);
             }
 
-            if (deployAnimation != null)
+            if (_deployAnimation != null)
             {
-                deployAnimation[deployAnimationName].speed = -1;
-                deployAnimation[deployAnimationName].normalizedTime = 1;
-                deployAnimation.Blend(deployAnimationName);
+                _deployAnimation[deployAnimationName].speed = -1;
+                _deployAnimation[deployAnimationName].normalizedTime = 1;
+                _deployAnimation.Blend(deployAnimationName);
             }
         }
 
@@ -149,7 +148,7 @@ namespace KIT.Resources
         [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_UniversalCrustExtractor_ToggleMiningInterface", active = false)]//Toggle Mining Interface
         public void ToggleWindow()
         {
-            _render_window = !_render_window;
+            _renderWindow = !_renderWindow;
         }
 
         // *** END of KSP Events
@@ -195,24 +194,24 @@ namespace KIT.Resources
 
             _moduleScienceExperiment = part.FindModuleImplementing<ModuleScienceExperiment>();
 
-            deployAnimation = part.FindModelAnimators(deployAnimationName).FirstOrDefault();
-            loopAnimation = part.FindModelAnimators(loopingAnimationName).FirstOrDefault();
+            _deployAnimation = part.FindModelAnimators(deployAnimationName).FirstOrDefault();
+            _loopAnimation = part.FindModelAnimators(loopingAnimationName).FirstOrDefault();
 
             _particleEmitters = part.GetComponentsInChildren<KSPParticleEmitter>();
 
-            if (deployAnimation != null)
+            if (_deployAnimation != null)
             {
                 if (isDeployed)
                 {
-                    deployAnimation[deployAnimationName].speed = 1;
-                    deployAnimation[deployAnimationName].normalizedTime = 1;
-                    deployAnimation.Blend(deployAnimationName);
+                    _deployAnimation[deployAnimationName].speed = 1;
+                    _deployAnimation[deployAnimationName].normalizedTime = 1;
+                    _deployAnimation.Blend(deployAnimationName);
                 }
                 else
                 {
-                    deployAnimation[deployAnimationName].speed = -1;
-                    deployAnimation[deployAnimationName].normalizedTime = 0;
-                    deployAnimation.Blend(deployAnimationName);
+                    _deployAnimation[deployAnimationName].speed = -1;
+                    _deployAnimation[deployAnimationName].normalizedTime = 0;
+                    _deployAnimation.Blend(deployAnimationName);
                 }
             }
 
@@ -227,7 +226,7 @@ namespace KIT.Resources
                 part.force_activate();
 
                 // create the id for the GUI window
-                _window_ID = new System.Random(part.GetInstanceID()).Next(int.MinValue, int.MaxValue);
+                _windowId = new System.Random(part.GetInstanceID()).Next(int.MinValue, int.MaxValue);
             }
 
         }
@@ -236,8 +235,8 @@ namespace KIT.Resources
         {
             reasonNotCollecting = CheckIfCollectingPossible();
 
-            Events["DeployDrill"].active = !isDeployed && !deployAnimation.IsPlaying(deployAnimationName);
-            Events["RetractDrill"].active = isDeployed && !deployAnimation.IsPlaying(deployAnimationName);
+            Events["DeployDrill"].active = !isDeployed && !_deployAnimation.IsPlaying(deployAnimationName);
+            Events["RetractDrill"].active = isDeployed && !_deployAnimation.IsPlaying(deployAnimationName);
 
             if (string.IsNullOrEmpty(reasonNotCollecting))
             {
@@ -258,7 +257,7 @@ namespace KIT.Resources
 
                 if (_terrainType == TerrainType.Planetary)
                 {
-                    UpdateResourceAbundances();
+                    GetResourceData(vessel, out _, _crustalResourceAbundanceDict);
                 }
                 else
                 {
@@ -278,13 +277,18 @@ namespace KIT.Resources
                 Events["DisableCollector"].active = false;
                 Events["ToggleWindow"].active = false;
 
-                _render_window = false;
+                _renderWindow = false;
             }
 
             //if (bIsEnabled && loopingAnimation != "")
             //    PlayAnimation(loopingAnimation, false, false, true); //plays independently of other anims
 
             base.OnUpdate();
+        }
+
+        interface C
+        {
+            int GetFucked();
         }
 
         private void UpdateAsteroidCometResources()
@@ -304,31 +308,10 @@ namespace KIT.Resources
             }
         }
 
-        private void UpdateResourceAbundances()
-        {
-            if (localResources == null)
-                return;
-
-            foreach (CrustalResource resource in localResources)
-            {
-                var currentAbundance = GetResourceAbundance(resource);
-
-                if (CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var existingAbundance))
-                {
-                    //existingAbundance.GlobalWithVariance = currentAbundance.GlobalWithVariance;
-                    existingAbundance.Local = currentAbundance.Local;
-                    //existingAbundance.Biome = currentAbundance.Biome;
-                }
-                else
-                    CrustalResourceAbundanceDict.Add(resource.ResourceName, currentAbundance);
-            }
-        }
-
-
         private void OnGUI()
         {
-            if (vessel == FlightGlobals.ActiveVessel && _render_window)
-                _window_position = GUILayout.Window(_window_ID, _window_position, DrawGui, Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_windowtitle"));//"Universal Mining Interface"
+            if (vessel == FlightGlobals.ActiveVessel && _renderWindow)
+                _windowPosition = GUILayout.Window(_windowId, _windowPosition, DrawGui, Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_windowtitle"));//"Universal Mining Interface"
 
             //scrollPosition[1] = GUI.VerticalScrollbar(_window_position, scrollPosition[1], 1, 0, 150, "Scroll");
         }
@@ -349,7 +332,6 @@ namespace KIT.Resources
             }
             else
             {
-                localResources = new List<CrustalResource>();
                 return true;
             }
         }
@@ -378,7 +360,7 @@ namespace KIT.Resources
                 case TerrainType.Asteroid:
                 case TerrainType.Comet:
                     var attached = vessel.parts.Find(x => x == _drillTarget.part);
-                    if(attached == null)
+                    if (attached == null)
                     {
                         return Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_msg1");
                     }
@@ -392,7 +374,7 @@ namespace KIT.Resources
         /// Helper function to see if the drill part is extended.
         /// </summary>
         /// <returns>Bool signifying whether the part is extended or not (if it's animation is played out).</returns>
-        private bool IsDrillExtended() => isDeployed && !deployAnimation.IsPlaying(deployAnimationName);
+        private bool IsDrillExtended() => isDeployed && !_deployAnimation.IsPlaying(deployAnimationName);
 
         /// <summary>
         /// Helper function to raycast what the drill could hit.
@@ -441,7 +423,7 @@ namespace KIT.Resources
             RaycastHit hit = WhatsUnderneath();
 
             _drillTarget = null;
-            asteroidCometResources = null;
+            _asteroidCometResources = null;
 
             if (hit.collider == null) return false;
 
@@ -487,26 +469,45 @@ namespace KIT.Resources
         /// Function for accessing the resource data for the current planet.
         /// Returns true if getting the data went okay.
         /// </summary>
-        /// <returns>Bool signifying whether the data arrived okay.</returns>
-        private bool GetResourceData()
+        /// <returns>List of resources found</returns>
+        private static bool GetResourceData(Vessel vessel, out List<CrustalResource> localResources, Dictionary<string, CrustalResourceAbundance> resourceAbundance)
         {
+            localResources = null;
+
             try
             {
-                localResources = CrustalResourceHandler.GetCrustalCompositionForBody(FlightGlobals.currentMainBody).OrderBy(m => m.ResourceName).ToList();
+                localResources = CrustalResourceHandler.GetCrustalCompositionForBody(FlightGlobals.currentMainBody)
+                    .OrderBy(m => m.ResourceName).ToList();
 
-                UpdateResourceAbundances();
+                foreach (CrustalResource resource in localResources)
+                {
+                    var currentAbundance = GetResourceAbundance(vessel, resource);
+
+                    if (resourceAbundance.TryGetValue(resource.ResourceName, out var existingAbundance))
+                    {
+                        existingAbundance.Local = currentAbundance.Local;
+                    }
+                    else
+                        resourceAbundance.Add(resource.ResourceName, currentAbundance);
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine("[KSPI] UniversalCrustExtractor - Error while getting the crustal composition for the current body. Msg: " + e.Message + ". StackTrace: " + e.StackTrace);
-                return false;
+                Console.WriteLine(
+                    "[KSPI] UniversalCrustExtractor - Error while getting the crustal composition for the current body. Msg: " +
+                    e.Message + ". StackTrace: " + e.StackTrace);
+                localResources = null;
             }
-            if (localResources == null)
+            finally
             {
-                Console.WriteLine("[KSPI] UniversalCrustExtractor - Error while getting the crustal composition. The composition arrived, but it was null.");
-                return false;
+                if (localResources == null)
+                {
+                    Console.WriteLine("[KSPI] UniversalCrustExtractor - Error while getting the crustal composition. The composition arrived, but it was null.");
+
+                }
             }
-            return true;
+
+            return localResources != null;
         }
 
         /// <summary>
@@ -514,10 +515,10 @@ namespace KIT.Resources
         /// Takes a CrustalResource as a parameter.
         /// Returns boolean true if the data was gotten without trouble and also returns a double with the percentage.
         /// </summary>
+        /// <param name="vessel"></param>
         /// <param name="currentResource">A CrustalResource we want to get the percentage for.</param>
-        /// <param name="globalPercentage">An output parameter, returns the resource content percentage on the current planet.</param>
         /// <returns></returns>
-        private CrustalResourceAbundance GetResourceAbundance(CrustalResource currentResource)
+        private static CrustalResourceAbundance GetResourceAbundance(Vessel vessel, CrustalResource currentResource)
         {
             var abundance = new CrustalResourceAbundance() { Resource = currentResource };
 
@@ -551,7 +552,7 @@ namespace KIT.Resources
             }
         }
 
-        private double GetAbundance(AbundanceRequest request)
+        private static double GetAbundance(AbundanceRequest request)
         {
             // retrieve and convert to double
             double abundance = (double)(decimal)ResourceMap.Instance.GetAbundance(request) * 100;
@@ -569,21 +570,21 @@ namespace KIT.Resources
         /// <param name="planet">Current planetary body.</param>
         /// <param name="thickness">The output parameter that gets returned, the thickness of the crust (i.e. how much resources can be mined here).</param>
         /// <returns>True if data was acquired okay. Also returns an output parameter, the thickness of the crust.</returns>
-        private bool CalculateCrustThickness(double altitude, CelestialBody planet, out double thickness)
+        private static bool CalculateCrustThickness(double altitude, CelestialBody planet, out double thickness)
         {
             thickness = 0;
-            CelestialBody homeworld = FlightGlobals.Bodies.SingleOrDefault(b => b.isHomeWorld);
-            if (homeworld == null)
+            CelestialBody homeWorld = FlightGlobals.Bodies.SingleOrDefault(b => b.isHomeWorld);
+            if (homeWorld == null)
             {
-                Console.WriteLine("[KSPI]: UniversalCrustExtractor. Homeworld not found, setting crust thickness to 0.");
+                Console.WriteLine("[KSPI]: UniversalCrustExtractor. Home world not found, setting crust thickness to 0.");
                 return false;
             }
-            double homeplanetMass = homeworld.Mass; // This will usually be Kerbin, but players can always use custom planet packs with a custom homeplanet or resized systems
+            double homePlanetMass = homeWorld.Mass; // This will usually be Kerbin, but players can always use custom planet packs with a custom home planet or resized systems
             double planetMass = planet.Mass;
 
             /* I decided to incorporate an altitude modifier (similarly to regolith collector before).
              * According to various source, crust thickness is higher in higher altitudes (duh).
-             * This is great from a gameplay perspective, because it creates an incentive for players to mine resources in more difficult circumstances
+             * This is great from a game play perspective, because it creates an incentive for players to mine resources in more difficult circumstances
              * (i.e. landing on highlands instead of flats etc.) and breaks the flatter-is-better base building strategy at least a bit.
              * This check will divide current altitude by 2500. At that arbitrarily-chosen altitude, we should be getting the basic concentration for the planet.
              * Go to a higher terrain and you will find **more** resources. The + 500 shift is there so that even at altitude of 0 (i.e. Minmus flats etc.) there will
@@ -600,26 +601,10 @@ namespace KIT.Resources
              * so there might be lesser amount of heavier elements and less useful stuff to go around altogether.
              * This is then adjusted for the altitude modifier - there is simply more material to mine at high hills and mountains.
             */
-            thickness = dAltModifier * (planetMass / homeplanetMass); // get a basic concentration. The more mass the current planet has, the more crustal resources to be found here
+            thickness = dAltModifier * (planetMass / homePlanetMass); // get a basic concentration. The more mass the current planet has, the more crustal resources to be found here
             return true;
         }
-
-        /// <summary>
-        /// Calculates the spare room for the current resource on the vessel.
-        /// </summary>
-        /// <param name="resource"></param>
-        /// <returns>Double, signifying the amount of spare room for the resource on the vessel.</returns>
-        private double CalculateSpareRoom(CrustalResource resource)
-        {
-            part.GetConnectedResourceTotals(resource.Definition.id, out var currentAmount, out var maxAmount);
-
-            resource.Amount = currentAmount;
-            resource.MaxAmount = maxAmount;
-            resource.SpareRoom = maxAmount - currentAmount;
-
-            return resource.SpareRoom;
-        }
-
+        
         /// <summary>
         /// Does the actual addition (collection) of the current resource.
         /// </summary>
@@ -678,86 +663,75 @@ namespace KIT.Resources
                     return;
 
                 case TerrainType.Planetary:
-                    MinePlanetaryBody(resMan, percentPower);
+                    if (!MinePlanetaryBody(resMan, vessel, _crustalResourceAbundanceDict, percentPower, drillSize, effectiveness))
+                    {
+                        DisableCollector();
+                    }
                     return;
                 case TerrainType.Comet:
                 case TerrainType.Asteroid:
-                    MineAsteroidComet(resMan, percentPower);
+                    var spaceObjectInfo = _drillTarget?.part.FindModuleImplementing<ModuleSpaceObjectInfo>();
+                    if (spaceObjectInfo == null)
+                    {
+                        Debug.Log($"[Universal Drill] no ModuleSpaceObjectInfo available. Free resources!");
+                        DisableCollector();
+                        return;
+                    }
+
+                    var resourceObjects = _drillTarget.part.FindModulesImplementing<ModuleSpaceObjectResource>();
+                    
+                    if (!MineAsteroidComet(resMan, spaceObjectInfo, resourceObjects, drillSize, effectiveness, percentPower))
+                    {
+                        DisableCollector();
+                    }
+                    
                     return;
             }
         }
 
-        int mineRateLimit;
-
-        // TODO - densities of the items harvested and so on probably should be accounted for?
-        private void MineAsteroidComet(IResourceManager resMan, double percentPower)
+        private static bool MineAsteroidComet(IResourceManager resMan, ModuleSpaceObjectInfo spaceObjectInfo, List<ModuleSpaceObjectResource> asteroidCometResources, double drillSize, double effectiveness, double percentPower)
         {
             // TODO - can we add a bonus multiplier here? Perhaps based on asteroid mass?
             double bonusMultiplier = 0.05; // 0.0005
             double minedAmount = bonusMultiplier * drillSize * effectiveness * percentPower;
 
-            if(_drillTarget == null)
-            {
-                Debug.Log($"[Universal Drill] Odd, no drillTarget");
-                return;
-            }
-
-            var spaceObjectInfo = _drillTarget.part.FindModuleImplementing<ModuleSpaceObjectInfo>();
-            if (spaceObjectInfo == null)
-            {
-                Debug.Log($"[Universal Drill] no ModuleSpaceObjectInfo available. Free resources!");
-                return;
-            }
-
             minedAmount = Math.Min(minedAmount, (spaceObjectInfo.currentMassVal - spaceObjectInfo.massThresholdVal));
-            if(minedAmount < 1e-6)
+            if (minedAmount < 1e-6)
             {
-                spaceObjectInfo.currentMassVal = 0;
-                return;
+                spaceObjectInfo.currentMassVal = spaceObjectInfo.massThresholdVal;
+                return false;
             }
-
-            GetAsteroidCometResourceData();
+            
             foreach (var resource in asteroidCometResources)
             {
                 var def = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
                 if (def == null) continue;
 
-                var amount = (minedAmount * resource.abundance) / def.density;
+                var amount = (minedAmount * resource.abundance) * def.density;
 
                 if (amount == 0) continue;
 
-                if(mineRateLimit % 250 == 0)
-                    Debug.Log($"[Universal Drill] generating {amount} units/sec of {resource.resourceName}");
-
-                var resID = KITResourceSettings.NameToResource(resource.resourceName);
-                if(resID == ResourceName.Unknown)
-                {
-                    part.RequestResource(resource.resourceName.GetHashCode(), -(amount * resMan.FixedDeltaTime()));
-                }
-                else
-                {
-                    resMan.Produce(resID, amount);
-                }
+                var resId = KITResourceSettings.NameToResource(resource.resourceName);
+                resMan.Produce(resId, amount);
             }
 
-            mineRateLimit++;
-
             spaceObjectInfo.currentMassVal = Math.Max(spaceObjectInfo.massThresholdVal, spaceObjectInfo.currentMassVal - (minedAmount * resMan.FixedDeltaTime()));
+
+            return true;
         }
 
-        private void MinePlanetaryBody(IResourceManager resMan, double percentPower)
+        private static bool MinePlanetaryBody(IResourceManager resMan, Vessel vessel, Dictionary<string, CrustalResourceAbundance> resourceAbundance, double percentPower, double drillSize, double effectiveness)
         {
-            if (!GetResourceData()) // if the resource data was not okay, no mining
+            var ret = GetResourceData(vessel, out var localResources, resourceAbundance);
+            if (ret == false) // if gathering resource data was not okay, no mining
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_PostMsg2"), 3.0f, ScreenMessageStyle.LOWER_CENTER);//"The universal drill is not sure where you are trying to mine. Please contact the mod author, tell him the details of this situation and provide the output log."
-                DisableCollector();
-                return;
+                // DisableCollector();
             }
 
             if (!CalculateCrustThickness(vessel.altitude, FlightGlobals.currentMainBody, out var crustThickness)) // crust thickness calculation off, no mining
             {
-                DisableCollector();
-                return;
+                return false;
             }
 
             double minedAmount = crustThickness * drillSize * effectiveness * percentPower;
@@ -765,7 +739,7 @@ namespace KIT.Resources
 
             foreach (CrustalResource resource in localResources)
             {
-                CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
+                resourceAbundance.TryGetValue(resource.ResourceName, out var abundance);
 
                 if (abundance == null)
                     continue;
@@ -775,77 +749,84 @@ namespace KIT.Resources
                 else
                     resource.Production = minedAmount * abundance.Local;
 
-                CalculateSpareRoom(resource);
+                var resId = KITResourceSettings.NameToResource(resource.ResourceName);
+                var ok = resMan.CapacityInformation(resId, out var maxAmount,
+                    out var spareRoom, out var currentAmount, out var _);
+
+                if (!ok) continue;
 
                 if (resource.SpareRoom > 0) // if there's space, add the resource
-                    AddResource(resMan, resource.Production, resource.ResourceName);
+                    resMan.Produce(resId, resource.Production);
             }
+
+            return true;
         }
 
-        private List<ModuleSpaceObjectResource> asteroidCometResources;
+        private List<ModuleSpaceObjectResource> _asteroidCometResources;
 
         private void GetAsteroidCometResourceData()
         {
             if (_drillTarget == null) return;
 
-            asteroidCometResources = _drillTarget.part.FindModulesImplementing<ModuleSpaceObjectResource>();
+            _asteroidCometResources = _drillTarget.part.FindModulesImplementing<ModuleSpaceObjectResource>();
         }
 
         private void DrawGui(int window)
         {
-            if (_bold_label == null)
-                _bold_label = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, font = PluginHelper.MainFont };
+            if (_boldLabel == null)
+                _boldLabel = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, font = PluginHelper.MainFont };
 
-            if (_normal_label == null)
-                _normal_label = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Normal, font = PluginHelper.MainFont };
+            if (_normalLabel == null)
+                _normalLabel = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Normal, font = PluginHelper.MainFont };
 
-            if (GUI.Button(new Rect(_window_position.width - 20, 2, 18, 18), "x"))
-                _render_window = false;
+            if (GUI.Button(new Rect(_windowPosition.width - 20, 2, 18, 18), "x"))
+                _renderWindow = false;
 
             GUILayout.BeginVertical();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Drillparameters"), _bold_label, GUILayout.Width(labelWidth));//"Drill parameters:"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Drillparameters"), _boldLabel, GUILayout.Width(labelWidth));//"Drill parameters:"
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Size") + ": " + drillSize.ToString("#.#") + " m\xB3", _normal_label);//Size
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Size") + ": " + drillSize.ToString("#.#") + " m\xB3", _normalLabel);//Size
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MWRequirements") + ": " + PluginHelper.GetFormattedPowerString(mwRequirements), _normal_label);//MW Requirements
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MWRequirements") + ": " + PluginHelper.GetFormattedPowerString(mwRequirements), _normalLabel);//MW Requirements
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_DrillEffectiveness") + ": " + effectiveness.ToString("P1"), _normal_label);//Drill effectiveness
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Resourcesabundances") + ":", _bold_label, GUILayout.Width(labelWidth));//Resources abundances
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_DrillEffectiveness") + ": " + effectiveness.ToString("P1"), _normalLabel);//Drill effectiveness
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Name"), _bold_label, GUILayout.Width(valueWidth));//"Name"
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Abundance"), _bold_label, GUILayout.Width(valueWidth));//"Abundance"
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Productionpersecond"), _bold_label, GUILayout.Width(valueWidth));//"Production per second"
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Productionperhour"), _bold_label, GUILayout.Width(valueWidth));//"Production per hour"
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_SpareRoom"), _bold_label, GUILayout.Width(valueWidth));//"Spare Room"
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Stored"), _bold_label, GUILayout.Width(valueWidth));//"Stored"
-            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MaxCapacity"), _bold_label, GUILayout.Width(valueWidth));//"Max Capacity"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Resourcesabundances") + ":", _boldLabel, GUILayout.Width(labelWidth));//Resources abundances
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Name"), _boldLabel, GUILayout.Width(valueWidth));//"Name"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Abundance"), _boldLabel, GUILayout.Width(valueWidth));//"Abundance"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Productionpersecond"), _boldLabel, GUILayout.Width(valueWidth));//"Production per second"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Productionperhour"), _boldLabel, GUILayout.Width(valueWidth));//"Production per hour"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_SpareRoom"), _boldLabel, GUILayout.Width(valueWidth));//"Spare Room"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_Stored"), _boldLabel, GUILayout.Width(valueWidth));//"Stored"
+            GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_MaxCapacity"), _boldLabel, GUILayout.Width(valueWidth));//"Max Capacity"
             GUILayout.EndHorizontal();
 
             if (_terrainType == TerrainType.Planetary)
             {
-                GetResourceData();
-                if (localResources != null)
+                var ok = GetResourceData(vessel, out var localResources, _crustalResourceAbundanceDict);
+
+                if (ok)
                 {
                     foreach (CrustalResource resource in localResources)
                     {
-                        CrustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
+                        _crustalResourceAbundanceDict.TryGetValue(resource.ResourceName, out var abundance);
                         if (abundance == null)
                             continue;
 
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label(resource.DisplayName, _normal_label, GUILayout.Width(valueWidth));
-                        GUILayout.Label(abundance.Local.ToString("##.######") + "%", _normal_label, GUILayout.Width(valueWidth));
+                        GUILayout.Label(resource.DisplayName, _normalLabel, GUILayout.Width(valueWidth));
+                        GUILayout.Label(abundance.Local.ToString("##.######") + "%", _normalLabel, GUILayout.Width(valueWidth));
 
                         if (resource.Definition != null)
                         {
@@ -855,25 +836,25 @@ namespace KIT.Resources
 
                                 if (Math.Round(spareRoomMass, 6) > 0.000001)
                                 {
-                                    GUILayout.Label(resource.Production.ToString("##.######") + " U/s", _normal_label, GUILayout.Width(valueWidth));
-                                    GUILayout.Label((resource.Production * resource.Definition.density * 3600).ToString("##.######") + " t/h", _normal_label, GUILayout.Width(valueWidth));
-                                    GUILayout.Label(spareRoomMass.ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
+                                    GUILayout.Label(resource.Production.ToString("##.######") + " U/s", _normalLabel, GUILayout.Width(valueWidth));
+                                    GUILayout.Label((resource.Production * resource.Definition.density * 3600).ToString("##.######") + " t/h", _normalLabel, GUILayout.Width(valueWidth));
+                                    GUILayout.Label(spareRoomMass.ToString("##.######") + " t", _normalLabel, GUILayout.Width(valueWidth));
                                 }
                                 else
                                 {
-                                    GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                                    GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                                    GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_full"), _normal_label, GUILayout.Width(valueWidth));//"full"
+                                    GUILayout.Label("", _normalLabel, GUILayout.Width(valueWidth));
+                                    GUILayout.Label("", _normalLabel, GUILayout.Width(valueWidth));
+                                    GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_full"), _normalLabel, GUILayout.Width(valueWidth));//"full"
                                 }
 
-                                GUILayout.Label((resource.Amount * resource.Definition.density).ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
-                                GUILayout.Label((resource.MaxAmount * resource.Definition.density).ToString("##.######") + " t", _normal_label, GUILayout.Width(valueWidth));
+                                GUILayout.Label((resource.Amount * resource.Definition.density).ToString("##.######") + " t", _normalLabel, GUILayout.Width(valueWidth));
+                                GUILayout.Label((resource.MaxAmount * resource.Definition.density).ToString("##.######") + " t", _normalLabel, GUILayout.Width(valueWidth));
                             }
                             else
                             {
-                                GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                                GUILayout.Label("", _normal_label, GUILayout.Width(valueWidth));
-                                GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_missing"), _normal_label, GUILayout.Width(valueWidth));//"missing"
+                                GUILayout.Label("", _normalLabel, GUILayout.Width(valueWidth));
+                                GUILayout.Label("", _normalLabel, GUILayout.Width(valueWidth));
+                                GUILayout.Label(Localizer.Format("#LOC_KSPIE_UniversalCrustExtractor_missing"), _normalLabel, GUILayout.Width(valueWidth));//"missing"
                             }
                         }
 
@@ -885,11 +866,11 @@ namespace KIT.Resources
             {
                 GetAsteroidCometResourceData();
 
-                foreach (var spaceObjectResource in asteroidCometResources.OrderByDescending(sor => sor.abundance))
+                foreach (var spaceObjectResource in _asteroidCometResources.OrderByDescending(sor => sor.abundance))
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(spaceObjectResource.resourceName, _normal_label, GUILayout.Width(valueWidth));
-                    GUILayout.Label((spaceObjectResource.abundance * 100).ToString("##.######") + "%", _normal_label, GUILayout.Width(valueWidth));
+                    GUILayout.Label(spaceObjectResource.resourceName, _normalLabel, GUILayout.Width(valueWidth));
+                    GUILayout.Label((spaceObjectResource.abundance * 100).ToString("##.######") + "%", _normalLabel, GUILayout.Width(valueWidth));
                     GUILayout.EndHorizontal();
                 }
 
@@ -910,7 +891,7 @@ namespace KIT.Resources
 
         public void UpdateLoopingAnimation()
         {
-            if (loopAnimation == null)
+            if (_loopAnimation == null)
                 return;
 
             if (animationState > 1)
@@ -918,14 +899,14 @@ namespace KIT.Resources
 
             animationState += 0.05f;
 
-            loopAnimation[loopingAnimationName].speed = 0;
-            loopAnimation[loopingAnimationName].normalizedTime = animationState;
-            loopAnimation.Blend(loopingAnimationName, 1);
+            _loopAnimation[loopingAnimationName].speed = 0;
+            _loopAnimation[loopingAnimationName].normalizedTime = animationState;
+            _loopAnimation.Blend(loopingAnimationName, 1);
         }
 
         public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
         {
-            priority = 4;
+            priority = 5;
             supplierOnly = false;
             hasLocalResources = false;
 
@@ -940,13 +921,6 @@ namespace KIT.Resources
                 UpdateLoopingAnimation();
 
                 MineResources(resMan);
-            }
-            else
-            {
-                foreach (CrustalResource resource in localResources)
-                {
-                    CalculateSpareRoom(resource);
-                }
             }
         }
 

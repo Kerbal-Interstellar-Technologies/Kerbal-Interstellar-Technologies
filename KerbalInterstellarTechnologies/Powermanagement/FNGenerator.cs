@@ -1039,7 +1039,7 @@ namespace KIT.PowerManagement
             return displayName;
         }
 
-        private ResourceName[] resourcesProvided = new[] { ResourceName.ElectricCharge };
+        private readonly ResourceName[] resourcesProvided = new[] { ResourceName.ElectricCharge };
         public ResourceName[] ResourcesProvided() => resourcesProvided;
 
         // todo - max power output limit
