@@ -268,7 +268,7 @@ namespace KIT.ResourceScheduler
 
                     return new BackgroundModule(backgroundFunctionInfo, vessel, protoPartSnapshot, snapshot, prefab,
                         pm);
-                });
+                }).ToArray();
 
                 Debug.Log($"got {backgroundModules}");
             }

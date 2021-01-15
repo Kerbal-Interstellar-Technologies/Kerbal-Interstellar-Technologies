@@ -3,6 +3,7 @@ using KIT.ResourceScheduler;
 using KSP.Localization;
 using System;
 using System.Linq;
+using LibNoise.Modifiers;
 using UnityEngine;
 
 namespace KIT.Reactors
@@ -159,7 +160,7 @@ namespace KIT.Reactors
         }
 
         public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.LocalResources |
-                                                                 ModuleConfigurationFlags.Fifth |
+                                                                 ModuleConfigurationFlags.First |
                                                                  ModuleConfigurationFlags.SupplierOnly;
 
         public void KITFixedUpdate(IResourceManager resMan)
@@ -174,13 +175,36 @@ namespace KIT.Reactors
             DecayFuel(resMan);
         }
 
-        private readonly string _KITPartName = Localizer.Format("#LOC_KIT_RTG_PartName");
-        public string KITPartName() => _KITPartName;
+        private static readonly string _kitPartName = Localizer.Format("#LOC_KIT_RTG_PartName");
+        public string KITPartName() => _kitPartName;
 
         public override string GetInfo()
         {
             return Localizer.Format("#LOC_KIT_RTG_GetInfo");
         }
-        
+
+        public static string KITPartName(ProtoPartSnapshot protoPartSnapshot,
+            ProtoPartModuleSnapshot protoPartModuleSnapshot) => _kitPartName;
+
+        public static void KITBackgroundUpdate(IResourceManager resMan, Vessel vessel, ProtoPartSnapshot protoPartSnapshot,
+            ProtoPartModuleSnapshot protoPartModuleSnapshot, Part part)
+        {
+            var massRemaining = Lib.GetDouble(protoPartModuleSnapshot, nameof(KITRadioisotopeGenerator.massRemaining));
+            var massInKilograms =
+                Lib.GetDouble(protoPartModuleSnapshot, nameof(KITRadioisotopeGenerator.massInKilograms));
+            var wattsPerGram = Lib.GetDouble(protoPartModuleSnapshot, nameof(KITRadioisotopeGenerator.wattsPerGram));
+            var peltierEfficiency =
+                Lib.GetDouble(protoPartModuleSnapshot, nameof(KITRadioisotopeGenerator.peltierEfficiency));
+            
+            
+            PowerGeneratedPerSecond(massRemaining, massInKilograms, wattsPerGram, peltierEfficiency, out var electricalCurrent, out var wasteHeat);
+            resMan.Produce(ResourceName.ElectricCharge, electricalCurrent);
+            resMan.Produce(ResourceName.WasteHeat, wasteHeat);
+        }
+
+        public static ModuleConfigurationFlags BackgroundModuleConfiguration(
+            ProtoPartModuleSnapshot protoPartModuleSnapshot) => ModuleConfigurationFlags.LocalResources |
+                                                                ModuleConfigurationFlags.First |
+                                                                ModuleConfigurationFlags.SupplierOnly;
     }
 }

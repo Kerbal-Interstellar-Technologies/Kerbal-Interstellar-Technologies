@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 
 namespace KIT.ResourceScheduler
 {
+    
     // ReSharper disable once InconsistentNaming
     public class KITDirectCurrentElectricalSystem : IKITModule, IDCElectricalSystem
     {
@@ -87,7 +88,7 @@ namespace KIT.ResourceScheduler
 
         private double _trackElectricChargeUsage;
 
-        private bool _useBackgroundProcessing = false;
+        private bool _useBackgroundProcessing = true;
 
         public ResourceData ResourceData;
 
@@ -113,8 +114,6 @@ namespace KIT.ResourceScheduler
                 _catchUpNeeded = true;
                 return;
             }
-
-
 
             if (_lastExecuted == 0) _catchUpNeeded = false;
             double currentTime = Planetarium.GetUniversalTime();
