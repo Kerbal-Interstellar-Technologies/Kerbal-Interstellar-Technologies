@@ -230,8 +230,12 @@ namespace KIT.ResourceScheduler
         bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount);
     }
 
+    /// <summary>
+    /// This is a reference for what each IKITModule needs to implement as static functions
+    /// </summary>
     public interface IKITBackgroundModule
     {
+        string KITPartName(ProtoPartSnapshot protoPartSnapshot, ProtoPartModuleSnapshot protoPartModuleSnapshot);
         void KITBackgroundUpdate(IResourceManager resMan, Vessel vessel, ProtoPartSnapshot protoPartSnapshot, ProtoPartModuleSnapshot protoPartModuleSnapshot, Part part);
         ModuleConfigurationFlags BackgroundModuleConfiguration(ProtoPartModuleSnapshot protoPartModuleSnapshot);
 
