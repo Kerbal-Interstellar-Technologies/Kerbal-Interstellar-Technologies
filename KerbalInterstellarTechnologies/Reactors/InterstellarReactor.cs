@@ -2708,16 +2708,6 @@ namespace KIT.Reactors
 
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = (int)electricPowerPriority;
-            supplierOnly = false;
-            hasLocalResources = true;
-
-            return true;
-        }
-
-
         /// <summary>
         /// electricChargeGeneratedLastUpdate indicates how much ElectricCharge was generated in the since the previous FixedUpdate()
         /// call.
@@ -2740,6 +2730,8 @@ namespace KIT.Reactors
         /// </summary>
         private double _electricChargeBeingSuppliedThisUpdate;
 
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.LocalResources | (ModuleConfigurationFlags)(int)electricPowerPriority;
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (!HighLogic.LoadedSceneIsFlight)

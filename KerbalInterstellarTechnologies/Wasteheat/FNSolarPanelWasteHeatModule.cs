@@ -199,14 +199,8 @@ namespace KIT.Wasteheat
             return 1d / (distanceInAu * distanceInAu);
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 1;
-            supplierOnly = true;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() =>
+            ModuleConfigurationFlags.First | ModuleConfigurationFlags.SupplierOnly;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

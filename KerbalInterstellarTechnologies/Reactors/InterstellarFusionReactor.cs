@@ -260,13 +260,9 @@ namespace KIT.Reactors
             fuel_mode = FuelModes.IndexOf(CurrentFuelMode);
         }
 
-        public new bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        public new ModuleConfigurationFlags ModuleConfiguration()
         {
-            priority = (int) powerPriority;
-            supplierOnly = false;
-            hasLocalResources = true;
-
-            return true;
+            return ModuleConfigurationFlags.LocalResources | (ModuleConfigurationFlags) powerPriority;
         }
     }
 }

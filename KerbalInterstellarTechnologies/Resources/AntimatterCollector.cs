@@ -61,14 +61,7 @@ namespace KIT.Resources
             canCollect = _moduleAnimateGeneric == null ? true :  _moduleAnimateGeneric.GetScalar == 1;
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 4;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

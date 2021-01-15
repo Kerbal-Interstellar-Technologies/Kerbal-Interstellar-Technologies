@@ -171,14 +171,7 @@ namespace KIT.Storage
                 $"{resourceName} @ {boilOffTemp:F1} K\nPower Requirements: {powerReqKW * 0.2 * powerReqMult * envMod:F1} KW";
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 2;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Second;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

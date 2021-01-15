@@ -544,14 +544,7 @@ namespace KIT.Science
             return kerbalFactor * (1.1f - (kerbal.stupidity / 5f));
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 4;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

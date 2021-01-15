@@ -86,11 +86,6 @@
   <ItemGroup>
     <Compile Include="Animate\AnimatedContainerContent.cs" />
     <Compile Include="Animate\FNLightSwitch.cs" />
-    <Compile Include="BackgroundProcessing\KITPartModuleStructs.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>KITPartModuleStructs.tt</DependentUpon>
-    </Compile>
     <Compile Include="Beamedpower\BeamedPowerTransmitterTag.cs" />
     <Compile Include="Beamedpower\InterstellarBeamedPowerHelper.cs" />
     <Compile Include="GameEventSubscriber.cs" />

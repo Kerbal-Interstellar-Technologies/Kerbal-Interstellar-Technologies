@@ -158,6 +158,10 @@ namespace KIT.Reactors
             PowerGeneratedPerSecond(massRemaining, massInKilograms, wattsPerGram, peltierEfficiency, out currentPowerOutput, out wasteHeatOutput);
         }
 
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.LocalResources |
+                                                                 ModuleConfigurationFlags.Fifth |
+                                                                 ModuleConfigurationFlags.SupplierOnly;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (HighLogic.LoadedSceneIsEditor) return;
@@ -177,14 +181,6 @@ namespace KIT.Reactors
         {
             return Localizer.Format("#LOC_KIT_RTG_GetInfo");
         }
-
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 0;
-            supplierOnly = true;
-            hasLocalResources = true;
-
-            return true;
-        }
+        
     }
 }

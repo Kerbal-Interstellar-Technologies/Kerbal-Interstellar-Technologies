@@ -912,9 +912,12 @@ namespace KIT.PowerManagement
             return sb.ToStringAndRelease();
         }
 
+        double thermalPowerRatio, chargedPowerRatio;
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        public ModuleConfigurationFlags ModuleConfiguration()
         {
+            int priority;
+            
             if (isLimitedByMinThrottle)
             {
                 priority = 1;
@@ -928,13 +931,8 @@ namespace KIT.PowerManagement
                 priority = 3;
             }
 
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
+            return (ModuleConfigurationFlags) priority;
         }
-
-        double thermalPowerRatio, chargedPowerRatio;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

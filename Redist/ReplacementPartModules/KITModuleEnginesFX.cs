@@ -25,20 +25,15 @@ namespace KIT.ReplacementPartModules
             return base.RequestPropellant(mass);
         }
 
+        public ModuleConfigurationFlags ModuleConfiguration() =>
+            ModuleConfigurationFlags.Fourth | ModuleConfigurationFlags.LocalResources;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             base.FixedUpdate();
         }
 
         public string KITPartName() => part.partInfo.title;
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 4;
-            supplierOnly = false;
-            hasLocalResources = true;
-
-            return true;
-        }
 
     }
 }

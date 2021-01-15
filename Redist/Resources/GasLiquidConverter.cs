@@ -104,6 +104,11 @@ namespace KIT.Resources
 
         }
 
+        public ModuleConfigurationFlags ModuleConfiguration()
+        {
+            return ModuleConfigurationFlags.Fifth;
+        }
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             // nothing needs doing here.
@@ -123,15 +128,6 @@ namespace KIT.Resources
 
             throw new NotImplementedException();
         }
-
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 5;
-            supplierOnly = false;
-            hasLocalResources = false;
-            return true;
-        }
-
 
         private readonly ResourceName[] _resourcesConverted = new[] {
             ResourceName.NeonGas, ResourceName.CarbonDioxideGas, ResourceName.CarbonMonoxideGas, ResourceName.DeuteriumGas,

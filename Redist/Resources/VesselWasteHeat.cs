@@ -65,6 +65,8 @@ namespace KIT.Resources
         }
 
 
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fifth;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             /*
@@ -112,15 +114,6 @@ namespace KIT.Resources
             if (string.IsNullOrEmpty(_KITPartName)) _KITPartName = Localizer.Format("#LOC_KIT_Vessel_Heat_Dissipation");
             return _KITPartName;
         }
-
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 5;
-            supplierOnly = false;
-            hasLocalResources = false;
-            return true;
-        }
-
     }
 
 }

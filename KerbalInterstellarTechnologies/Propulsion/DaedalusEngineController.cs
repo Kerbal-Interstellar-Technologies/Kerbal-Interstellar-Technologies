@@ -907,15 +907,8 @@ namespace KIT.Propulsion
             return sb.ToStringAndRelease();
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 5;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
-
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fifth;
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (_curEngineT == null) return;

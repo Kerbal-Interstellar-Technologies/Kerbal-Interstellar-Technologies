@@ -8,19 +8,14 @@ using JetBrains.Annotations;
 
 namespace KIT.ResourceScheduler
 {
-
     // ReSharper disable once InconsistentNaming
     public class KITDirectCurrentElectricalSystem : IKITModule, IDCElectricalSystem
     {
         public double UnallocatedElectricChargeConsumption;
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        public ModuleConfigurationFlags ModuleConfiguration()
         {
-            priority = 0;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
+            return ModuleConfigurationFlags.First | ModuleConfigurationFlags.SupplierOnly;
         }
 
         public void KITFixedUpdate(IResourceManager resMan)
@@ -92,7 +87,7 @@ namespace KIT.ResourceScheduler
 
         private double _trackElectricChargeUsage;
 
-        private bool _useBackgroundProcessing = false;
+        private bool _useBackgroundProcessing = true;
         
         public ResourceData ResourceData;
 
@@ -181,7 +176,13 @@ namespace KIT.ResourceScheduler
                     if (mod == null) continue;
                     // Handle the KITFixedUpdate() side of things first.
 
-                    var working = mod.ModuleConfiguration(out var priority, out var prepend, out var hasLocalResources);
+                    var moduleConfigurationFlags = mod.ModuleConfiguration();
+                    
+                    var working = (moduleConfigurationFlags & ModuleConfigurationFlags.Disabled) != ModuleConfigurationFlags.Disabled;
+                    int priority = (int) (moduleConfigurationFlags & ModuleConfigurationFlags.PriorityMask);
+                    bool prepend = (moduleConfigurationFlags & ModuleConfigurationFlags.SupplierOnly) != 0;
+                    
+                    
                     if (!working) continue;
 
                     if (!_sortedModules.TryGetValue(priority, out _))

@@ -1799,16 +1799,9 @@ namespace KIT.BeamedPower
             else
                 return (spotSize * 1.0e+3).ToString("0") + " mm";
         }
-
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 1;
-            supplierOnly = true;
-            hasLocalResources = false;
-
-            return true;
-        }
-
+        
+        public ModuleConfigurationFlags ModuleConfiguration() =>
+            ModuleConfigurationFlags.Fifth | ModuleConfigurationFlags.SupplierOnly;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

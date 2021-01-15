@@ -8,6 +8,16 @@ using UnityEngine;
 
 namespace KIT.ResourceScheduler
 {
+    class BackgroundFunction
+    {
+        Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule>
+            KITBackgroundUpdate;
+
+        Func<ProtoPartModuleSnapshot, int, bool, bool, bool> BackgroundModuleConfiguration;
+
+    }
+
+
     public partial class KITResourceVesselModule
     {
         private static readonly Type[] KITModuleSignature =
@@ -21,7 +31,7 @@ namespace KIT.ResourceScheduler
             var type = p.GetType();
             var methodInfo = type.GetMethod("KITBackgroundUpdate", KITModuleSignature);
             Debug.Log($"[KITResourceVesselModule] MethodInfo for {p} is {methodInfo}");
-            
+
             // return Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule >(methodInfo);
 
             return null;
@@ -29,7 +39,6 @@ namespace KIT.ResourceScheduler
 
         private void FindBackgroundModules()
         {
-            
             var protoPartSnapshots = vessel.protoVessel.protoPartSnapshots;
 
             foreach (var protoPartSnapshot in protoPartSnapshots)
@@ -46,20 +55,19 @@ namespace KIT.ResourceScheduler
 
                 }
                 */
-                
+
                 modulePrefabs.ForEach(pm => GetFunction(pm));
 
             }
 
         }
-        
+
         /// <summary>
         /// Entry point for performing background processing on a vessel
         /// </summary>
         private void PerformBackgroundProcessing()
         {
-            
-
+            FindBackgroundModules();
         }
     }
 }

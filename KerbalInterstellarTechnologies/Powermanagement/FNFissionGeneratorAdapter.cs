@@ -48,14 +48,7 @@ namespace KIT.PowerManagement
             }
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 1;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.First;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

@@ -904,15 +904,7 @@ namespace KIT.Resources
             _loopAnimation.Blend(loopingAnimationName, 1);
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 5;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
-
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fifth;
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (bIsEnabled)

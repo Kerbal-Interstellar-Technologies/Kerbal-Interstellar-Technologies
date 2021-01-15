@@ -958,18 +958,10 @@ namespace KIT.Propulsion
             return deltaV * thrustDirection;
         }
 
-
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 3;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
-
         private bool _changeFlipFlop;
-        
+
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Third;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (_attachedEngine == null || !HighLogic.LoadedSceneIsFlight) return;

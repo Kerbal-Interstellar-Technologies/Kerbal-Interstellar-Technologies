@@ -821,14 +821,7 @@ namespace KIT.Resources
             return sb.ToStringAndRelease();
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 4;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

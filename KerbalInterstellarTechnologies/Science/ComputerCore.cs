@@ -299,14 +299,7 @@ namespace KIT.Science
             return isEnabled && isPowered;
         }
 
-        public new bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 1;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public new ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.First;
 
         public new void KITFixedUpdate(IResourceManager resMan)
         {

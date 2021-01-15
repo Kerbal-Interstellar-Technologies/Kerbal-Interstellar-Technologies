@@ -1745,15 +1745,6 @@ namespace KIT.Propulsion
             return minimumDistance;
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 4;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
-
         private void UpdateStats()
         {
             if (!IsSlave)
@@ -1807,6 +1798,8 @@ namespace KIT.Propulsion
             powerRequirementForMaximumAllowedLightSpeed = GetPowerRequirementForWarp(maximumAllowedWarpThrotle);
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(_engineThrottle[selected_factor]);
         }
+
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

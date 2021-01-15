@@ -170,14 +170,20 @@ namespace KIT.ResourceScheduler
         DoNotOverFill = 1,
     }
 
-    public interface IVesselResources
+    [Flags]
+    public enum ModuleConfigurationFlags
     {
-        // since the last call.
-        bool VesselModified();
-        void VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules);
-        void OnKITProcessingFinished(IResourceManager resourceManager);
+        First = 0,
+        Second = 1,
+        Third = 2,
+        Fourth = 3,
+        Fifth = 4,
+        PriorityMask = 0x07,
+        SupplierOnly = 0x100,
+        LocalResources = 0x200,
+        Disabled = 0x400,
     }
-
+    
     /// <summary>
     /// IKITModule defines an interface used by Kerbal Interstellar Technologies PartModules. Through this interface,
     /// various functions are called on the PartModule from the KIT Resource Manager Vessel Module.
@@ -187,11 +193,8 @@ namespace KIT.ResourceScheduler
         /// <summary>
         /// Tells the resource scheduler about this module, and how it should be ran, when it should be accessed
         /// </summary>
-        /// <param name="priority">number between 1-5 indicating when the resource should be initialized</param>
-        /// <param name="supplierOnly">does this module only supply resources (solar panel, etc?)</param>
-        /// <param name="hasLocalResources">does this module use resources specific to that part? (radioactive, no flow, etc) The ResourceManager interface will give access to those if true</param>
         /// <returns>true if the module is ready to run, false otherwise</returns>
-        bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources);
+        ModuleConfigurationFlags ModuleConfiguration();
 
         /// <summary>
         /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules.
@@ -227,6 +230,24 @@ namespace KIT.ResourceScheduler
         bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount);
     }
 
+    public interface IKITBackgroundModule
+    {
+        void KITBackgroundUpdate(IResourceManager resMan, Vessel vessel, ProtoPartSnapshot protoPartSnapshot, ProtoPartModuleSnapshot protoPartModuleSnapshot, Part part);
+        ModuleConfigurationFlags BackgroundModuleConfiguration(ProtoPartModuleSnapshot protoPartModuleSnapshot);
+
+    }
+    
+    /// <summary>
+    /// To make keeping track of background suppliers easier
+    /// </summary>
+    public interface IKITBackgroundVariableSupplier
+    {
+        ResourceName[] ResourcesProvided(ProtoPartModuleSnapshot partModuleSnapshot);
+
+        bool BackgroundProvideResource(IResourceManager resMan, Vessel v, ProtoPartSnapshot protoPartSnapshot,
+            ProtoPartModuleSnapshot partModuleSnapshot, Part partPrefab);
+    }
+    
     // ReSharper disable once InconsistentNaming
     public interface IDCElectricalSystem
     {

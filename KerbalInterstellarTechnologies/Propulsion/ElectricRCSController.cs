@@ -349,14 +349,7 @@ namespace KIT.Propulsion
             }
         }
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 2;
-            supplierOnly = false;
-            hasLocalResources = false;
-
-            return true;
-        }
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Second;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

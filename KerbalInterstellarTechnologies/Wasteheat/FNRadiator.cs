@@ -351,6 +351,8 @@ namespace KIT.Wasteheat
             return true;
         }
 
+        public ModuleConfigurationFlags ModuleConfiguration() => (ModuleConfigurationFlags) powerPriority;
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (!HighLogic.LoadedSceneIsFlight)
@@ -2083,27 +2085,24 @@ namespace KIT.Wasteheat
         private bool _newlyBrokenRadiator;
         private double _brokenRadiatorWasteHeatAmount;
 
-        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
-        {
-            priority = 5;
-            supplierOnly = false;
-            hasLocalResources = false;
 
+        public ModuleConfigurationFlags ModuleConfiguration()
+        {
             if (!DeployableRadiatorBroken)
             {
                 _newlyBrokenRadiator = false;
-                return true;
+                return ModuleConfigurationFlags.Fifth;
             }
 
-            if (_newlyBrokenRadiator) return false;
+            if (_newlyBrokenRadiator) return ModuleConfigurationFlags.Disabled;
             _newlyBrokenRadiator = true;
 
             var partResourceDefinition = part.Resources[KITResourceSettings.WasteHeat];
-            if (partResourceDefinition == null) return false;
+            if (partResourceDefinition == null) return ModuleConfigurationFlags.Disabled;
 
             _brokenRadiatorWasteHeatAmount = part.Resources[KITResourceSettings.WasteHeat].amount;
 
-            return true;
+            return ModuleConfigurationFlags.Fifth;
         }
 
         public void KITFixedUpdate(IResourceManager resMan)

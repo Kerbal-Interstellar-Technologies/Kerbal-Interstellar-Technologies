@@ -810,6 +810,8 @@ namespace KIT.Storage
             return true;
         }
 
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.First;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (HighLogic.LoadedSceneIsEditor)
