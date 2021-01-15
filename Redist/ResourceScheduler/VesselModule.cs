@@ -78,7 +78,7 @@ namespace KIT.ResourceScheduler
 
             RefreshEventOccurred = true;
 
-            if(EqualityComparer<ResourceData>.Default.Equals(ResourceData, default(ResourceData)))
+            if (EqualityComparer<ResourceData>.Default.Equals(ResourceData, default(ResourceData)))
                 ResourceData = new ResourceData(this, RealCheatOptions.Instance);
         }
 
@@ -87,8 +87,8 @@ namespace KIT.ResourceScheduler
 
         private double _trackElectricChargeUsage;
 
-        private bool _useBackgroundProcessing = true;
-        
+        private bool _useBackgroundProcessing = false;
+
         public ResourceData ResourceData;
 
         /// <summary>
@@ -96,11 +96,12 @@ namespace KIT.ResourceScheduler
         /// </summary>
         public void FixedUpdate()
         {
-            if (vessel.vesselType == VesselType.SpaceObject || vessel.isEVA || vessel.vesselType == VesselType.Debris)
+            if (vessel.vesselType == VesselType.SpaceObject || vessel.isEVA || vessel.vesselType == VesselType.Debris ||
+                vessel.vesselType == VesselType.DeployedScienceController || vessel.vesselType == VesselType.DeployedSciencePart)
             {
                 return;
             }
-            
+
             if (!vessel.loaded)
             {
                 if (_useBackgroundProcessing)
@@ -108,12 +109,12 @@ namespace KIT.ResourceScheduler
                     PerformBackgroundProcessing();
                     return;
                 }
-                
+
                 _catchUpNeeded = true;
                 return;
             }
 
-            
+
 
             if (_lastExecuted == 0) _catchUpNeeded = false;
             double currentTime = Planetarium.GetUniversalTime();
@@ -177,12 +178,12 @@ namespace KIT.ResourceScheduler
                     // Handle the KITFixedUpdate() side of things first.
 
                     var moduleConfigurationFlags = mod.ModuleConfiguration();
-                    
+
                     var working = (moduleConfigurationFlags & ModuleConfigurationFlags.Disabled) != ModuleConfigurationFlags.Disabled;
-                    int priority = (int) (moduleConfigurationFlags & ModuleConfigurationFlags.PriorityMask);
+                    int priority = (int)(moduleConfigurationFlags & ModuleConfigurationFlags.PriorityMask);
                     bool prepend = (moduleConfigurationFlags & ModuleConfigurationFlags.SupplierOnly) != 0;
-                    
-                    
+
+
                     if (!working) continue;
 
                     if (!_sortedModules.TryGetValue(priority, out _))
@@ -280,7 +281,7 @@ namespace KIT.ResourceScheduler
 
             foreach (var part in vessel.Parts)
             {
-                foreach (var resource in part.Resources.Where( t => t.maxAmount > 0 && (t.flowState || ignoreFlow)))
+                foreach (var resource in part.Resources.Where(t => t.maxAmount > 0 && (t.flowState || ignoreFlow)))
                 {
                     var resourceID = KITResourceSettings.NameToResource(resource.resourceName);
                     if (resourceID == ResourceName.Unknown)

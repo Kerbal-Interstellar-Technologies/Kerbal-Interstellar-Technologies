@@ -4,39 +4,167 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using KIT.Resources;
+using KIT.ResourceScheduler;
 using UnityEngine;
 
 namespace KIT.ResourceScheduler
 {
     class BackgroundFunction
     {
-        Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule>
+        // Fixed Update equiv
+        public Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part>
             KITBackgroundUpdate;
 
-        Func<ProtoPartModuleSnapshot, int, bool, bool, bool> BackgroundModuleConfiguration;
+        public Func<ProtoPartModuleSnapshot, ModuleConfigurationFlags> BackgroundModuleConfiguration;
 
-    }
+        // Variable supplier equiv
+        public Func<ProtoPartModuleSnapshot, ResourceName[]> ResourcesProvided;
 
+        public Func<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part, ResourceName
+                , double>
+            BackgroundProvideResource;
 
-    public partial class KITResourceVesselModule
-    {
-        private static readonly Type[] KITModuleSignature =
+        public static readonly Type[] KITBackgroundUpdateSignature =
         {
             typeof(IResourceManager), typeof(Vessel), typeof(ProtoPartSnapshot), typeof(ProtoPartModuleSnapshot),
             typeof(Part)
         };
 
-        protected static Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule> GetFunction(PartModule p)
+        public static readonly Type[] BackgroundModuleConfigurationSignature =
         {
-            var type = p.GetType();
-            var methodInfo = type.GetMethod("KITBackgroundUpdate", KITModuleSignature);
-            Debug.Log($"[KITResourceVesselModule] MethodInfo for {p} is {methodInfo}");
+            typeof(ProtoPartModuleSnapshot), typeof(ModuleConfigurationFlags)
+        };
 
-            // return Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule >(methodInfo);
+        public static readonly Type[] ResourcesProvidedSignature =
+        {
+            typeof(ProtoPartModuleSnapshot), typeof(ResourceName[])
+        };
 
-            return null;
+        public static readonly Type[] BackgroundProvideResourceSignature =
+        {
+            typeof(IResourceManager), typeof(Vessel), typeof(ProtoPartSnapshot), typeof(ProtoPartModuleSnapshot),
+            typeof(Part), typeof(ResourceName), typeof(double)
+        };
+
+
+        public bool VariableSupplier => BackgroundProvideResource != null && ResourcesProvided != null;
+
+        private static readonly Dictionary<Type, BackgroundFunction> _preCached =
+            new Dictionary<Type, BackgroundFunction>();
+
+        public BackgroundFunction(Func<ProtoPartModuleSnapshot, ModuleConfigurationFlags> backgroundModuleConfiguration,
+            Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part>
+                kitBackgroundUpdate)
+        {
+            KITBackgroundUpdate = kitBackgroundUpdate;
+            BackgroundModuleConfiguration = backgroundModuleConfiguration;
         }
 
+        public BackgroundFunction(Func<ProtoPartModuleSnapshot, ModuleConfigurationFlags> backgroundModuleConfiguration,
+            Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part>
+                kitBackgroundUpdate, Func<ProtoPartModuleSnapshot, ResourceName[]> resourcesProvided,
+            Func<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part, ResourceName,
+                double> backgroundProvideResource) : this(backgroundModuleConfiguration, kitBackgroundUpdate)
+        {
+            KITBackgroundUpdate = kitBackgroundUpdate;
+            BackgroundModuleConfiguration = backgroundModuleConfiguration;
+            ResourcesProvided = resourcesProvided;
+            BackgroundProvideResource = backgroundProvideResource;
+
+        }
+
+        public static BackgroundFunction Instance(PartModule partModule)
+        {
+            var type = partModule.GetType();
+
+            if (_preCached.TryGetValue(type, out var retValue))
+            {
+                return retValue;
+            }
+
+            var methodInfo = type.GetMethod("KITBackgroundUpdate", KITBackgroundUpdateSignature);
+            if (methodInfo == null)
+            {
+                Debug.Log($"[BackgroundFunction] Can not find KITBackgroundUpdate in {partModule.ClassName}");
+                return null;
+            }
+
+            // var backgroundFunction = new BackgroundFunction();
+
+            #region Standard KIT Module support
+
+            var kitBackgroundUpdate =
+                (Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part>)
+                Delegate.CreateDelegate(
+                    typeof(Action<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part
+                    >), methodInfo);
+
+
+            methodInfo = type.GetMethod("BackgroundModuleConfiguration", BackgroundModuleConfigurationSignature);
+            if (methodInfo == null)
+            {
+                Debug.Log($"[BackgroundFunction] Can not find BackgroundModuleConfiguration in {partModule.ClassName}");
+                return null;
+            }
+
+            var backgroundModuleConfiguration =
+                (Func<ProtoPartModuleSnapshot, ModuleConfigurationFlags>)Delegate.CreateDelegate(
+                    typeof(Func<ProtoPartModuleSnapshot, ResourceName[]>), methodInfo);
+
+            #endregion
+
+            if (!(partModule is IKITVariableSupplier))
+            {
+                var result = new BackgroundFunction(backgroundModuleConfiguration, kitBackgroundUpdate);
+                _preCached[type] = result;
+                return result;
+            }
+
+            methodInfo = type.GetMethod("ResourcesProvided", ResourcesProvidedSignature);
+            if (methodInfo == null)
+            {
+                Debug.Log(
+                    $"[BackgroundFunction] Can not find ResourcesProvided in {partModule.ClassName} - disabling module");
+                return null;
+            }
+
+            var resourcesProvided =
+                (Func<ProtoPartModuleSnapshot, ResourceName[]>)Delegate.CreateDelegate(
+                    typeof(Func<ProtoPartModuleSnapshot, ResourceName[]>), methodInfo);
+
+            methodInfo = type.GetMethod("BackgroundProvideResource", BackgroundProvideResourceSignature);
+            if (methodInfo == null)
+            {
+                Debug.Log(
+                    $"[BackgroundFunction] Can not find BackgroundProvideResource in {partModule.ClassName} - disabling module");
+                return null;
+            }
+
+            var backgroundProvideResource =
+                (Func<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part,
+                    ResourceName, double>)
+                Delegate.CreateDelegate(
+                    typeof(Func<IResourceManager, Vessel, ProtoPartSnapshot, ProtoPartModuleSnapshot, PartModule, Part,
+                        ResourceName, double>),
+                    methodInfo);
+
+
+            // Debug.Log($"[KITResourceVesselModule] MethodInfo for {partModule} is {methodInfo}");
+
+            return new BackgroundFunction(backgroundModuleConfiguration, kitBackgroundUpdate, resourcesProvided,
+                backgroundProvideResource);
+
+        }
+
+
+
+    }
+
+
+    public partial class KITResourceVesselModule : VesselModule
+    {
         private void FindBackgroundModules()
         {
             var protoPartSnapshots = vessel.protoVessel.protoPartSnapshots;
@@ -47,16 +175,9 @@ namespace KIT.ResourceScheduler
                 var prefab = PartLoader.getPartInfoByName(protoPartSnapshot.partName).partPrefab;
 
                 // and get the prefab modules
-                var modulePrefabs = prefab.FindModulesImplementing<PartModule>();
+                var modulePrefabs = prefab.FindModulesImplementing<IKITModule>();
 
-                /*
-                foreach (var moduleSnapshot in protoPartSnapshot.modules)
-                {
-
-                }
-                */
-
-                modulePrefabs.ForEach(pm => GetFunction(pm));
+                // 
 
             }
 
@@ -70,4 +191,5 @@ namespace KIT.ResourceScheduler
             FindBackgroundModules();
         }
     }
+
 }

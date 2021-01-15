@@ -245,7 +245,7 @@ namespace KIT.ResourceScheduler
         ResourceName[] ResourcesProvided(ProtoPartModuleSnapshot partModuleSnapshot);
 
         bool BackgroundProvideResource(IResourceManager resMan, Vessel v, ProtoPartSnapshot protoPartSnapshot,
-            ProtoPartModuleSnapshot partModuleSnapshot, Part partPrefab);
+            ProtoPartModuleSnapshot partModuleSnapshot, Part partPrefab, ResourceName resourceName, double amount);
     }
     
     // ReSharper disable once InconsistentNaming
