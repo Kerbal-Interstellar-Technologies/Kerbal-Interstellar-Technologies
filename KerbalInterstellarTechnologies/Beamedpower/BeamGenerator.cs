@@ -321,10 +321,10 @@ namespace KIT.BeamedPower
             UpdateEfficiencyPercentage();
 
             // synchronize with receiver;
-            if (_transmitter != null && _transmitter.part_receiver != null)
+            if (_transmitter != null && _transmitter.PartReceiver != null)
             {
                 Debug.Log("[KSPI]: Called SetActiveBandwidthConfigurationByWaveLength with wavelength " + wavelength);
-                _transmitter.part_receiver.SetActiveBandwidthConfigurationByWaveLength(wavelength);
+                _transmitter.PartReceiver.SetActiveBandwidthConfigurationByWaveLength(wavelength);
             }
             //else
             //{

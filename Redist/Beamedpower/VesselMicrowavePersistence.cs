@@ -6,11 +6,7 @@ namespace KIT.BeamedPower
 {
     public class VesselMicrowavePersistence : IVesselMicrowavePersistence
     {
-        readonly Vessel vessel;
-
         private double _aperture;
-        private double _nuclearPower;
-        private double _solarPower;
         private double _powerCapacity;
 
         private CelestialBody _localStar;
@@ -20,7 +16,7 @@ namespace KIT.BeamedPower
             {
                 if (_localStar == null)
                 {
-                    _localStar = vessel.GetLocalStar();
+                    _localStar = Vessel.GetLocalStar();
                 }
                 return _localStar;
             }
@@ -28,27 +24,25 @@ namespace KIT.BeamedPower
 
         public VesselMicrowavePersistence(Vessel vessel)
         {
-            this.vessel = vessel;
+            this.Vessel = vessel;
             SupportedTransmitWavelengths = new List<WaveLengthData>();
         }
 
-        public bool HasPower => _nuclearPower > 0 || _solarPower > 0;
+        public bool HasPower => NuclearPower > 0 || SolarPower > 0;
 
         public double GetAvailablePowerInKW()
         {
             double power = 0;
-            if (_solarPower > 0.001 && vessel.LineOfSightToSun(LocalStar))
+            if (SolarPower > 0.001 && Vessel.LineOfSightToSun(LocalStar))
             {
-                var distanceBetweenVesselAndSun = Vector3d.Distance(vessel.GetVesselPos(), LocalStar.position);
+                var distanceBetweenVesselAndSun = Vector3d.Distance(Vessel.GetVesselPos(), LocalStar.position);
                 double invSquareMult = Math.Pow(distanceBetweenVesselAndSun, 2) / Math.Pow(GameConstants.KerbinSunDistance, 2);
-                power = _solarPower / invSquareMult;
+                power = SolarPower / invSquareMult;
             }
 
-            power += _nuclearPower;
+            power += NuclearPower;
 
-            var finalPower = Math.Min(1000 * _powerCapacity, power);
-
-            return finalPower;
+            return (double)Math.Min(1000 * _powerCapacity, power);
         }
 
         public double GetAvailablePowerInMW()
@@ -56,21 +50,13 @@ namespace KIT.BeamedPower
             return GetAvailablePowerInKW()/1000;
         }
 
-        public Vessel Vessel => vessel;
+        public Vessel Vessel { get; }
 
         public bool IsActive { get; set; }
 
-        public double SolarPower
-        {
-            get => _solarPower;
-            set => _solarPower = value;
-        }
+        public double SolarPower { get; set; }
 
-        public double NuclearPower
-        {
-            get => _nuclearPower;
-            set => _nuclearPower = value;
-        }
+        public double NuclearPower { get; set; }
 
         public double Aperture
         {

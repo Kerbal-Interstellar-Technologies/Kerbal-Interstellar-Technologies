@@ -445,7 +445,7 @@ namespace KIT.Wasteheat
                 if (!beamedPowerTransmitter.IsEnabled)
                     continue;
 
-                var wasteheatFraction = 1 - beamedPowerTransmitter.activeBeamGenerator.efficiencyPercentage * 0.01;
+                var wasteheatFraction = 1 - beamedPowerTransmitter.ActiveBeamGenerator.efficiencyPercentage * 0.01;
                 var powerCapacity = beamedPowerTransmitter.PowerCapacity;
 
                 _wasteheatSourcePowerCustom += Math.Min(_electricPowerAtCustom, powerCapacity) * wasteheatFraction;

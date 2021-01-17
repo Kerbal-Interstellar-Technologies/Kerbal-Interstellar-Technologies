@@ -9,6 +9,13 @@ namespace KIT
 {
     public static class Lib
     {
+        public static bool GetBool(ProtoPartModuleSnapshot partModuleSnapshot, string name, bool defaultValue = false)
+        {
+            bool output = false;
+            var ok = partModuleSnapshot.moduleValues.TryGetValue(name, ref output);
+            return ok ? output : defaultValue;
+        }
+        
         public static double GetDouble(ProtoPartModuleSnapshot partModuleSnapshot, string name, double defaultValue = 0.0)
         {
             double output = 0;

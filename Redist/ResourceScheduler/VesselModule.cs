@@ -88,7 +88,7 @@ namespace KIT.ResourceScheduler
 
         private double _trackElectricChargeUsage;
 
-        private bool _useBackgroundProcessing = true;
+        private bool _useBackgroundProcessing = false;
 
         public ResourceData ResourceData;
 
