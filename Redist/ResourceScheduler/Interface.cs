@@ -1,4 +1,5 @@
-﻿using KIT.Interfaces;
+﻿using System;
+using KIT.Interfaces;
 using KIT.Resources;
 using System.Collections.Generic;
 
@@ -48,14 +49,20 @@ namespace KIT.ResourceScheduler
         /// <returns>resources requested in this KITFixedUpdate()</returns>
         double CurrentlyRequested();
         /// <summary>
-        /// CurrentlySupplied is the total so far that has been supplied in this 
+        /// CurrentlySupplied is the total so far that has been supplied in this
         /// </summary>
         /// <returns></returns>
         double CurrentSupplied();
     }
 
+    public struct ResourceKeyValue
+    {
+        public ResourceName Resource;
+        public double Amount;
+    }
+
     /// <summary>
-    /// This interface is passed to the part modules in IKITMod.KITFixedUpdate. It allows the 
+    /// This interface is passed to the part modules in IKITModule.KITFixedUpdate. It allows the
     /// production and consumption of resources, and access to some wrapper variables to avoid global
     /// variable access.
     /// </summary>
@@ -68,7 +75,7 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource Name</param>
         /// <param name="wanted">Requested amount of resource to consume per second</param>
         /// <returns>Amount of resource that there is to consume (per second)</returns>
-        double ConsumeResource(ResourceName resource, double wanted);
+        double Consume(ResourceName resource, double wanted);
 
         /// <summary>
         /// Adds resources to the resource pool. It automatically converts your request to per-seconds,
@@ -77,28 +84,20 @@ namespace KIT.ResourceScheduler
         /// <param name="resource">Resource Name</param>
         /// <param name="amount">Amount of resource to produce per second</param>
         /// <param name="max">The maximum that this part can produce of this resource, in total. If -1, then it will add up all the times the resource has been produced.</param>
-        double ProduceResource(ResourceName resource, double amount, double max = -1);
+        double Produce(ResourceName resource, double amount, double max = -1);
 
         /// <summary>
-        /// Checks to see how much storage is available for the given resource, returning 0 if there is none.
+        /// Capacity information returns all you need to know about available resources and it's associated storage information
         /// </summary>
-        /// <param name="resourceIdentifier"></param>
-        /// <returns></returns>
-        double ResourceSpareCapacity(ResourceName resourceIdentifier);
-
-        /// <summary>
-        /// ResourceCurrentCapacity returns how much of a resource is available, ship wide.
-        /// </summary>
-        /// <param name="resourceIdentifier"></param>
-        /// <returns></returns>
-        double ResourceCurrentCapacity(ResourceName resourceIdentifier);
-
-        /// <summary>
-        /// ResourceFillFraction returns how full the resource is, expressed between 0 and 1.
-        /// </summary>
-        /// <param name="resourceIdentifier"></param>
-        /// <returns></returns>
-        double ResourceFillFraction(ResourceName resourceIdentifier);
+        /// <param name="resourceIdentifier">Resource to get information from</param>
+        /// <param name="maxCapacity">Total storage information available</param>
+        /// <param name="spareCapacity">Spare capacity for this resource</param>
+        /// <param name="currentCapacity">How much of this resource we have</param>
+        /// <param name="fillFraction">Fraction of how full it is</param>
+        /// <returns>Returns false if there is no resource of this type defined, otherwise true</returns>
+        bool CapacityInformation(
+            ResourceName resourceIdentifier, out double maxCapacity,
+            out double spareCapacity, out double currentCapacity, out double fillFraction);
 
         /// <summary>Provides access to the (equivalent) of TimeWarp.fixedDeltaTime.</summary>
         /// <remarks>
@@ -108,46 +107,103 @@ namespace KIT.ResourceScheduler
         double FixedDeltaTime();
 
         /// <summary>
+        /// ScaledConsumptionProduction scales resource production by the lowest ratio of consumed resources
+        /// </summary>
+        /// <param name="consumeResources">Resources to consume in this request</param>
+        /// <param name="produceResources">Resources to produce in this request</param>
+        /// <param name="minimumRatio">Minimum ratio needed, if calculated ratio is less than this, 0 is returned</param>
+        /// <param name="flags">Flags controlling the function</param>
+        /// <returns>Ratio used, between 0 and 1</returns>
+
+        double ScaledConsumptionProduction(
+            List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources,
+            double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty
+        );
+
+        /// <summary>
+        /// CurrentCapacity returns current amount of the indicated resource available
+        /// </summary>
+        /// <param name="resourceIdentifier">Resource to get information about</param>
+        /// <returns>Amount</returns>
+        double CurrentCapacity(ResourceName resourceIdentifier);
+
+        /// <summary>
+        /// FillFraction returns how full the storage is of the indicated resource
+        /// </summary>
+        /// <param name="resourceIdentifier">Resource to get information about</param>
+        /// <returns>How full, between 0 to 1.</returns>
+        double FillFraction(ResourceName resourceIdentifier);
+
+        /// <summary>
+        /// SpareCapacity returns how much storage space is available
+        /// </summary>
+        /// <param name="resourceIdentifier">Resource to get information about</param>
+        /// <returns></returns>
+        double SpareCapacity(ResourceName resourceIdentifier);
+
+        /// <summary>
+        /// MaxCapacity returns the maximum storage space available for this resource
+        /// </summary>
+        /// <param name="resourceIdentifier"></param>
+        /// <returns></returns>
+        double MaxCapacity(ResourceName resourceIdentifier);
+
+        /// <summary>
         /// Access to the cheat options that the code should use.  Use this instead of the global variable CheatOptions
         /// </summary>
         /// <returns>The ICheatOptions associated with this resource manager.</returns>
         ICheatOptions CheatOptions();
 
-        IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier);
+        IResourceProduction ProductionStats(ResourceName resourceIdentifier);
 
     }
 
-    public interface IResourceScheduler
+    [Flags]
+    public enum ConsumptionProductionFlags
     {
-        void ExecuteKITModules(double deltaTime, ref Dictionary<ResourceName, double> resourceAmount, ref Dictionary<ResourceName, double> resourceMaxAmount);
+        Empty = 0,
+        /// <summary>
+        /// DoNotOverFill reduces the amount of consumeResources and produceResources by an amount required to not overfill the storage
+        /// </summary>
+        DoNotOverFill = 1,
     }
 
-    public interface IVesselResources
+    [Flags]
+    public enum ModuleConfigurationFlags
     {
-        // since the last call.
-        bool VesselModified();
-        void VesselKITModules(ref List<IKITMod> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules);
-        void OnKITProcessingFinished(IResourceManager resourceManager);
+        First = 0,
+        Second = 1,
+        Third = 2,
+        Fourth = 3,
+        Fifth = 4,
+        PriorityMask = 0x07,
+        SupplierOnly = 0x100,
+        LocalResources = 0x200,
+        Disabled = 0x400,
     }
-
+    
     /// <summary>
-    /// IKITMod defines an interface used by Kerbal Interstellar Technologies PartModules. Through this interface,
+    /// IKITModule defines an interface used by Kerbal Interstellar Technologies PartModules. Through this interface,
     /// various functions are called on the PartModule from the KIT Resource Manager Vessel Module.
     /// </summary>
-    public interface IKITMod
+    public interface IKITModule
     {
         /// <summary>
-        /// This is the priority that the module should run at, from 1 to 5. 1 will be ran first, and 5 will be ran last.
+        /// Tells the resource scheduler about this module, and how it should be ran, when it should be accessed
         /// </summary>
-        /// <returns>Part Priority</returns>
-        ResourcePriorityValue ResourceProcessPriority();
+        /// <returns>true if the module is ready to run, false otherwise</returns>
+        ModuleConfigurationFlags ModuleConfiguration();
+
         /// <summary>
-        /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules. 
+        /// KITFixedUpdate replaces the FixedUpdate function for Kerbal Interstellar Technologies PartModules.
         /// </summary>
         /// <param name="resMan">Interface to the resource manager, and options that should be used when the code is running</param>
         void KITFixedUpdate(IResourceManager resMan);
+
         /// <summary>
-        /// 
+        /// String to identify the part
         /// </summary>
         /// <returns>String to identify the part</returns>
         string KITPartName();
@@ -174,6 +230,28 @@ namespace KIT.ResourceScheduler
         bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount);
     }
 
+    /// <summary>
+    /// This is a reference for what each IKITModule needs to implement as static functions
+    /// </summary>
+    public interface IKITBackgroundModule
+    {
+        string KITPartName(ProtoPartSnapshot protoPartSnapshot, ProtoPartModuleSnapshot protoPartModuleSnapshot);
+        void KITBackgroundUpdate(IResourceManager resMan, Vessel vessel, ProtoPartSnapshot protoPartSnapshot, ProtoPartModuleSnapshot protoPartModuleSnapshot, Part part);
+        ModuleConfigurationFlags BackgroundModuleConfiguration(ProtoPartModuleSnapshot protoPartModuleSnapshot);
+
+    }
+    
+    /// <summary>
+    /// To make keeping track of background suppliers easier
+    /// </summary>
+    public interface IKITBackgroundVariableSupplier
+    {
+        ResourceName[] ResourcesProvided(ProtoPartModuleSnapshot partModuleSnapshot);
+
+        bool BackgroundProvideResource(IResourceManager resMan, Vessel v, ProtoPartSnapshot protoPartSnapshot,
+            ProtoPartModuleSnapshot partModuleSnapshot, Part partPrefab, ResourceName resourceName, double amount);
+    }
+    
     // ReSharper disable once InconsistentNaming
     public interface IDCElectricalSystem
     {

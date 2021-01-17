@@ -1,7 +1,7 @@
 ﻿using KIT.Interfaces;
 using KIT.ResourceScheduler;
 
-namespace KIT.Powermanagement.Interfaces
+namespace KIT.PowerManagement.Interfaces
 {
     public interface IFNPowerSource : IPowerSource
     {
@@ -9,13 +9,13 @@ namespace KIT.Powermanagement.Interfaces
 
         void NotifyActiveChargedEnergyGenerator(double efficiency, double powerRatio, double mass);
 
-        double EngineHeatProductionMult { get; }
+        double EngineHeatProductionMultiplier { get; }
 
-        double PlasmaHeatProductionMult { get; }
+        double PlasmaHeatProductionMultiplier { get; }
 
-        double EngineWasteheatProductionMult { get; }
+        double EngineWasteheatProductionMultiplier { get; }
 
-        double PlasmaWasteheatProductionMult { get; }
+        double PlasmaWasteheatProductionMultiplier { get; }
 
         double MinCoolingFactor { get; }
 

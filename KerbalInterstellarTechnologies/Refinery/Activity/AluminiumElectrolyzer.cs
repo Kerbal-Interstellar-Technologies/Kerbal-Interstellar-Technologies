@@ -57,11 +57,11 @@ namespace KIT.Refinery.Activity
             _current_power = powerFraction * _effectivePowerRequirements;
 
             _current_rate = CurrentPower / EnergyPerTon;
-            _aluminaConsumptionRate = resMan.ConsumeResource(ResourceName.Alumina, _current_rate  / _aluminaDensity) /  _aluminaDensity;
+            _aluminaConsumptionRate = resMan.Consume(ResourceName.Alumina, _current_rate  / _aluminaDensity) /  _aluminaDensity;
             _aluminiumProductionRate = _aluminaConsumptionRate;
-            resMan.ProduceResource(ResourceName.Aluminium, _aluminaConsumptionRate / _aluminiumDensity);
+            resMan.Produce(ResourceName.Aluminium, _aluminaConsumptionRate / _aluminiumDensity);
             _oxygenProductionRate = _aluminaConsumptionRate;
-            resMan.ProduceResource(ResourceName.OxygenGas, GameConstants.AluminiumElectrolysisMassRatio * _aluminaConsumptionRate / _oxygenDensity);
+            resMan.Produce(ResourceName.OxygenGas, GameConstants.AluminiumElectrolysisMassRatio * _aluminaConsumptionRate / _oxygenDensity);
             UpdateStatusMessage();
         }
 

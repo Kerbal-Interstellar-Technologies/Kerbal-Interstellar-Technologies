@@ -13,7 +13,7 @@ namespace KIT.Extensions
             return part.vessel.parts.SelectMany(p => p.Resources.Where(r => r.resourceName == resourceName));
         }
 
-        public static void GetResourceMass(this Part part, PartResourceDefinition definition,  out double spareRoomMass, out double maximumMass) 
+        public static void GetResourceMass(this Part part, PartResourceDefinition definition,  out double spareRoomMass, out double maximumMass)
         {
             part.GetConnectedResourceTotals(definition.id, out var currentAmount, out var maxAmount);
 
@@ -39,8 +39,8 @@ namespace KIT.Extensions
 
             if (_windowListField == null)
             {
-                Type cntrType = typeof(UIPartActionController);
-                foreach (FieldInfo info in cntrType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+                Type counterType = typeof(UIPartActionController);
+                foreach (FieldInfo info in counterType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
                 {
                     if (info.FieldType == typeof(List<UIPartActionWindow>))
                     {

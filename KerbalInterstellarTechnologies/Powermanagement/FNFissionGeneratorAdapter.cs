@@ -1,16 +1,15 @@
-﻿using KIT.Resources;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 using System;
 using UnityEngine;
 
-namespace KIT.Powermanagement
+namespace KIT.PowerManagement
 {
     [KSPModule("Near Future Fission Generator Adapter")]
-    class FNFissionGeneratorAdapter : PartModule, IKITMod
+    class FNFissionGeneratorAdapter : PartModule, IKITModule
     {
-        [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Currentpower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F5")]//Generator current power
+        [KSPField(groupName = FNGenerator.Group, groupDisplayName = FNGenerator.GroupTitle, isPersistant = false, guiActiveEditor = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Currentpower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F5")]//Generator current power
         public double megaJouleGeneratorPowerSupply;
-        [KSPField(groupName = FNGenerator.GROUP, groupDisplayName = FNGenerator.GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Efficiency")]//Efficiency
+        [KSPField(groupName = FNGenerator.Group, groupDisplayName = FNGenerator.GroupTitle, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_NFFAdapter_Efficiency")]//Efficiency
         public string efficiency;
 
         [KSPField]
@@ -49,7 +48,7 @@ namespace KIT.Powermanagement
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.First;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -69,7 +68,7 @@ namespace KIT.Powermanagement
             efficiency = generatorEfficiency.ToString("P2");
 
             //extract power otherwise we end up with double power
-            resMan.ConsumeResource(ResourceName.ElectricCharge, generatorRate);
+            resMan.Consume(ResourceName.ElectricCharge, generatorRate);
 
             double megajoulesRate = generatorRate / GameConstants.ecPerMJ;
             double maxMegajoulesRate = generatorMax / GameConstants.ecPerMJ;

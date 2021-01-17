@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace KIT 
+namespace KIT
 {
-    public interface IUpgradeableModule 
+    public interface IUpgradeableModule
     {
         String UpgradeTechnology { get; }
         void upgradePartModule();
     }
 
-    public static class UpgradeableModuleExtensions 
+    public static class UpgradeableModuleExtensions
     {
         public static bool HasTechsRequiredToUpgrade(this IUpgradeableModule upgModule)
         {

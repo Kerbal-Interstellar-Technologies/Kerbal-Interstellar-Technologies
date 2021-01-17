@@ -6,7 +6,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Powermanagement.Interfaces;
+using KIT.PowerManagement.Interfaces;
 using KIT.Wasteheat;
 using TweakScale;
 using UnityEngine;
@@ -15,33 +15,52 @@ namespace KIT.Propulsion
 {
     class TECZeroResourceManagerInterface : IResourceManager
     {
-        public ICheatOptions CheatOptions() => RealCheatOptions.Instance;
-        public double ConsumeResource(ResourceName resource, double wanted)
+        public double MaxCapacity(ResourceName resourceIdentifier)
         {
             throw new NotImplementedException();
         }
+
+        public ICheatOptions CheatOptions() => RealCheatOptions.Instance;
+        public double Consume(ResourceName resource, double wanted)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool CapacityInformation(ResourceName resourceIdentifier, out double maxCapacity, out double spareCapacity,
+            out double currentCapacity, out double fillFraction)
+        {
+            throw new NotImplementedException();
+        }
+
         public double FixedDeltaTime()
         {
             throw new NotImplementedException();
         }
-        public double ProduceResource(ResourceName resource, double amount, double max = -1)
+
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
             throw new NotImplementedException();
         }
-        public double ResourceCurrentCapacity(ResourceName resourceIdentifier)
+
+        public double Produce(ResourceName resource, double amount, double max = -1)
         {
             throw new NotImplementedException();
         }
-        public double ResourceFillFraction(ResourceName resourceIdentifier)
+        public double CurrentCapacity(ResourceName resourceIdentifier)
+        {
+            throw new NotImplementedException();
+        }
+        public double FillFraction(ResourceName resourceIdentifier)
         {
             if (resourceIdentifier == ResourceName.WasteHeat) return 0;
 
             throw new NotImplementedException();
         }
 
-        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier) => null;
+        public IResourceProduction ProductionStats(ResourceName resourceIdentifier) => null;
 
-        public double ResourceSpareCapacity(ResourceName resourceIdentifier)
+        public double SpareCapacity(ResourceName resourceIdentifier)
         {
             throw new NotImplementedException();
         }
@@ -57,10 +76,10 @@ namespace KIT.Propulsion
     class PlasmaNozzleController : ThermalEngineController { }
 
     [KSPModule("Thermal Engine")]
-    class ThermalEngineController : PartModule, IKITMod, IFnEngineNozzle, IUpgradeableModule, IRescalable<ThermalEngineController>
+    class ThermalEngineController : PartModule, IKITModule, IFnEngineNozzle, IUpgradeableModule, IRescalable<ThermalEngineController>
     {
-        public const string GROUP = "ThermalEngineController";
-        public const string GROUP_TITLE = "#LOC_KSPIE_ThermalNozzleController_groupName";
+        public const string Group = "ThermalEngineController";
+        public const string GroupTitle = "#LOC_KSPIE_ThermalNozzleController_groupName";
 
         // Persistent True
         [KSPField(isPersistant = true)] public double storedAbsoluteFactor = 1;
@@ -75,25 +94,25 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)] public float windowPositionX = 1000;
         [KSPField(isPersistant = true)] public float windowPositionY = 200;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IspThrottle")
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IspThrottle")
          , UI_FloatRange(stepIncrement = 1, maxValue = 100, minValue = 0, affectSymCounterparts = UI_Scene.All)]//Isp Throttle
-        public float ispThrottle = 0;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowThrottle")
+        public float ispThrottle;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowThrottle")
          , UI_FloatRange(stepIncrement = 10, maxValue = 1000, minValue = 100, affectSymCounterparts = UI_Scene.All)]//Fuel Flow Throttle
         public float fuelflowThrottle = 100;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = false, guiName = "MHD Power %")
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = false, guiName = "MHD Power %")
          , UI_FloatRange(stepIncrement = 1f, maxValue = 200, minValue = 0, affectSymCounterparts = UI_Scene.All)]
         public float mhdPowerGenerationPercentage = 100;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_Radius", guiUnits = " m", guiFormat = "F2")]//Radius
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_Radius", guiUnits = " m", guiFormat = "F2")]//Radius
         public double radius = 2.5;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxFuelFlow", guiFormat = "F5")]//Max Fuel Flow
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxFuelFlow", guiFormat = "F5")]//Max Fuel Flow
         protected double maxFuelFlowRate;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxFuelFlowonengine", guiFormat = "F5")]//Max FuelFlow on engine
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxFuelFlowonengine", guiFormat = "F5")]//Max FuelFlow on engine
         public float maxFuelFlowOnEngine;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowMultplier", guiFormat = "F5")]//Fuelflow Multiplier on engine
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowMultplier", guiFormat = "F5")]//Fuelflow Multiplier on engine
         public double fuelflowMultplier;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelflowThrotlemodifier", guiFormat = "F5")]//Fuelflow Throttle modifier
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelflowThrotlemodifier", guiFormat = "F5")]//Fuelflow Throttle modifier
         public double fuelFlowThrottleModifier = 1;
 
         [KSPField] public double fuelflowThrottleMaxValue = 100;
@@ -110,8 +129,8 @@ namespace KIT.Propulsion
         [KSPField] public float runningEffectRatio;
         [KSPField] public double startupHeatReductionRatio;
         [KSPField] public double missingPrecoolerProportionExponent = 0.5;
-        [KSPField] public double minimumBaseIsp = 0;
-        [KSPField] public bool canUsePureChargedPower = false;
+        [KSPField] public double minimumBaseIsp;
+        [KSPField] public bool canUsePureChargedPower;
         [KSPField] public float takeoffIntakeBonus = 0.002f;
         [KSPField] public float jetengineAccelerationBaseSpeed = 0.2f;
         [KSPField] public float jetengineDecelerationBaseSpeed = 0.4f;
@@ -123,8 +142,8 @@ namespace KIT.Propulsion
         [KSPField] public bool useEngineResponseTime;
         [KSPField] public bool initialized;
         [KSPField] public float wasteHeatMultiplier = 1;
-        [KSPField] public int jetPerformanceProfile = 0;
-        [KSPField] public bool isJet = false;
+        [KSPField] public int jetPerformanceProfile;
+        [KSPField] public bool isJet;
         [KSPField] public float powerTrustMultiplier = 1;
         [KSPField] public float powerTrustMultiplierJet = 1;
         [KSPField] public double IspTempMultOffset = -1.371670613;
@@ -146,7 +165,7 @@ namespace KIT.Propulsion
         [KSPField] public string deployAnimationName = "";
         [KSPField] public string pulseAnimationName = "";
         [KSPField] public string emiAnimationName = "";
-        [KSPField] public float pulseDuration = 0;
+        [KSPField] public float pulseDuration;
         [KSPField] public float recoveryAnimationDivider = 1;
         [KSPField] public double wasteheatEfficiencyLowTemperature = 0.99;
         [KSPField] public double wasteheatEfficiencyHighTemperature = 0.99;
@@ -162,7 +181,7 @@ namespace KIT.Propulsion
         [KSPField] public string powerEffectNameLFO = "";
         [KSPField] public string powerEffectNameNonLFO = "";
         [KSPField] public float windowWidth = 200;
-        [KSPField] public double ispCoreTempMult = 0;
+        [KSPField] public double ispCoreTempMult;
         [KSPField] public bool showPartTemperature = true;
         [KSPField] public double baseMaxIsp;
         [KSPField] public bool allowUseOfChargedPower = true;
@@ -171,10 +190,10 @@ namespace KIT.Propulsion
         [KSPField] public bool overrideAtmosphereCurve = true;
         [KSPField] public bool overrideAccelerationSpeed = true;
         [KSPField] public bool overrideDecelerationSpeed = true;
-        [KSPField] public bool usePropellantBaseIsp = false;
-        [KSPField] public bool isPlasmaNozzle = false;
-        [KSPField] public bool canUsePlasmaPower = false;
-        [KSPField] public double requiredMegajouleRatio = 0;
+        [KSPField] public bool usePropellantBaseIsp;
+        [KSPField] public bool isPlasmaNozzle;
+        [KSPField] public bool canUsePlasmaPower;
+        [KSPField] public double requiredMegajouleRatio;
         [KSPField] public double exitArea = 1;
         [KSPField] public double exitAreaScaleExponent = 2;
         [KSPField] public double plasmaAfterburnerRange = 2;
@@ -183,159 +202,159 @@ namespace KIT.Propulsion
         [KSPField] public float throttleAnimExp = 1;
 
         //GUI
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ExitArea", guiUnits = " m\xB2", guiFormat = "F3")]//Exit Area
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ExitArea", guiUnits = " m\xB2", guiFormat = "F3")]//Exit Area
         public double scaledExitArea = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AfterburnerTechReq")]//Afterburner upgrade tech
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AfterburnerTechReq")]//Afterburner upgrade tech
         public string afterburnerTechReq = string.Empty;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_Propellant")]//Propellant
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_Propellant")]//Propellant
         public string _fuelmode;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_IspPropellantMultiplier", guiFormat = "F3")]//Propellant Isp Multiplier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_IspPropellantMultiplier", guiFormat = "F3")]//Propellant Isp Multiplier
         public double _ispPropellantMultiplier = 1;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_SootAccumulation", guiUnits = " %", guiFormat = "F3")]//Soot Accumulation
+        [KSPField(groupName = Group, isPersistant = true, guiActive = false, guiName = "#LOC_KSPIE_ThermalNozzleController_SootAccumulation", guiUnits = " %", guiFormat = "F3")]//Soot Accumulation
         public double sootAccumulationPercentage;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxSoot")]//Max Soot
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxSoot")]//Max Soot
         public float _propellantSootFactorFullThrotle;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MinSoot")]//Min Soot
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MinSoot")]//Min Soot
         public float _propellantSootFactorMinThrotle;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EquilibriumSoot")]//Equilibrium Soot
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EquilibriumSoot")]//Equilibrium Soot
         public float _propellantSootFactorEquilibrium;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Temperature")]//Temperature
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Temperature")]//Temperature
         public string temperatureStr = "";
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ISPThrustMult")]//ISP / Thrust Mult
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ISPThrustMult")]//ISP / Thrust Mult
         public string thrustIspMultiplier = "";
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelThrustMultiplier", guiFormat = "F3")]//Fuel Thrust Multiplier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelThrustMultiplier", guiFormat = "F3")]//Fuel Thrust Multiplier
         public double _thrustPropellantMultiplier = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_UpgradeCost")]//Upgrade Cost
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_UpgradeCost")]//Upgrade Cost
         public string upgradeCostStr;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ControlHeatProduction")]//Control Heat Production
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ControlHeatProduction")]//Control Heat Production
         public bool controlHeatProduction = true;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_HeatExponent")]//Heat Exponent
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_HeatExponent")]//Heat Exponent
         public float heatProductionExponent = 7.1f;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusHeatExponent")]//Radius Heat Exponent
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusHeatExponent")]//Radius Heat Exponent
         public double radiusHeatProductionExponent = 0.25;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusHeatMultiplier")]//Radius Heat Multiplier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusHeatMultiplier")]//Radius Heat Multiplier
         public double radiusHeatProductionMult = 10;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_HeatProductionMultiplier")]//Heat Production Multiplier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_HeatProductionMultiplier")]//Heat Production Multiplier
         public double heatProductionMultiplier = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Ispmodifier")]//Isp modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Ispmodifier")]//Isp modifier
         public double ispHeatModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusHeatModifier")]//Radius modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusHeatModifier")]//Radius modifier
         public double radiusHeatModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EngineHeatProductionMult")]//Engine Heat Production Mult
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EngineHeatProductionMult")]//Engine Heat Production Mult
         public double engineHeatProductionMult;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_PowerToMass")]//Power To Mass
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_PowerToMass")]//Power To Mass
         public double powerToMass;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_SpaceHeatProduction")]//Space Heat Production
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_SpaceHeatProduction")]//Space Heat Production
         public double spaceHeatProduction = 100;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EngineHeatProduction", guiFormat = "F2")]//Engine Heat Production
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EngineHeatProduction", guiFormat = "F2")]//Engine Heat Production
         public double engineHeatProduction;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxThrustOnEngine", guiFormat = "F1", guiUnits = " kN")]//Max Thrust On Engine
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxThrustOnEngine", guiFormat = "F1", guiUnits = " kN")]//Max Thrust On Engine
         public float maxThrustOnEngine;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EffectiveIspOnEngine")]//Effective Isp On Engine
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EffectiveIspOnEngine")]//Effective Isp On Engine
         public float realIspEngine;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Threshold", guiUnits = " kN", guiFormat = "F5")]//Threshold
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Threshold", guiUnits = " kN", guiFormat = "F5")]//Threshold
         public double pressureThreshold;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RequestedThermalHeat", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit", guiFormat = "F2")]//Requested ThermalHeat
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RequestedThermalHeat", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit", guiFormat = "F2")]//Requested ThermalHeat
         public double requested_thermal_power;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RequestedCharge", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Requested Charge
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RequestedCharge", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Requested Charge
         public double requested_charge_particles;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RecievedPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit", guiFormat = "F2")]//Recieved Power
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RecievedPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit", guiFormat = "F2")]//Recieved Power
         public double reactor_power_received;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusModifier")]//Radius Modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_RadiusModifier")]//Radius Modifier
         public string radiusModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Vacuum")]//Vacuum
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Vacuum")]//Vacuum
         public string vacuumPerformance;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Sea")]//Sea
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_Sea")]//Sea
         public string surfacePerformance;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_BaseIsp")]//Base Isp
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_BaseIsp")]//Base Isp
         protected float _baseIspMultiplier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_DecompositionEnergy")]//Decomposition Energy
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_DecompositionEnergy")]//Decomposition Energy
         protected float _decompositionEnergy;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EngineMaxThrust", guiFormat = "F1", guiUnits = " kN")]//Engine Max Thrust
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EngineMaxThrust", guiFormat = "F1", guiUnits = " kN")]//Engine Max Thrust
         protected double engineMaxThrust;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThrustPerMJ", guiFormat = "F3", guiUnits = " kN")]//Thrust Per MJ
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThrustPerMJ", guiFormat = "F3", guiUnits = " kN")]//Thrust Per MJ
         protected double thrustPerMegaJoule;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxHydrogenThrustInSpace")]//Max Hydrogen Thrust In Space
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxHydrogenThrustInSpace")]//Max Hydrogen Thrust In Space
         protected double max_thrust_in_space;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FinalMaxThrustInSpace", guiFormat = "F1", guiUnits = " kN")]//Final Max Thrust In Space
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FinalMaxThrustInSpace", guiFormat = "F1", guiUnits = " kN")]//Final Max Thrust In Space
         protected double final_max_thrust_in_space;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThrustInCurrentAtmosphere")]//Thrust In Current Atmosphere
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThrustInCurrentAtmosphere")]//Thrust In Current Atmosphere
         protected double max_thrust_in_current_atmosphere;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentMaxEngineThrust", guiFormat = "F1", guiUnits = " kN")]//Current Max Engine Thrust
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentMaxEngineThrust", guiFormat = "F1", guiUnits = " kN")]//Current Max Engine Thrust
         protected double final_max_engine_thrust;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MaximumISP", guiFormat = "F1", guiUnits = "s")]//Maximum ISP
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MaximumISP", guiFormat = "F1", guiUnits = "s")]//Maximum ISP
         protected double _maxISP;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MinimumISP", guiFormat = "F1", guiUnits = "s")]//Minimum ISP
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MinimumISP", guiFormat = "F1", guiUnits = "s")]//Minimum ISP
         protected double _minISP;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxCalculatedThrust", guiFormat = "F1", guiUnits = " kN")]//Max Calculated Thrust
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxCalculatedThrust", guiFormat = "F1", guiUnits = " kN")]//Max Calculated Thrust
         protected double calculatedMaxThrust;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentMassFlow", guiFormat = "F5")]//Current Mass Flow
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentMassFlow", guiFormat = "F5")]//Current Mass Flow
         protected double currentMassFlow;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsOpenCycleCooler", guiFormat = "F5")]//Is Open CycleCooler
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsOpenCycleCooler", guiFormat = "F5")]//Is Open CycleCooler
         protected bool isOpenCycleCooler;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowForCooling", guiFormat = "F5")]//Fuel Flow ForCooling
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_FuelFlowForCooling", guiFormat = "F5")]//Fuel Flow ForCooling
         protected double fuelFlowForCooling;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AirCooling", guiFormat = "F5")]//Air Cooling
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AirCooling", guiFormat = "F5")]//Air Cooling
         protected double airFlowForCooling;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentIsp", guiFormat = "F1")]//Current Isp
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_CurrentIsp", guiFormat = "F1")]//Current Isp
         protected double current_isp;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxPressureThresholdAtKerbinSurface", guiFormat = "F1", guiUnits = " kPa")]//Max Pressure Thresshold @ 1 atm
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_MaxPressureThresholdAtKerbinSurface", guiFormat = "F1", guiUnits = " kPa")]//Max Pressure Thresshold @ 1 atm
         protected double maxPressureThresholdAtKerbinSurface;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThermalRatio")]//Thermal Ratio
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThermalRatio")]//Thermal Ratio
         protected double thermalResourceRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ChargedPowerRatio")]//Charged Power Ratio
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ChargedPowerRatio")]//Charged Power Ratio
         protected double chargedResourceRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ExpectedMaxThrust")]//Expected Max Thrust
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ExpectedMaxThrust")]//Expected Max Thrust
         protected double expectedMaxThrust;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsLFO")]//Is LFO
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsLFO")]//Is LFO
         protected bool _propellantIsLFO;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_VelocityModifier", guiFormat = "F3")]//Velocity Modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_VelocityModifier", guiFormat = "F3")]//Velocity Modifier
         protected float vcurveAtCurrentVelocity;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AtmosphereModifier", guiFormat = "F3")]//Atmosphere Modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AtmosphereModifier", guiFormat = "F3")]//Atmosphere Modifier
         protected float atmosphereModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AtomType")]//Atom Type
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AtomType")]//Atom Type
         protected int _atomType = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_PropellantType")]//Propellant Type
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_PropellantType")]//Propellant Type
         protected int _propType = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsNeutronAbsorber")]//Is Neutron Absorber
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_IsNeutronAbsorber")]//Is Neutron Absorber
         protected bool _isNeutronAbsorber;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaxThermalPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Thermal Power
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaxThermalPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Thermal Power
         protected double currentMaxThermalPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaxChargedPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Charged Power
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaxChargedPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Max Charged Power
         protected double currentMaxChargedPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_AvailableTPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Available T Power
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_AvailableTPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Available T Power
         protected double availableThermalPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_AvailableCPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Available C Power
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_AvailableCPower", guiUnits = "#LOC_KSPIE_Reactor_megajouleUnit")]//Available C Power
         protected double availableChargedPower;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AirFlowHeatModifier", guiFormat = "F3")]//Air Flow Heat Modifier
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_AirFlowHeatModifier", guiFormat = "F3")]//Air Flow Heat Modifier
         protected double airflowHeatModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThermalPowerSupply", guiFormat = "F2")]//Thermal Power Supply
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ThermalPowerSupply", guiFormat = "F2")]//Thermal Power Supply
         protected double effectiveThermalSupply;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ChargedPowerSupply", guiFormat = "F2")]//Charged Power Supply
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ChargedPowerSupply", guiFormat = "F2")]//Charged Power Supply
         protected double effectiveChargedSupply;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F3")]
         public double maximumPowerUsageForPropulsionRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F3")]
         public double maximumThermalPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F3")]
         public double maximumChargedPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaximumReactorPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Maximum Reactor Power
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_ThermalNozzleController_MaximumReactorPower", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit")]//Maximum Reactor Power
         public double maximumReactorPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F3", guiName = "#LOC_KSPIE_ThermalNozzleController_HeatThrustModifier")]//Heat Thrust Modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F3", guiName = "#LOC_KSPIE_ThermalNozzleController_HeatThrustModifier")]//Heat Thrust Modifier
         public double heatThrustModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiFormat = "F3", guiName = "#LOC_KSPIE_ThermalNozzleController_PowerThrustModifier")]//Heat Thrust Modifier
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiFormat = "F3", guiName = "#LOC_KSPIE_ThermalNozzleController_PowerThrustModifier")]//Heat Thrust Modifier
         public double powerThrustModifier;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EffectiveThrustFraction")]//Effective Thrust Fraction
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_EffectiveThrustFraction")]//Effective Thrust Fraction
         public double effectiveThrustFraction = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ElectricalyPowered", guiUnits = "%", guiFormat = "F1")]//Electricaly Powered
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_ThermalNozzleController_ElectricalyPowered", guiUnits = "%", guiFormat = "F1")]//Electricaly Powered
         public double received_megajoules_percentage;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = false, guiName = "Jet Spool Ratio", guiFormat = "F2")]
+        [KSPField(groupName = Group, isPersistant = true, guiActive = false, guiName = "Jet Spool Ratio", guiFormat = "F2")]
         public float jetSpoolRatio;
-        [KSPField(groupName = GROUP, isPersistant = false, guiActive = false, guiName = "Spool Effect Ratio", guiFormat = "F2")]
+        [KSPField(groupName = Group, isPersistant = false, guiActive = false, guiName = "Spool Effect Ratio", guiFormat = "F2")]
         public float spoolEffectRatio;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_PropelantWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_ThermalNozzleController_WindowHidden", enabledText = "#LOC_KSPIE_ThermalNozzleController_WindowShown", affectSymCounterparts = UI_Scene.None)]//Propelant Window--Hidden--Shown
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_PropelantWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_ThermalNozzleController_WindowHidden", enabledText = "#LOC_KSPIE_ThermalNozzleController_WindowShown", affectSymCounterparts = UI_Scene.None)]//Propelant Window--Hidden--Shown
         public bool render_window;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_ModuleSabreHeating_MissingPrecoolerRatio")]
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_ModuleSabreHeating_MissingPrecoolerRatio")]
         public double missingPrecoolerRatio;
 
         [KSPField] public bool showIspThrottle;
@@ -352,7 +371,7 @@ namespace KIT.Propulsion
         [KSPField] public float effectiveJetengineAccelerationSpeed;
         [KSPField] public float effectiveJetengineDecelerationSpeed;
 
-        [KSPField] public double baseJetHeatproduction = 0;
+        [KSPField] public double baseJetHeatproduction;
         [KSPField] public double coreTemperature = 3000;
         [KSPField] public double minimumThrust = 0.000001;
 
@@ -367,7 +386,7 @@ namespace KIT.Propulsion
         [KSPField] public double adjustedFuelFlowMult;
         [KSPField] public double adjustedFuelFlowExponent = 2;
         [KSPField] public double receivedMegajoulesRatio;
-        [KSPField] public double minThrottle = 0;
+        [KSPField] public double minThrottle;
 
         // Constants
         private const double HydroloxDecompositionEnergy = 16.2137;
@@ -497,7 +516,7 @@ namespace KIT.Propulsion
             scaledExitArea = exitArea * Math.Pow(storedAbsoluteFactor, exitAreaScaleExponent);
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_NextPropellant", active = true)]//Next Propellant
+        [KSPEvent(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_NextPropellant", active = true)]//Next Propellant
         public void NextPropellant()
         {
             fuel_mode++;
@@ -507,7 +526,7 @@ namespace KIT.Propulsion
             SetupPropellants();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_PreviousPropellant", active = true)]//Previous Propellant
+        [KSPEvent(groupName = Group, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_ThermalNozzleController_PreviousPropellant", active = true)]//Previous Propellant
         public void PreviousPropellant()
         {
             fuel_mode--;
@@ -529,7 +548,7 @@ namespace KIT.Propulsion
             PreviousPropellantInternal();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_ThermalNozzleController_Retrofit", active = true)]//Retrofit
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_ThermalNozzleController_Retrofit", active = true)]//Retrofit
         public void RetrofitEngine()
         {
             if (ResearchAndDevelopment.Instance == null || isupgraded || ResearchAndDevelopment.Instance.Science < upgradeCost) return;
@@ -554,7 +573,7 @@ namespace KIT.Propulsion
             get
             {
                 var baseWasteheatEfficiency = isPlasmaNozzle ? wasteheatEfficiencyHighTemperature : wasteheatEfficiencyLowTemperature;
-                var reactorWasteheatModifier = AttachedReactor == null ? 1 : isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMult : AttachedReactor.EngineWasteheatProductionMult;
+                var reactorWasteheatModifier = AttachedReactor == null ? 1 : isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMultiplier : AttachedReactor.EngineWasteheatProductionMultiplier;
                 var wasteheatEfficiencyModifier = (1 - baseWasteheatEfficiency) * reactorWasteheatModifier;
                 if (_fuelCoolingFactor > 0)
                     wasteheatEfficiencyModifier /= _fuelCoolingFactor;
@@ -1307,7 +1326,7 @@ namespace KIT.Propulsion
 
                 _atmosphereCurve.Add(0, effectiveIsp, 0, 0);
 
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
                 var wasteheatModifier = wasteheatRatioDecelerationMult > 0 ? Math.Max((1 - wasteheatRatio) * wasteheatRatioDecelerationMult, 1) : 1;
 
                 if (AttachedReactor != null)
@@ -1441,13 +1460,13 @@ namespace KIT.Propulsion
             if (_maxISP <= 0)
                 return;
 
-            var baseMaxThrust = GetPowerThrustModifier() * GetHeatThrustModifier() * AttachedReactor.MaximumPower / _maxISP / GameConstants.StandardGravity * GetHeatExchangerThrustMultiplier();
+            var baseMaxThrust = GetPowerThrustModifier() * GetHeatThrustModifier() * AttachedReactor.MaximumPower / _maxISP / PhysicsGlobals.GravitationalAcceleration * GetHeatExchangerThrustMultiplier();
             var maxThrustInSpace = baseMaxThrust;
             baseMaxThrust *= _thrustPropellantMultiplier;
 
             final_max_thrust_in_space = baseMaxThrust;
 
-            maxFuelFlowOnEngine = (float)Math.Max(baseMaxThrust / (GameConstants.StandardGravity * _maxISP), 1e-10);
+            maxFuelFlowOnEngine = (float)Math.Max(baseMaxThrust / (PhysicsGlobals.GravitationalAcceleration * _maxISP), 1e-10);
             _myAttachedEngine.maxFuelFlow = maxFuelFlowOnEngine;
 
             maxThrustOnEngine = (float)Math.Max(baseMaxThrust, minimumThrust);
@@ -1564,11 +1583,11 @@ namespace KIT.Propulsion
         {
             //TODO - fix this
 
-            var stats = resMan.ResourceProductionStats(ResourceName.ElectricCharge);
+            var stats = resMan.ProductionStats(ResourceName.ElectricCharge);
             if (stats == null || stats.PreviousDataSupplied() == false) return maximumElectricPower;
 
             var currentUnfilledResourceDemand = stats.PreviousUnmetDemand();
-            var spareResourceCapacity = resMan.ResourceSpareCapacity(ResourceName.ElectricCharge);
+            var spareResourceCapacity = resMan.SpareCapacity(ResourceName.ElectricCharge);
 
             return Math.Min(maximumElectricPower, (currentUnfilledResourceDemand + spareResourceCapacity) * mhdPowerGenerationPercentage * 0.01);
         }
@@ -1583,12 +1602,12 @@ namespace KIT.Propulsion
             if (requiredMegajouleRatio > 0)
             {
                 var requestedMegajoules = (currentMaxThermalPower + currentMaxChargedPower) * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
-                var availablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedMegajoules);
+                var availablePower = resMan.Consume(ResourceName.ElectricCharge, requestedMegajoules);
                 receivedMegajoulesRatio = requestedMegajoules > 0 ? availablePower / requestedMegajoules : 0;
-                
+
                 requestedElectricPowerMegajoules = availablePower * requiredMegajouleRatio * AttachedReactor.MagneticNozzlePowerMult;
                 //var receivedMegajoules = consumeFNResourcePerSecond(requestedElectricPowerMegajoules, ResourceSettings.Config.ElectricPowerInMegawatt);
-                var receivedMegajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, requestedElectricPowerMegajoules);
+                var receivedMegajoules = resMan.Consume(ResourceName.ElectricCharge, requestedElectricPowerMegajoules);
                 requiredElectricalPowerFromMhd = CalculateElectricalPowerCurrentlyNeeded(resMan, availablePower * requiredMegajouleRatio * 2);
                 var electricalPowerCurrentlyNeedRatio = availablePower > 0 ? Math.Min(1, requiredElectricalPowerFromMhd / requestedElectricPowerMegajoules) : 0;
                 receivedMegajoulesRatio = Math.Min(1, Math.Max(electricalPowerCurrentlyNeedRatio, requestedElectricPowerMegajoules > 0 ? receivedMegajoules / requestedElectricPowerMegajoules : 0));
@@ -1599,21 +1618,21 @@ namespace KIT.Propulsion
                 requestedElectricPowerMegajoules = 0;
                 receivedMegajoulesRatio = 1;
             }
-            
+
             // availableThermalPower = exhaustAllowed ? currentMaxThermalPower * (thermalResourceRatio > 0.5 ? 1 : thermalResourceRatio * 2) : 0;
             // availableChargedPower = exhaustAllowed ? currentMaxChargedPower * (chargedResourceRatio > 0.5 ? 1 : chargedResourceRatio * 2) : 0;
 
             requested_thermal_power = receivedMegajoulesRatio * currentMaxThermalPower;
 
-            availableThermalPower = reactor_power_received = resMan.ConsumeResource(ResourceName.ThermalPower, requested_thermal_power);
+            availableThermalPower = reactor_power_received = resMan.Consume(ResourceName.ThermalPower, requested_thermal_power);
 
-            // thermalResourceRatio = resMan.ResourceFillFraction(ResourceName.ThermalPower);
-            // chargedResourceRatio = resMan.ResourceFillFraction(ResourceName.ChargedParticle); // does not work anymore.
+            // thermalResourceRatio = resMan.FillFraction(ResourceName.ThermalPower);
+            // chargedResourceRatio = resMan.FillFraction(ResourceName.ChargedParticle); // does not work anymore.
 
             if (currentMaxChargedPower > 0)
             {
                 requested_charge_particles = receivedMegajoulesRatio * currentMaxChargedPower;
-                availableChargedPower = resMan.ConsumeResource(ResourceName.ChargedParticle, requested_charge_particles);
+                availableChargedPower = resMan.Consume(ResourceName.ChargedParticle, requested_charge_particles);
                 reactor_power_received += availableChargedPower;
             }
             else
@@ -1635,13 +1654,13 @@ namespace KIT.Propulsion
 
                 var baseWasteheatEfficiency = isPlasmaNozzle ? wasteheatEfficiencyHighTemperature : wasteheatEfficiencyLowTemperature;
 
-                var reactorWasteheatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMult : AttachedReactor.EngineWasteheatProductionMult;
+                var reactorWasteheatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaWasteheatProductionMultiplier : AttachedReactor.EngineWasteheatProductionMultiplier;
 
                 var wasteheatEfficiencyModifier = (1 - baseWasteheatEfficiency) * reactorWasteheatModifier;
                 if (_fuelCoolingFactor > 0)
                     wasteheatEfficiencyModifier /= _fuelCoolingFactor;
 
-                resMan.ProduceResource(ResourceName.WasteHeat, sootModifier * (1 - wasteheatEfficiencyModifier) * reactor_power_received);
+                resMan.Produce(ResourceName.WasteHeat, sootModifier * (1 - wasteheatEfficiencyModifier) * reactor_power_received);
             }
 
             if (reactor_power_received > 0 && _maxISP > 0)
@@ -1656,9 +1675,9 @@ namespace KIT.Propulsion
 
                 powerHeatModifier = receivedMegajoulesRatio * GetPowerThrustModifier() * GetHeatThrustModifier();
 
-                engineMaxThrust = powerHeatModifier * _mhdTrustIspModifier * reactor_power_received / _maxISP / GameConstants.StandardGravity;
+                engineMaxThrust = powerHeatModifier * _mhdTrustIspModifier * reactor_power_received / _maxISP / PhysicsGlobals.GravitationalAcceleration;
 
-                thrustPerMegaJoule = powerHeatModifier * maximumPowerUsageForPropulsionRatio / _maxISP / GameConstants.StandardGravity * ispRatio;
+                thrustPerMegaJoule = powerHeatModifier * maximumPowerUsageForPropulsionRatio / _maxISP / PhysicsGlobals.GravitationalAcceleration * ispRatio;
 
                 expectedMaxThrust = thrustPerMegaJoule * AttachedReactor.MaximumPower * effectiveThrustFraction;
 
@@ -1714,7 +1733,7 @@ namespace KIT.Propulsion
             var maxThrustForFuelFlow = final_max_engine_thrust > 0.0001 ? calculatedMaxThrust : final_max_engine_thrust;
 
             // calculate maximum fuel flow rate
-            maxFuelFlowRate = maxThrustForFuelFlow / current_isp / GameConstants.StandardGravity;
+            maxFuelFlowRate = maxThrustForFuelFlow / current_isp / PhysicsGlobals.GravitationalAcceleration;
 
             fuelFlowThrottleModifier = 1;
 
@@ -1783,9 +1802,9 @@ namespace KIT.Propulsion
             // act as open cycle cooler
             if (isOpenCycleCooler)
             {
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
                 fuelFlowForCooling = currentMassFlow;
-                resMan.ConsumeResource(ResourceName.WasteHeat, _fuelCoolingFactor * wasteheatRatio * fuelFlowForCooling);
+                resMan.Consume(ResourceName.WasteHeat, _fuelCoolingFactor * wasteheatRatio * fuelFlowForCooling);
             }
 
             // give back propellant
@@ -1800,11 +1819,11 @@ namespace KIT.Propulsion
                 ispHeatModifier =  Math.Sqrt(realIspEngine) * (UsePlasmaPower ? plasmaAfterburnerHeatModifier : thermalHeatModifier);
                 powerToMass = part.mass > 0 ? Math.Sqrt(maxThrustOnEngine / part.mass) : 0;
                 radiusHeatModifier = Math.Pow(radius * radiusHeatProductionMult, radiusHeatProductionExponent);
-                engineHeatProductionMult = AttachedReactor.EngineHeatProductionMult;
-                var reactorHeatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaHeatProductionMult : AttachedReactor.EngineHeatProductionMult;
+                engineHeatProductionMult = AttachedReactor.EngineHeatProductionMultiplier;
+                var reactorHeatModifier = isPlasmaNozzle ? AttachedReactor.PlasmaHeatProductionMultiplier : AttachedReactor.EngineHeatProductionMultiplier;
                 var jetHeatProduction = baseJetHeatproduction > 0 ? baseJetHeatproduction : spaceHeatProduction;
 
-                spaceHeatProduction = heatProductionMultiplier * reactorHeatModifier * AttachedReactor.EngineHeatProductionMult * _ispPropellantMultiplier * ispHeatModifier * radiusHeatModifier * powerToMass / _fuelCoolingFactor;
+                spaceHeatProduction = heatProductionMultiplier * reactorHeatModifier * AttachedReactor.EngineHeatProductionMultiplier * _ispPropellantMultiplier * ispHeatModifier * radiusHeatModifier * powerToMass / _fuelCoolingFactor;
                 engineHeatProduction = _currentPropellantIsJet
                     ? jetHeatProduction * (1 + airflowHeatModifier * PluginSettings.Config.AirflowHeatMult)
                     : spaceHeatProduction;
@@ -1815,7 +1834,7 @@ namespace KIT.Propulsion
 
             if (pulseDuration != 0 || !(_myAttachedEngine is ModuleEnginesFX)) return;
 
-            maxEngineFuelFlow = _myAttachedEngine.maxThrust > minimumThrust ? maxThrustOnEngine / realIspEngine / GameConstants.StandardGravity : 0;
+            maxEngineFuelFlow = _myAttachedEngine.maxThrust > minimumThrust ? maxThrustOnEngine / realIspEngine / PhysicsGlobals.GravitationalAcceleration : 0;
             fuelEffectRatio = currentMassFlow / maxEngineFuelFlow;
 
             if (!string.IsNullOrEmpty(_powerEffectNameParticleFX))
@@ -1959,7 +1978,7 @@ namespace KIT.Propulsion
             else if (UseChargedPowerOnly)
             {
                 var joulesPerAmu = AttachedReactor.CurrentMeVPerChargedProduct * 1e6 * GameConstants.ElectronCharge / GameConstants.DilutionFactor;
-                _maxISP = 100 * Math.Sqrt(joulesPerAmu * 2 / GameConstants.AtomicMassUnit) / GameConstants.StandardGravity;
+                _maxISP = 100 * Math.Sqrt(joulesPerAmu * 2 / GameConstants.AtomicMassUnit) / PhysicsGlobals.GravitationalAcceleration;
             }
             else
             {
@@ -2058,7 +2077,7 @@ namespace KIT.Propulsion
                 heatThrustModifier = GetHeatThrustModifier();
                 powerThrustModifier = GetPowerThrustModifier();
 
-                max_thrust_in_space = powerThrustModifier * heatThrustModifier * maximumReactorPower / _maxISP / GameConstants.StandardGravity * effectiveThrustFraction;
+                max_thrust_in_space = powerThrustModifier * heatThrustModifier * maximumReactorPower / _maxISP / PhysicsGlobals.GravitationalAcceleration * effectiveThrustFraction;
                 final_max_thrust_in_space = Math.Max(max_thrust_in_space * _thrustPropellantMultiplier, minimumThrust);
 
                 // Set max thrust
@@ -2148,7 +2167,7 @@ namespace KIT.Propulsion
             GUI.DragWindow();
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fifth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -2227,7 +2246,7 @@ namespace KIT.Propulsion
             bool canUseChargedPower = allowUseOfChargedPower && AttachedReactor.ChargedPowerRatio > 0;
 
             effectiveThrustFraction = GetHeatExchangerThrustMultiplier();
-            
+
             maximumPowerUsageForPropulsionRatio = UsePlasmaPower
                 ? AttachedReactor.PlasmaPropulsionEfficiency
                 : AttachedReactor.ThermalPropulsionEfficiency;
@@ -2245,9 +2264,9 @@ namespace KIT.Propulsion
             // when in jet mode apply extra cooling from intake air
             if (isOpenCycleCooler && isJet && part.atmDensity > 0)
             {
-                var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
-                airFlowForCooling = maxFuelFlowRate * resMan.ResourceFillFraction(ResourceName.IntakeOxygenAir);
-                resMan.ConsumeResource(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling);
+                var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
+                airFlowForCooling = maxFuelFlowRate * resMan.FillFraction(ResourceName.IntakeOxygenAir);
+                resMan.Consume(ResourceName.WasteHeat, 40 * wasteheatRatio * wasteheatRatio * airFlowForCooling);
             }
 
             // effectiveChargedSupply, effectiveThermalSupply
@@ -2264,14 +2283,14 @@ namespace KIT.Propulsion
                 UpdateIspEngineParams(resMan);
 
                 expectedMaxThrust = (_maxISP <= 0.0) ? 0.0 : (AttachedReactor.MaximumPower * maximumPowerUsageForPropulsionRatio *
-                    GetPowerThrustModifier() * GetHeatThrustModifier() * GetHeatExchangerThrustMultiplier() / (GameConstants.StandardGravity * _maxISP));
+                    GetPowerThrustModifier() * GetHeatThrustModifier() * GetHeatExchangerThrustMultiplier() / (PhysicsGlobals.GravitationalAcceleration * _maxISP));
                 calculatedMaxThrust = expectedMaxThrust;
 
                 var sootMult = CheatOptions.UnbreakableJoints ? 1 : 1 - sootAccumulationPercentage / 200;
 
                 expectedMaxThrust *= _thrustPropellantMultiplier * sootMult;
 
-                maxFuelFlowRate = (_maxISP <= 0.0) ? 0.0 : expectedMaxThrust / (_maxISP * GameConstants.StandardGravity);
+                maxFuelFlowRate = (_maxISP <= 0.0) ? 0.0 : expectedMaxThrust / (_maxISP * PhysicsGlobals.GravitationalAcceleration);
 
                 UpdateAtmosphericPressureThreshold();
 

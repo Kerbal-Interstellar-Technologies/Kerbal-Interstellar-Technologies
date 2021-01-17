@@ -5,24 +5,24 @@ using System.Linq;
 
 namespace KIT.Resources
 {
-    class AntimatterCollector : PartModule, IKITMod
+    class AntimatterCollector : PartModule, IKITModule
     {
-        public const string GROUP = "AntimatterCollector";
-        public const string GROUP_TITLE = "#LOC_KSPIE_AntimatterCollector_groupName";
+        public const string Group = "AntimatterCollector";
+        public const string GroupTitle = "#LOC_KSPIE_AntimatterCollector_groupName";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AntimatterCollector_Collecting"), UI_Toggle(disabledText = "#LOC_KSPIE_AntimatterCollector_Collecting_Off", enabledText = "#LOC_KSPIE_AntimatterCollector_Collecting_On")]//Collecting--Off--On
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AntimatterCollector_Collecting"), UI_Toggle(disabledText = "#LOC_KSPIE_AntimatterCollector_Collecting_Off", enabledText = "#LOC_KSPIE_AntimatterCollector_Collecting_On")]//Collecting--Off--On
         public bool active = true;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_ParticleFlux")]//Antimatter Flux
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_ParticleFlux")]//Antimatter Flux
         public string ParticleFlux;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CollectionRate", guiFormat = "F4", guiUnits = " mg/hour")]//Rate
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CollectionRate", guiFormat = "F4", guiUnits = " mg/hour")]//Rate
         public double collectionRate;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AntimatterCollector_CollectionMultiplier")]//Collection Multiplier
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AntimatterCollector_CollectionMultiplier")]//Collection Multiplier
         public double collectionMultiplier = 1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CelestrialBodyFieldStrengthMod", guiFormat = "F2")]//Field Strength Multiplier
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CelestrialBodyFieldStrengthMod", guiFormat = "F2")]//Field Strength Multiplier
         public double celestrialBodyFieldStrengthMod = 1;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CanCollect")]//Can collect
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_CanCollect")]//Can collect
         public bool canCollect = true;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_PowerReqKW", guiUnits = " KW")]//Power Usage
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterCollector_PowerReqKW", guiUnits = " KW")]//Power Usage
         public double powerReqKW;
         [KSPField(isPersistant = true, guiActive = false)]
         public double flux;
@@ -61,7 +61,7 @@ namespace KIT.Resources
             canCollect = _moduleAnimateGeneric == null ? true :  _moduleAnimateGeneric.GetScalar == 1;
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -73,11 +73,11 @@ namespace KIT.Resources
                 return;
             }
 
-            double receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, powerReqKW);
+            double receivedPowerKW = resMan.Consume(ResourceName.ElectricCharge, powerReqKW);
             double powerRatio = powerReqKW > 0.0 ? receivedPowerKW / powerReqKW : 0.0;
 
             _effectiveFlux = powerRatio * flux;
-            resMan.ProduceResource(ResourceName.AntiProtium, _effectiveFlux);
+            resMan.Produce(ResourceName.AntiProtium, _effectiveFlux);
         }
 
         public string KITPartName() => part.partInfo.title;

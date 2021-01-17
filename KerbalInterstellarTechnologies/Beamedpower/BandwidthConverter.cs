@@ -1,57 +1,57 @@
 ﻿using KSP.Localization;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     [KSPModule("Beamed Power Bandwidth Converter")]//#LOC_KSPIE_BeamedPowerBandwidthConverter
     class BandwidthConverter
     {
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, groupDisplayName = BeamedPowerReceiver.GROUP_TITLE, isPersistant = false, guiActiveEditor = false, guiActive = false)]
-        public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthCoverter_missing");//"missing"
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, groupDisplayName = BeamedPowerReceiver.GroupTitle, isPersistant = false, guiActiveEditor = false, guiActive = false)]
+        public string bandwidthName = Localizer.Format("#LOC_KSPIE_BandwidthConverter_missing");//"missing"
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = true, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double targetWavelength;
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double minimumWavelength = 0.001;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F9", guiUnits = " m")]
         public double maximumWavelength = 1;
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public int AvailableTechLevel = -1;
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage0 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage0;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage0;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public string techRequirement0 = "";
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage1 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage1;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage1;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public string techRequirement1 = "";
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage2 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage2;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage2;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, guiActiveEditor = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, guiActiveEditor = false, guiActive = false)]
         public string techRequirement2 = "";
 
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double efficiencyPercentage3 = 45;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double electricEfficiencyPercentage3;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false, guiFormat = "F0", guiUnits = "%")]
         public double thermalEfficiencyPercentage3;
-        [KSPField(groupName = BeamedPowerReceiver.GROUP, isPersistant = false, guiActive = false)]
+        [KSPField(groupName = BeamedPowerReceiver.Group, isPersistant = false, guiActive = false)]
         public string techRequirement3 = "";
 
         public bool isValid;
@@ -89,7 +89,7 @@ namespace KIT.Beamedpower
             node.TryGetValue(nameof(techRequirement3), ref techRequirement3);
 
             Initialize();
-            
+
             switch(AvailableTechLevel)
             {
                 case -1:
@@ -224,36 +224,36 @@ namespace KIT.Beamedpower
             var info = StringBuilderCache.Acquire();
 
             info.AppendLine("<size=10>");
-            info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_InfoName")).Append(": ").AppendLine(bandwidthName);//Name
-            info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Bandwidthstart")).Append(": ").Append(minimumWavelength).AppendLine(" m");//Bandwidth start
-            info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Bandwidthend")).Append(": ").Append(maximumWavelength).AppendLine(" m");//Bandwidth end
+            info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_InfoName")).Append(": ").AppendLine(bandwidthName);//Name
+            info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Bandwidthstart")).Append(": ").Append(minimumWavelength).AppendLine(" m");//Bandwidth start
+            info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Bandwidthend")).Append(": ").Append(maximumWavelength).AppendLine(" m");//Bandwidth end
 
             if (!string.IsNullOrEmpty(techRequirement0))
             {
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk1technode")).AppendLine(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk1technode")).AppendLine(": ");
                 info.AppendLine(Localizer.Format(PluginHelper.GetTechTitleById(techRequirement0)));//Mk1 technode
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk1efficiency")).Append(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk1efficiency")).Append(": ");
                 info.Append(efficiencyPercentage0.ToString("F0")).AppendLine("%");//Mk1 efficiency
             }
             if (!string.IsNullOrEmpty(techRequirement1))
             {
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk2technode")).AppendLine(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk2technode")).AppendLine(": ");
                 info.AppendLine(Localizer.Format(PluginHelper.GetTechTitleById(techRequirement1)));//Mk2 technode
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk2efficiency")).Append(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk2efficiency")).Append(": ");
                 info.Append(efficiencyPercentage1.ToString("F0")).AppendLine("%");//Mk2 efficiency
             }
             if (!string.IsNullOrEmpty(techRequirement2))
             {
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk3technode")).AppendLine(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk3technode")).AppendLine(": ");
                 info.AppendLine(Localizer.Format(PluginHelper.GetTechTitleById(techRequirement2)));//Mk3 technode
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk3efficiency")).Append(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk3efficiency")).Append(": ");
                 info.Append(efficiencyPercentage2.ToString("F0")).AppendLine("%");//Mk3 efficiency
             }
             if (!string.IsNullOrEmpty(techRequirement3))
             {
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk4technode")).AppendLine(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk4technode")).AppendLine(": ");
                 info.AppendLine(Localizer.Format(PluginHelper.GetTechTitleById(techRequirement3)));//Mk4 technode
-                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthCoverter_Mk4efficiency")).Append(": ");
+                info.Append(Localizer.Format("#LOC_KSPIE_BandwidthConverter_Mk4efficiency")).Append(": ");
                 info.Append(efficiencyPercentage3.ToString("F0")).AppendLine("%");//Mk4 efficiency
             }
             info.AppendLine("</size>");

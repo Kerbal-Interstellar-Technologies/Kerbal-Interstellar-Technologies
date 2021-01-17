@@ -1,9 +1,8 @@
-﻿using KIT.Resources;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 
 namespace KIT.ReplacementPartModules
-{ 
-    class KITModuleEnginesFX : ModuleEnginesFX, IKITMod
+{
+    class KITModuleEnginesFX : ModuleEnginesFX, IKITModule
     {
         public new void FixedUpdate() { }
 
@@ -11,7 +10,7 @@ namespace KIT.ReplacementPartModules
         {
             // take into account resMan.fixedDeltaTime
         }
-        
+
         protected new double RequiredPropellantMass(float throttleAmount)
         {
             // take into account resMan.fixedDeltaTime
@@ -26,12 +25,15 @@ namespace KIT.ReplacementPartModules
             return base.RequestPropellant(mass);
         }
 
+        public ModuleConfigurationFlags ModuleConfiguration() =>
+            ModuleConfigurationFlags.Fourth | ModuleConfigurationFlags.LocalResources;
+
         public void KITFixedUpdate(IResourceManager resMan)
         {
             base.FixedUpdate();
         }
 
         public string KITPartName() => part.partInfo.title;
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
     }
 }

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.BeamedPower;
 using KIT.Extensions;
 using UnityEngine;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     public static class InterstellarBeamedPowerHelper
     {
@@ -86,7 +85,7 @@ namespace KIT.Beamedpower
                     facingFactor = Math.Min(1, Math.Abs(Vector3d.Dot(receiverTransform.forward, directionVector)));
                     break;
                 case 7:
-                    //Scale energy reception based on angle of reciever to transmitter from top or bottom
+                    //Scale energy reception based on angle of receiver to transmitter from top or bottom
                     facingFactor = Math.Max(0, Math.Abs(Vector3d.Dot(receiverTransform.up, directionVector)));
                     break;
                 case 8:
@@ -139,9 +138,9 @@ namespace KIT.Beamedpower
             double atmosphericDistance;
             if (receiverVessel.mainBody == transmitterVessel.mainBody)
             {
-                double recieverAltitudeModifier = atmosphereDepthInMeter > 0 && receiverVessel.altitude > atmosphereDepthInMeter ? atmosphereDepthInMeter / receiverVessel.altitude : 1;
+                double receiverAltitudeModifier = atmosphereDepthInMeter > 0 && receiverVessel.altitude > atmosphereDepthInMeter ? atmosphereDepthInMeter / receiverVessel.altitude : 1;
                 double transmitterAltitudeModifier = atmosphereDepthInMeter > 0 && transmitterVessel.altitude > atmosphereDepthInMeter ? atmosphereDepthInMeter / transmitterVessel.altitude : 1;
-                atmosphericDistance = transmitterAltitudeModifier * recieverAltitudeModifier * distanceInMeter;
+                atmosphericDistance = transmitterAltitudeModifier * receiverAltitudeModifier * distanceInMeter;
             }
             else
             {
@@ -169,7 +168,7 @@ namespace KIT.Beamedpower
             var transmitterRouteDictionary = new Dictionary<VesselMicrowavePersistence, MicrowaveRoute>(); // stores all transmitter we can have a connection with
             var relayRouteDictionary = new Dictionary<VesselRelayPersistence, MicrowaveRoute>();
 
-            var transmittersToCheck = new List<VesselMicrowavePersistence>();//stores all transmiters to which we want to connect
+            var transmittersToCheck = new List<VesselMicrowavePersistence>();//stores all transmitters to which we want to connect
 
             var receiverAtmosphericPressure = FlightGlobals.getStaticPressure(receiver.Vessel.GetVesselPos()) / GameConstants.EarthAtmospherePressureAtSeaLevel;
 
@@ -205,15 +204,15 @@ namespace KIT.Beamedpower
                         if (wavelengthData.Wavelength.NotWithin(receiver.MaximumWavelength, receiver.MinimumWavelength))
                             continue;
 
-                        var spotsize = ComputeSpotSize(wavelengthData, distanceInMeter, transmitter.Aperture, receiver.ApertureMultiplier);
+                        var spotSize = ComputeSpotSize(wavelengthData, distanceInMeter, transmitter.Aperture, receiver.ApertureMultiplier);
 
-                        double distanceFacingEfficiency = ComputeDistanceFacingEfficiency(spotsize, facingFactor, receiver.Diameter, receiver.FacingEfficiencyExponent, receiver.SpotSizeNormalizationExponent);
+                        double distanceFacingEfficiency = ComputeDistanceFacingEfficiency(spotSize, facingFactor, receiver.Diameter, receiver.FacingEfficiencyExponent, receiver.SpotSizeNormalizationExponent);
 
-                        double atmosphereEfficency = GetAtmosphericEfficiency(transmitterAtmosphericPressure, receiverAtmosphericPressure, wavelengthData.AtmosphericAbsorption, distanceInMeter, receiver.Vessel, transmitter.Vessel);
+                        double atmosphereEfficiency = GetAtmosphericEfficiency(transmitterAtmosphericPressure, receiverAtmosphericPressure, wavelengthData.AtmosphericAbsorption, distanceInMeter, receiver.Vessel, transmitter.Vessel);
 
-                        double routeEfficiency = distanceFacingEfficiency * atmosphereEfficency;
+                        double routeEfficiency = distanceFacingEfficiency * atmosphereEfficiency;
 
-                        possibleWavelengths.Add(new MicrowaveRoute(routeEfficiency, distanceInMeter, facingFactor, spotsize, wavelengthData));
+                        possibleWavelengths.Add(new MicrowaveRoute(routeEfficiency, distanceInMeter, facingFactor, spotSize, wavelengthData));
                     }
 
                     var mostEfficientWavelength = possibleWavelengths.Count == 0 ? null : possibleWavelengths.FirstOrDefault(m => m.Efficiency == possibleWavelengths.Max(n => n.Efficiency));
@@ -309,10 +308,10 @@ namespace KIT.Beamedpower
                     var nextRelayGroup = new List<KeyValuePair<VesselRelayPersistence, int>>();//will put every relay which is in line of sight of any relay from currentRelayGroup here
                     foreach (var relayEntry in currentRelayGroup) //relays visible from receiver in first iteration, then relays visible from them etc....
                     {
-                        VesselRelayPersistence relayPersistance = relayEntry.Key;
-                        MicrowaveRoute relayRoute = relayRouteDictionary[relayPersistance];// current best route for this relay
+                        VesselRelayPersistence relayPersistence = relayEntry.Key;
+                        MicrowaveRoute relayRoute = relayRouteDictionary[relayPersistence];// current best route for this relay
                         double relayRouteFacingFactor = relayRoute.FacingFactor;// it's always facing factor from the beginning of the route
-                        double relayAtmosphericPresure = FlightGlobals.getStaticPressure(relayPersistance.Vessel.GetVesselPos()) / GameConstants.EarthAtmospherePressureAtSeaLevel;
+                        double relayAtmosphericPressure = FlightGlobals.getStaticPressure(relayPersistence.Vessel.GetVesselPos()) / GameConstants.EarthAtmospherePressureAtSeaLevel;
 
                         for (int t = 0; t < transmittersToCheck.Count; t++)//check if this relay can connect to transmitters
                         {
@@ -327,19 +326,19 @@ namespace KIT.Beamedpower
 
                             var possibleWavelengths = new List<MicrowaveRoute>();
 
-                            foreach (var transmitterWavelenghtData in transmitterToCheck.SupportedTransmitWavelengths)
+                            foreach (var transmitterWavelengthData in transmitterToCheck.SupportedTransmitWavelengths)
                             {
-                                if (transmitterWavelenghtData.Wavelength.NotWithin(relayPersistance.MaximumRelayWavelength, relayPersistance.MinimumRelayWavelength))
+                                if (transmitterWavelengthData.Wavelength.NotWithin(relayPersistence.MaximumRelayWavelength, relayPersistence.MinimumRelayWavelength))
                                     continue;
 
-                                double spotsize = ComputeSpotSize(transmitterWavelenghtData, distanceInMeter, transmitterToCheck.Aperture);
-                                double distanceFacingEfficiency = ComputeDistanceFacingEfficiency(spotsize, 1, relayPersistance.Diameter);
+                                double spotSize = ComputeSpotSize(transmitterWavelengthData, distanceInMeter, transmitterToCheck.Aperture);
+                                double distanceFacingEfficiency = ComputeDistanceFacingEfficiency(spotSize, 1, relayPersistence.Diameter);
 
-                                double atmosphereEfficency = GetAtmosphericEfficiency(transmitterAtmosphericPressure, relayAtmosphericPresure, transmitterWavelenghtData.AtmosphericAbsorption, distanceInMeter, transmitterToCheck.Vessel, relayPersistance.Vessel);
-                                double efficiencyTransmitterToRelay = distanceFacingEfficiency * atmosphereEfficency;
+                                double atmosphereEfficiency = GetAtmosphericEfficiency(transmitterAtmosphericPressure, relayAtmosphericPressure, transmitterWavelengthData.AtmosphericAbsorption, distanceInMeter, transmitterToCheck.Vessel, relayPersistence.Vessel);
+                                double efficiencyTransmitterToRelay = distanceFacingEfficiency * atmosphereEfficiency;
                                 double efficiencyForRoute = efficiencyTransmitterToRelay * relayRoute.Efficiency;
 
-                                possibleWavelengths.Add(new MicrowaveRoute(efficiencyForRoute, newDistance, relayRouteFacingFactor, spotsize, transmitterWavelenghtData, relayPersistance));
+                                possibleWavelengths.Add(new MicrowaveRoute(efficiencyForRoute, newDistance, relayRouteFacingFactor, spotSize, transmitterWavelengthData, relayPersistence));
                             }
 
                             var mostEfficientWavelength = possibleWavelengths.Count == 0 ? null : possibleWavelengths.FirstOrDefault(m => m.Efficiency == possibleWavelengths.Max(n => n.Efficiency));
@@ -365,7 +364,7 @@ namespace KIT.Beamedpower
                         for (var r = 0; r < relaysToCheck.Count; r++)
                         {
                             VesselRelayPersistence nextRelay = relaysToCheck[r];
-                            if (nextRelay == relayPersistance) continue;
+                            if (nextRelay == relayPersistence) continue;
 
                             double distanceToNextRelay = relayToRelayDistances[relayEntry.Value, r];
                             if (distanceToNextRelay <= 0) continue;
@@ -373,16 +372,16 @@ namespace KIT.Beamedpower
                             var possibleWavelengths = new List<MicrowaveRoute>();
                             double relayToNextRelayDistance = relayRoute.Distance + distanceToNextRelay;
 
-                            foreach (var transmitterWavelengthData in relayPersistance.SupportedTransmitWavelengths)
+                            foreach (var transmitterWavelengthData in relayPersistence.SupportedTransmitWavelengths)
                             {
-                                if (transmitterWavelengthData.MaxWavelength < relayPersistance.MaximumRelayWavelength || transmitterWavelengthData.MinWavelength > relayPersistance.MinimumRelayWavelength)
+                                if (transmitterWavelengthData.MaxWavelength < relayPersistence.MaximumRelayWavelength || transmitterWavelengthData.MinWavelength > relayPersistence.MinimumRelayWavelength)
                                     continue;
 
                                 double spotSize = ComputeSpotSize(transmitterWavelengthData, distanceToNextRelay, nextRelay.Aperture);
-                                double efficiencyByThisRelay = ComputeDistanceFacingEfficiency(spotSize, 1, relayPersistance.Diameter);
+                                double efficiencyByThisRelay = ComputeDistanceFacingEfficiency(spotSize, 1, relayPersistence.Diameter);
                                 double efficiencyForRoute = efficiencyByThisRelay * relayRoute.Efficiency;
 
-                                possibleWavelengths.Add(new MicrowaveRoute(efficiencyForRoute, relayToNextRelayDistance, relayRouteFacingFactor, spotSize, transmitterWavelengthData, relayPersistance));
+                                possibleWavelengths.Add(new MicrowaveRoute(efficiencyForRoute, relayToNextRelayDistance, relayRouteFacingFactor, spotSize, transmitterWavelengthData, relayPersistence));
                             }
 
                             MicrowaveRoute mostEfficientWavelength = possibleWavelengths.Count == 0 ? null : possibleWavelengths.FirstOrDefault(m => m.Efficiency == possibleWavelengths.Max(n => n.Efficiency));

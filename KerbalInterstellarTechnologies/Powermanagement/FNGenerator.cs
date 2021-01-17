@@ -7,13 +7,13 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KIT.Beamedpower;
+using KIT.BeamedPower;
 using KIT.Interfaces;
-using KIT.Powermanagement.Interfaces;
+using KIT.PowerManagement.Interfaces;
 using TweakScale;
 using UnityEngine;
 
-namespace KIT.Powermanagement
+namespace KIT.PowerManagement
 {
     enum PowerStates { PowerOnline, PowerOffline };
 
@@ -33,16 +33,16 @@ namespace KIT.Powermanagement
     class ChargedParticlesPowerGenerator : FNGenerator { }
 
     [KSPModule(" Generator")]
-    class FNGenerator : PartModule, IKITMod, IKITVariableSupplier, IUpgradeableModule, IFNElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
+    class FNGenerator : PartModule, IKITModule, IKITVariableSupplier, IUpgradeableModule, IFNElectricPowerGeneratorSource, IPartMassModifier, IRescalable<FNGenerator>
     {
-        public const string GROUP = "FNGenerator";
-        public const string GROUP_TITLE = "#LOC_KSPIE_Generator_groupName";
+        public const string Group = "FNGenerator";
+        public const string GroupTitle = "#LOC_KSPIE_Generator_groupName";
 
         // Persistent
         [KSPField(isPersistant = true)] public bool IsEnabled = true;
         [KSPField(isPersistant = true)] public bool generatorInit;
         [KSPField(isPersistant = true)] public bool isupgraded;
-        [KSPField(isPersistant = true)] public bool chargedParticleMode = false;
+        [KSPField(isPersistant = true)] public bool chargedParticleMode;
         [KSPField(isPersistant = true)] public double storedMassMultiplier;
         [KSPField(isPersistant = true)] public double maximumElectricPower;
 
@@ -50,12 +50,12 @@ namespace KIT.Powermanagement
         [KSPField] public float powerCapacityMaxValue = 100;
         [KSPField] public float powerCapacityMinValue = 0.5f;
         [KSPField] public float powerCapacityStepIncrement = 0.5f;
-        [KSPField] public bool isHighPower = false;
-        [KSPField] public bool isMHD = false;
-        [KSPField] public bool isLimitedByMinThrottle = false;          // old name isLimitedByMinThrotle
+        [KSPField] public bool isHighPower;
+        [KSPField] public bool isMHD;
+        [KSPField] public bool isLimitedByMinThrottle;          // old name isLimitedByMinThrotle
         [KSPField] public double powerOutputMultiplier = 1;
         [KSPField] public double hotColdBathRatio;
-        [KSPField] public bool calculatedMass = false;
+        [KSPField] public bool calculatedMass;
 
         [KSPField] public double efficiencyMk1;
         [KSPField] public double efficiencyMk2;
@@ -80,7 +80,7 @@ namespace KIT.Powermanagement
         [KSPField] public string upgradeTechReq = "";
         [KSPField] public float upgradeCost = 1;
         [KSPField] public double wasteHeatMultiplier = 1;
-        [KSPField] public bool fullPowerBuffer = false;
+        [KSPField] public bool fullPowerBuffer;
         [KSPField] public bool showSpecialisedUI = true;
         [KSPField] public bool showDetailedInfo = true;
         [KSPField] public double rawPowerToMassDivider = 1000;
@@ -105,33 +105,33 @@ namespace KIT.Powermanagement
         [KSPField] public string upgradeCostStr = "";
         [KSPField] public double coldBathTemp = 500;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_powerCapacity"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_powerCapacity"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
         public float powerCapacity = 100;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Generator_powerControl"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_Generator_powerControl"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100f, minValue = 0.5f)]
         public float powerPercentage = 100;
-        [KSPField(groupName = GROUP, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxGeneratorEfficiency", guiFormat = "P1")]
+        [KSPField(groupName = Group, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxGeneratorEfficiency", guiFormat = "P1")]
         public double maxEfficiency;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_Generator_radius", guiUnits = " m")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiFormat = "F2", guiName = "#LOC_KSPIE_Generator_radius", guiUnits = " m")]
         public double radius = 2.5;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_Generator_maxUsageRatio")]
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_Generator_maxUsageRatio")]
         public double powerUsageEfficiency;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxTheoreticalPower", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_maxTheoreticalPower", guiFormat = "F2")]
         public string maximumTheoreticalPower;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_partMass", guiUnits = " t", guiFormat = "F3")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_Generator_partMass", guiUnits = " t", guiFormat = "F3")]
         public float partMass;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_currentElectricPower", guiUnits = " MW_e", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_currentElectricPower", guiUnits = " MW_e", guiFormat = "F2")]
         public string OutputPower;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_MaximumElectricPower")]//Maximum Electric Power
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_MaximumElectricPower")]//Maximum Electric Power
         public string MaxPowerStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_Generator_ElectricEfficiency")]//Electric Efficiency
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_Generator_ElectricEfficiency")]//Electric Efficiency
         public string overallEfficiencyStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_coldBathTemp", guiUnits = " K", guiFormat = "F0")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_coldBathTemp", guiUnits = " K", guiFormat = "F0")]
         public double coldBathTempDisplay = 500;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_hotBathTemp", guiUnits = " K", guiFormat = "F0")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_hotBathTemp", guiUnits = " K", guiFormat = "F0")]
         public double hotBathTemp = 300;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = false, guiName = "#LOC_KSPIE_Generator_electricPowerNeeded", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = false, guiName = "#LOC_KSPIE_Generator_electricPowerNeeded", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F2")]
         public double electrical_power_currently_needed;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_Generator_InitialGeneratorPowerEC", guiUnits = " kW")]//Offscreen Power Generation
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KSPIE_Generator_InitialGeneratorPowerEC", guiUnits = " kW")]//Offscreen Power Generation
         public double initialGeneratorPowerEC;
 
         // Debug
@@ -180,8 +180,8 @@ namespace KIT.Powermanagement
         protected bool hasrequiredupgrade;
 
         protected int partDistance;
-        protected int shutdown_counter = 0;
-        protected int startcount = 0;
+        protected int shutdown_counter;
+        protected int startcount;
 
         private PowerStates _powerState;
         private IFNPowerSource attachedPowerSource;
@@ -191,19 +191,19 @@ namespace KIT.Powermanagement
 
         public String UpgradeTechnology => upgradeTechReq;
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_activateGenerator", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Generator_activateGenerator", active = true)]
         public void ActivateGenerator()
         {
             IsEnabled = true;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_deactivateGenerator", active = false)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Generator_deactivateGenerator", active = false)]
         public void DeactivateGenerator()
         {
             IsEnabled = false;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_Generator_retrofitGenerator", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_Generator_retrofitGenerator", active = true)]
         public void RetrofitGenerator()
         {
             if (ResearchAndDevelopment.Instance == null) return;
@@ -348,7 +348,7 @@ namespace KIT.Powermanagement
 
             var powerCapacityFloatRange = powerCapacityField.uiControlEditor as UI_FloatRange;
             System.Diagnostics.Debug.Assert(powerCapacityFloatRange != null, nameof(powerCapacityFloatRange) + " != null");
-            
+
             powerCapacityFloatRange.maxValue = powerCapacityMaxValue;
             powerCapacityFloatRange.minValue = powerCapacityMinValue;
             powerCapacityFloatRange.stepIncrement = powerCapacityStepIncrement;
@@ -912,19 +912,27 @@ namespace KIT.Powermanagement
             return sb.ToStringAndRelease();
         }
 
-
-        public ResourcePriorityValue ResourceProcessPriority()
-        {
-            if (isLimitedByMinThrottle)
-                return (ResourcePriorityValue)1;
-
-            if (attachedPowerSource == null)
-                return ResourcePriorityValue.Third;
-
-            return (ResourcePriorityValue)attachedPowerSource.ProviderPowerPriority;
-        }
-
         double thermalPowerRatio, chargedPowerRatio;
+
+        public ModuleConfigurationFlags ModuleConfiguration()
+        {
+            int priority;
+            
+            if (isLimitedByMinThrottle)
+            {
+                priority = 1;
+            }
+            else if (attachedPowerSource != null)
+            {
+                priority = attachedPowerSource.ProviderPowerPriority;
+            }
+            else
+            {
+                priority = 3;
+            }
+
+            return (ModuleConfigurationFlags) priority;
+        }
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -933,7 +941,7 @@ namespace KIT.Powermanagement
                 electricdtps = 0;
                 maxElectricdtps = 0;
                 generatorInit = true;
-                resMan.ProduceResource(ResourceName.ElectricCharge, 0);
+                resMan.Produce(ResourceName.ElectricCharge, 0);
 
                 if (IsEnabled && !vessel.packed)
                 {
@@ -983,7 +991,7 @@ namespace KIT.Powermanagement
 
             powerDownFraction = 1;
 
-            var wasteheatRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+            var wasteheatRatio = resMan.FillFraction(ResourceName.WasteHeat);
             overheatingModifier = wasteheatRatio < 0.9 ? 1 : (1 - wasteheatRatio) * 10;
 
             thermalPowerRatio = 1 - attachedPowerSource.ChargedPowerRatio;
@@ -1029,7 +1037,7 @@ namespace KIT.Powermanagement
             return displayName;
         }
 
-        private ResourceName[] resourcesProvided = new[] { ResourceName.ElectricCharge };
+        private readonly ResourceName[] resourcesProvided = new[] { ResourceName.ElectricCharge };
         public ResourceName[] ResourcesProvided() => resourcesProvided;
 
         // todo - max power output limit
@@ -1058,11 +1066,11 @@ namespace KIT.Powermanagement
 
                     if (isMHD)
                     {
-                        initialThermalPowerReceived = resMan.ConsumeResource(ResourceName.ThermalPower, requestedThermalPower * thermalPowerRatio);
-                        initialChargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedThermalPower * chargedPowerRatio);
+                        initialThermalPowerReceived = resMan.Consume(ResourceName.ThermalPower, requestedThermalPower * thermalPowerRatio);
+                        initialChargedPowerReceived = resMan.Consume(ResourceName.ChargedParticle, requestedThermalPower * chargedPowerRatio);
                     }
                     else
-                        initialThermalPowerReceived = resMan.ConsumeResource(ResourceName.ThermalPower, requestedThermalPower);
+                        initialThermalPowerReceived = resMan.Consume(ResourceName.ThermalPower, requestedThermalPower);
 
                     thermalPowerRequestRatio = Math.Min(1, effectiveMaximumThermalPower > 0 ? requestedThermalPower / attachedPowerSource.MaximumThermalPower : 0);
                     attachedPowerSource.NotifyActiveThermalEnergyGenerator(_totalEff, thermalPowerRequestRatio, isMHD, isLimitedByMinThrottle ? part.mass * 0.05 : part.mass);
@@ -1080,7 +1088,7 @@ namespace KIT.Powermanagement
                 {
                     requestedChargedPower = reactorPowerRequested;
 
-                    chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
+                    chargedPowerReceived = resMan.Consume(ResourceName.ChargedParticle, requestedChargedPower);
 
                     var maximumChargedPower = attachedPowerSource.MaximumChargedPower * powerUsageEfficiency * CapacityRatio;
                     var chargedPowerRequestRatio = Math.Min(1, maximumChargedPower > 0 ? thermalPowerRequested / maximumChargedPower : 0);
@@ -1091,12 +1099,12 @@ namespace KIT.Powermanagement
                 {
                     requestedChargedPower = Math.Min(Math.Min(reactorPowerRequested - thermalPowerReceived, maxChargedPowerForThermalGenerator), Math.Max(0, maxReactorPower - thermalPowerReceived));
                     //chargedPowerReceived = consumeFNResourcePerSecond(requestedChargedPower, ResourceSettings.Config.ChargedParticleInMegawatt);
-                    chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
+                    chargedPowerReceived = resMan.Consume(ResourceName.ChargedParticle, requestedChargedPower);
                 }
                 else
                 {
                     //consumeFNResourcePerSecond(0, ResourceSettings.Config.ChargedParticleInMegawatt);
-                    resMan.ConsumeResource(ResourceName.ChargedParticle, 0);
+                    resMan.Consume(ResourceName.ChargedParticle, 0);
                     chargedPowerReceived = 0;
                     requestedChargedPower = 0;
                 }
@@ -1107,7 +1115,7 @@ namespace KIT.Powermanagement
                 if (shouldUseChargedPower && chargedPowerRatio != 1 && totalPowerReceived < reactorPowerRequested)
                 {
                     finalRequest = Math.Max(0, reactorPowerRequested - totalPowerReceived);
-                    thermalPowerReceived += resMan.ConsumeResource(ResourceName.ThermalPower, finalRequest);
+                    thermalPowerReceived += resMan.Consume(ResourceName.ThermalPower, finalRequest);
                 }
             }
             else
@@ -1123,12 +1131,12 @@ namespace KIT.Powermanagement
                 var chargedPowerRequestRatio = Math.Min(1, maximumChargedPower > 0 ? requestedChargedPower / maximumChargedPower : 0);
                 attachedPowerSource.NotifyActiveChargedEnergyGenerator(_totalEff, chargedPowerRequestRatio, part.mass);
 
-                chargedPowerReceived = resMan.ConsumeResource(ResourceName.ChargedParticle, requestedChargedPower);
+                chargedPowerReceived = resMan.Consume(ResourceName.ChargedParticle, requestedChargedPower);
             }
 
             effectiveInputPowerPerSecond = (thermalPowerReceived + chargedPowerReceived) * _totalEff;
 
-            resMan.ProduceResource(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
+            resMan.Produce(ResourceName.WasteHeat, effectiveInputPowerPerSecond);
 
             if (!chargedParticleMode)
             {
@@ -1142,7 +1150,7 @@ namespace KIT.Powermanagement
                 maxElectricdtps = overheatingModifier * maxChargedPowerForChargedGenerator * _totalEff;
             }
 
-            resMan.ProduceResource(ResourceName.ElectricCharge, electricdtps, maxElectricdtps);
+            resMan.Produce(ResourceName.ElectricCharge, electricdtps, maxElectricdtps);
 
             return true;
         }

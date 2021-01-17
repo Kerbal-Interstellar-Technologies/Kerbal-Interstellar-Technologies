@@ -9,14 +9,14 @@ namespace KIT.External
 {
     public class FNHabitat : PartModule, IMultipleDragCube
     {
-        private List<IAnimatedModule> modules;
+        private List<IAnimatedModule> _modules;
         private bool _hasBeenInitialized;
 
         private void FindModules()
         {
             if (vessel != null)
             {
-                modules = part.FindModulesImplementing<IAnimatedModule>();
+                _modules = part.FindModulesImplementing<IAnimatedModule>();
             }
         }
 
@@ -59,9 +59,9 @@ namespace KIT.External
         public string actionGUIName = "";
 
         [KSPField]
-        public int undeployedCrewCapacity = 0;
+        public int undeployedCrewCapacity;
         [KSPField]
-        public int deployedCrewCapacity = 0;
+        public int deployedCrewCapacity;
 
         [KSPField]
         public string deployAnimationName = Localizer.Format("#LOC_KSPIE_FNHabitat_Deploy");//"Deploy"
@@ -78,7 +78,7 @@ namespace KIT.External
         public float inflatedCost;
 
         [KSPField]
-        public bool inflatable = false;
+        public bool inflatable;
 
         [KSPField]
         public int PrimaryLayer = 2;
@@ -89,7 +89,7 @@ namespace KIT.External
         public float inflatedMultiplier = -1;
 
         [KSPField]
-        public bool shedOnInflate = false;
+        public bool shedOnInflate;
 
         [KSPField]
         public string ResourceCosts = "";
@@ -97,15 +97,15 @@ namespace KIT.External
         [KSPField]
         public string ReplacementResource = "Construction";
 
-        BaseField currentHabitatVolumeField;
-        BaseField currentHabitatSurfaceField;
+        BaseField _currentHabitatVolumeField;
+        BaseField _currentHabitatSurfaceField;
 
-        PartModule comfortModule;
-        BaseField comfortBonusField;
+        PartModule _comfortModule;
+        BaseField _comfortBonusField;
 
-        PartModule habitatModule;
-        BaseField habitatVolumeField;
-        BaseField habitatSurfaceField;
+        PartModule _habitatModule;
+        BaseField _habitatVolumeField;
+        BaseField _habitatSurfaceField;
 
         [KSPAction("Deploy Module")]
         public void DeployAction(KSPActionParam param)
@@ -144,8 +144,8 @@ namespace KIT.External
         {
             Initialize();
 
-            currentHabitatVolumeField = Fields["currentHabitatVolume"];
-            currentHabitatSurfaceField = Fields["currentHabitatSurface"];
+            _currentHabitatVolumeField = Fields["currentHabitatVolume"];
+            _currentHabitatSurfaceField = Fields["currentHabitatSurface"];
         }
 
         public override void OnLoad(ConfigNode node)
@@ -333,11 +333,11 @@ namespace KIT.External
         {
             foreach (var resource in ResCosts)
             {
-                //ConsumeResource(resource, percentage);
+                //Consume(resource, percentage);
             }
         }
 
-        //private void ConsumeResource(ResourceRatio resInfo, double percentage)
+        //private void Consume(ResourceRatio resInfo, double percentage)
         //{
         //    var resourceName = resInfo.ResourceName;
         //    var needed = resInfo.Ratio * percentage;
@@ -528,10 +528,10 @@ namespace KIT.External
             {
                 if (module.moduleName == "Comfort")
                 {
-                    comfortModule = module;
+                    _comfortModule = module;
 
-                    comfortBonusField = module.Fields["bonus"];
-                    comfortBonusField?.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, comfortModule);
+                    _comfortBonusField = module.Fields["bonus"];
+                    _comfortBonusField?.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, _comfortModule);
 
                     found = true;
                     break;
@@ -543,10 +543,10 @@ namespace KIT.External
 
         private void UpdateKerbalismComfort()
         {
-            if (comfortModule == null)
+            if (_comfortModule == null)
                 return;
 
-            comfortBonusField?.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, comfortModule);
+            _comfortBonusField?.SetValue(isDeployed ? deployedComfortBonus : undeployedComfortBonus, _comfortModule);
         }
 
         private void InitializeKerbalismHabitat()
@@ -555,13 +555,13 @@ namespace KIT.External
             {
                 if (module.moduleName == "Habitat")
                 {
-                    habitatModule = module;
+                    _habitatModule = module;
 
-                    habitatVolumeField = module.Fields["volume"];
-                    habitatVolumeField?.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, habitatModule);
+                    _habitatVolumeField = module.Fields["volume"];
+                    _habitatVolumeField?.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, _habitatModule);
 
-                    habitatSurfaceField = module.Fields["surface"];
-                    habitatSurfaceField?.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, habitatModule);
+                    _habitatSurfaceField = module.Fields["surface"];
+                    _habitatSurfaceField?.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, _habitatModule);
 
                     break;
                 }
@@ -604,11 +604,11 @@ namespace KIT.External
 
         private void UpdateKerbalismHabitat()
         {
-            if (habitatModule == null)
+            if (_habitatModule == null)
                 return;
 
-            habitatVolumeField?.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, habitatModule);
-            habitatSurfaceField?.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, habitatModule);
+            _habitatVolumeField?.SetValue(isDeployed ? deployedHabitatVolume : undeployedHabitatVolume, _habitatModule);
+            _habitatSurfaceField?.SetValue(isDeployed ? deployedHabitatSurface : undeployedHabitatSurface, _habitatModule);
         }
 
         private void UpdatemenuNames()
@@ -649,21 +649,21 @@ namespace KIT.External
 
         private void DisableModules()
         {
-            if (vessel == null || modules == null) return;
-            for (int i = 0, iC = modules.Count; i < iC; ++i)
+            if (vessel == null || _modules == null) return;
+            for (int i = 0, iC = _modules.Count; i < iC; ++i)
             {
-                modules[i].DisableModule();
+                _modules[i].DisableModule();
             }
         }
 
         private void EnableModules()
         {
-            if (vessel == null || modules == null)
+            if (vessel == null || _modules == null)
                 return;
 
-            for (int i = 0, iC = modules.Count; i < iC; ++i)
+            for (int i = 0, iC = _modules.Count; i < iC; ++i)
             {
-                var mod = modules[i];
+                var mod = _modules[i];
                 if (mod.IsSituationValid())
                     mod.EnableModule();
             }
@@ -884,29 +884,29 @@ namespace KIT.External
             }
             else
             {
-                if(currentHabitatVolumeField != null) currentHabitatVolumeField.guiActive = false;
-                if(currentHabitatVolumeField != null) currentHabitatVolumeField.guiActiveEditor = false;
-                if(currentHabitatSurfaceField != null) currentHabitatSurfaceField.guiActive = false;
-                if(currentHabitatSurfaceField != null) currentHabitatSurfaceField.guiActiveEditor = false;
+                if(_currentHabitatVolumeField != null) _currentHabitatVolumeField.guiActive = false;
+                if(_currentHabitatVolumeField != null) _currentHabitatVolumeField.guiActiveEditor = false;
+                if(_currentHabitatSurfaceField != null) _currentHabitatSurfaceField.guiActive = false;
+                if(_currentHabitatSurfaceField != null) _currentHabitatSurfaceField.guiActiveEditor = false;
             }
         }
 
         private void RetrieveHabitatData()
         {
-            if (habitatModule != null)
+            if (_habitatModule != null)
             {
-                if (currentHabitatVolumeField != null && habitatVolumeField != null)
+                if (_currentHabitatVolumeField != null && _habitatVolumeField != null)
                 {
-                    currentHabitatVolumeField.guiActive = true;
-                    currentHabitatVolumeField.guiActiveEditor = true;
-                    currentHabitatVolume = (double)habitatVolumeField.GetValue(habitatModule);
+                    _currentHabitatVolumeField.guiActive = true;
+                    _currentHabitatVolumeField.guiActiveEditor = true;
+                    currentHabitatVolume = (double)_habitatVolumeField.GetValue(_habitatModule);
                 }
 
-                if (currentHabitatSurfaceField != null && habitatSurfaceField != null)
+                if (_currentHabitatSurfaceField != null && _habitatSurfaceField != null)
                 {
-                    currentHabitatSurfaceField.guiActive = true;
-                    currentHabitatSurfaceField.guiActiveEditor = true;
-                    currentHabitatSurface = (double)habitatSurfaceField.GetValue(habitatModule);
+                    _currentHabitatSurfaceField.guiActive = true;
+                    _currentHabitatSurfaceField.guiActiveEditor = true;
+                    currentHabitatSurface = (double)_habitatSurfaceField.GetValue(_habitatModule);
                 }
             }
         }

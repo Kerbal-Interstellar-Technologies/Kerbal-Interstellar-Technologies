@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace KIT.Propulsion
 {
-    public class ModuleEnginesWarp : ModuleEnginesFX, IKITMod
+    public class ModuleEnginesWarp : ModuleEnginesFX, IKITModule
     {
         [KSPField(isPersistant = true)]
         bool IsForceActivated;
@@ -310,26 +310,26 @@ namespace KIT.Propulsion
             if (propellantResourceDefinition1 != null && ratio1 > 0)
             {
                 fuelRequestAmount1 = fuelWithMassPercentage1 > 0 ? fuelWithMassPercentage1 * propellantWithMassNeededInLiter : masslessFuelPercentage1 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID1) / fuelRequestAmount1);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID1) / fuelRequestAmount1);
 
                 Debug.Log($"[CollectFuel] first availableRatio is {availableRatio}");
             }
             if (propellantResourceDefinition2 != null && ratio2 > 0)
             {
                 fuelRequestAmount2 = fuelWithMassPercentage2 > 0 ? fuelWithMassPercentage2 * propellantWithMassNeededInLiter : masslessFuelPercentage2 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID2) / fuelRequestAmount2);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID2) / fuelRequestAmount2);
 
                 Debug.Log($"[CollectFuel] second availableRatio is {availableRatio}");
             }
             if (propellantResourceDefinition3 != null && ratio3 > 0)
             {
                 fuelRequestAmount3 = fuelWithMassPercentage3 > 0 ? fuelWithMassPercentage3 * propellantWithMassNeededInLiter : masslessFuelPercentage3 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID3) / fuelRequestAmount3);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID3) / fuelRequestAmount3);
             }
             if (propellantResourceDefinition4 != null && ratio4 > 0)
             {
                 fuelRequestAmount4 = fuelWithMassPercentage4 > 0 ? fuelWithMassPercentage4 * propellantWithMassNeededInLiter : masslessFuelPercentage4 * masslessResourceNeeded;
-                availableRatio = Math.Min(availableRatio, resMan.ResourceCurrentCapacity(propellantResourceID4) / fuelRequestAmount4);
+                availableRatio = Math.Min(availableRatio, resMan.CurrentCapacity(propellantResourceID4) / fuelRequestAmount4);
             }
 
             // ignore insignificant amount
@@ -344,26 +344,26 @@ namespace KIT.Propulsion
             double receivedRatio = 1;
             if (fuelRequestAmount1 > 0 && !double.IsNaN(fuelRequestAmount1) && !double.IsInfinity(fuelRequestAmount1))
             {
-                consumedPropellant1 = resMan.ConsumeResource(propellantResourceID1, fuelRequestAmount1 * availableRatio);
+                consumedPropellant1 = resMan.Consume(propellantResourceID1, fuelRequestAmount1 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount1 > 0 ? consumedPropellant1 / fuelRequestAmount1 : 0);
 
                 Debug.Log($"[CollectFuel] first receivedRatio is {receivedRatio}");
             }
             if (fuelRequestAmount2 > 0 && !double.IsNaN(fuelRequestAmount2) && !double.IsInfinity(fuelRequestAmount2))
             {
-                consumedPropellant2 = resMan.ConsumeResource(propellantResourceID2, fuelRequestAmount2 * availableRatio);
+                consumedPropellant2 = resMan.Consume(propellantResourceID2, fuelRequestAmount2 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount2 > 0 ? consumedPropellant2 / fuelRequestAmount2 : 0);
 
                 Debug.Log($"[CollectFuel] second receivedRatio is {receivedRatio}");
             }
             if (fuelRequestAmount3 > 0 && !double.IsNaN(fuelRequestAmount3) && !double.IsInfinity(fuelRequestAmount3))
             {
-                consumedPropellant3 = resMan.ConsumeResource(propellantResourceID3, fuelRequestAmount3 * availableRatio);
+                consumedPropellant3 = resMan.Consume(propellantResourceID3, fuelRequestAmount3 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount3 > 0 ? consumedPropellant3 / fuelRequestAmount3 : 0);
             }
             if (fuelRequestAmount4 > 0 && !double.IsNaN(fuelRequestAmount4) && !double.IsInfinity(fuelRequestAmount4))
             {
-                consumedPropellant4 = resMan.ConsumeResource(propellantResourceID4, fuelRequestAmount4 * availableRatio);
+                consumedPropellant4 = resMan.Consume(propellantResourceID4, fuelRequestAmount4 * availableRatio);
                 receivedRatio = Math.Min(receivedRatio, fuelRequestAmount4 > 0 ? consumedPropellant4 / fuelRequestAmount4 : 0);
             }
 
@@ -395,8 +395,8 @@ namespace KIT.Propulsion
                 return Math.Round(thrust, 3) + " kN";
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
-
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fifth;
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             if (vesselChangedSIOCountdown > 0)
@@ -447,7 +447,7 @@ namespace KIT.Propulsion
                 // Timewarp mode: perturb orbit using thrust
                 _warpToReal = true; // Set to true for transition to realtime
 
-                _thrustPersistent = requestedFlow * GameConstants.StandardGravity * _realIsp;
+                _thrustPersistent = requestedFlow * PhysicsGlobals.GravitationalAcceleration * _realIsp;
 
                 // only persist thrust if active and non zero throttle or significant thrust
                 if (getIgnitionState && (currentThrottle > 0 || _thrustPersistent > 0.0000005))
@@ -463,7 +463,7 @@ namespace KIT.Propulsion
                     demandMass = requestedFlow * resMan.FixedDeltaTime();
                     remainingMass = totalmassVessel - demandMass;
 
-                    deltaV = _realIsp * GameConstants.StandardGravity * Math.Log(totalmassVessel / remainingMass);
+                    deltaV = _realIsp * PhysicsGlobals.GravitationalAcceleration * Math.Log(totalmassVessel / remainingMass);
 
                     _engineThrustTransform = part.FindModelTransform(thrustVectorTransformName);
                     if (_engineThrustTransform == null)
@@ -493,7 +493,7 @@ namespace KIT.Propulsion
                         remainingMass = vessel.totalMass - (demandMass * fuelRatio); // Mass at end of burn
 
                         massDelta = Math.Log(totalmassVessel / remainingMass);
-                        deltaV = _realIsp * GameConstants.StandardGravity * massDelta; // Delta V from burn
+                        deltaV = _realIsp * PhysicsGlobals.GravitationalAcceleration * massDelta; // Delta V from burn
                         vessel.orbit.Perturb(deltaV * _engineThrustTransformUp, Planetarium.GetUniversalTime()); // Update vessel orbit
 
                         if (fuelRatio < 0.999)
@@ -529,7 +529,7 @@ namespace KIT.Propulsion
             thrust_d = _thrustPersistent;
             isp_d = _realIsp;
             throttle_d = _throttlePersistent;
-            
+
             base.FixedUpdate();
         }
 

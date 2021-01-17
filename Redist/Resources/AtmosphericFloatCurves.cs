@@ -116,7 +116,7 @@ namespace KIT.Resources
             InterstellarDensityRatio.Add(92, 1 + 0.412f);
             InterstellarDensityRatio.Add(93, 1 + 0.137f);
             InterstellarDensityRatio.Add(94, 1 + 0.05f);
-            InterstellarDensityRatio.Add(95, 1 + 0.015f);  
+            InterstellarDensityRatio.Add(95, 1 + 0.015f);
             InterstellarDensityRatio.Add(96, 1 + 0.005f);
             InterstellarDensityRatio.Add(97, 1 + 0.0017f);
             InterstellarDensityRatio.Add(98, 1 + 5.65e-4f);
@@ -373,7 +373,7 @@ namespace KIT.Resources
                 ParticlesAtmosphereCubePerMeter.SmoothTangents(i, 0);
             }
         }
-        
+
         private void InitializeDensityAtmosphereCubeCm()
         {
             if (MassDensityAtmosphereGramPerCubeCm != null) return;

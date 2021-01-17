@@ -1,4 +1,6 @@
-﻿using KIT.Interfaces;
+﻿using System.Collections.Generic;
+using FinePrint;
+using KIT.Interfaces;
 using KIT.Resources;
 
 namespace KIT.ResourceScheduler
@@ -7,28 +9,49 @@ namespace KIT.ResourceScheduler
     {
         public IResourceManager BaseImpl;
 
-        public WasteHeatEquilibriumResourceManager(IResourceManager parent)
+        public IResourceManager Update(IResourceManager baseImpl)
         {
-            BaseImpl = parent;
+            BaseImpl = baseImpl;
+            return this;
         }
+
+        #region proxy implementation
+
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources, double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty) =>
+            BaseImpl.ScaledConsumptionProduction(consumeResources, produceResources, minimumRatio, flags);
+
+        public double CurrentCapacity(ResourceName resourceIdentifier) => BaseImpl.CurrentCapacity(resourceIdentifier);
+
+        public double FillFraction(ResourceName resourceIdentifier) => BaseImpl.FillFraction(resourceIdentifier);
+
+        public double SpareCapacity(ResourceName resourceIdentifier) => BaseImpl.SpareCapacity(resourceIdentifier);
+
+        public double MaxCapacity(ResourceName resourceIdentifier) => BaseImpl.MaxCapacity(resourceIdentifier);
 
         ICheatOptions IResourceManager.CheatOptions() => BaseImpl.CheatOptions();
-        double IResourceManager.ResourceCurrentCapacity(ResourceName resourceIdentifier) => BaseImpl.ResourceCurrentCapacity(resourceIdentifier);
-        double IResourceManager.FixedDeltaTime() => BaseImpl.FixedDeltaTime();
-        double IResourceManager.ResourceFillFraction(ResourceName resourceIdentifier) => BaseImpl.ResourceFillFraction(resourceIdentifier);
-        IResourceProduction IResourceManager.ResourceProductionStats(ResourceName resourceIdentifier) => BaseImpl.ResourceProductionStats(resourceIdentifier);
-        double IResourceManager.ResourceSpareCapacity(ResourceName resourceIdentifier) => BaseImpl.ResourceSpareCapacity(resourceIdentifier);
 
-        double IResourceManager.ConsumeResource(ResourceName resource, double wanted)
+        public bool CapacityInformation(ResourceName resourceIdentifier, out double maxCapacity,
+            out double spareCapacity,
+            out double currentCapacity, out double fillFraction) => BaseImpl.CapacityInformation(resourceIdentifier,
+            out maxCapacity, out spareCapacity, out currentCapacity, out fillFraction);
+
+        double IResourceManager.FixedDeltaTime() => BaseImpl.FixedDeltaTime();
+        IResourceProduction IResourceManager.ProductionStats(ResourceName resourceIdentifier) => BaseImpl.ProductionStats(resourceIdentifier);
+
+        #endregion
+
+        double IResourceManager.Consume(ResourceName resource, double wanted)
         {
             if(resource == ResourceName.WasteHeat) return wanted; // don't care.
-            return BaseImpl.ConsumeResource(resource, wanted);
+            return BaseImpl.Consume(resource, wanted);
         }
 
-        double IResourceManager.ProduceResource(ResourceName resource, double amount, double max)
+        double IResourceManager.Produce(ResourceName resource, double amount, double max)
         {
             if (resource == ResourceName.WasteHeat) return amount; // don't care
-            return BaseImpl.ProduceResource(resource, amount, max);
+            return BaseImpl.Produce(resource, amount, max);
         }
     }
 }

@@ -1,6 +1,7 @@
 using KIT.Interfaces;
 using KIT.Resources;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KIT.ResourceScheduler
@@ -12,27 +13,41 @@ namespace KIT.ResourceScheduler
     /// </summary>
     public class OverHeatingResourceManager : IResourceManager
     {
-        private IResourceManager _baseImpl;
+        public IResourceManager BaseImpl;
         public double ConsumptionReduction = 1;
 
         public IResourceManager SetBaseResourceManager(IResourceManager root)
         {
-            _baseImpl = root;
+            BaseImpl = root;
 
             return this;
         }
 
         #region Proxy implementation functions
-        public ICheatOptions CheatOptions() => _baseImpl.CheatOptions();
-        public double FixedDeltaTime() => _baseImpl.FixedDeltaTime();
-        public double ProduceResource(ResourceName resource, double amount, double max = -1) => _baseImpl.ProduceResource(resource, amount, max);
-        public double ResourceCurrentCapacity(ResourceName resourceIdentifier) => _baseImpl.ResourceCurrentCapacity(resourceIdentifier);
-        public double ResourceFillFraction(ResourceName resourceIdentifier) => _baseImpl.ResourceFillFraction(resourceIdentifier);
-        public IResourceProduction ResourceProductionStats(ResourceName resourceIdentifier) => _baseImpl.ResourceProductionStats(resourceIdentifier);
-        public double ResourceSpareCapacity(ResourceName resourceIdentifier) => _baseImpl.ResourceSpareCapacity(resourceIdentifier);
+
+        public double MaxCapacity(ResourceName resourceIdentifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICheatOptions CheatOptions() => BaseImpl.CheatOptions();
+
+        public bool CapacityInformation(ResourceName resourceIdentifier, out double maxCapacity,
+            out double spareCapacity,
+            out double currentCapacity, out double fillFraction) => BaseImpl.CapacityInformation(resourceIdentifier,
+            out maxCapacity, out spareCapacity, out currentCapacity, out fillFraction);
+
+        public double FixedDeltaTime() => BaseImpl.FixedDeltaTime();
+        public double Produce(ResourceName resource, double amount, double max = -1) => BaseImpl.Produce(resource, amount, max);
+        public IResourceProduction ProductionStats(ResourceName resourceIdentifier) => BaseImpl.ProductionStats(resourceIdentifier);
+
+
+        public double CurrentCapacity(ResourceName resourceIdentifier) => BaseImpl.CurrentCapacity(resourceIdentifier);
+        public double FillFraction(ResourceName resourceIdentifier) => BaseImpl.FillFraction(resourceIdentifier);
+        public double SpareCapacity(ResourceName resourceIdentifier) => BaseImpl.SpareCapacity(resourceIdentifier);
         #endregion
 
-        public double ConsumeResource(ResourceName resource, double wanted)
+        public double Consume(ResourceName resource, double wanted)
         {
             if(ConsumptionReduction < 0 || ConsumptionReduction > 1)
             {
@@ -45,7 +60,15 @@ namespace KIT.ResourceScheduler
                 wanted = Math.Max(0, wanted * ConsumptionReduction);
             }
 
-            return _baseImpl.ConsumeResource(resource, wanted);
+            return BaseImpl.Consume(resource, wanted);
+        }
+
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources, double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
+        {
+            // TODO implement consumption reduction across the board
+            return BaseImpl.ScaledConsumptionProduction(consumeResources, produceResources, minimumRatio, flags);
         }
     }
 

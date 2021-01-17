@@ -15,7 +15,7 @@ namespace KIT.Science
 
         // Maximum loss of reputation from destroying the AI's home.
         [KSPField]
-        public float destructionPenaltyMax = 150;
+        public float destructionPenaltyMax = 15;
 
         private void OnJustAboutToBeDestroyed()
         {
@@ -65,7 +65,7 @@ namespace KIT.Science
         [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ComputerCore_DataCollectionRate")]//Data Collection Rate
         public string scienceRate;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_AIOnline", guiActive = true, guiActiveEditor = true), UI_Toggle(disabledText = "#LOC_KSPIE_ComputerCore_AIOnline_Off", enabledText = "#LOC_KSPIE_ComputerCore_AIOnline_On", scene = UI_Scene.All)]//AI Online--Off--On
-        public bool IsEnabled = false;
+        public bool IsEnabled;
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_IsPowered", guiActive = true, guiActiveEditor = false)]//Powered
         public bool IsPowered;
         [KSPField(isPersistant = true, guiActiveEditor = true)]
@@ -75,8 +75,8 @@ namespace KIT.Science
         [KSPField(isPersistant = true, guiName = "#LOC_KSPIE_ComputerCore_Datastored", guiActive = true, guiActiveEditor = false)]//Data stored
         public double science_to_add;
 
-        [KSPField(isPersistant = true)] public bool coreInit = false;
-        [KSPField] public string upgradeTechReq = null;
+        [KSPField(isPersistant = true)] public bool coreInit;
+        [KSPField] public string upgradeTechReq;
         [KSPField] public string upgradedName = "";
         [KSPField] public string originalName = "";
         [KSPField] public float upgradeCost = 100;
@@ -104,7 +104,7 @@ namespace KIT.Science
         BaseEvent _retrofitCoreEvent;
         ModuleDataTransmitter _moduleDataTransmitter;
         ModuleCommand _moduleCommand;
-        AIHome _moduleAIHome;
+        AIHome _moduleAiHome;
 
         //Properties
         public string UpgradeTechnology => upgradeTechReq;
@@ -116,9 +116,8 @@ namespace KIT.Science
         {
             if (ResearchAndDevelopment.Instance == null) return;
             if (isUpgraded || ResearchAndDevelopment.Instance.Science < upgradeCost) return;
-
-            if (_moduleAIHome != null)
-                _moduleAIHome.NewHome();
+            
+            _moduleAiHome?.NewHome();
 
             upgradePartModule();
             ResearchAndDevelopment.Instance.AddScience(-upgradeCost, TransactionReasons.RnDPartPurchase);
@@ -151,7 +150,7 @@ namespace KIT.Science
 
             _moduleDataTransmitter = part.FindModuleImplementing<ModuleDataTransmitter>();
             _moduleCommand = part.FindModuleImplementing<ModuleCommand>();
-            _moduleAIHome = part.FindModuleImplementing<AIHome>();
+            _moduleAiHome = part.FindModuleImplementing<AIHome>();
 
             if (isUpgraded || !PluginHelper.TechnologyIsInUse)
                 upgradePartModule();
@@ -290,17 +289,17 @@ namespace KIT.Science
 
         public bool CanRelayUnloaded(ProtoPartModuleSnapshot mSnap)
         {
-            bool Is_Enabled, Is_Powered;
+            bool isEnabled, isPowered;
 
-            Is_Enabled = Is_Powered = false;
+            isEnabled = isPowered = false;
 
-            if (!mSnap.moduleValues.TryGetValue(nameof(IsEnabled), ref Is_Enabled)) return false;
-            if (!mSnap.moduleValues.TryGetValue(nameof(IsPowered), ref Is_Powered)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(IsEnabled), ref isEnabled)) return false;
+            if (!mSnap.moduleValues.TryGetValue(nameof(IsPowered), ref isPowered)) return false;
 
-            return Is_Enabled && Is_Powered;
+            return isEnabled && isPowered;
         }
 
-        public new ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+        public new ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.First;
 
         public new void KITFixedUpdate(IResourceManager resMan)
         {
@@ -314,13 +313,13 @@ namespace KIT.Science
                 science_to_add = 0;
             }
 
-            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, _effectivePowerRequirement);
+            var powerReturned = resMan.Consume(ResourceName.ElectricCharge, _effectivePowerRequirement);
 
             electrical_power_ratio = powerReturned / _effectivePowerRequirement;
             IsPowered = electrical_power_ratio > 0.99;
 
             if (vessel == null) return;
-            
+
             if (!IsPowered)
             {
                 if (vessel.connection != null)
@@ -336,7 +335,7 @@ namespace KIT.Science
                     }
                 }
 
-                resMan.ProduceResource(ResourceName.ElectricCharge, powerReturned);
+                resMan.Produce(ResourceName.ElectricCharge, powerReturned);
                 return;
             }
 

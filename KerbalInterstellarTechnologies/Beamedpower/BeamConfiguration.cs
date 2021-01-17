@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace KIT.Beamedpower
+namespace KIT.BeamedPower
 {
     [KSPModule("#LOC_KSPIE_BeamConfiguration_MouduleName")]//Beamed Power Transmit Configuration
     public class BeamConfiguration
@@ -53,7 +53,7 @@ namespace KIT.Beamedpower
             node.TryGetValue(nameof(techRequirement2), ref techRequirement2);
             node.TryGetValue(nameof(efficiencyPercentage3), ref efficiencyPercentage3);
             node.TryGetValue(nameof(techRequirement3), ref techRequirement3);
-            
+
             if (! PluginHelper.HasTechRequirementAndNotEmpty(techRequirement3))
             {
                 techRequirement3 = "";

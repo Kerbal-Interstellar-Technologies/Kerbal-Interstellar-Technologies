@@ -1,4 +1,4 @@
-﻿namespace KIT.Powermanagement.Interfaces
+﻿namespace KIT.PowerManagement.Interfaces
 {
     public interface IResourceSuppliable
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace KIT.BeamedPower 
+namespace KIT.BeamedPower
 {
-    public class VesselRelayPersistence : IVesselRelayPersistence 
+    public class VesselRelayPersistence : IVesselRelayPersistence
     {
         double _diameter;
         double _aperture;
@@ -10,7 +10,7 @@ namespace KIT.BeamedPower
         double _minimumRelayWavelength;
         double _maximumRelayWavelength;
 
-        public VesselRelayPersistence(Vessel vessel) 
+        public VesselRelayPersistence(Vessel vessel)
         {
             Vessel = vessel;
             SupportedTransmitWavelengths = new List<WaveLengthData>();

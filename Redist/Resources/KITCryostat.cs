@@ -77,7 +77,15 @@ namespace KIT.Resources
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.First;
+        public bool ModuleConfiguration(out int priority, out bool supplierOnly, out bool hasLocalResources)
+        {
+            priority = 0;
+            supplierOnly = false;
+            hasLocalResources = false;
+
+            return true;
+        }
+
         private readonly string _partName = Localizer.Format("#LOC_KIT_Vessel_Cryostat_PartName");
         public string KITPartName() => _partName;
 
@@ -88,7 +96,7 @@ namespace KIT.Resources
             foreach (var resource in part.Resources)
             {
                 if (!_boilOffConfigurations.TryGetValue(resource.resourceName, out var configuration)) continue;
-                
+
                 
             }
         }
@@ -108,7 +116,7 @@ namespace KIT
     class ModuleStorageCryostat: FNModuleCryostat {}
 
     [KSPModule("Cryostat")]
-    class FNModuleCryostat : PartModule, IKITMod
+    class FNModuleCryostat : PartModule, IKITModule
     {
         public const string GROUP = "FNModuleCryostat";
         public const string GROUP_TITLE = "Interstellar Cryostat";
@@ -282,7 +290,7 @@ namespace KIT
 
             if (!isDisabled && currentPowerReq > 0.0)
             {
-                receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq);
+                receivedPowerKW = resMan.Consume(ResourceName.ElectricCharge, currentPowerReq);
             }
             else
                 receivedPowerKW = 0;

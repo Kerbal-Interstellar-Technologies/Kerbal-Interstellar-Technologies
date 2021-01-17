@@ -19,16 +19,17 @@ namespace KIT.Refinery.Activity
         }
 
         // persistent
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AtmosphericExtractor_SurfaceArea", guiFormat = "F3")]//Surface Area
+        public double surfaceArea = 1;
+
         [KSPField(isPersistant = true)]
         protected int lastBodyID = -1; // ID of the last body. Allows us to skip some expensive calls
-
         [KSPField(isPersistant = true)]
         public bool isDeployed;
         [KSPField(guiActive = false)]
         public float normalizedTime = -1;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AtmosphericExtractor_SurfaceArea", guiFormat = "F3")]//Surface Area
-        public double surfaceArea = 1;
+
         [KSPField]
         public double buildInAirIntake;
         [KSPField]
@@ -240,7 +241,7 @@ namespace KIT.Refinery.Activity
         double _spareRoomKryptonMass;
         double _spareRoomSodiumMass;
 
-        List<AtmosphericIntake> _intakesList; // create a new list for keeping track of atmo intakes
+        List<AtmosphericIntake> _intakesList; // create a new list for keeping track of atmosphere intakes
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
         {
@@ -472,7 +473,7 @@ namespace KIT.Refinery.Activity
                 var remainingConsumptionNeeded = Math.Max(0, buildInAirIntake - maxAtmosphericConsumptionRate);
 
                 // add the consumed atmosphere total atmospheric consumption rate
-                _atmosphereConsumptionRate += resMan.ConsumeResource(ResourceName.IntakeAtmosphere, remainingConsumptionNeeded / _atmosphere.density) / _atmosphere.density;
+                _atmosphereConsumptionRate += resMan.Consume(ResourceName.IntakeAtmosphere, remainingConsumptionNeeded / _atmosphere.density) / _atmosphere.density;
 
                 // produce the resources
                 _ammoniaProductionRate = _ammoniaPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _ammoniaPercentage;
@@ -493,24 +494,24 @@ namespace KIT.Refinery.Activity
                 _kryptonProductionRate = _kryptonPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _kryptonPercentage;
                 _sodiumProductionRate = _sodiumPercentage <= 0 ? 0 : _atmosphereConsumptionRate * _sodiumPercentage;
 
-                resMan.ProduceResource(ResourceName.AmmoniaLqd, _ammoniaProductionRate / _ammonia.density);
-                resMan.ProduceResource(ResourceName.ArgonLqd, _argonPercentage / _argon.density);
-                resMan.ProduceResource(ResourceName.ChlorineGas, _chlorinePercentage / _chlorine.density);
-                resMan.ProduceResource(ResourceName.CarbonDioxideLqd, _dioxidePercentage / _dioxide.density);
-                resMan.ProduceResource(ResourceName.Helium3Lqd, _helium3Percentage / _helium3.density);
-                resMan.ProduceResource(ResourceName.Helium4Lqd, _helium4Percentage / _helium4.density);
-                resMan.ProduceResource(ResourceName.MethaneLqd, _methanePercentage / _methane.density);
-                resMan.ProduceResource(ResourceName.CarbonMonoxideLqd, _monoxidePercentage / _monoxide.density);
-                resMan.ProduceResource(ResourceName.NeonLqd, _neonPercentage / _neon.density);
-                resMan.ProduceResource(ResourceName.NitrogenLqd, _nitrogenPercentage / _nitrogen.density);
-                resMan.ProduceResource(ResourceName.Nitrogen15Lqd, _nitrogen15Percentage / _nitrogen15.density);
-                resMan.ProduceResource(ResourceName.OxygenLqd, _oxygenPercentage / _oxygen.density);
-                resMan.ProduceResource(ResourceName.WaterPure, _waterPercentage / _water.density);
-                resMan.ProduceResource(ResourceName.WaterHeavy, _heavywaterPercentage / _heavyWater.density);
-                resMan.ProduceResource(ResourceName.XenonLqd, _xenonPercentage / _xenon.density);
-                resMan.ProduceResource(ResourceName.DeuteriumLqd, _deuteriumPercentage / _deuterium.density);
-                resMan.ProduceResource(ResourceName.KryptonLqd, _kryptonPercentage / _krypton.density);
-                resMan.ProduceResource(ResourceName.Sodium, _sodiumPercentage / _sodium.density);
+                resMan.Produce(ResourceName.AmmoniaLqd, _ammoniaProductionRate / _ammonia.density);
+                resMan.Produce(ResourceName.ArgonLqd, _argonPercentage / _argon.density);
+                resMan.Produce(ResourceName.ChlorineGas, _chlorinePercentage / _chlorine.density);
+                resMan.Produce(ResourceName.CarbonDioxideLqd, _dioxidePercentage / _dioxide.density);
+                resMan.Produce(ResourceName.Helium3Lqd, _helium3Percentage / _helium3.density);
+                resMan.Produce(ResourceName.Helium4Lqd, _helium4Percentage / _helium4.density);
+                resMan.Produce(ResourceName.MethaneLqd, _methanePercentage / _methane.density);
+                resMan.Produce(ResourceName.CarbonMonoxideLqd, _monoxidePercentage / _monoxide.density);
+                resMan.Produce(ResourceName.NeonLqd, _neonPercentage / _neon.density);
+                resMan.Produce(ResourceName.NitrogenLqd, _nitrogenPercentage / _nitrogen.density);
+                resMan.Produce(ResourceName.Nitrogen15Lqd, _nitrogen15Percentage / _nitrogen15.density);
+                resMan.Produce(ResourceName.OxygenLqd, _oxygenPercentage / _oxygen.density);
+                resMan.Produce(ResourceName.WaterPure, _waterPercentage / _water.density);
+                resMan.Produce(ResourceName.WaterHeavy, _heavywaterPercentage / _heavyWater.density);
+                resMan.Produce(ResourceName.XenonLqd, _xenonPercentage / _xenon.density);
+                resMan.Produce(ResourceName.DeuteriumLqd, _deuteriumPercentage / _deuterium.density);
+                resMan.Produce(ResourceName.KryptonLqd, _kryptonPercentage / _krypton.density);
+                resMan.Produce(ResourceName.Sodium, _sodiumPercentage / _sodium.density);
             }
             else
             {

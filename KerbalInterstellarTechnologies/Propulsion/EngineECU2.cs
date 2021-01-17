@@ -1,5 +1,4 @@
-﻿using KIT.Resources;
-using KIT.ResourceScheduler;
+﻿using KIT.ResourceScheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +9,17 @@ namespace KIT.Propulsion
 {
     enum GenerationType { Mk1 = 0, Mk2 = 1, Mk3 = 2, Mk4 = 3, Mk5 = 4, Mk6 = 5, Mk7 = 6, Mk8 = 7, Mk9 = 8 }
 
-    abstract class EngineECU2 : PartModule, IKITMod
+    abstract class EngineECU2 : PartModule, IKITModule
     {
-        public const string GROUP = "EngineECU2";
-        public const string GROUP_TITLE = "#LOC_KSPIE_EngineECU2_groupName";
+        public const string Group = "EngineECU2";
+        public const string GroupTitle = "#LOC_KSPIE_EngineECU2_groupName";
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_EngineECU2_MaxThrust", guiUnits = " kN", guiFormat = "F1")]//Max Thrust
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_EngineECU2_MaxThrust", guiUnits = " kN", guiFormat = "F1")]//Max Thrust
         public double maximumThrust;
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_MaximumFuelFlow", guiFormat = "F3")]//Maximum FuelFlow
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_FusionECU2_MaximumFuelFlow", guiFormat = "F3")]//Maximum FuelFlow
         public double maxFuelFlow;
 
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_EngineECU2_FuelConfig")]//Fuel Config
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_EngineECU2_FuelConfig")]//Fuel Config
         [UI_ChooseOption(affectSymCounterparts = UI_Scene.All, scene = UI_Scene.All, suppressEditorShipModified = true)]
         public int selectedFuel;
 
@@ -28,7 +27,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)]
         public bool IsEnabled;
         [KSPField(isPersistant = true)]
-        bool Launched = false;
+        bool Launched;
         [KSPField(isPersistant = true)]
         public bool hideEmpty;
         [KSPField(isPersistant = true)]
@@ -46,19 +45,19 @@ namespace KIT.Propulsion
         [KSPField]
         public string upgradeTechReq4;
 
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_EngineECU2_upgradetech1")]//upgrade tech 1
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_EngineECU2_upgradetech1")]//upgrade tech 1
         public string translatedTechMk1;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_EngineECU2_upgradetech2")]//upgrade tech 2
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_EngineECU2_upgradetech2")]//upgrade tech 2
         public string translatedTechMk2;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_EngineECU2_upgradetech3")]//upgrade tech 3
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_EngineECU2_upgradetech3")]//upgrade tech 3
         public string translatedTechMk3;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_EngineECU2_upgradetech4")]//upgrade tech 4
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_EngineECU2_upgradetech4")]//upgrade tech 4
         public string translatedTechMk4;
 
         // Gui
-        [KSPField(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_EngineECU2_ThrustPower", guiUnits = " GW", guiFormat = "F3")]//Thrust Power
+        [KSPField(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_EngineECU2_ThrustPower", guiUnits = " GW", guiFormat = "F3")]//Thrust Power
         public double thrustPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_EngineECU2_FusionRatio", guiFormat = "F3")]//Fusion Ratio
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_EngineECU2_FusionRatio", guiFormat = "F3")]//Fusion Ratio
         public double fusionRatio;
 
         [KSPField]
@@ -131,7 +130,7 @@ namespace KIT.Propulsion
             EngineGenerationType = (GenerationType)numberOfUpgradeTechs;
         }
 
-        [KSPEvent(groupName = GROUP, active = true, advancedTweakable = true, guiActive = true, guiActiveEditor = false, name = "HideUsableFuelsToggle", guiName = "#LOC_KSPIE_EngineECU2_HideUnusableConfigurations")]//Hide Unusable Configurations
+        [KSPEvent(groupName = Group, active = true, advancedTweakable = true, guiActive = true, guiActiveEditor = false, name = "HideUsableFuelsToggle", guiName = "#LOC_KSPIE_EngineECU2_HideUnusableConfigurations")]//Hide Unusable Configurations
         public void HideFuels()
         {
             hideEmpty = true;
@@ -143,7 +142,7 @@ namespace KIT.Propulsion
             UpdateFuel();
         }
 
-        [KSPEvent(groupName = GROUP, active = false, advancedTweakable = true, guiActive = true, guiActiveEditor = false, name = "HideUsableFuelsToggle", guiName = "#LOC_KSPIE_EngineECU2_ShowAllConfigurations")]//Show All Configurations
+        [KSPEvent(groupName = Group, active = false, advancedTweakable = true, guiActive = true, guiActiveEditor = false, name = "HideUsableFuelsToggle", guiName = "#LOC_KSPIE_EngineECU2_ShowAllConfigurations")]//Show All Configurations
         public void ShowFuels()
         {
             FuelConfiguration curConfig = CurrentActiveConfiguration;
@@ -522,7 +521,7 @@ namespace KIT.Propulsion
 
             if (curEngineT != null)
             {
-                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * GameConstants.StandardGravity / 2e6;
+                thrustPower = curEngineT.finalThrust * curEngineT.realIsp * PhysicsGlobals.GravitationalAcceleration / 2e6;
                 UpdateEngineWarpFuels();
             }
 
@@ -683,12 +682,12 @@ namespace KIT.Propulsion
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Third;
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Third;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
             _fuelConfigurationWithEffect?.ForEach(prop => part.Effect(prop.effectname, 0, -1));
-            
+
             if (_currentActiveConfiguration != null && !string.IsNullOrEmpty(_currentActiveConfiguration.effectname))
                 part.Effect(_currentActiveConfiguration.effectname, (float)(curEngineT.currentThrottle * fusionRatio));
         }
@@ -701,7 +700,7 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_FuelConfiguration")]//Fuel Configuration
         public string fuelConfigurationName = "";
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_RequiredTechLevel")]//Required Tech Level
-        public int requiredTechLevel = 0;
+        public int requiredTechLevel;
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_Fuels")]//Fuels
         public string fuels = "";
         [KSPField(isPersistant = false, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_EngineECU2_Ratios")]//Ratios
@@ -737,17 +736,17 @@ namespace KIT.Propulsion
         public double minIsp = 100;
 
         [KSPField]
-        public bool atmChangeFlow = false;
+        public bool atmChangeFlow;
         [KSPField]
-        public bool useVelCurve = false;
+        public bool useVelCurve;
         [KSPField]
-        public bool useAtmCurve = false;
+        public bool useAtmCurve;
         [KSPField]
-        public bool clampPropReceived = false;
+        public bool clampPropReceived;
         [KSPField]
-        public bool useEngineResponseTime = false;
+        public bool useEngineResponseTime;
         [KSPField]
-        public string effectname = null;
+        public string effectname;
         [KSPField(isPersistant = true)]
         private string akConfigName = "";
         [KSPField]
@@ -757,7 +756,7 @@ namespace KIT.Propulsion
         [KSPField]
         public double exhaustDamageMultiplier = 165;
         [KSPField]
-        public double exhaustDamageDistanceOffset = 0;
+        public double exhaustDamageDistanceOffset;
         [KSPField]
         public float engineAccelerationSpeed = 0.2f;
         [KSPField]

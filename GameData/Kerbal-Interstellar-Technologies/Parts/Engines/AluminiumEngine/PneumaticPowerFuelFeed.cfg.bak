@@ -132,6 +132,7 @@ PART
 			ratio = 1
 			DrawGauge = True
 		}
+
 		PROPELLANT
 		{
 			name = LqdOxygen
@@ -146,8 +147,8 @@ PART
 		
 		atmosphereCurve
 		{
-           		key = 0 333
-            		key = 1 303
+       		key = 0 333
+       		key = 1 303
 			key = 2 273
 			key = 3 243
 			key = 4 223
@@ -155,8 +156,8 @@ PART
 		}
 	}
 
-    	MODULE
-    	{
+    MODULE
+    {
 		name = ChemicalEngine
 		
 		fuelSwitchName = Fuel Type
@@ -173,131 +174,131 @@ PART
 		maxAtmosphereDensity = -1
 		resourceSwitching = false
 		maxThrustEfficiencyByIspPower = 1
-    	}
+    }
 
-    	MODULE
-    	{
-        	name = FuelConfiguration
+    MODULE
+    {
+       	name = FuelConfiguration
 
-        	fuelConfigurationName = Hydrogen
+       	fuelConfigurationName = Hydrogen
 		requiredTechLevel = 0
 		hasIspThrottling = false
-        	fuels = Aluminium, LqdOxygen, LqdHydrogen
+       	fuels = Aluminium, LqdOxygen, LqdHydrogen
 		typeMasks = 0, 0, 0
-        	//ratios = 1.41516, 5.15337, 2.822865  	// 39.2 kg Aluminium, 58.8 kg LqdOxygen, 2 kg LqdHydrogen = 14.1516 L Aluminium, 51.5337 L LqdOxygen, 28.22865L LqdHydrogen
+       	//ratios = 1.41516, 5.15337, 2.822865  	// 39.2 kg Aluminium, 58.8 kg LqdOxygen, 2 kg LqdHydrogen = 14.1516 L Aluminium, 51.5337 L LqdOxygen, 28.22865L LqdHydrogen
 		ratios = 1, 4, 2
 		maxIsp = 333
 		wasteheatMult = 1
-        	thrustMult = 1
-        	powerMult = 1		
+       	thrustMult = 1
+       	powerMult = 1		
 		effectname = exhaust
 		neutronRatio = 0
 		ignitionThreshold = 0.1
 		exhaustDamageDistanceOffset = 0.98
         
-        	atmosphereCurve
-        	{
-           		key = 0 333
-            		key = 1 303
+       	atmosphereCurve
+       	{
+       		key = 0 333
+       		key = 1 303
 			key = 2 273
 			key = 3 243
 			key = 4 223
 			key = 10 0
-        	}
-    	}
+       	}
+    }
 
-    	MODULE
-    	{
-        	name = FuelConfiguration
+    MODULE
+    {
+       	name = FuelConfiguration
 
-        	fuelConfigurationName = Helium
+       	fuelConfigurationName = Helium
 		requiredTechLevel = 0
 		hasIspThrottling = false
-        	fuels = Aluminium, LqdOxygen, LqdHelium
+       	fuels = Aluminium, LqdOxygen, LqdHelium
 		typeMasks = 0, 0, 0
-        	//ratios = 1.1913357, 5.696757, 1.1198  // 33 kg Aluminium, 65 kg LqdOxygen, 2 kg LqdHelium = 11.913357 L Aluminium, 56.96757 L LqdOxygen, 11198.208L LqdHelium
+       	//ratios = 1.1913357, 5.696757, 1.1198  // 33 kg Aluminium, 65 kg LqdOxygen, 2 kg LqdHelium = 11.913357 L Aluminium, 56.96757 L LqdOxygen, 11198.208L LqdHelium
 		ratios = 1, 5, 1
 		maxIsp = 324
 		wasteheatMult = 1
-        	thrustMult = 1
-        	powerMult = 1		
+       	thrustMult = 1
+       	powerMult = 1		
 		effectname = exhaust
 		neutronRatio = 0
 		ignitionThreshold = 0.1
 		exhaustDamageDistanceOffset = 0.98
         
-        	atmosphereCurve
-        	{
-           		key = 0 324
-            		key = 1 294
+       	atmosphereCurve
+       	{
+       		key = 0 324
+       		key = 1 294
 			key = 2 264
 			key = 3 234
 			key = 4 214
 			key = 10 0
-        	}
-    	}
+       	}
+   	}
 
-    	MODULE
-    	{
-        	name = FuelConfiguration
+   	MODULE
+   	{
+       	name = FuelConfiguration
 
-        	fuelConfigurationName = Methane
+       	fuelConfigurationName = Methane
 		requiredTechLevel = 0
 		hasIspThrottling = false
-        	fuels = Aluminium, LqdOxygen, LqdMethane
+       	fuels = Aluminium, LqdOxygen, LqdMethane
 		typeMasks = 0, 0, 0
-        	//ratios = 1.1913357, 5.696757, 0.4699 // 33 kg Aluminium, 65 kg LqdOxygen, 2 kg LqdHydrogen = 11.913357 L Aluminium, 56.96757 L LqdOxygen, 4699.1377 LqdMethane
+       	//ratios = 1.1913357, 5.696757, 0.4699 // 33 kg Aluminium, 65 kg LqdOxygen, 2 kg LqdHydrogen = 11.913357 L Aluminium, 56.96757 L LqdOxygen, 4699.1377 LqdMethane
 		ratios = 2, 10, 1
 		maxIsp = 320
 		wasteheatMult = 1
-        	thrustMult = 1
-        	powerMult = 1		
+       	thrustMult = 1
+       	powerMult = 1		
 		effectname = exhaust
 		neutronRatio = 0
 		ignitionThreshold = 0.1
 		exhaustDamageDistanceOffset = 0.98
         
-        	atmosphereCurve
-        	{
-           		key = 0 320
-            		key = 1 290
+       	atmosphereCurve
+       	{
+       		key = 0 320
+       		key = 1 290
 			key = 2 260
 			key = 3 230
 			key = 4 210
 			key = 10 0
-        	}
-    	}
+       	}
+   	}
 
-    	MODULE
-    	{
-        	name = FuelConfiguration
+   	MODULE
+   	{
+       	name = FuelConfiguration
 
-        	fuelConfigurationName = Nitrogen
+       	fuelConfigurationName = Nitrogen
 		requiredTechLevel = 0
 		hasIspThrottling = false
-        	fuels = Aluminium, LqdOxygen, LqdNitrogen
+       	fuels = Aluminium, LqdOxygen, LqdNitrogen
 		typeMasks = 0, 0, 0
-        	//ratios = 0.70758, 6.8711656, 0.24245157  // 19.6 kg Aluminium, 78.4 kg LqdOxygen, 2 kg LqdNitrogen = 7.0758 L Aluminium, 68.711656 L LqdOxygen, 2.4245157 LqdNitrogen
+       	//ratios = 0.70758, 6.8711656, 0.24245157  // 19.6 kg Aluminium, 78.4 kg LqdOxygen, 2 kg LqdNitrogen = 7.0758 L Aluminium, 68.711656 L LqdOxygen, 2.4245157 LqdNitrogen
 		ratios = 3, 27, 1
 		maxIsp = 313
 		wasteheatMult = 1
-        	thrustMult = 1
-        	powerMult = 1		
+       	thrustMult = 1
+       	powerMult = 1		
 		effectname = exhaust
 		neutronRatio = 0
 		ignitionThreshold = 0.1
 		exhaustDamageDistanceOffset = 0.98
         
-        	atmosphereCurve
-        	{
-           		key = 0 313
-            		key = 1 283
+       	atmosphereCurve
+       	{
+       		key = 0 313
+       		key = 1 283
 			key = 2 253
 			key = 3 223
 			key = 4 203
 			key = 10 0
-        	}
-    	}
+       	}
+   	}
 
 	MODULE
 	{
@@ -318,20 +319,26 @@ PART
 		falloff = 0.5
 		thrustTransformName = Thrust
 	}
+
 	MODULE
 	{
 		name = ModuleGimbal
 		gimbalTransformName = EngineShortNozzle
 		gimbalRange = 10
 	}
-}
 
-@PART[AluminiumPneumaticEngine]:FOR[Kerbal-Interstellar-Technologies]
-{
-	%MODULE[TweakScale]:NEEDS[TweakScale]
+	MODULE
 	{
+		name = TweakScale
 		type = stack_interstellar
 		defaultScale = 2.5
 		scaleFactors =  0.625, 0.95, 1.25, 1.875, 2.5, 3.75, 5.0, 7.5, 10, 15, 20, 30, 40
+	}
+
+	MODULE
+	{
+		name = ModuleWaterfallFX
+    	moduleID = AluminiumPneumaticEngineFX
+		engineID = basicEngine
 	}
 }

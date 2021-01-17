@@ -141,7 +141,7 @@ namespace KIT.BeamedPower
 
         }
 
-        void Update()                  
+        void Update()
         {
             if (HighLogic.LoadedSceneIsFlight)
                 CalculateTransmitters();

@@ -27,30 +27,30 @@ namespace KIT.Reactors
         [KSPField] public bool CanJumpStart = true;
         [KSPField] public bool canChargeJumpStart = true;
         [KSPField] public float startupPowerMultiplier = 1;
-        [KSPField] public float startupCostGravityMultiplier = 0;
+        [KSPField] public float startupCostGravityMultiplier;
         [KSPField] public float startupCostGravityExponent = 1;
         [KSPField] public float startupMaximumGeforce = 10000;
-        [KSPField] public float startupMinimumChargePercentage = 0;
-        [KSPField] public double geeForceMaintenancePowerMultiplier = 0;
-        [KSPField] public bool showSecondaryPowerUsage = false;
+        [KSPField] public float startupMinimumChargePercentage;
+        [KSPField] public double geeForceMaintenancePowerMultiplier;
+        [KSPField] public bool showSecondaryPowerUsage;
         [KSPField] public double gravityDivider;
 
         // Persistent
         [KSPField(isPersistant = true)]
         public double accumulatedElectricChargeInMW;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_MaxSecondaryPowerUsage"), UI_FloatRange(stepIncrement = 1f / 3f, maxValue = 100, minValue = 1)]//Max Secondary Power Usage
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_MaxSecondaryPowerUsage"), UI_FloatRange(stepIncrement = 1f / 3f, maxValue = 100, minValue = 1)]//Max Secondary Power Usage
         public float maxSecondaryPowerUsage = 90;
-        [KSPField(groupName = GROUP, guiName = "#LOC_KSPIE_InertialConfinementReactor_PowerAffectsMaintenance")]//Power Affects Maintenance
+        [KSPField(groupName = Group, guiName = "#LOC_KSPIE_InertialConfinementReactor_PowerAffectsMaintenance")]//Power Affects Maintenance
         public bool powerControlAffectsMaintenance = true;
 
         // UI Display
-        [KSPField(groupName = GROUP, guiActive = false, guiUnits = "%", guiName = "#LOC_KSPIE_InertialConfinementReactor_MinimumThrotle", guiFormat = "F2")]//Minimum Throttle
+        [KSPField(groupName = Group, guiActive = false, guiUnits = "%", guiName = "#LOC_KSPIE_InertialConfinementReactor_MinimumThrotle", guiFormat = "F2")]//Minimum Throttle
         public double minimumThrottlePercentage;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Charge")]//Charge
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, guiActive = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Charge")]//Charge
         public string accumulatedChargeStr = string.Empty;
-        [KSPField(groupName = GROUP, guiActive = false, guiName = "#LOC_KSPIE_InertialConfinementReactor_FusionPowerRequirement", guiFormat = "F2")]//Fusion Power Requirement
+        [KSPField(groupName = Group, guiActive = false, guiName = "#LOC_KSPIE_InertialConfinementReactor_FusionPowerRequirement", guiFormat = "F2")]//Fusion Power Requirement
         public double currentLaserPowerRequirements;
-        [KSPField(groupName = GROUP, isPersistant = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Startup"), UI_Toggle(disabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Off", enabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Charging")]//Startup--Off--Charging
+        [KSPField(groupName = Group, isPersistant = true, guiName = "#LOC_KSPIE_InertialConfinementReactor_Startup"), UI_Toggle(disabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Off", enabledText = "#LOC_KSPIE_InertialConfinementReactor_Startup_Charging")]//Startup--Off--Charging
         public bool isChargingForJumpStart;
 
         private double _powerConsumed;
@@ -79,7 +79,7 @@ namespace KIT.Reactors
 
             if (state != StartState.Editor && allowJumpStart)
             {
-                if (startDisabled)
+                if (StartDisabled)
                 {
                     allowJumpStart = false;
                     IsEnabled = false;
@@ -174,31 +174,31 @@ namespace KIT.Reactors
 
             electricPowerMaintenance = PluginHelper.GetFormattedPowerString(_powerConsumed) + " / " + PluginHelper.GetFormattedPowerString(LaserPowerRequirements);
 
-            if (startupAnimation != null && !initialized)
+            if (StartupAnimation != null && !Initialized)
             {
                 if (IsEnabled)
                 {
-                    if (animationStarted == 0)
+                    if (AnimationStarted == 0)
                     {
-                        startupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
-                        animationStarted = Planetarium.GetUniversalTime();
+                        StartupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
+                        AnimationStarted = Planetarium.GetUniversalTime();
                     }
-                    else if (!startupAnimation.IsMoving())
+                    else if (!StartupAnimation.IsMoving())
                     {
-                        startupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Deactivate));
-                        animationStarted = 0;
-                        initialized = true;
+                        StartupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Deactivate));
+                        AnimationStarted = 0;
+                        Initialized = true;
                         isDeployed = true;
                     }
                 }
                 else // Not Enabled
                 {
                     // continuously start
-                    startupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
-                    startupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Deactivate));
+                    StartupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
+                    StartupAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Deactivate));
                 }
             }
-            else if (startupAnimation == null)
+            else if (StartupAnimation == null)
             {
                 isDeployed = true;
             }
@@ -237,10 +237,10 @@ namespace KIT.Reactors
             double primaryPowerReceived = 0;
             if (powerRequested > 0)
             {
-                primaryPowerReceived = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequested);
+                primaryPowerReceived = resMan.Consume(ResourceName.ElectricCharge, powerRequested);
 
                 if (maintenancePowerWasteheatRatio > 0)
-                    resMan.ProduceResource(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * primaryPowerReceived);
+                    resMan.Produce(ResourceName.WasteHeat, maintenancePowerWasteheatRatio * primaryPowerReceived);
             }
 
             // calculate effective primary power ratio
@@ -307,7 +307,7 @@ namespace KIT.Reactors
 
         private void UpdateLoopingAnimation(double ratio)
         {
-            if (loopingAnimation == null)
+            if (LoopingAnimation == null)
                 return;
 
             if (!isDeployed)
@@ -315,24 +315,24 @@ namespace KIT.Reactors
 
             if (!IsEnabled)
             {
-                if (!initialized || shutdownAnimation == null || loopingAnimation.IsMoving()) return;
+                if (!Initialized || ShutdownAnimation == null || LoopingAnimation.IsMoving()) return;
 
-                if (animationStarted < 0)
+                if (AnimationStarted < 0)
                 {
-                    animationStarted = Planetarium.GetUniversalTime();
-                    shutdownAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
+                    AnimationStarted = Planetarium.GetUniversalTime();
+                    ShutdownAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Activate));
                 }
-                else if (!shutdownAnimation.IsMoving())
+                else if (!ShutdownAnimation.IsMoving())
                 {
-                    shutdownAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Deactivate));
-                    initialized = false;
+                    ShutdownAnimation.ToggleAction(new KSPActionParam(KSPActionGroup.Custom01, KSPActionType.Deactivate));
+                    Initialized = false;
                     isDeployed = true;
                 }
                 return;
             }
 
-            if (!loopingAnimation.IsMoving())
-                loopingAnimation.Toggle();
+            if (!LoopingAnimation.IsMoving())
+                LoopingAnimation.Toggle();
         }
 
         private void ProcessCharging(IResourceManager resMan)
@@ -351,8 +351,8 @@ namespace KIT.Reactors
                 minimumChargingPower = gravityDivider > 0 ? minimumChargingPower / gravityDivider : minimumChargingPower;
             }
 
-            var availableStablePower = resMan.ConsumeResource(ResourceName.ElectricCharge, neededPower);
-            resMan.ProduceResource(ResourceName.WasteHeat, 0.05 * availableStablePower);
+            var availableStablePower = resMan.Consume(ResourceName.ElectricCharge, neededPower);
+            resMan.Produce(ResourceName.WasteHeat, 0.05 * availableStablePower);
             accumulatedElectricChargeInMW += availableStablePower;
 
             if (availableStablePower < minimumChargingPower)

@@ -11,10 +11,10 @@ using static System.String;
 namespace KIT.Propulsion
 {
     [KSPModule("#LOC_KSPIE_AlcubierreDrive_partModuleName")]
-    class AlcubierreDrive : PartModule, IKITMod
+    class AlcubierreDrive : PartModule, IKITModule
     {
-        public const string GROUP = "AlcubierreDrive";
-        public const string GROUP_TITLE = "#LOC_KSPIE_AlcubierreDrive_groupName";
+        public const string Group = "AlcubierreDrive";
+        public const string GroupTitle = "#LOC_KSPIE_AlcubierreDrive_groupName";
 
         // Persistent
         [KSPField(isPersistant = true)]
@@ -39,7 +39,7 @@ namespace KIT.Propulsion
         //public const string warprTexturePath = "WarpPlugin/ParticleFX/warpr";
 
         [KSPField]
-        public string warpSoundPath = "WarpPlugin/Sounds/warp_sound";
+        public string warpSoundPath = "Kerbal-Interstellar-Technologies/Sounds/warp_sound";
         [KSPField]
         public double warpSoundPitchExp = 0.1;
 
@@ -60,9 +60,9 @@ namespace KIT.Propulsion
         [KSPField]
         public string originalName = "";
         [KSPField]
-        public float effectSize1 = 0;
+        public float effectSize1;
         [KSPField]
-        public float effectSize2 = 0;
+        public float effectSize2;
         [KSPField]
         public string upgradeTechReq = "";
         [KSPField]
@@ -94,105 +94,105 @@ namespace KIT.Propulsion
         [KSPField]
         public double gravityMaintenancePowerMultiplier = 4;
 
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_SafetyDistance", guiUnits = " Km"), UI_FloatRange(minValue = 0, maxValue = 200, stepIncrement = 1)]//Safety Distance
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_SafetyDistance", guiUnits = " Km"), UI_FloatRange(minValue = 0, maxValue = 200, stepIncrement = 1)]//Safety Distance
         public float spaceSafetyDistance = 30;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AntigravityPercentage"), UI_FloatRange(minValue = 0, maxValue = 200, stepIncrement = 5)]//Exotic Matter Percentage
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AntigravityPercentage"), UI_FloatRange(minValue = 0, maxValue = 200, stepIncrement = 5)]//Exotic Matter Percentage
         public float antigravityPercentage;
 
         //GUI
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_warpdriveType")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_warpdriveType")]
         public string warpdriveType = "Alcubierre Drive";
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_engineMass", guiFormat = "F3", guiUnits = " t")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_engineMass", guiFormat = "F3", guiUnits = " t")]
         public float partMass;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_warpStrength", guiFormat = "F1", guiUnits = " t")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_warpStrength", guiFormat = "F1", guiUnits = " t")]
         public float warpStrength = 1;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_totalWarpPower", guiFormat = "F1", guiUnits = " t")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_totalWarpPower", guiFormat = "F1", guiUnits = " t")]
         public float totalWarpPower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_vesselTotalMass", guiFormat = "F3", guiUnits = " t")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_vesselTotalMass", guiFormat = "F3", guiUnits = " t")]
         public double vesselTotalMass;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_warpToMassRatio", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_warpToMassRatio", guiFormat = "F4")]
         public double warpToMassRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityAtSeaLevel", guiUnits = " m/s\xB2", guiFormat = "F5")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityAtSeaLevel", guiUnits = " m/s\xB2", guiFormat = "F5")]
         public double gravityAtSeaLevel;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityVesselPull", guiUnits = " m/s\xB2", guiFormat = "F5")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityVesselPull", guiUnits = " m/s\xB2", guiFormat = "F5")]
         public double gravityPull;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragRatio", guiFormat = "F5")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragRatio", guiFormat = "F5")]
         public double gravityDragRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragPercentage", guiUnits = "%", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityDragPercentage", guiUnits = "%", guiFormat = "F3")]
         public double gravityDragPercentage;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityRatio")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_gravityRatio")]
         public double gravityRatio;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_maxWarpGravityLimit", guiUnits = "c", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_maxWarpGravityLimit", guiUnits = "c", guiFormat = "F4")]
         public double maximumWarpForGravityPull;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_maxWarpAltitudeLimit", guiUnits = "c", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_maxWarpAltitudeLimit", guiUnits = "c", guiFormat = "F4")]
         public double maximumWarpForAltitude;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_maxAllowedThrotle", guiUnits = "c", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_maxAllowedThrottle", guiUnits = "c", guiFormat = "F4")]
         public double maximumAllowedWarpThrotle;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentSelectedSpeed", guiUnits = "c", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentSelectedSpeed", guiUnits = "c", guiFormat = "F4")]
         public double warpEngineThrottle;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_minPowerReqForLightSpeed", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_minPowerReqForLightSpeed", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]
         public double minPowerRequirementForLightSpeed;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentPowerReqForWarp", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentPowerReqForWarp", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]
         public double currentPowerRequirementForWarp;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_powerReqForMaxAllowedSpeed", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_powerReqForMaxAllowedSpeed", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]
         public double powerRequirementForMaximumAllowedLightSpeed;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_PowerRequirementForSlowedSubLightSpeed", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]//Power Requirement For Slowed SubLightSpeed
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_PowerRequirementForSlowedSubLightSpeed", guiUnits = "#LOC_KSPIE_Reactor_megawattUnit", guiFormat = "F4")]//Power Requirement For Slowed SubLightSpeed
         public double powerRequirementForSlowedSubLightSpeed;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitSpeed", guiUnits = " m/s", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitSpeed", guiUnits = " m/s", guiFormat = "F3")]
         public double exitSpeed;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitApoapsis", guiUnits = " km", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitApoapsis", guiUnits = " km", guiFormat = "F3")]
         public double exitApoapsis;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitPeriapsis", guiUnits = " km", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitPeriapsis", guiUnits = " km", guiFormat = "F3")]
         public double exitPeriapsis;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitEccentricity", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitEccentricity", guiFormat = "F3")]
         public double exitEccentricity;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitMeanAnomaly", guiUnits = "\xB0", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitMeanAnomaly", guiUnits = "\xB0", guiFormat = "F3")]
         public double exitMeanAnomaly;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitBurnToCircularize", guiUnits = " m/s", guiFormat = "F3")]
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_currentWarpExitBurnToCircularize", guiUnits = " m/s", guiFormat = "F3")]
         public double exitBurnCircularize;
-        [KSPField(groupName = GROUP, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_status")]
+        [KSPField(groupName = Group, guiActive = true, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_status")]
         public string driveStatus;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_CosineAngleToClosestBody", guiFormat = "F3")]//Cos Angle To Closest Body
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_CosineAngleToClosestBody", guiFormat = "F3")]//Cos Angle To Closest Body
         private double cosineAngleToClosestBody;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_Distancetoclosestbody", guiFormat = "F0", guiUnits = " m")]//Distance to closest body
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_Distancetoclosestbody", guiFormat = "F0", guiUnits = " m")]//Distance to closest body
         private double distanceToClosestBody;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_Nameofclosestbody")]//Name of closest body
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_Nameofclosestbody")]//Name of closest body
         string closestCelestrialBodyName;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_AllowedWarpDistancePerFrame", guiFormat = "F3")]//Max distance per frame
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_AllowedWarpDistancePerFrame", guiFormat = "F3")]//Max distance per frame
         private double allowedWarpDistancePerFrame;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_MaximumWarpSpeed", guiFormat = "F3")]//Maximum Warp Speed
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_MaximumWarpSpeed", guiFormat = "F3")]//Maximum Warp Speed
         private double maximumWarpSpeed;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_Safetydistance", guiFormat = "F3", guiUnits = " m")]//Safety distance
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_Safetydistance", guiFormat = "F3", guiUnits = " m")]//Safety distance
         private double safetyDistance;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_DropoutDistance", guiFormat = "F3", guiUnits = " m")]//Dropout Distance
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_DropoutDistance", guiFormat = "F3", guiUnits = " m")]//Dropout Distance
         private double dropoutDistance;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_AvailablePower", guiFormat = "F3", guiUnits = "MJ")]//Available Power for Warp
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_AvailablePower", guiFormat = "F3", guiUnits = "MJ")]//Available Power for Warp
         private double availablePower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_GravityAcceleration", guiFormat = "F3", guiUnits = " m/s\xB2")]//Gravity Acceleration
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_GravityAcceleration", guiFormat = "F3", guiUnits = " m/s\xB2")]//Gravity Acceleration
         private double gravityAcceleration;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_AntiGravityAcceleration", guiFormat = "F3", guiUnits = " m/s\xB2")]//Anti Gravity Acceleration
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_AntiGravityAcceleration", guiFormat = "F3", guiUnits = " m/s\xB2")]//Anti Gravity Acceleration
         private double antigravityAcceleration;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_VerticalSpeed", guiFormat = "F3", guiUnits = " m/s")]//Vertical Speed
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_VerticalSpeed", guiFormat = "F3", guiUnits = " m/s")]//Vertical Speed
         private double verticalSpeed;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_MaintenancePowerReq", guiFormat = "F3", guiUnits = " m/s")]//Maintenance Power Req
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_MaintenancePowerReq", guiFormat = "F3", guiUnits = " m/s")]//Maintenance Power Req
         private double requiredExoticMaintenancePower;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_ChargePowerDraw", guiFormat = "F3", guiUnits = " m/s")]//Charge Power Draw
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_ChargePowerDraw", guiFormat = "F3", guiUnits = " m/s")]//Charge Power Draw
         private double chargePowerDraw;
-        [KSPField(groupName = GROUP, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_MaxChargePowerRequired", guiFormat = "F3", guiUnits = " m/s")]//Max Charge Power Required
+        [KSPField(groupName = Group, guiActive = false, guiActiveEditor = false, guiName = "#LOC_KSPIE_AlcubierreDrive_MaxChargePowerRequired", guiFormat = "F3", guiUnits = " m/s")]//Max Charge Power Required
         private double maxChargePowerRequired;
 
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_WarpWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_WarpWindow_Hidden", enabledText = "#LOC_KSPIE_AlcubierreDrive_WarpWindow_Shown", affectSymCounterparts = UI_Scene.None)]//Warp Window--Hidden--Shown
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_WarpWindow"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_WarpWindow_Hidden", enabledText = "#LOC_KSPIE_AlcubierreDrive_WarpWindow_Shown", affectSymCounterparts = UI_Scene.None)]//Warp Window--Hidden--Shown
         public bool showWindow;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AutoRendevousCircularize"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_False", enabledText = "#LOC_KSPIE_AlcubierreDrive_True", affectSymCounterparts = UI_Scene.All)]//Auto Rendevous/Circularize-False-True
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AutoRendevousCircularize"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_False", enabledText = "#LOC_KSPIE_AlcubierreDrive_True", affectSymCounterparts = UI_Scene.All)]//Auto Rendevous/Circularize-False-True
         public bool matchExitToDestinationSpeed = true;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AutoMaximizeWarpSpeed"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", affectSymCounterparts = UI_Scene.All)]//Auto Maximize Warp Speed -Disabled-Enabled
-        public bool maximizeWarpSpeed = false;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AutoHoldAltitude"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", affectSymCounterparts = UI_Scene.All)]//Auto Hold Altitude--Disabled--Enabled
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AutoMaximizeWarpSpeed"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", affectSymCounterparts = UI_Scene.All)]//Auto Maximize Warp Speed -Disabled-Enabled
+        public bool maximizeWarpSpeed;
+        [KSPField(groupName = Group, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_AlcubierreDrive_AutoHoldAltitude"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", affectSymCounterparts = UI_Scene.All)]//Auto Hold Altitude--Disabled--Enabled
         public bool holdAltitude;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = true, guiName = "Main Control"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.None)]
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiName = "Main Control"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.None)]
         public bool IsSlave;
-        [KSPField(groupName = GROUP, isPersistant = true, guiActiveEditor = true, guiName = "Trail Effects"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.All)]
-        public bool hideTrail = false;
+        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiName = "Trail Effects"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.All)]
+        public bool hideTrail;
 
         // Debugging
         public double ReceivedExoticMaintenancePower;
@@ -272,7 +272,7 @@ namespace KIT.Propulsion
             showWindow = !showWindow;
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_startChargingDrive", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_startChargingDrive", active = true)]
         public void StartCharging()
         {
             Debug.Log("[KSPI]: Start Charging pressed");
@@ -295,7 +295,7 @@ namespace KIT.Propulsion
             UpdateAllWarpDriveEffects();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_stopChargingDrive", active = false)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_stopChargingDrive", active = false)]
         public void StopCharging()
         {
             Debug.Log("[KSPI]: Stop Charging button pressed");
@@ -312,7 +312,7 @@ namespace KIT.Propulsion
             ActivateWarpDrive();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_activateWarpDrive", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_activateWarpDrive", active = true)]
         public void ActivateWarpDrive()
         {
             Debug.Log("[KSPI]: Activate Warp Drive button pressed");
@@ -347,7 +347,7 @@ namespace KIT.Propulsion
 
             // TODO fix the stable resource supply thing.
 
-            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selected_factor]) > getStableResourceSupply(KITResourceSettings.ElectricPowerInMegawatt))
+            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selectedFfactor]) > getStableResourceSupply(KITResourceSettings.ElectricPowerInMegawatt))
             /*
             if (false)
             {
@@ -404,7 +404,7 @@ namespace KIT.Propulsion
 
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(selectedWarpSpeed);
 
-            var powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
+            var powerReturned = resMan.Consume(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
 
             if (powerReturned < 0.99 * currentPowerRequirementForWarp)
             {
@@ -437,7 +437,7 @@ namespace KIT.Propulsion
             _vesselWasInOuterspace = false;
 
             // consume all exotic matter to create warp field
-            resMan.ConsumeResource(ResourceName.ExoticMatter, exotic_power_required);
+            resMan.Consume(ResourceName.ExoticMatter, exotic_power_required);
 
             _warpSound.Play();
             _warpSound.loop = true;
@@ -475,7 +475,7 @@ namespace KIT.Propulsion
             DeactivateWarpDrive();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_deactivateWarpDrive", active = false)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_deactivateWarpDrive", active = false)]
         public void DeactivateWarpDrive()
         {
             DeactivateWarpDrive(true);
@@ -575,7 +575,7 @@ namespace KIT.Propulsion
             ToggleWarpSpeedUp();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_increaseWarpSpeed", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_increaseWarpSpeed", active = true)]
         public void ToggleWarpSpeedUp()
         {
             Debug.Log("[KSPI]: Warp Throttle (+) button pressed");
@@ -641,7 +641,7 @@ namespace KIT.Propulsion
             ToggleWarpSpeedDown();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiActiveUnfocused = true, guiName = "#LOC_KSPIE_AlcubierreDrive_decreaseWarpSpeed", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiActiveUnfocused = true, guiName = "#LOC_KSPIE_AlcubierreDrive_decreaseWarpSpeed", active = true)]
         public void ToggleWarpSpeedDown()
         {
             Debug.Log("[KSPI]: Warp Throttle (-) button pressed");
@@ -707,7 +707,7 @@ namespace KIT.Propulsion
             ReduceWarpPower();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_ReduceWarpPower", active = true)]//Reduce Warp Power
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_ReduceWarpPower", active = true)]//Reduce Warp Power
         public void ReduceWarpPower()
         {
             Debug.Log("[KSPI]: Reduce Warp Power button pressed");
@@ -764,7 +764,7 @@ namespace KIT.Propulsion
             ReduceWarpPower();
         }
 
-        [KSPEvent(groupName = GROUP, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_retrofit", active = true)]
+        [KSPEvent(groupName = Group, guiActive = true, guiName = "#LOC_KSPIE_AlcubierreDrive_retrofit", active = true)]
         public void RetrofitDrive()
         {
             Debug.Log("[KSPI]: Retrofit button pressed");
@@ -1029,7 +1029,7 @@ namespace KIT.Propulsion
 
         public void Update()
         {
-            if (!HighLogic.LoadedSceneIsEditor)
+            if (HighLogic.LoadedSceneIsEditor)
                 return;
 
             partMass = part.mass;
@@ -1078,10 +1078,10 @@ namespace KIT.Propulsion
             }
         }
 
-        private void UpdateEffect(bool isEnabled, bool isCharging, bool activeTrail, int selected_factor)
+        private void UpdateEffect(bool isEnabled, bool isCharging, bool activeTrail, int selectedFfactor)
         {
             _activeTrail = activeTrail;
-            this.selected_factor = selected_factor;
+            this.selected_factor = selectedFfactor;
 
             if (_animationState == null) return;
 
@@ -1220,11 +1220,11 @@ namespace KIT.Propulsion
 
             requiredExoticMaintenancePower = _exoticMatterRatio * _exoticMatterRatio * maximumExoticMaintenancePower;
 
-            var overheatingRatio = resMan.ResourceFillFraction(ResourceName.WasteHeat);
+            var overheatingRatio = resMan.FillFraction(ResourceName.WasteHeat);
 
             var overheatModifier = overheatingRatio < 0.9 ? 1 : (1 - overheatingRatio) * 10;
 
-            ReceivedExoticMaintenancePower = resMan.ConsumeResource(ResourceName.ElectricCharge, requiredExoticMaintenancePower);
+            ReceivedExoticMaintenancePower = resMan.Consume(ResourceName.ElectricCharge, requiredExoticMaintenancePower);
 
             MinimumExoticMatterMaintenanceRatio = minimumExoticMaintenancePower > 0 ? ReceivedExoticMaintenancePower / minimumExoticMaintenancePower : 0;
 
@@ -1247,12 +1247,12 @@ namespace KIT.Propulsion
                 }
                 else
                 {
-                    var resourceBarRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge);
+                    var resourceBarRatio = resMan.FillFraction(ResourceName.ElectricCharge);
                     var effectiveResourceThrottling = resourceBarRatio > 0.5 ? 1 : resourceBarRatio * 2;
 
                     var wantedPower = Math.Max(overheatModifier * maxChargePowerRequired * effectiveResourceThrottling, minPowerRequirementForLightSpeed);
 
-                    chargePowerDraw = ExoticMatterProduced = resMan.ConsumeResource(ResourceName.ElectricCharge, wantedPower);
+                    chargePowerDraw = ExoticMatterProduced = resMan.Consume(ResourceName.ElectricCharge, wantedPower);
 
                     if (!CheatOptions.InfinitePropellant && ExoticMatterProduced < minPowerRequirementForLightSpeed)
                         _insufficientPowerTimeout--;
@@ -1277,7 +1277,7 @@ namespace KIT.Propulsion
                 ProduceWasteheat(resMan, ExoticMatterProduced);
             }
 
-            resMan.ProduceResource(ResourceName.ExoticMatter, ExoticMatterProduced * 0.001 / powerRequirementMultiplier);
+            resMan.Produce(ResourceName.ExoticMatter, ExoticMatterProduced * 0.001 / powerRequirementMultiplier);
             // part.RequestResource(KITResourceSettings.ExoticMatter, -exoticMatterProduced * 0.001 * TimeWarp.fixedDeltaTime / powerRequirementMultiplier);
         }
 
@@ -1314,7 +1314,7 @@ namespace KIT.Propulsion
 
         private void ProduceWasteheat(IResourceManager resMan, double powerReturned)
         {
-            resMan.ProduceResource(ResourceName.WasteHeat, powerReturned * (isupgraded ? wasteheatRatioUpgraded : wasteheatRatio));
+            resMan.Produce(ResourceName.WasteHeat, powerReturned * (isupgraded ? wasteheatRatioUpgraded : wasteheatRatio));
         }
 
         private double GetPowerRequirementForWarp(double lightspeedFraction)
@@ -1338,7 +1338,7 @@ namespace KIT.Propulsion
 
             double powerReturned;
 
-            availablePower = powerReturned = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
+            availablePower = powerReturned = resMan.Consume(ResourceName.ElectricCharge, currentPowerRequirementForWarp);
             ProduceWasteheat(resMan, powerReturned);
 
             var headingModifier = FlightGlobals.fetch.VesselTarget == null ? Math.Abs(Math.Min(0, cosineAngleToClosestBody)) : 1;
@@ -1745,8 +1745,6 @@ namespace KIT.Propulsion
             return minimumDistance;
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
-
         private void UpdateStats()
         {
             if (!IsSlave)
@@ -1762,7 +1760,7 @@ namespace KIT.Propulsion
             closestCelestrialBodyName = _closestCelestialBody.name;
 
             gravityPull = FlightGlobals.getGeeForceAtPosition(vessel.GetWorldPos3D()).magnitude;
-            gravityAtSeaLevel = _closestCelestialBody.GeeASL * GameConstants.StandardGravity;
+            gravityAtSeaLevel = _closestCelestialBody.GeeASL * PhysicsGlobals.GravitationalAcceleration;
             gravityRatio = gravityAtSeaLevel > 0 ? Math.Min(1, gravityPull / gravityAtSeaLevel) : 0;
             gravityDragRatio = Math.Pow(Math.Min(1, 1 - gravityRatio), Math.Max(1, Math.Sqrt(gravityAtSeaLevel)));
             gravityDragPercentage = (1 - gravityDragRatio) * 100;
@@ -1800,6 +1798,8 @@ namespace KIT.Propulsion
             powerRequirementForMaximumAllowedLightSpeed = GetPowerRequirementForWarp(maximumAllowedWarpThrotle);
             currentPowerRequirementForWarp = GetPowerRequirementForWarp(_engineThrottle[selected_factor]);
         }
+
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

@@ -85,6 +85,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib.cs" />
+    <Compile Include="ResourceScheduler\BackgroundProcessing.cs" />
+    <Compile Include="ResourceScheduler\VesselInfo.cs" />
     <Compile Include="Resources\AtmosphericFloatCurves.cs" />
     <Compile Include="BeamedPower\BeamedPowerHelper.cs" />
     <Compile Include="Extensions\OrbitExtensions.cs" />

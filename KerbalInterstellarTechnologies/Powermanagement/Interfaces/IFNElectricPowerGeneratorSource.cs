@@ -1,6 +1,6 @@
 ﻿using KIT.Interfaces;
 
-namespace KIT.Powermanagement.Interfaces
+namespace KIT.PowerManagement.Interfaces
 {
     interface IFNElectricPowerGeneratorSource: IElectricPowerGeneratorSource
     {

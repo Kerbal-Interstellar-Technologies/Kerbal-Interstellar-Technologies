@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.UI.Screens.Flight.Dialogs;
 
 namespace KIT.Science
 {
 
-    class ModuleModdableScienceGenerator : PartModule, IKITMod, IScienceDataContainer
+    class ModuleModdableScienceGenerator : PartModule, IKITModule, IScienceDataContainer
     {
         [KSPField(isPersistant = false)]
-        public bool canDeploy = false;
+        public bool canDeploy;
         [KSPField(isPersistant = true)]
         public bool Deployed;
         [KSPField(isPersistant = true)]
@@ -31,7 +30,7 @@ namespace KIT.Science
         public bool data_gend;
 
         [KSPField(isPersistant = false)]
-        public bool rerunnable = false;
+        public bool rerunnable;
         [KSPField(isPersistant = false)]
         public string deployEventName = "";
         [KSPField(isPersistant = false)]
@@ -237,9 +236,8 @@ namespace KIT.Science
         {
 
         }
-
-
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {

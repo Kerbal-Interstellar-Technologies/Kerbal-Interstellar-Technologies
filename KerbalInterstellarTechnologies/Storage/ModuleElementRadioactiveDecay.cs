@@ -1,14 +1,14 @@
 ﻿using System;
 using KSP.Localization;
 
-namespace KIT.Storage 
+namespace KIT.Storage
 {
     [KSPModule("Radioactive Decay")]
-    class ModuleElementRadioactiveDecay : PartModule 
+    class ModuleElementRadioactiveDecay : PartModule
     {
         // Persistent False
         [KSPField(isPersistant = false)]
-        public double decayConstant = 0;
+        public double decayConstant;
         [KSPField(isPersistant = false)]
         public string resourceName = "";
         [KSPField(isPersistant = false)]

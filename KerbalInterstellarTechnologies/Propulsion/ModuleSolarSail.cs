@@ -24,7 +24,7 @@ namespace KIT.Propulsion
         [KSPField(guiActive = true, guiName = "#LOC_KSPIE_ModuleSolarSail_SolarAcceleration")]//Acceleration
         protected string solarAcc = "";
 
-        protected Transform surfaceTransform = null;
+        protected Transform surfaceTransform;
         protected Animation solarSailAnim;
 
         private const double ThrustCoefficient = 9.08e-6;

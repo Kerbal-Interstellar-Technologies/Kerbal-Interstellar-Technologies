@@ -22,7 +22,7 @@ namespace KIT.Extensions
         {
             if (body.flightGlobalsIndex != 0 && altitude <= PluginHelper.GetMaxAtmosphericAltitude(body))
                 return 0;
-            
+
             if (!BeltDataCache.TryGetValue(body.name, out BeltData beltData))
             {
                 double relrp = body.Radius / homeworld.Radius;
@@ -83,14 +83,13 @@ namespace KIT.Extensions
         public static double GetPeakProtonBeltAltitude(this CelestialBody body, CelestialBody homeworld)
         {
             double relrp = body.Radius / homeworld.Radius;
-            return (double)(1.5 * homeworld.Radius * relrp);
+            return 1.5 * homeworld.Radius * relrp;
         }
 
         public static double GetElectronRadiationLevel(this CelestialBody body, CelestialBody homeworld, double altitude, double lat)
         {
             lat = lat / 180 * Math.PI;
             double atmosphere = FlightGlobals.getStaticPressure(altitude, body) / GameConstants.EarthAtmospherePressureAtSeaLevel;
-            double atmosphereHeight = PluginHelper.GetMaxAtmosphericAltitude(body);
             double atmosphereScaling = Math.Exp(-atmosphere);
 
             double relrp = body.Radius / homeworld.Radius;

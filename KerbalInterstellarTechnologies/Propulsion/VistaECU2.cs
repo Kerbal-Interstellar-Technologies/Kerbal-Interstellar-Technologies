@@ -18,7 +18,7 @@
         const float stepNumb = 0;
 
         // Persistent setting
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_VistaECU2_SelectedIsp"), UI_FloatRange(stepIncrement = defaultSteps, maxValue = defaultMaxIsp, minValue = defaultMinIsp)]//Selected Isp
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_KSPIE_VistaECU2_SelectedIsp"), UI_FloatRange(stepIncrement = defaultSteps, maxValue = defaultMaxIsp, minValue = defaultMinIsp)]//Selected Isp
         public float localIsp = defaultMinIsp + (stepNumb * defaultSteps);
 
         // settings
@@ -31,7 +31,7 @@
         [KSPField]
         public float minIsp = defaultMinIsp;
         [KSPField]
-        public float initialGearRatio = 0;
+        public float initialGearRatio;
 
         private FloatCurve _atmosphereCurve;
 

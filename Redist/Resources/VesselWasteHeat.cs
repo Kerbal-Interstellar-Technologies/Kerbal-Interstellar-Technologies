@@ -30,7 +30,7 @@ namespace KIT.Resources
 
     */
 
-    public class VesselHeatDissipation : IKITMod
+    public class VesselHeatDissipation : IKITModule
     {
         public Vessel Vessel;
 
@@ -52,7 +52,7 @@ namespace KIT.Resources
         {
             // passive dissipation of waste heat - a little bit of this
             double vesselMass = Vessel.totalMass;
-            powerToExtract += 2.0 * PassiveTempP4 * GameConstants.StefanConst * vesselMass;
+            powerToExtract += 2.0 * PassiveTempP4 * PhysicsGlobals.StefanBoltzmanConstant * vesselMass;
 
             if (Vessel.mainBody.atmosphere && Vessel.altitude <= Vessel.mainBody.atmosphereDepth)
             {
@@ -64,6 +64,8 @@ namespace KIT.Resources
             return powerToExtract;
         }
 
+
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fifth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -88,12 +90,12 @@ namespace KIT.Resources
             // Eh, I am not sure this is working correctly at the moment. TBD.
 
             /*
-            var stats = resMan.ResourceProductionStats(ResourceName.WasteHeat);
+            var stats = resMan.ProductionStats(ResourceName.WasteHeat);
 
-            double availableAmount = resMan.ResourceCurrentCapacity(ResourceName.WasteHeat);
+            double availableAmount = resMan.CurrentCapacity(ResourceName.WasteHeat);
 
             double supply = stats.CurrentSupplied() - stats.CurrentlyRequested();
-            double missingAmount = resMan.ResourceSpareCapacity(ResourceName.WasteHeat);
+            double missingAmount = resMan.SpareCapacity(ResourceName.WasteHeat);
 
             double powerToExtract = AdjustSupplyComplete(-supply);
 
@@ -101,7 +103,7 @@ namespace KIT.Resources
 
             Debug.Log($"[VesselHeatDissipation] powerToExtract is {powerToExtract}, missingAmount is {missingAmount}, and availableAmount is {availableAmount}");
 
-            resMan.ConsumeResource(ResourceName.WasteHeat, Math.Min(availableAmount, powerToExtract));
+            resMan.Consume(ResourceName.WasteHeat, Math.Min(availableAmount, powerToExtract));
             */
         }
 
@@ -112,8 +114,6 @@ namespace KIT.Resources
             if (string.IsNullOrEmpty(_KITPartName)) _KITPartName = Localizer.Format("#LOC_KIT_Vessel_Heat_Dissipation");
             return _KITPartName;
         }
-
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fifth;
     }
 
 }

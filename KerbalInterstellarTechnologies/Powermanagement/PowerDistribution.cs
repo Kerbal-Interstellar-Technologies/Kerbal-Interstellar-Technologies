@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KIT.Powermanagement.Interfaces;
+using KIT.PowerManagement.Interfaces;
 
-namespace KIT.Powermanagement
+namespace KIT.PowerManagement
 {
     public class PowerDistribution
     {

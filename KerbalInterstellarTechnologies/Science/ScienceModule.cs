@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace KIT.Science
 {
-    class ScienceModule : PartModule, IKITMod, ITelescopeController, IUpgradeableModule
+    class ScienceModule : PartModule, IKITModule, ITelescopeController, IUpgradeableModule
     {
         // persistant true
         [KSPField(isPersistant = true)]
@@ -81,7 +81,7 @@ namespace KIT.Science
         [KSPField(isPersistant = false)]
         public string animName2 = "";
         [KSPField(isPersistant = false)]
-        public string upgradeTechReq = null;
+        public string upgradeTechReq;
         [KSPField(isPersistant = false)]
         public float upgradeCost = 20;
         [KSPField(isPersistant = true)]
@@ -92,7 +92,7 @@ namespace KIT.Science
         public float baseDataStorage = 750;
 
         protected int techLevel;
-        protected float megajoules_supplied = 0;
+        protected float megajoules_supplied;
         protected String[] modes = { "Scanning", "Reprocessing", "Producing Antimatter", "Electrolysing", "Centrifuging" };
         protected double science_rate_f;
         protected double reprocessing_rate_f;
@@ -335,7 +335,7 @@ namespace KIT.Science
                 }
                 //anim.Play ();
                 //anim2.Play ();
-            
+
             }
         }
 
@@ -544,7 +544,7 @@ namespace KIT.Science
             return kerbalFactor * (1.1f - (kerbal.stupidity / 5f));
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -584,7 +584,7 @@ namespace KIT.Science
             {
                 var powerRequest = powerReqMult * PluginSettings.Config.BasePowerConsumption;
 
-                double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
+                double electrical_power_provided = resMan.Consume(ResourceName.ElectricCharge, powerRequest);
 
                 electrical_power_ratio = electrical_power_provided / PluginSettings.Config.BasePowerConsumption / powerReqMult;
 
@@ -601,7 +601,7 @@ namespace KIT.Science
             {
                 var powerRequestInMegajoules = powerReqMult * PluginSettings.Config.BaseAMFPowerConsumption;
 
-                var energy_provided_in_megajoules = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequestInMegajoules);
+                var energy_provided_in_megajoules = resMan.Consume(ResourceName.ElectricCharge, powerRequestInMegajoules);
 
                 electrical_power_ratio = powerRequestInMegajoules > 0 ? energy_provided_in_megajoules / powerRequestInMegajoules : 0;
                 antimatterGenerator.Produce(energy_provided_in_megajoules * global_rate_multipliers);
@@ -617,7 +617,7 @@ namespace KIT.Science
                 {
                     var powerRequest = powerReqMult * PluginSettings.Config.BaseCentriPowerConsumption;
 
-                    double electrical_power_provided = resMan.ConsumeResource(ResourceName.ElectricCharge, powerRequest);
+                    double electrical_power_provided = resMan.Consume(ResourceName.ElectricCharge, powerRequest);
 
                     electrical_power_ratio = electrical_power_provided  / PluginSettings.Config.BaseCentriPowerConsumption / powerReqMult;
                     global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;

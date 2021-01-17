@@ -260,8 +260,8 @@ namespace PhotonSail
             var diffuseDragInNewton = diffuseDragPerSquareMeter * effectiveSurfaceArea;
             Vector3d diffuseDragForceVector = diffuseDragInNewton * normalizedOrbitalVector * -1;
 
-            Vector3d combinedDragDecelerationVector = vesselData.TotalVesselMassInKg > 0 
-                ? (specularDragForce + diffuseDragForceVector) / vesselData.TotalVesselMassInKg 
+            Vector3d combinedDragDecelerationVector = vesselData.TotalVesselMassInKg > 0
+                ? (specularDragForce + diffuseDragForceVector) / vesselData.TotalVesselMassInKg
                 : Vector3d.zero;
 
             return combinedDragDecelerationVector;

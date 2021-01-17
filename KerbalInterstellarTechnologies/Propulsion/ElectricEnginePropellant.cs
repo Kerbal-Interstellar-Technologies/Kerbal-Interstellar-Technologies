@@ -16,68 +16,42 @@ namespace KIT.Propulsion
 
     public class ElectricEnginePropellant
     {
-        protected bool isInfinite;
-        protected int prop_type;
-        protected double efficiency;
-        protected double ispMultiplier;
-        protected double thrustMultiplier;
-        protected double decomposedIspMult;
-        protected double thrustMultiplierCold;
-        protected Propellant propellant;
-        protected string propellantname;
-        protected string propellantguiname;
-        protected string effectname;
-        protected double wasteheatMultiplier;
-        protected string techRquirement;
-        protected PartResourceDefinition resourceDefinition;
+        public bool IsInfinite { get; protected set; }
+        public int PropType { get; protected set; }
+        public double Efficiency { get; protected set; }
+        public double IspMultiplier { get; protected set; }
+        public double ThrustMultiplier { get; protected set; }
+        public double DecomposedIspMult { get; protected set; }
+        public double ThrustMultiplierCold { get; protected set; }
+        public Propellant Propellant { get; protected set; }
+        public string PropellantName { get; protected set; }
+        public string PropellantGUIName { get; protected set; }
+        public string ParticleFXName { get; protected set; }
+        public double WasteHeatMultiplier { get; protected set; }
+        public string TechRequirement { get; protected set; }
+        public PartResourceDefinition ResourceDefinition { get; protected set; }
 
-        public PartResourceDefinition ResourceDefinition => resourceDefinition;
-
-        public int SupportedEngines => prop_type;
-
-        public double Efficiency => efficiency;
-
-        public double IspMultiplier => ispMultiplier;
-
-        public double DecomposedIspMult => decomposedIspMult;
-
-        public double ThrustMultiplier => thrustMultiplier;
-
-        public double ThrustMultiplierCold => thrustMultiplierCold;
-
-        public Propellant Propellant => propellant;
-
-        public String PropellantName => propellantname;
-
-        public String PropellantGUIName => propellantguiname;
-
-        public String ParticleFXName => effectname;
-
-        public double WasteHeatMultiplier => wasteheatMultiplier;
-
-        public string TechRequirement => techRquirement;
-
-        public bool IsInfinite => isInfinite;
+        public int SupportedEngines => PropType;
 
         public ElectricEnginePropellant(ConfigNode node)
         {
-            propellantname = node.GetValue("name");
+            PropellantName = node.GetValue("name");
 
-            propellantguiname = node.HasValue("guiName") ? node.GetValue("guiName") : propellantname;
-            isInfinite = node.HasValue("isInfinite") && Convert.ToBoolean(node.GetValue("isInfinite"));
-            ispMultiplier = node.HasValue("ispMultiplier") ? Convert.ToSingle(node.GetValue("ispMultiplier")) : 1;
-            decomposedIspMult = node.HasValue("decomposedIspMult") ? Convert.ToDouble(node.GetValue("decomposedIspMult")) : ispMultiplier;
-            thrustMultiplier = node.HasValue("thrustMultiplier") ? Convert.ToDouble(node.GetValue("thrustMultiplier")) : 1;
-            thrustMultiplierCold = node.HasValue("thrustMultiplierCold") ? Convert.ToDouble(node.GetValue("thrustMultiplierCold")) : thrustMultiplier;
-            wasteheatMultiplier = node.HasValue("wasteheatMultiplier") ? Convert.ToDouble(node.GetValue("wasteheatMultiplier")) : 1;
-            efficiency = node.HasValue("efficiency") ? Convert.ToDouble(node.GetValue("efficiency")) : 1;
-            prop_type = node.HasValue("type") ? Convert.ToInt32(node.GetValue("type")) : 1;
-            effectname = node.HasValue("effectName")  ? node.GetValue("effectName") : "none";
-            techRquirement = node.HasValue("techRequirement") ? node.GetValue("techRequirement") : String.Empty;
+            PropellantGUIName = node.HasValue("guiName") ? node.GetValue("guiName") : PropellantName;
+            IsInfinite = node.HasValue("isInfinite") && Convert.ToBoolean(node.GetValue("isInfinite"));
+            IspMultiplier = node.HasValue("ispMultiplier") ? Convert.ToSingle(node.GetValue("ispMultiplier")) : 1;
+            DecomposedIspMult = node.HasValue("decomposedIspMult") ? Convert.ToDouble(node.GetValue("decomposedIspMult")) : IspMultiplier;
+            ThrustMultiplier = node.HasValue("thrustMultiplier") ? Convert.ToDouble(node.GetValue("thrustMultiplier")) : 1;
+            ThrustMultiplierCold = node.HasValue("thrustMultiplierCold") ? Convert.ToDouble(node.GetValue("thrustMultiplierCold")) : ThrustMultiplier;
+            WasteHeatMultiplier = node.HasValue("wasteheatMultiplier") ? Convert.ToDouble(node.GetValue("wasteheatMultiplier")) : 1;
+            Efficiency = node.HasValue("efficiency") ? Convert.ToDouble(node.GetValue("efficiency")) : 1;
+            PropType = node.HasValue("type") ? Convert.ToInt32(node.GetValue("type")) : 1;
+            ParticleFXName = node.HasValue("effectName")  ? node.GetValue("effectName") : "none";
+            TechRequirement = node.HasValue("techRequirement") ? node.GetValue("techRequirement") : String.Empty;
 
             ConfigNode propellantNode = node.GetNode("PROPELLANT");
-            propellant = new Propellant();
-            propellant.Load(propellantNode);
+            Propellant = new Propellant();
+            Propellant.Load(propellantNode);
         }
 
 
@@ -99,7 +73,7 @@ namespace KIT.Propulsion
             // initialize resource Definitions
             foreach (var propellant in propellantList)
             {
-                propellant.resourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellant.propellant.name);
+                propellant.ResourceDefinition = PartResourceLibrary.Instance.GetDefinition(propellant.Propellant.name);
             }
 
             return propellantList;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KIT.Powermanagement.Interfaces
+namespace KIT.PowerManagement.Interfaces
 {
     public interface IResourceSupplier
     {

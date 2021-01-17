@@ -58,8 +58,8 @@ namespace KIT.Refinery
 
         public void GetResourceMass(IResourceManager resMan, ResourceName resource, PartResourceDefinition prd, ref double spareMassAmount, ref double totalMassAmount)
         {
-            var spare = resMan.ResourceSpareCapacity(resource);
-            var current = resMan.ResourceCurrentCapacity(resource);
+            var spare = resMan.SpareCapacity(resource);
+            var current = resMan.CurrentCapacity(resource);
 
             spareMassAmount += spare * prd.density;
             totalMassAmount += (spare + current) * prd.density;

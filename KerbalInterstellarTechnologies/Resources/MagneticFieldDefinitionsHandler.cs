@@ -70,7 +70,7 @@ namespace KIT.Resources
             {
                 Debug.Log("[KSPI]: Exception while loading MagneticFieldDefinitions : " + ex);
             }
-            
+
         }
     }
 }

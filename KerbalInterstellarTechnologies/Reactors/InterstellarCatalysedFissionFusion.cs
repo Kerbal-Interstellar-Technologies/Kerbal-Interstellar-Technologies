@@ -1,4 +1,4 @@
-﻿using KIT.Powermanagement.Interfaces;
+﻿using KIT.PowerManagement.Interfaces;
 
 namespace KIT.Reactors
 {

@@ -25,7 +25,7 @@
         public const double DeuteriumTimescale = 0.0016667;
         public const double BaseReprocessingRate = 400;
         public const double BaseScienceRate = 0.1;
-        public const double BaseUraniumAmmonolysisRate = 0.0002383381;   
+        public const double BaseUraniumAmmonolysisRate = 0.0002383381;
         public const double MicrowaveAngle = 3.64773814E-10;
         public const double MicrowaveDishEfficiency = 0.85;
         public const double MicrowaveAlpha = 0.00399201596806387225548902195609;
@@ -45,7 +45,6 @@
         public const double KerbinYearInDays = 426.08;
         public const double ElectronCharge = 1.602176565e-19;
         public const double AtomicMassUnit =  1.660538921e-27;
-        public const double StandardGravity = 9.80665;
         public const double DilutionFactor = 15000.0;
         public const double IspCoreTemperatureMultiplier = 22.371670613;
         public const double BaseThrustPowerMultiplier = 2000;

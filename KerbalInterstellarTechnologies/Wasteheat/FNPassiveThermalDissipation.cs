@@ -7,12 +7,12 @@ namespace KIT.Wasteheat
     {
         // configuration
         [KSPField(guiActiveEditor = true, guiActive = false, guiName = "Deployed Surface Area", guiUnits = " m\xB2", guiFormat = "F3")]
-        public double deployedSurfaceArea = 0;
+        public double deployedSurfaceArea;
         [KSPField(guiActiveEditor = true, guiActive = false, guiName = "Folded Surface Area", guiUnits = " m\xB2", guiFormat = "F3")]
-        public double foldedSurfaceArea = 0;
+        public double foldedSurfaceArea;
         [KSPField]
         public double thermalMassModifier = 1;
-        [KSPField] 
+        [KSPField]
         public double emissiveConstantFront = 0.025;
         [KSPField]
         public double emissiveConstantBack = 0.1;
@@ -40,7 +40,7 @@ namespace KIT.Wasteheat
         public double realDistanceToSun;
         [KSPField(guiActive = false, guiFormat = "F0", guiUnits = " m")]
         public double distanceFromStarCenterToVessel;
-        [KSPField(guiActive = true, guiName = "Cosine Factor", guiFormat = "F4")] 
+        [KSPField(guiActive = true, guiName = "Cosine Factor", guiFormat = "F4")]
         public double cosAngle;
         [KSPField(guiActive = false, guiName = "Temperature", guiFormat = "F3", guiUnits = " K")]
         public double partTemperature;

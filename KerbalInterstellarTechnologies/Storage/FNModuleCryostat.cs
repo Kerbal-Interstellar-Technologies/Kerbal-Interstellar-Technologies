@@ -10,14 +10,14 @@ namespace KIT.Storage
     class ModuleStorageCryostat: FNModuleCryostat {}
 
     [KSPModule("Cryostat")]
-    class FNModuleCryostat : PartModule, IKITMod
+    class FNModuleCryostat : PartModule, IKITModule
     {
-        public const string GROUP = "FNModuleCryostat";
-        public const string GROUP_TITLE = "Interstellar Cryostat";
+        public const string Group = "FNModuleCryostat";
+        public const string GroupTitle = "Interstellar Cryostat";
 
         // Persistant
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = true, guiActive = true, guiName = "#LOC_IFS_Cryostat_Cooling"), UI_Toggle(disabledText = "#LOC_IFS_Cryostat_On", enabledText = "#LOC_IFS_Cryostat_Off")]//Cooling--On--Off
-        public bool isDisabled = false;
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = true, guiActive = true, guiName = "#LOC_IFS_Cryostat_Cooling"), UI_Toggle(disabledText = "#LOC_IFS_Cryostat_On", enabledText = "#LOC_IFS_Cryostat_Off")]//Cooling--On--Off
+        public bool isDisabled;
 
         [KSPField(isPersistant = true)]
         public double storedTemp;
@@ -25,12 +25,12 @@ namespace KIT.Storage
         // Confiration
         [KSPField] public string resourceName = "";
         [KSPField] public string resourceGUIName = "";
-        [KSPField] public double boilOffRate = 0;
-        [KSPField] public double powerReqKW = 0;
+        [KSPField] public double boilOffRate;
+        [KSPField] public double powerReqKW;
         [KSPField] public double powerReqMult = 1;
-        [KSPField] public double boilOffMultiplier = 0;
+        [KSPField] public double boilOffMultiplier;
         [KSPField] public double boilOffBase = 10000;
-        [KSPField] public double boilOffAddition = 0;
+        [KSPField] public double boilOffAddition;
         [KSPField] public double boilOffTemp = 20.271;
         [KSPField] public double convectionMod = 1;
         [KSPField] public bool showPower = true;
@@ -40,13 +40,13 @@ namespace KIT.Storage
         [KSPField] public int initializationCountdown = 10;
 
         //GUI
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Power")]//Power
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Power")]//Power
         public string powerStatusStr = string.Empty;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Boiloff")]//Boiloff
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Boiloff")]//Boiloff
         public string boiloffStr;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Temperature", guiFormat = "F2", guiUnits = " K")]//Temperature
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Temperature", guiFormat = "F2", guiUnits = " K")]//Temperature
         public double externalTemperature;
-        [KSPField(groupName = GROUP, groupDisplayName = GROUP_TITLE, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Internalboiloff")]//internal boiloff
+        [KSPField(groupName = Group, groupDisplayName = GroupTitle, isPersistant = false, guiActive = false, guiName = "#LOC_KSPIE_ModuleCryostat_Internalboiloff")]//internal boiloff
         public double boiloff;
 
         private BaseField isDisabledField;
@@ -171,7 +171,7 @@ namespace KIT.Storage
                 $"{resourceName} @ {boilOffTemp:F1} K\nPower Requirements: {powerReqKW * 0.2 * powerReqMult * envMod:F1} KW";
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Second;
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Second;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -184,7 +184,7 @@ namespace KIT.Storage
 
             if (!isDisabled && currentPowerReq > 0.0)
             {
-                receivedPowerKW = resMan.ConsumeResource(ResourceName.ElectricCharge, currentPowerReq);
+                receivedPowerKW = resMan.Consume(ResourceName.ElectricCharge, currentPowerReq);
             }
             else
                 receivedPowerKW = 0;

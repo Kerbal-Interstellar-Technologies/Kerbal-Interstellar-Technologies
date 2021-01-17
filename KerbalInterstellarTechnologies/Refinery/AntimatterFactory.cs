@@ -5,12 +5,12 @@ using KIT.ResourceScheduler;
 
 namespace KIT.Refinery
 {
-    class AntimatterFactory : PartModule, IKITMod
+    class AntimatterFactory : PartModule, IKITModule
     {
         public const double ONE_THIRD = 1.0 / 3.0;
 
         [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = false), UI_Toggle(disabledText = "#LOC_KSPIE_AntimatterFactory_Off", enabledText = "#LOC_KSPIE_AntimatterFactory_On")]//OffOn
-        public bool isActive = false;
+        public bool isActive;
         [KSPField(isPersistant = true, guiActive = true, guiName = "#LOC_KSPIE_AntimatterFactory_powerPecentage"), UI_FloatRange(stepIncrement = 0.5f, maxValue = 100, minValue = 1)]
         public float powerPercentage = 100;
 
@@ -74,7 +74,8 @@ namespace KIT.Refinery
             }
         }
 
-        public ResourcePriorityValue ResourceProcessPriority() => ResourcePriorityValue.Fourth;
+
+        public ModuleConfigurationFlags ModuleConfiguration() => ModuleConfigurationFlags.Fourth;
 
         public void KITFixedUpdate(IResourceManager resMan)
         {
@@ -83,13 +84,13 @@ namespace KIT.Refinery
 
             // TODO 
             var availablePower = 300; //  getAvailableStableSupply(ResourceSettings.Config.ElectricPowerInMegawatt);
-            var resourceBarRatio = resMan.ResourceFillFraction(ResourceName.ElectricCharge); 
+            var resourceBarRatio = resMan.FillFraction(ResourceName.ElectricCharge);
             var effectiveResourceThrottling = resourceBarRatio > ONE_THIRD ? 1 : resourceBarRatio * 3;
 
             var energyRequestedInMegajoulesPerSecond = Math.Min(powerCapacity, effectiveResourceThrottling * availablePower * (double)(decimal)powerPercentage * 0.01);
 
             // XXX
-            var energyProvidedInMegajoulesPerSecond = resMan.ConsumeResource(ResourceName.ElectricCharge, energyRequestedInMegajoulesPerSecond);
+            var energyProvidedInMegajoulesPerSecond = resMan.Consume(ResourceName.ElectricCharge, energyRequestedInMegajoulesPerSecond);
 
             electricalPowerRatio = energyRequestedInMegajoulesPerSecond > 0 ? energyProvidedInMegajoulesPerSecond / energyRequestedInMegajoulesPerSecond : 0;
 

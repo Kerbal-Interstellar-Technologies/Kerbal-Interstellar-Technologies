@@ -74,17 +74,6 @@ PART
 				pitch = 1.2 1.2
 				loop = true
 			}
-
-			MODEL_MULTI_PARTICLE
-			{
-				modelName = Kerbal-Interstellar-Technologies/FX/NTR_small
-				transformName = tt
-				emission = 0.0 0.0
-				emission = 0.1 0.25
-				emission = 1.0 1.0
-				speed = 0.0 0.8
-				speed = 1.0 1.2
-			}
 		}
 		power_open
 		{
@@ -98,16 +87,6 @@ PART
 				pitch = 0 0.5
 				pitch = 1 1
 				loop = true
-			}
-			MODEL_MULTI_PARTICLE
-			{
-				modelName = Kerbal-Interstellar-Technologies/FX/LANTR_small
-				transformName = tt
-				emission = 0.0 0.0
-				emission = 0.1 0.5
-				emission = 1.0 2.0
-				speed = 0.0 1.0
-				speed = 1.0 1.5
 			}
 		}
 		running_open
@@ -137,12 +116,6 @@ PART
 		}
 		flameout
 		{
-			PREFAB_PARTICLE
-			{
-				prefabName = fx_exhaustSparks_flameout_2
-				transformName = thrustTransform
-				oneShot = true
-			}
 			AUDIO
 			{
 				channel = Ship
@@ -503,6 +476,13 @@ PART
 		type = stack
 		defaultScale = 2.5
 		scaleFactors = 0.625, 0.95, 1.25, 1.875, 2.5, 3.75, 5.0, 7.5, 10, 15, 20, 30, 40
+	}
+
+	MODULE
+	{
+		name = ModuleWaterfallFX
+    	moduleID = FNMethaneEngineFX
+		engineID = basicEngine
 	}
 
 	RESOURCE

@@ -1,41 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace KIT.Resources
 {
     class CrustalResourceHandler
     {
-        protected static Dictionary<int, List<CrustalResource>> body_Crustal_resource_list = new Dictionary<int, List<CrustalResource>>();
-        protected static Dictionary<string, List<CrustalResource>> body_Crustal_resource_by_name = new Dictionary<string, List<CrustalResource>>();
+        protected static Dictionary<int, List<CrustalResource>> BodyCrustalResourceList = new Dictionary<int, List<CrustalResource>>();
+        protected static Dictionary<string, List<CrustalResource>> BodyCrustalResourceByName = new Dictionary<string, List<CrustalResource>>();
 
-        public static double GetCrustalResourceContent(int refBody, string resourceName)
-        {
-            List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
+        /*        
+                public static double GetCrustalResourceContent(int refBody, string resourceName)
+                {
+                    List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
 
-            CrustalResource resource = bodyCrustalComposition.FirstOrDefault(oor => oor.ResourceName == resourceName);
+                    CrustalResource resource = bodyCrustalComposition.FirstOrDefault(oor => oor.ResourceName == resourceName);
 
-            return resource?.ResourceAbundance ?? 0;
-        }
+                    return resource?.ResourceAbundance ?? 0;
+                }
 
-        public static double GetCrustalResourceContent(int refBody, int resource)
-        {
-            List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
-            if (bodyCrustalComposition.Count > resource) return bodyCrustalComposition[resource].ResourceAbundance;
-            return 0;
-        }
+                public static double GetCrustalResourceContent(int refBody, int resource)
+                {
+                    List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
+                    if (bodyCrustalComposition.Count > resource) return bodyCrustalComposition[resource].ResourceAbundance;
+                    return 0;
+                }
 
-        public static string GetCrustalResourceName(int refBody, int resource)
-        {
-            List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
-            if (bodyCrustalComposition.Count > resource)
-            {
-                return bodyCrustalComposition[resource].ResourceName;
-            }
-            return null;
-        }
-
+                public static string GetCrustalResourceName(int refBody, int resource)
+                {
+                    List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
+                    if (bodyCrustalComposition.Count > resource)
+                    {
+                        return bodyCrustalComposition[resource].ResourceName;
+                    }
+                    return null;
+                }
+        
         public static string GetCrustalResourceDisplayName(int refBody, int resource)
         {
             List<CrustalResource> bodyCrustalComposition = GetCrustalCompositionForBody(refBody);
@@ -46,17 +48,19 @@ namespace KIT.Resources
             return null;
         }
 
+        */
+
         public static List<CrustalResource> GetCrustalCompositionForBody(CelestialBody celestialBody) // getter that uses celestial body as an argument
         {
             return GetCrustalCompositionForBody(celestialBody.flightGlobalsIndex); // calls the function that uses refBody int as an argument
         }
 
-        public static List<CrustalResource> GetCrustalCompositionForBody(string celestrialBodyName) // function for getting or creating Crustal composition
+        public static List<CrustalResource> GetCrustalCompositionForBody(string celestialBodyName) // function for getting or creating Crustal composition
         {
-            if (!body_Crustal_resource_by_name.TryGetValue(celestrialBodyName, out var bodyCrustalComposition))
+            if (!BodyCrustalResourceByName.TryGetValue(celestialBodyName, out var bodyCrustalComposition))
             {
                 // try to find celestial body id it exists in this universe
-                CelestialBody celestialBody = FlightGlobals.Bodies.FirstOrDefault(m => m.name == celestrialBodyName);
+                CelestialBody celestialBody = FlightGlobals.Bodies.FirstOrDefault(m => m.name == celestialBodyName);
 
                 if (celestialBody != null)
                 {
@@ -70,19 +74,19 @@ namespace KIT.Resources
                     AddMissingStockResources(celestialBody.flightGlobalsIndex, bodyCrustalComposition);
 
                     // add to database for future reference
-                    body_Crustal_resource_list.Add(celestialBody.flightGlobalsIndex, bodyCrustalComposition);
+                    BodyCrustalResourceList.Add(celestialBody.flightGlobalsIndex, bodyCrustalComposition);
                 }
                 else
                 {
                     // create composition from kspi Crustal definition file
-                    bodyCrustalComposition = CreateFromKspiCrustDefinitionFile(celestrialBodyName);
+                    bodyCrustalComposition = CreateFromKspiCrustDefinitionFile(celestialBodyName);
                 }
 
                 // Add rare and isotopic resources
                 AddRaresAndIsotopesToCrustComposition(bodyCrustalComposition);
 
                 // add to database for future reference
-                body_Crustal_resource_by_name.Add(celestialBody.name, bodyCrustalComposition);
+                BodyCrustalResourceByName.Add(celestialBody.name, bodyCrustalComposition);
             }
 
             return bodyCrustalComposition;
@@ -94,7 +98,7 @@ namespace KIT.Resources
             try
             {
                 // check if there's a composition for this body
-                if (!body_Crustal_resource_list.TryGetValue(refBody, out bodyCrustalComposition))
+                if (!BodyCrustalResourceList.TryGetValue(refBody, out bodyCrustalComposition))
                 {
                     CelestialBody celestialBody = FlightGlobals.Bodies[refBody]; // create a celestialBody object referencing the current body (makes it easier on us in the next lines)
 
@@ -120,8 +124,8 @@ namespace KIT.Resources
                     bodyCrustalComposition = bodyCrustalComposition.OrderByDescending(bacd => bacd.ResourceAbundance).ToList();
 
                     // add to database for future reference
-                    body_Crustal_resource_list.Add(refBody, bodyCrustalComposition);
-                    body_Crustal_resource_by_name.Add(celestialBody.name, bodyCrustalComposition);
+                    BodyCrustalResourceList.Add(refBody, bodyCrustalComposition);
+                    BodyCrustalResourceByName.Add(celestialBody.name, bodyCrustalComposition);
                 }
             }
             catch (Exception ex)
@@ -141,10 +145,10 @@ namespace KIT.Resources
             if (Crustal_resource_pack != null)
             {
                 Debug.Log("[KSPI]: searching for crustal definition for " + celestialBody.name);
-                List<ConfigNode> Crustal_resource_list = Crustal_resource_pack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestialBody.name).ToList();
-                if (Crustal_resource_list.Any())
+                List<ConfigNode> crustalResourceList = Crustal_resource_pack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestialBody.name).ToList();
+                if (crustalResourceList.Any())
                 {
-                    bodyCrustalComposition = Crustal_resource_list.Select(orsc =>
+                    bodyCrustalComposition = crustalResourceList.Select(orsc =>
                         new CrustalResource(orsc.HasValue("resourceName")
                             ? orsc.GetValue("resourceName") : null,
                             double.Parse(orsc.GetValue("abundance")),
@@ -154,20 +158,20 @@ namespace KIT.Resources
             return bodyCrustalComposition;
         }
 
-        private static List<CrustalResource> CreateFromKspiCrustDefinitionFile(string celestrialBodyName)
+        private static List<CrustalResource> CreateFromKspiCrustDefinitionFile(string celestialBodyName)
         {
             var bodyCrustalComposition = new List<CrustalResource>();
             //CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI
-            ConfigNode Crustal_resource_pack = GameDatabase.Instance.GetConfigNodes("CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
+            ConfigNode crustalResourcePack = GameDatabase.Instance.GetConfigNodes("CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
 
             //Debug.Log("[KSPI]: Loading Crustal data from pack: " + (Crustal_resource_pack.HasValue("name") ? Crustal_resource_pack.GetValue("name") : "Unknown pack"));
-            if (Crustal_resource_pack != null)
+            if (crustalResourcePack != null)
             {
-                Debug.Log("[KSPI]: searching for crustal definition for " + celestrialBodyName);
-                List<ConfigNode> Crustal_resource_list = Crustal_resource_pack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestrialBodyName).ToList();
-                if (Crustal_resource_list.Any())
+                Debug.Log("[KSPI]: searching for crustal definition for " + celestialBodyName);
+                List<ConfigNode> crustalResourceList = crustalResourcePack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestialBodyName).ToList();
+                if (crustalResourceList.Any())
                 {
-                    bodyCrustalComposition = Crustal_resource_list.Select(orsc => new CrustalResource(orsc.HasValue("resourceName") ? orsc.GetValue("resourceName") : null, double.Parse(orsc.GetValue("abundance")), orsc.GetValue("guiName"))).ToList();
+                    bodyCrustalComposition = crustalResourceList.Select(orsc => new CrustalResource(orsc.HasValue("resourceName") ? orsc.GetValue("resourceName") : null, double.Parse(orsc.GetValue("abundance")), orsc.GetValue("guiName"))).ToList();
                 }
             }
             return bodyCrustalComposition;
@@ -183,20 +187,20 @@ namespace KIT.Resources
                 if (!celestialBody.hasSolidSurface)
                     return bodyCrustalComposition;
 
-                // Lookup homeworld
-                CelestialBody homeworld = FlightGlobals.Bodies.SingleOrDefault(b => b.isHomeWorld);
-                System.Diagnostics.Debug.Assert(homeworld != null, nameof(homeworld) + " != null");
-                
+                // Lookup home world
+                CelestialBody homeWorld = FlightGlobals.Bodies.SingleOrDefault(b => b.isHomeWorld);
+                System.Diagnostics.Debug.Assert(homeWorld != null, nameof(homeWorld) + " != null");
+
                 double pressureAtSurface = celestialBody.GetPressure(0);
 
-                if (celestialBody.Mass < homeworld.Mass * 10 && pressureAtSurface < 1000)
+                if (celestialBody.Mass < homeWorld.Mass * 10 && pressureAtSurface < 1000)
                 {
                     if (pressureAtSurface > 200)
                     {
                         // it is Venus-like/Eve-like, use Eve as a template
                         bodyCrustalComposition = GetCrustalCompositionForBody("Eve");
                     }
-                    else if (celestialBody.Mass > (homeworld.Mass / 2) && celestialBody.Mass < homeworld.Mass && pressureAtSurface < 100) // it's at least half as big as the homeworld and has significant atmosphere
+                    else if (celestialBody.Mass > (homeWorld.Mass / 2) && celestialBody.Mass < homeWorld.Mass && pressureAtSurface < 100) // it's at least half as big as the homeworld and has significant atmosphere
                     {
                         // it is Laythe-like, use Laythe as a template
                         bodyCrustalComposition = GetCrustalCompositionForBody("Laythe");
@@ -266,95 +270,97 @@ namespace KIT.Resources
 
             Debug.Log("[KSPI]: AddMissingStockResources : found " + allCrustalResources.Count + " resources");
 
-            foreach (var resoureName in allCrustalResources)
+            foreach (var resourceName in allCrustalResources)
             {
                 // add resource if missing
-                AddMissingResource(resoureName, refBody, bodyCrustalComposition);
+                AddMissingResource(resourceName, refBody, bodyCrustalComposition);
             }
         }
 
-        private static void AddMissingResource(string resourname, int refBody, List<CrustalResource> bodyCrustalComposition)
+        private static void AddMissingResource(string resourceName, int refBody, List<CrustalResource> bodyCrustalComposition)
         {
-            if (resourname == KITResourceSettings.Regolith)
+            if (resourceName == KITResourceSettings.Regolith)
             {
                 Debug.Log("[KSPI]: AddMissingResource : Ignored Regolith");
                 return;
             }
 
             // verify it is a defined resource
-            PartResourceDefinition definition = PartResourceLibrary.Instance.GetDefinition(resourname);
+            PartResourceDefinition definition = PartResourceLibrary.Instance.GetDefinition(resourceName);
             if (definition == null)
             {
-                Debug.LogWarning("[KSPI]: AddMissingResource : Failed to find resource definition for '" + resourname + "'");
+                Debug.LogWarning("[KSPI]: AddMissingResource : Failed to find resource definition for '" + resourceName + "'");
                 return;
             }
 
-            // skip it already registred or used as a Synonym
+            // skip it already registered or used as a Synonym
             if (bodyCrustalComposition.Any(m => m.ResourceName == definition.name || m.DisplayName == definition.displayName || m.Synonyms.Contains(definition.name)))
             {
-                Debug.Log("[KSPI]: AddMissingResource : Already found existing composition for '" + resourname + "'");
+                Debug.Log("[KSPI]: AddMissingResource : Already found existing composition for '" + resourceName + "'");
                 return;
             }
 
-            // retreive abundance
+            // retrieve abundance
             var abundance = GetAbundance(definition.name, refBody);
             if (abundance <= 0)
             {
-                Debug.LogWarning("[KSPI]: AddMissingResource : Abundance for resource '" + resourname + "' was " + abundance);
+                Debug.LogWarning("[KSPI]: AddMissingResource : Abundance for resource '" + resourceName + "' was " + abundance);
             }
 
-            // create Crustalresource from definition and abundance
-            var CrustalResource = new CrustalResource(definition, abundance);
+            // create Crustal resource from definition and abundance
+            var crustalResource = new CrustalResource(definition, abundance);
 
             // add to Crustal composition
-            Debug.Log("[KSPI]: AddMissingResource : add resource '" + resourname + "'");
-            bodyCrustalComposition.Add(CrustalResource);
+            Debug.Log("[KSPI]: AddMissingResource : add resource '" + resourceName + "'");
+            bodyCrustalComposition.Add(crustalResource);
         }
 
-        private static void AddResource(string outputResourname, string displayname, int refBody, List<CrustalResource> bodyCrustalComposition, string[] variants)
+        private static void AddResource(string outputResourceName, string displayName, int refBody, List<CrustalResource> bodyCrustalComposition, string[] variants)
         {
-            var abundances = new[] { GetAbundance(outputResourname, refBody) }.Concat(variants.Select(m => GetAbundance(m, refBody)));
+            var abundances = new[] { GetAbundance(outputResourceName, refBody) }.Concat(variants.Select(m => GetAbundance(m, refBody)));
 
-            var CrustalResource = new CrustalResource(outputResourname, abundances.Max(), displayname, variants);
-            if (CrustalResource.ResourceAbundance > 0)
+            var crustalResource = new CrustalResource(outputResourceName, abundances.Max(), displayName, variants);
+            if (crustalResource.ResourceAbundance > 0)
             {
-                var existingResource = bodyCrustalComposition.FirstOrDefault(a => a.ResourceName == outputResourname);
+                var existingResource = bodyCrustalComposition.FirstOrDefault(a => a.ResourceName == outputResourceName);
                 if (existingResource != null)
                 {
-                    Debug.Log("[KSPI]: replaced resource " + outputResourname + " with stock defined abundance " + CrustalResource.ResourceAbundance);
+                    Debug.Log("[KSPI]: replaced resource " + outputResourceName + " with stock defined abundance " + crustalResource.ResourceAbundance);
                     bodyCrustalComposition.Remove(existingResource);
                 }
-                bodyCrustalComposition.Add(CrustalResource);
+                bodyCrustalComposition.Add(crustalResource);
             }
         }
 
-        private static void AddResource(int refBody, List<CrustalResource> bodyCrustalComposition, string outputResourname, string inputResource1, string inputResource2, string inputResource3, string displayname)
+        private static void AddResource(int refBody, List<CrustalResource> bodyCrustalComposition, string outputResourceName, string inputResource1, string inputResource2, string inputResource3, string displayName)
         {
             var abundances = new[] { GetAbundance(inputResource1, refBody), GetAbundance(inputResource2, refBody), GetAbundance(inputResource2, refBody) };
 
-            var CrustalResource = new CrustalResource(outputResourname, abundances.Max(), displayname, new[] { inputResource1, inputResource2, inputResource3 });
-            if (CrustalResource.ResourceAbundance > 0)
+            var crustalResource = new CrustalResource(outputResourceName, abundances.Max(), displayName, new[] { inputResource1, inputResource2, inputResource3 });
+            if (crustalResource.ResourceAbundance > 0)
             {
-                var existingResource = bodyCrustalComposition.FirstOrDefault(a => a.ResourceName == outputResourname);
+                var existingResource = bodyCrustalComposition.FirstOrDefault(a => a.ResourceName == outputResourceName);
                 if (existingResource != null)
                 {
-                    Debug.Log("[KSPI]: replaced resource " + outputResourname + " with stock defined abundance " + CrustalResource.ResourceAbundance);
+                    Debug.Log("[KSPI]: replaced resource " + outputResourceName + " with stock defined abundance " + crustalResource.ResourceAbundance);
                     bodyCrustalComposition.Remove(existingResource);
                 }
-                bodyCrustalComposition.Add(CrustalResource);
+                bodyCrustalComposition.Add(crustalResource);
             }
         }
 
-        private static void AddRaresAndIsotopesToCrustComposition(List<CrustalResource> bodyCrustalComposition)
+        private static void AddRaresAndIsotopesToCrustComposition([NotNull] List<CrustalResource> bodyCrustalComposition)
         {
-            // add heavywater based on water abundance in crust
-            if (bodyCrustalComposition.All(m => m.ResourceName != KITResourceSettings.WaterHeavy) && bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterPure))
-            {
-                var water = bodyCrustalComposition.FirstOrDefault(m => m.ResourceName == KITResourceSettings.WaterPure);
-                // ReSharper disable once PossibleNullReferenceException - We check for presence above
-                var heavyWaterAbundance = water.ResourceAbundance / 6420;
-                bodyCrustalComposition.Add(new CrustalResource(KITResourceSettings.WaterHeavy, heavyWaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
-            }
+            
+            if (bodyCrustalComposition == null) throw new ArgumentNullException(nameof(bodyCrustalComposition));
+            
+            // add heavy water based on water abundance in crust
+            if (bodyCrustalComposition.Any(m => m.ResourceName == KITResourceSettings.WaterHeavy) || bodyCrustalComposition.All(m => m.ResourceName != KITResourceSettings.WaterPure)) return;
+
+            var water = bodyCrustalComposition.FirstOrDefault(m => m.ResourceName == KITResourceSettings.WaterPure);
+            
+            var heavyWaterAbundance = water.ResourceAbundance / 6420;
+            bodyCrustalComposition.Add(new CrustalResource(KITResourceSettings.WaterHeavy, heavyWaterAbundance, "HeavyWater", new[] { "HeavyWater", "D2O", "DeuteriumWater" }));
         }
 
         private static float GetAbundance(string resourceName, int refBody)
