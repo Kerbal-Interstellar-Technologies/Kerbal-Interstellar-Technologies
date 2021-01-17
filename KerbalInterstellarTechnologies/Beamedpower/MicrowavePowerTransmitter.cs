@@ -729,12 +729,12 @@ namespace KIT.BeamedPower
         public static IVesselMicrowavePersistence GetVesselMicrowavePersistenceForProtoVessel(Vessel vessel)
         {
             var transmitter = new VesselMicrowavePersistence(vessel);
-            int totalCount = 0;
+            var totalCount = 0;
 
-            double totalAperture = 0.0;
-            double totalNuclearPower = 0.0;
-            double totalSolarPower = 0.0;
-            double totalPowerCapacity = 0.0;
+            var totalAperture = 0.0;
+            var totalNuclearPower = 0.0;
+            var totalSolarPower = 0.0;
+            var totalPowerCapacity = 0.0;
 
             foreach (var protoPart in vessel.protoVessel.protoPartSnapshots)
             {
@@ -778,7 +778,7 @@ namespace KIT.BeamedPower
                             NuclearPower = nuclearPower,
                             SolarPower = solarPower,
                             PowerCapacity = powerCapacity,
-                            AtmosphericAbsorption = double.Parse(protoModule.moduleValues.GetValue(nameof(BeamedPowerTransmitter.atmosphericAbsorption)))
+                            AtmosphericAbsorption = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.atmosphericAbsorption))
                         });
                     }
                     else
@@ -804,13 +804,13 @@ namespace KIT.BeamedPower
         public static IVesselRelayPersistence GetVesselRelayPersistenceForProtoVessel(Vessel vessel)
         {
             var relayVessel = new VesselRelayPersistence(vessel);
-            int totalCount = 0;
+            var totalCount = 0;
 
-            double totalDiameter = 0;
-            double totalAperture = 0;
-            double totalPowerCapacity = 0;
-            double minimumRelayWavelength = 1;
-            double maximumRelayWavelength = 0;
+            var totalDiameter = 0.0;
+            var totalAperture = 0.0;
+            var totalPowerCapacity = 0.0;
+            var minimumRelayWavelength = 1.0;
+            var maximumRelayWavelength = 0.0;
 
             foreach (var protoPart in vessel.protoVessel.protoPartSnapshots)
             {
@@ -819,39 +819,35 @@ namespace KIT.BeamedPower
                     if (protoModule.moduleName != "MicrowavePowerTransmitter" && protoModule.moduleName != "PhasedArrayTransmitter" && protoModule.moduleName != "BeamedPowerLaserTransmitter")
                         continue;
 
-                    bool inRelayMode = bool.Parse(protoModule.moduleValues.GetValue("relay"));
-
-                    bool isMergingBeams = false;
-                    if (protoModule.moduleValues.HasValue("mergingBeams"))
-                        isMergingBeams = bool.Parse(protoModule.moduleValues.GetValue("mergingBeams"));
+                    var inRelayMode = Lib.GetBool(protoModule, nameof(BeamedPowerTransmitter.relay));
+                    var isMergingBeams = Lib.GetBool(protoModule, nameof(BeamedPowerTransmitter.mergingBeams));
 
                     // filter on transmitters
                     if (inRelayMode || isMergingBeams)
                     {
-                        var wavelength = double.Parse(protoModule.moduleValues.GetValue("wavelength"));
-                        var isMirror = bool.Parse(protoModule.moduleValues.GetValue("isMirror"));
-                        var aperture = double.Parse(protoModule.moduleValues.GetValue("aperture"));
-                        var powerCapacity = double.Parse(protoModule.moduleValues.GetValue("powerCapacity"));
-
-                        var diameter = protoModule.moduleValues.HasValue("diameter") ? double.Parse(protoModule.moduleValues.GetValue("diameter")) : aperture;
+                        var wavelength = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.wavelength));
+                        var isMirror = Lib.GetBool(protoModule, nameof(BeamedPowerTransmitter.isMirror));
+                        var aperture = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.aperture));
+                        var powerCapacity = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.powerCapacity));
+                        var diameter = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.diameter), aperture);
 
                         totalCount++;
                         totalAperture += aperture;
                         totalDiameter += diameter;
                         totalPowerCapacity += powerCapacity;
 
-                        var relayWavelengthMin = double.Parse(protoModule.moduleValues.GetValue("minimumRelayWaveLength"));
+                        var relayWavelengthMin = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.minimumRelayWaveLength));
                         if (relayWavelengthMin < minimumRelayWavelength)
                             minimumRelayWavelength = relayWavelengthMin;
 
-                        var relayWavelengthMax = double.Parse(protoModule.moduleValues.GetValue("maximumRelayWaveLength"));
+                        var relayWavelengthMax = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.maximumRelayWaveLength));
                         if (relayWavelengthMax > maximumRelayWavelength)
                             maximumRelayWavelength = relayWavelengthMax;
 
                         var relayData = relayVessel.SupportedTransmitWavelengths.FirstOrDefault(m => m.Wavelength == wavelength);
                         if (relayData == null)
                         {
-                            string partId = protoModule.moduleValues.GetValue("partId");
+                            string partId = Lib.GetString(protoModule, nameof(BeamedPowerTransmitter.partId));
 
                             relayVessel.SupportedTransmitWavelengths.Add(new WaveLengthData()
                             {
@@ -863,7 +859,7 @@ namespace KIT.BeamedPower
                                 MinWavelength = relayWavelengthMin,
                                 MaxWavelength = relayWavelengthMax,
                                 IsMirror = isMirror,
-                                AtmosphericAbsorption = double.Parse(protoModule.moduleValues.GetValue("atmosphericAbsorption"))
+                                AtmosphericAbsorption = Lib.GetDouble(protoModule, nameof(BeamedPowerTransmitter.atmosphericAbsorption))
                             });
                         }
                         else
@@ -876,7 +872,7 @@ namespace KIT.BeamedPower
                 }
             }
 
-            relayVessel.Aperture = (totalAperture / totalCount) * Approximate.Sqrt(totalCount);
+            relayVessel.Aperture = (totalAperture / totalCount) * totalCount.Sqrt();
             relayVessel.Diameter = totalDiameter / totalCount;
             relayVessel.PowerCapacity = totalPowerCapacity;
             relayVessel.IsActive = totalCount > 0;
