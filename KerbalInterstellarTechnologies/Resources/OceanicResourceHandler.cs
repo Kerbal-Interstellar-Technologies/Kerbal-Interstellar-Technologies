@@ -7,23 +7,23 @@ namespace KIT.Resources
 {
     class OceanicResourceHandler
     {
-        protected static Dictionary<int, List<OceanicResource>> body_oceanic_resource_list = new Dictionary<int, List<OceanicResource>>();
+        protected static Dictionary<int, List<OceanicResource>> BodyOceanicResourceList = new Dictionary<int, List<OceanicResource>>();
 
-        public static double getOceanicResourceContent(int refBody, string resourceName)
+        public static double GetOceanicResourceContent(int refBody, string resourceName)
         {
             List<OceanicResource> bodyOceanicComposition = GetOceanicCompositionForBody(refBody);
             OceanicResource resource = bodyOceanicComposition.FirstOrDefault(oor => oor.ResourceName == resourceName);
             return resource?.ResourceAbundance ?? 0;
         }
 
-        public static double getOceanicResourceContent(int refBody, int resource)
+        public static double GetOceanicResourceContent(int refBody, int resource)
         {
             List<OceanicResource> bodyOceanicComposition = GetOceanicCompositionForBody(refBody);
             if (bodyOceanicComposition.Count > resource) return bodyOceanicComposition[resource].ResourceAbundance;
             return 0;
         }
 
-        public static string getOceanicResourceName(int refBody, int resource)
+        public static string GetOceanicResourceName(int refBody, int resource)
         {
             List<OceanicResource> bodyOceanicComposition = GetOceanicCompositionForBody(refBody);
             if (bodyOceanicComposition.Count > resource)
@@ -33,7 +33,7 @@ namespace KIT.Resources
             return null;
         }
 
-        public static string getOceanicResourceDisplayName(int refBody, int resource)
+        public static string GetOceanicResourceDisplayName(int refBody, int resource)
         {
             List<OceanicResource> bodyOceanicComposition = GetOceanicCompositionForBody(refBody);
             if (bodyOceanicComposition.Count > resource)
@@ -54,10 +54,10 @@ namespace KIT.Resources
             try
             {
                 // check if there's a composition for this body
-                if (body_oceanic_resource_list.ContainsKey(refBody))
+                if (BodyOceanicResourceList.ContainsKey(refBody))
                 {
                     // skip all the other stuff and return the composition we already have
-                    return body_oceanic_resource_list[refBody];
+                    return BodyOceanicResourceList[refBody];
                 }
 
                 CelestialBody celestialBody = FlightGlobals.Bodies[refBody]; // create a celestialBody object referencing the current body (makes it easier on us in the next lines)
@@ -82,7 +82,7 @@ namespace KIT.Resources
                 bodyOceanicComposition = bodyOceanicComposition.OrderByDescending(bacd => bacd.ResourceAbundance).ToList();
 
                 // add to database for future reference
-                body_oceanic_resource_list.Add(refBody, bodyOceanicComposition);
+                BodyOceanicResourceList.Add(refBody, bodyOceanicComposition);
             }
             catch (Exception ex)
             {

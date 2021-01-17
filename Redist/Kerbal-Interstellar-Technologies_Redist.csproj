@@ -85,6 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\Kerbalism.cs" />
     <Compile Include="Lib.cs" />
     <Compile Include="ResourceScheduler\BackgroundProcessing.cs" />
     <Compile Include="ResourceScheduler\VesselInfo.cs" />

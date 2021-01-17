@@ -126,11 +126,10 @@ namespace KIT.Resources
             RegolithDensity = (double)(decimal)PartResourceLibrary.Instance.GetDefinition(RegolithResourceName).density;
 
             // this bit goes through parts that contain animations and disables the "Status" field in GUI part window so that it's less crowded
-            var MAGlist = part.FindModulesImplementing<ModuleAnimateGeneric>();
-            foreach (ModuleAnimateGeneric MAG in MAGlist)
+            foreach (ModuleAnimateGeneric mag in part.FindModulesImplementing<ModuleAnimateGeneric>())
             {
-                MAG.Fields[nameof(MAG.status)].guiActive = false;
-                MAG.Fields[nameof(MAG.status)].guiActiveEditor = false;
+                mag.Fields[nameof(mag.status)].guiActive = false;
+                mag.Fields[nameof(mag.status)].guiActiveEditor = false;
             }
         }
 
@@ -204,7 +203,7 @@ namespace KIT.Resources
             double scaleFactor = part.rescaleFactor; // what is the rescale factor of the drill?
             float drillDistance = (float)(5 * scaleFactor); // adjust the distance for the ray with the rescale factor, needs to be a float for raycast. The 5 is just about the reach of the drill.
 
-            LayerMask terrainMask = 32768; // layermask in unity, number 1 bitshifted to the left 15 times (1 << 15), (terrain = 15, the bitshift is there so that the mask bits are raised; this is a good reading about that: http://answers.unity3d.com/questions/8715/how-do-i-use-layermasks.html)
+            LayerMask terrainMask = 32768; // layer mask in unity, number 1 bit shifted to the left 15 times (1 << 15), (terrain = 15, the bit shift is there so that the mask bits are raised; this is a good reading about that: http://answers.unity3d.com/questions/8715/how-do-i-use-layermasks.html)
             Ray drillPartRay = new Ray(partPosition, -part.transform.up); // this ray will start at the part's center and go down in local space coordinates (Vector3d.down is in world space)
 
             /* This little bit will fire a ray from the part, straight down, in the distance that the part should be able to reach.
@@ -213,7 +212,7 @@ namespace KIT.Resources
              * to check for contact, but that seems to be bugged somehow, at least when paired with this drill - it works enough times to pass tests, but when testing
              * this module in a difficult terrain, it just doesn't work properly.
             */
-            Physics.Raycast(drillPartRay, out var hit, drillDistance, terrainMask); // use the defined ray, pass info about a hit, go the proper distance and choose the proper layermask
+            Physics.Raycast(drillPartRay, out var hit, drillDistance, terrainMask); // use the defined ray, pass info about a hit, go the proper distance and choose the proper layer mask
             if (hit.collider == null) return false;
 
             return IsDrillExtended();
@@ -244,7 +243,7 @@ namespace KIT.Resources
             var avgMunDistance = GameConstants.KerbinSunDistance; 
 
              /* I decided to incorporate an altitude modifier. According to https://curator.jsc.nasa.gov/lunar/letss/regolith.pdf, most regolith on Moon is deposited in
-             * higher altitudes. This is great from a gameplay perspective, because it makes an incentive for players to collect regolith in more difficult circumstances
+             * higher altitudes. This is great from a game play perspective, because it makes an incentive for players to collect regolith in more difficult circumstances
              * (i.e. landing on highlands instead of flats etc.) and breaks the flatter-is-better base building strategy at least a bit.
              * This check will divide current altitude by 2500. At that arbitrarily-chosen altitude, we should be getting the basic concentration for the planet.
              * Go to a higher terrain and you will find **more** regolith. The + 500 shift is there so that even at altitude of 0 (i.e. Minmus flats etc.) there will

@@ -18,7 +18,6 @@ namespace KIT.Toolbar
 
         readonly ResourceName[] _resources = new[] { ResourceName.ElectricCharge, ResourceName.ThermalPower, ResourceName.ChargedParticle, ResourceName.WasteHeat };
 
-        // TODO: we should ensure that we only run after a fixed update, not in between.
         public string TextUI()
         {
             List<string> elements = new List<string>(128);

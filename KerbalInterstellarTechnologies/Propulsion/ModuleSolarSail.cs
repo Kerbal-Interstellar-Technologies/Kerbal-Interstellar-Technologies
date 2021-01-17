@@ -172,18 +172,16 @@ namespace KIT.Propulsion
                     normal = -normal;
                 // Magnitude of force proportional to cosine-squared of angle between sun-line and normal
                 double cosConeAngle = Vector3.Dot(ownSunPosition.normalized, normal);
-                Vector3d force = normal * cosConeAngle * cosConeAngle * surfaceArea * reflectedPhotonRatio * SolarForceAtDistance();
-                return force;
+                return normal * cosConeAngle * cosConeAngle * surfaceArea * reflectedPhotonRatio * SolarForceAtDistance();
             }
-            else
-                return Vector3d.zero;
+
+            return Vector3d.zero;
         }
 
         private double SolarForceAtDistance()
         {
             double distanceFromSun = Vector3.Distance(LocalStar.position, vessel.CoMD);
-            double forceToReturn = ThrustCoefficient * GameConstants.KerbinSunDistance * GameConstants.KerbinSunDistance / distanceFromSun / distanceFromSun;
-            return forceToReturn;
+            return ThrustCoefficient * GameConstants.KerbinSunDistance * GameConstants.KerbinSunDistance / distanceFromSun / distanceFromSun;
         }
 
     }

@@ -139,14 +139,14 @@ namespace KIT.Resources
         {
             var bodyCrustalComposition = new List<CrustalResource>();
             //CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI
-            ConfigNode Crustal_resource_pack = GameDatabase.Instance.GetConfigNodes("CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
+            ConfigNode crustalResourcePack = GameDatabase.Instance.GetConfigNodes("CRUSTAL_RESOURCE_PACK_DEFINITION_KSPI").FirstOrDefault();
 
             //Debug.Log("[KSPI]: Loading Crustal data from pack: " + (Crustal_resource_pack.HasValue("name") ? Crustal_resource_pack.GetValue("name") : "Unknown pack"));
-            if (Crustal_resource_pack != null)
+            if (crustalResourcePack != null)
             {
                 Debug.Log("[KSPI]: searching for crustal definition for " + celestialBody.name);
-                List<ConfigNode> crustalResourceList = Crustal_resource_pack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestialBody.name).ToList();
-                if (crustalResourceList.Any())
+                List<ConfigNode> crustalResourceList = crustalResourcePack.nodes.Cast<ConfigNode>().Where(res => res.GetValue("celestialBodyName") == celestialBody.name).ToList();
+                if (crustalResourceList.Count > 0)
                 {
                     bodyCrustalComposition = crustalResourceList.Select(orsc =>
                         new CrustalResource(orsc.HasValue("resourceName")
