@@ -104,7 +104,6 @@
     <Compile Include="Extensions\VesselExtension.cs" />
     <Compile Include="External\FNEmitterController.cs" />
     <Compile Include="HideHiddenPartsFilter.cs" />
-    <Compile Include="External\Kerbalism.cs" />
     <Compile Include="PowerManagement\PowerDistribution.cs" />
     <Compile Include="PowerManagement\Interfaces\IFNChargedParticleSource.cs" />
     <Compile Include="PowerManagement\Interfaces\IFNPowerSource.cs" />

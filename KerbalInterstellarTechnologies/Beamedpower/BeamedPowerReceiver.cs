@@ -10,7 +10,9 @@ using KIT.Resources;
 using KIT.ResourceScheduler;
 using KIT.Wasteheat;
 using KSP.Localization;
+using Smooth.Collections;
 using UnityEngine;
+using Random = System.Random;
 
 namespace KIT.BeamedPower
 {
@@ -331,15 +333,7 @@ namespace KIT.BeamedPower
 
         public void RemoveOtherVesselData()
         {
-            var deleteList = new List<Vessel>();
-
-            foreach (var r in ReceivedPower)
-            {
-                if (r.Key != vessel)
-                    deleteList.Add(r.Key);
-            }
-
-            foreach (Vessel otherVessel in deleteList)
+            foreach (var otherVessel in ReceivedPower.Where(kv => kv.Key != vessel).Select(kv => kv.Key))
             {
                 ReceivedPower.Remove(otherVessel);
             }
@@ -442,8 +436,6 @@ namespace KIT.BeamedPower
                 case 4: hothBathTemperature = hothBathTemperatureMk4; break;
                 case 5: hothBathTemperature = hothBathTemperatureMk5; break;
                 case 6: hothBathTemperature = hothBathTemperatureMk6; break;
-                default:
-                    break;
             }
         }
 
@@ -455,12 +447,11 @@ namespace KIT.BeamedPower
 
                 if (electricWasteheatExponent == 1)
                     return 1 - wasteheatRatio;
-                else
-                    return 1 - Math.Pow(wasteheatRatio, electricWasteheatExponent);
+                return 1 - Math.Pow(wasteheatRatio, electricWasteheatExponent);
             }
         }
 
-        public double MaximumRecievePower
+        public double MaximumReceivePower
         {
             get
             {
@@ -491,8 +482,7 @@ namespace KIT.BeamedPower
 
         public void ConnectWithEngine(IEngineNozzle engine)
         {
-            var fnEngine = engine as IFnEngineNozzle;
-            if (fnEngine == null)
+            if (!(engine is IFnEngineNozzle fnEngine))
                 return;
 
             if (!ConnectedEngines.Contains(fnEngine))
@@ -501,8 +491,7 @@ namespace KIT.BeamedPower
 
         public void DisconnectWithEngine(IEngineNozzle engine)
         {
-            var fnEngine = engine as IFnEngineNozzle;
-            if (fnEngine == null)
+            if (!(engine is IFnEngineNozzle fnEngine))
                 return;
 
             if (ConnectedEngines.Contains(fnEngine))
@@ -532,7 +521,7 @@ namespace KIT.BeamedPower
 
         public double RawMaximumPowerForPowerGeneration => powerInputMegajoulesMax;
 
-        public double RawMaximumPower => MaximumRecievePower;
+        public double RawMaximumPower => MaximumReceivePower;
 
         public bool ShouldApplyBalance(ElectricGeneratorType generatorType) { return false; }
 
@@ -567,17 +556,17 @@ namespace KIT.BeamedPower
 
         protected Animation animT;
 
-        protected BeamedPowerTransmitter part_transmitter;
-        protected ModuleAnimateGeneric genericAnimation;
+        protected BeamedPowerTransmitter PartTransmitter;
+        protected ModuleAnimateGeneric GenericAnimation;
 
-        protected CelestialBody localStar;
+        protected CelestialBody LocalStar;
 
-        protected int connectedsatsi;
-        protected int connectedrelaysi;
-        protected int networkDepth;
-        protected int activeSatsIncr;
-        protected long deactivate_timer;
-        protected bool has_transmitter;
+        protected int ConnectedSatSi;
+        protected int ConnectedRelaySi;
+        protected int NetworkDepth;
+        protected int ActiveSatellitesIncr;
+        protected long DeactivateTimer;
+        protected bool HasTransmitter;
 
         public double RawTotalPowerProduced => ThermalPower * TimeWarp.fixedDeltaTime;
         public double ChargedPowerRatio => 0;
@@ -634,8 +623,8 @@ namespace KIT.BeamedPower
             if (DeployableRadiator != null)
                 DeployableRadiator.Extend();
 
-            if (genericAnimation != null && genericAnimation.GetScalar < 1)
-                genericAnimation.Toggle();
+            if (GenericAnimation != null && GenericAnimation.GetScalar < 1)
+                GenericAnimation.Toggle();
 
             if (FNRadiator != null && FNRadiator.ModuleActiveRadiator != null)
                 FNRadiator.ModuleActiveRadiator.Activate();
@@ -660,8 +649,8 @@ namespace KIT.BeamedPower
             if (DeployableRadiator != null)
                 DeployableRadiator.Retract();
 
-            if (genericAnimation != null && genericAnimation.GetScalar > 0)
-                genericAnimation.Toggle();
+            if (GenericAnimation != null && GenericAnimation.GetScalar > 0)
+                GenericAnimation.Toggle();
 
             if (FNRadiator != null && FNRadiator.ModuleActiveRadiator != null)
                 FNRadiator.ModuleActiveRadiator.Shutdown();
@@ -747,30 +736,6 @@ namespace KIT.BeamedPower
 
         private List<BandwidthConverter> _bandwidthConverters;
         public List<BandwidthConverter> BandwidthConverters => _bandwidthConverters;
-
-        // Lambda= Wavelength in nanometers, time in seconds, wattage in normal Watts, returns momentum of whole laser
-        public static double PhotonicLaserMomentum(double lambda, uint time, ulong wattage)
-        {
-            var energySingle = 6.626e-34 * 3e8 / lambda;
-            var photonImpulse = wattage * time / energySingle;
-            var momentumSingle = 6.626e-34 / lambda;
-            var momentumWhole = momentumSingle * photonImpulse;
-
-            return 2 * momentumWhole; //output is in Newtons per second
-        }
-
-        //lambda = Wavelength in nanometers, time in seconds, wattage in normal Watts, returns momentum of whole laser
-        public static double PhotonicLaserMomentum2(double lambda, int time, long wattage)
-        {
-            double energyLaser = wattage * time;
-
-            var energySingle = 6.626e-34 * 3e8 / lambda;
-            var photonImpulse = energyLaser / energySingle;
-            var momentumSingle = (6.626e-34 / (3e8 * lambda)) * 3e8;
-            var momentumWhole = momentumSingle * photonImpulse;
-
-            return 2 * momentumWhole;
-        }
 
         public override void OnStart(StartState state)
         {
@@ -899,9 +864,9 @@ namespace KIT.BeamedPower
                 _windowPosition = new Rect(windowPositionX, windowPositionY, LabelWidth * 2 + ValueWidthWide * 1 + ValueWidthNormal * 10, 100);
 
                 // create the id for the GUI window
-                _windowID = new System.Random(part.GetInstanceID()).Next(int.MinValue, int.MaxValue);
+                _windowID = new Random(part.GetInstanceID()).Next(int.MinValue, int.MaxValue);
 
-                localStar = GetCurrentStar();
+                LocalStar = GetCurrentStar();
 
                 // compensate for stock solar initialization heating bug
                 InitializationCountdown = 10;
@@ -914,7 +879,7 @@ namespace KIT.BeamedPower
 
                 if (isThermalReceiverSlave)
                 {
-                    var result = PowerSourceSearchResult.BreadthFirstSearchForThermalSource(part, (s) => s is BeamedPowerReceiver receiver && receiver != this, connectStackdepth, connectParentdepth, connectSurfacedepth, true);
+                    var result = PowerSourceSearchResult.BreadthFirstSearchForThermalSource(part, s => s is BeamedPowerReceiver receiver && receiver != this, connectStackdepth, connectParentdepth, connectSurfacedepth, true);
 
                     if (result?.Source == null)
                         Debug.LogWarning("[KSPI]: MicrowavePowerReceiver - BreadthFirstSearchForThermalSource-Failed to find Thermal receiver");
@@ -923,9 +888,9 @@ namespace KIT.BeamedPower
                 }
 
                 // look for any transmitter partModule
-                part_transmitter = part.FindModuleImplementing<BeamedPowerTransmitter>();
-                if (part_transmitter != null)
-                    has_transmitter = true;
+                PartTransmitter = part.FindModuleImplementing<BeamedPowerTransmitter>();
+                if (PartTransmitter != null)
+                    HasTransmitter = true;
 
                 DeployableRadiator = part.FindModuleImplementing<ModuleDeployableRadiator>();
                 if (DeployableRadiator != null)
@@ -945,7 +910,7 @@ namespace KIT.BeamedPower
                     }
                 }
 
-                genericAnimation = part.FindModulesImplementing<ModuleAnimateGeneric>().FirstOrDefault(m => m.animationName == animName);
+                GenericAnimation = part.FindModulesImplementing<ModuleAnimateGeneric>().FirstOrDefault(m => m.animationName == animName);
             }
         }
 
@@ -1031,7 +996,7 @@ namespace KIT.BeamedPower
 
         public override void OnLoad(ConfigNode node)
         {
-            Debug.Log($"[KSPI Beam Power Receiver] Load()ing");
+            Debug.Log("[KSPI Beam Power Receiver] Load()ing");
             base.OnLoad(node);
 
             part.temperature = storedTemp;
@@ -1052,7 +1017,7 @@ namespace KIT.BeamedPower
                 var converter = new BandwidthConverter(converterNode, part.partInfo.title);
                 if (converter.isValid)
                     inlineBandwidthConverters.Add(converter);
-                else Debug.Log($"[KSPI] OnLoad unable to parse BandwidthConverter, and it's not valid");
+                else Debug.Log("[KSPI] OnLoad unable to parse BandwidthConverter, and it's not valid");
             }
 
             _bandwidthConverters = inlineBandwidthConverters.OrderByDescending(m => m.minimumWavelength).ToList();
@@ -1149,10 +1114,10 @@ namespace KIT.BeamedPower
 
         private void UpdateFromGui(BaseField field, object oldFieldValueObj)
         {
-            if (BandwidthConverters == null || !BandwidthConverters.Any())
+            if (BandwidthConverters?.Any() != true)
                 return;
 
-            if (IsLoaded == false)
+            if (!IsLoaded)
                 LoadInitialConfiguration();
             else
             {
@@ -1205,7 +1170,7 @@ namespace KIT.BeamedPower
                 if (DeployableSolarPanel != null && DeployableSolarPanel.isBreakable)
                     return !DeployableSolarPanel.ShouldBreakFromPressure();
 
-                if (genericAnimation == null)
+                if (GenericAnimation == null)
                     return true;
 
                 var pressure = FlightGlobals.getStaticPressure(vessel.GetVesselPos()) / 100;
@@ -1237,7 +1202,7 @@ namespace KIT.BeamedPower
 
         public void Update()
         {
-            var transmitterOn = has_transmitter && (part_transmitter.IsEnabled || part_transmitter.relay);
+            var transmitterOn = HasTransmitter && (PartTransmitter.IsEnabled || PartTransmitter.relay);
             var canBeActive = CanBeActiveInAtmosphere;
 
             _linkReceiverBaseEvent.active = canLinkup && !linkedForRelay && !receiverIsEnabled && !transmitterOn && canBeActive;
@@ -1264,9 +1229,9 @@ namespace KIT.BeamedPower
 
         public override void OnUpdate()
         {
-            _connectedsatsField.guiActive = connectedsatsi > 0;
-            _connectedrelaysField.guiActive = connectedrelaysi > 0;
-            _networkDepthStringField.guiActive = networkDepth > 0;
+            _connectedsatsField.guiActive = ConnectedSatSi > 0;
+            _connectedrelaysField.guiActive = ConnectedRelaySi > 0;
+            _networkDepthStringField.guiActive = NetworkDepth > 0;
 
             _solarFacingFactorField.guiActive = solarReceptionSurfaceArea > 0;
             _solarFluxField.guiActive = solarReceptionSurfaceArea > 0;
@@ -1278,9 +1243,9 @@ namespace KIT.BeamedPower
 
             beamedpower = receiverIsEnabled ? PluginHelper.GetFormattedPowerString(ProducedPower) : Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_BeamPowerOffline");
 
-            connectedsats = $"{connectedsatsi}/{BeamedPowerSources.Instance.GlobalTransmitters.Count}";
-            connectedrelays = $"{connectedrelaysi}/{BeamedPowerSources.Instance.GlobalRelays.Count}";
-            networkDepthString = networkDepth.ToString();
+            connectedsats = $"{ConnectedSatSi}/{BeamedPowerSources.Instance.GlobalTransmitters.Count}";
+            connectedrelays = $"{ConnectedRelaySi}/{BeamedPowerSources.Instance.GlobalRelays.Count}";
+            networkDepthString = NetworkDepth.ToString();
 
             CalculateInputPower();
 
@@ -1470,14 +1435,14 @@ namespace KIT.BeamedPower
             total_beamed_power_max = 0;
             total_sat_efficiency_fraction = 0;
             total_beamed_wasteheat = 0;
-            connectedsatsi = 0;
-            connectedrelaysi = 0;
-            networkDepth = 0;
-            activeSatsIncr = 0;
+            ConnectedSatSi = 0;
+            ConnectedRelaySi = 0;
+            NetworkDepth = 0;
+            ActiveSatellitesIncr = 0;
 
             if (!solarPowerMode)
             {
-                deactivate_timer = 0;
+                DeactivateTimer = 0;
 
                 var usedRelays = new HashSet<VesselRelayPersistence>();
 
@@ -1491,7 +1456,7 @@ namespace KIT.BeamedPower
                 {
                     var transmitter = connectedTransmitterEntry.Key;
 
-                    if (!ReceivedPower.TryGetValue(transmitter.Vessel, out ReceivedPowerData beamedPowerData))
+                    if (!ReceivedPower.TryGetValue(transmitter.Vessel, out var beamedPowerData))
                     {
                         Debug.Log("[KSPI]: Added ReceivedPowerData for " + transmitter.Vessel.name);
                         beamedPowerData = new ReceivedPowerData
@@ -1565,7 +1530,7 @@ namespace KIT.BeamedPower
                         beamedPowerData.RemainingPower = Math.Max(0, beamedPowerData.RemainingPower - beamNetworkPower);
 
                         // determine allowed power
-                        var maximumReceivePower = MaximumRecievePower;
+                        var maximumReceivePower = MaximumReceivePower;
 
                         var currentReceivablePower = Math.Min(maximumReceivePower * PowerRatio, maximumReceivePower * powerCapacityEfficiency);
                         var maximumReceivablePower = maximumReceivePower * powerCapacityEfficiency;
@@ -1589,7 +1554,7 @@ namespace KIT.BeamedPower
                         // generate conversion wasteheat
                         TotalConversionWasteHeatProduction += conversionWasteheat; // + missedPowerPowerWasteheat;
 
-                        // register amount of raw power recieved
+                        // register amount of raw power received
                         beamedPowerData.CurrentReceivedPower = satPower;
                         beamedPowerData.MaximumReceivedPower = satPowerMax;
                         beamedPowerData.ReceiverEfficiency = efficiencyPercentage;
@@ -1603,25 +1568,21 @@ namespace KIT.BeamedPower
 
                         if (!(satPower > 0)) continue;
 
-                        activeSatsIncr++;
+                        ActiveSatellitesIncr++;
 
                         if (beamedPowerData.Relays == null) continue;
 
-                        foreach (var relay in beamedPowerData.Relays)
-                        {
-                            usedRelays.Add(relay);
-                        }
-                        networkDepth = Math.Max(networkDepth, beamedPowerData.Relays.Count);
+                        usedRelays.AddAll(beamedPowerData.Relays);
+                        NetworkDepth = Math.Max(NetworkDepth, beamedPowerData.Relays.Count);
                     }
                 }
 
-                connectedsatsi = activeSatsIncr;
-                connectedrelaysi = usedRelays.Count;
+                ConnectedSatSi = ActiveSatellitesIncr;
+                ConnectedRelaySi = usedRelays.Count;
             }
 
             //remove dead entries
-            var deadEntries = ReceivedPower.Where(m => !m.Value.IsAlive).ToList();
-            foreach (var entry in deadEntries)
+            foreach (var entry in ReceivedPower.Where(m => !m.Value.IsAlive))
             {
                 Debug.LogWarning("[KSPI]: Removed received power from " + entry.Key.name);
                 ReceivedPower.Remove(entry.Key);
@@ -1670,7 +1631,7 @@ namespace KIT.BeamedPower
                 : SolarFluxQueue.Average();
 
             thermalSolarInputMegajoulesMax = solarReceptionSurfaceArea * (solarFlux / 1e+6) * solarReceptionEfficiency;
-            solarFacingFactor = Math.Pow(GetSolarFacingFactor(localStar, part.WCoM), solarFacingExponent);
+            solarFacingFactor = Math.Pow(GetSolarFacingFactor(LocalStar, part.WCoM), solarFacingExponent);
             thermalSolarInputMegajoules = thermalSolarInputMegajoulesMax * solarFacingFactor;
         }
 
@@ -1693,10 +1654,10 @@ namespace KIT.BeamedPower
 
             _alternatorPowerConsumed += alternatorPower;
 
-            var alternatorWasteheat = alternatorPower * AverageEfficiencyFraction;
+            var alternatorWasteHeat = alternatorPower * AverageEfficiencyFraction;
 
             resMan.Produce(ResourceName.ElectricCharge, alternatorPower * AverageEfficiencyFraction);
-            resMan.Produce(ResourceName.WasteHeat, alternatorWasteheat);
+            resMan.Produce(ResourceName.WasteHeat, alternatorWasteHeat);
 
             return alternatorPower * AverageEfficiencyFraction;
         }
@@ -1714,11 +1675,6 @@ namespace KIT.BeamedPower
         }
 
         public double Radius => radius;
-
-        public bool isActive()
-        {
-            return receiverIsEnabled;
-        }
 
         public bool ShouldScaleDownJetISP()
         {
@@ -1746,58 +1702,46 @@ namespace KIT.BeamedPower
             return 0;
         }
 
-        public static double GetEnumeratedPowerFromSatelliteForAllLoadedVessels(VesselMicrowavePersistence vmp, BeamedPowerReceiver currentReceiver)
-        {
-            double enumeratedPower = 0;
-            foreach (Vessel vessel in FlightGlobals.Vessels)
-            {
-                if (vessel.isEVA) continue;
+        public static double GetEnumeratedPowerFromSatelliteForAllLoadedVessels(VesselMicrowavePersistence vmp, BeamedPowerReceiver currentReceiver) =>
+            FlightGlobals.Vessels.Where(vessel => vessel.isEVA == false)
+                .SelectMany(vessel => vessel.FindPartModulesImplementing<BeamedPowerReceiver>())
+                .Where(receiver => receiver != currentReceiver)
+                .Sum(receiver => receiver.GetCurrentReceivedPower(vmp));
+        
 
-                var receivers = vessel.FindPartModulesImplementing<BeamedPowerReceiver>().Where(receiver => receiver != currentReceiver);
-                foreach (var receiver in receivers)
-                {
-                    enumeratedPower += receiver.GetCurrentReceivedPower(vmp);
-                }
-            }
-            return enumeratedPower;
-        }
-
-        private string WavelengthToText(double wavelength)
+        private static string WavelengthToText(double wavelength)
         {
             if (wavelength > 1.0e-3)
                 return (wavelength * 1.0e+3) + " mm";
-            else if (wavelength > 7.5e-7)
+            if (wavelength > 7.5e-7)
                 return (wavelength * 1.0e+6) + " µm";
-            else if (wavelength > 1.0e-9)
+            if (wavelength > 1.0e-9)
                 return (wavelength * 1.0e+9) + " nm";
-            else
-                return (wavelength * 1.0e+12) + " pm";
+            return (wavelength * 1.0e+12) + " pm";
         }
 
-        private string DistanceToText(double distance)
+        private static string DistanceToText(double distance)
         {
             if (distance >= 1.0e+16)
                 return (distance / 1.0e+15).ToString("0.00") + " Pm";
-            else if (distance >= 1.0e+13)
+            if (distance >= 1.0e+13)
                 return (distance / 1.0e+12).ToString("0.00") + " Tm";
-            else if (distance >= 1.0e+10)
+            if (distance >= 1.0e+10)
                 return (distance / 1.0e+9).ToString("0.00") + " Gm";
-            else if (distance >= 1.0e+7)
+            if (distance >= 1.0e+7)
                 return (distance / 1.0e+6).ToString("0.00") + " Mm";
-            else if (distance >= 1.0e+4)
+            if (distance >= 1.0e+4)
                 return (distance / 1.0e+3).ToString("0.00") + " km";
-            else
-                return distance.ToString("0") + " m";
+            return distance.ToString("0") + " m";
         }
 
         private string SpotSizeToText(double spotSize)
         {
             if (spotSize > 1.0e+3)
                 return (spotSize * 1.0e-3).ToString("0.000") + " km";
-            else if (spotSize > 1)
+            if (spotSize > 1)
                 return spotSize.ToString("0.00") + " m";
-            else
-                return (spotSize * 1.0e+3).ToString("0") + " mm";
+            return (spotSize * 1.0e+3).ToString("0") + " mm";
         }
         
         public ModuleConfigurationFlags ModuleConfiguration() =>
@@ -1816,7 +1760,7 @@ namespace KIT.BeamedPower
                 var thermalMassPerKilogram = part.mass * part.thermalMassModifier * PhysicsGlobals.StandardSpecificHeatCapacity * 1e-3;
                 dissipationInMegaJoules = PluginHelper.GetBlackBodyDissipation(solarReceptionSurfaceArea, part.temperature) * 1e-6;
                 var temperatureChange = resMan.FixedDeltaTime() * -(dissipationInMegaJoules / thermalMassPerKilogram);
-                part.temperature = part.temperature + temperatureChange;
+                part.temperature += temperatureChange;
             }
 
             if (InitializationCountdown > 0)
@@ -1887,8 +1831,8 @@ namespace KIT.BeamedPower
                 if (wasteheatRatio >= 0.95 && !isThermalReceiver && !solarPowerMode)
                 {
                     receiverIsEnabled = false;
-                    deactivate_timer++;
-                    if (FlightGlobals.ActiveVessel == vessel && deactivate_timer > 2)
+                    DeactivateTimer++;
+                    if (FlightGlobals.ActiveVessel == vessel && DeactivateTimer > 2)
                         ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_BeamPowerReceiver_OverheatingMsg"), 5f, ScreenMessageStyle.UPPER_CENTER);//"Warning Dangerous Overheating Detected: Emergency beam power shutdown occuring NOW!"
                     PowerDown();
                     return;
@@ -1901,7 +1845,7 @@ namespace KIT.BeamedPower
                 UpdatePowerState();
 
                 // TODO minimum and maximum consumption rates / production rates
-                // var minimumRequestedPower = MaximumRecievePower * (minimumConsumptionPercentage / 100d);
+                // var minimumRequestedPower = MaximumReceivePower * (minimumConsumptionPercentage / 100d);
                 // var calculatedMinimumRatio = Math.Min(1, minimumRequestedPower / totalBeamedElectricPowerProvided);
 
                 if (isThermalReceiverSlave || thermalMode)
@@ -1910,8 +1854,8 @@ namespace KIT.BeamedPower
                     slavesPower = ThermalReceiverSlaves.Sum(m => m.total_thermal_power_provided);
 
                     total_thermal_power_available = thermalSolarInputMegajoules + total_beamed_power + slavesPower;
-                    total_thermal_power_provided = Math.Min(MaximumRecievePower, total_thermal_power_available);
-                    total_thermal_power_provided_max = Math.Min(MaximumRecievePower, total_beamed_power_max + thermalSolarInputMegajoulesMax);
+                    total_thermal_power_provided = Math.Min(MaximumReceivePower, total_thermal_power_available);
+                    total_thermal_power_provided_max = Math.Min(MaximumReceivePower, total_beamed_power_max + thermalSolarInputMegajoulesMax);
                     _totalThermalPowerConsumed = 0;
 
                     // TODO: revisit if we need to be provide a minimum this way, as we now have the demand based approach for engines.
@@ -1934,13 +1878,13 @@ namespace KIT.BeamedPower
                     effectiveBeamedPowerElectricEfficiency = wasteheatElectricConversionEfficiency * electricMaxEfficiency;
 
                     var totalBeamedElectricPowerAvailable = thermalSolarInputMegajoules * effectiveSolarThermalElectricEfficiency + total_beamed_power * effectiveBeamedPowerElectricEfficiency;
-                    _totalBeamedElectricPowerProvided = Math.Min(MaximumRecievePower, totalBeamedElectricPowerAvailable);
+                    _totalBeamedElectricPowerProvided = Math.Min(MaximumReceivePower, totalBeamedElectricPowerAvailable);
                     _totalBeamedElectricPowerConsumed = 0;
                 }
 
                 if (animT != null)
                 {
-                    var maximumReceivePower = MaximumRecievePower;
+                    var maximumReceivePower = MaximumReceivePower;
                     animT[animTName].normalizedTime = maximumReceivePower > 0 ? (float)Math.Min(total_thermal_power_provided / maximumReceivePower, 1) : 0;
                     animT.Sample();
                 }
@@ -2015,15 +1959,15 @@ namespace KIT.BeamedPower
             if (_totalBeamedElectricPowerProvided - _totalBeamedElectricPowerConsumed <= 0) return 0;
 
             var powerGeneratedResult = Math.Min(_totalBeamedElectricPowerProvided - _totalBeamedElectricPowerConsumed, requestedAmount);
-            var supply_ratio = powerGeneratedResult / _totalBeamedElectricPowerConsumed;
+            var supplyRatio = powerGeneratedResult / _totalBeamedElectricPowerConsumed;
             resMan.Produce(ResourceName.ElectricCharge, powerGeneratedResult);
 
-            var solarWasteheat = thermalSolarInputMegajoules * (1 - effectiveSolarThermalElectricEfficiency);
-            resMan.Produce(ResourceName.WasteHeat, supply_ratio * TotalConversionWasteHeatProduction + supply_ratio * solarWasteheat);
+            var solarWasteHeat = thermalSolarInputMegajoules * (1 - effectiveSolarThermalElectricEfficiency);
+            resMan.Produce(ResourceName.WasteHeat, supplyRatio * TotalConversionWasteHeatProduction + supplyRatio * solarWasteHeat);
 
             foreach (var item in ReceivedPower)
             {
-                item.Value.ConsumedPower += item.Value.AvailablePower * supply_ratio;
+                item.Value.ConsumedPower += item.Value.AvailablePower * supplyRatio;
             }
 
             return powerGeneratedResult;

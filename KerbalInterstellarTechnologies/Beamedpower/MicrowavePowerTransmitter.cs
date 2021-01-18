@@ -449,7 +449,7 @@ namespace KIT.BeamedPower
             atmosphericAbsorption = totalAbsorptionPercentage / 100;
 
             var vesselInSpace = (vessel.situation == Vessel.Situations.ORBITING || vessel.situation == Vessel.Situations.ESCAPING || vessel.situation == Vessel.Situations.SUB_ORBITAL);
-            var receiverOn = PartReceiver != null && PartReceiver.isActive();
+            var receiverOn = PartReceiver != null && PartReceiver.IsActive;
             canBeActive = CanBeActive;
 
             if (anim != null && !canBeActive && IsEnabled && part.vessel.isActiveVessel && !CheatOptions.UnbreakableJoints)
@@ -487,7 +487,7 @@ namespace KIT.BeamedPower
 
             _apertureDiameterField.guiActive = isTransmitting;
             _beamedPowerField.guiActive = isTransmitting && canBeActive;
-            _transmitPowerField.guiActive = PartReceiver == null || !PartReceiver.isActive();
+            _transmitPowerField.guiActive = PartReceiver == null || !PartReceiver.IsActive;
 
             bool isLinkedForRelay = PartReceiver != null && PartReceiver.linkedForRelay;
             bool receiverNotInUse = !isLinkedForRelay && !receiverOn && !IsRelay;
