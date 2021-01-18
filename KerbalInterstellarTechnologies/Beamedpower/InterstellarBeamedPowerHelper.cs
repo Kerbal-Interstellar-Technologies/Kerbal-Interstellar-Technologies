@@ -175,16 +175,9 @@ namespace KIT.BeamedPower
             foreach (VesselMicrowavePersistence transmitter in BeamedPowerSources.Instance.GlobalTransmitters.Values)
             {
                 //ignore if no power or transmitter is on the same vessel
-                if (transmitter.Vessel == receiver.Vessel)
+                if (transmitter.Vessel == receiver.Vessel || !transmitter.HasPower)
                 {
-                    //Debug.Log("[KSPI] : Transmitter vessel is equal to receiver vessel");
-                    continue;
-                }
-
-                //first check for direct connection from current vessel to transmitters, will always be optimal
-                if (!transmitter.HasPower)
-                {
-                    //Debug.Log("[KSPI] : Transmitter vessel has no power available");
+                    //Debug.Log("[KSPI] : Transmitter vessel is equal to receiver vessel / Transmitter vessel has no power available");
                     continue;
                 }
 
@@ -195,22 +188,19 @@ namespace KIT.BeamedPower
                         continue;
 
                     var possibleWavelengths = new List<MicrowaveRoute>();
-                    double distanceInMeter = ComputeDistance(receiver.Vessel, transmitter.Vessel);
+                    var distanceInMeter = ComputeDistance(receiver.Vessel, transmitter.Vessel);
 
-                    double transmitterAtmosphericPressure = FlightGlobals.getStaticPressure(transmitter.Vessel.GetVesselPos()) / GameConstants.EarthAtmospherePressureAtSeaLevel;
+                    var transmitterAtmosphericPressure = FlightGlobals.getStaticPressure(transmitter.Vessel.GetVesselPos()) / GameConstants.EarthAtmospherePressureAtSeaLevel;
 
-                    foreach (WaveLengthData wavelengthData in transmitter.SupportedTransmitWavelengths)
+                    foreach (var wavelengthData in transmitter.SupportedTransmitWavelengths.Where(wavelengthData => wavelengthData.Wavelength.Within(receiver.MaximumWavelength, receiver.MinimumWavelength)))
                     {
-                        if (wavelengthData.Wavelength.NotWithin(receiver.MaximumWavelength, receiver.MinimumWavelength))
-                            continue;
-
                         var spotSize = ComputeSpotSize(wavelengthData, distanceInMeter, transmitter.Aperture, receiver.ApertureMultiplier);
 
-                        double distanceFacingEfficiency = ComputeDistanceFacingEfficiency(spotSize, facingFactor, receiver.Diameter, receiver.FacingEfficiencyExponent, receiver.SpotSizeNormalizationExponent);
+                        var distanceFacingEfficiency = ComputeDistanceFacingEfficiency(spotSize, facingFactor, receiver.Diameter, receiver.FacingEfficiencyExponent, receiver.SpotSizeNormalizationExponent);
 
-                        double atmosphereEfficiency = GetAtmosphericEfficiency(transmitterAtmosphericPressure, receiverAtmosphericPressure, wavelengthData.AtmosphericAbsorption, distanceInMeter, receiver.Vessel, transmitter.Vessel);
+                        var atmosphereEfficiency = GetAtmosphericEfficiency(transmitterAtmosphericPressure, receiverAtmosphericPressure, wavelengthData.AtmosphericAbsorption, distanceInMeter, receiver.Vessel, transmitter.Vessel);
 
-                        double routeEfficiency = distanceFacingEfficiency * atmosphereEfficiency;
+                        var routeEfficiency = distanceFacingEfficiency * atmosphereEfficiency;
 
                         possibleWavelengths.Add(new MicrowaveRoute(routeEfficiency, distanceInMeter, facingFactor, spotSize, wavelengthData));
                     }

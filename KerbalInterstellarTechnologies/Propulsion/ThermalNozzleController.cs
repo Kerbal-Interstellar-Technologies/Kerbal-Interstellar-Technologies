@@ -10,6 +10,7 @@ using KIT.PowerManagement.Interfaces;
 using KIT.Wasteheat;
 using TweakScale;
 using UnityEngine;
+using Waterfall;
 
 namespace KIT.Propulsion
 {
@@ -392,7 +393,7 @@ namespace KIT.Propulsion
         private const double HydroloxDecompositionEnergy = 16.2137;
 
         //Internal
-        private string _flameoutText;
+        private string _flameOutText;
         private string _powerEffectNameParticleFX;
         private string _runningEffectNameParticleFX;
         private string _fuelTechRequirement;
@@ -438,7 +439,7 @@ namespace KIT.Propulsion
         private Animation _throttleAnimation;
         private AnimationState[] _pulseAnimationState;
         private AnimationState[] _emiAnimationState;
-        private ModuleEnginesWarp _timewarpEngine;
+        private ModuleEnginesWarp _timeWarpEngine;
         private ModuleEngines _myAttachedEngine;
         private Guid id = Guid.NewGuid();
         private ConfigNode[] _fuelConfigNodes;
@@ -449,6 +450,12 @@ namespace KIT.Propulsion
         private List<IFnEngineNozzle> _vesselThermalNozzles;
         private List<ThermalEngineFuel> _allThermalEngineFuels;
         private List<ThermalEngineFuel> _compatibleThermalEngineFuels;
+
+        private ConfigNode _effectNameToWaterfallValuesConfigNode;
+        private float _waterfallFxControllerValue;
+        private ModuleWaterfallFX _waterfallFx;
+        private bool _updateWaterfallModule;
+        private static readonly string WaterfallFxControllerName = "propellantFuel";
 
         private Rect _windowPosition;
 
@@ -651,7 +658,7 @@ namespace KIT.Propulsion
             _windowId = new System.Random(part.GetInstanceID()).Next(int.MaxValue);
             _windowPosition = new Rect(windowPositionX, windowPositionY, windowWidth, 10);
 
-            _flameoutText = Localizer.Format("#autoLOC_219016");
+            _flameOutText = Localizer.Format("#autoLOC_219016");
 
             // use default when not configured
             if (maxThermalNozzleIsp == 0)
@@ -683,7 +690,7 @@ namespace KIT.Propulsion
                 _emiAnimationState = PluginHelper.SetUpAnimation(emiAnimationName, part);
 
             _myAttachedEngine = part.FindModuleImplementing<ModuleEngines>();
-            _timewarpEngine = part.FindModuleImplementing<ModuleEnginesWarp>();
+            _timeWarpEngine = part.FindModuleImplementing<ModuleEnginesWarp>();
 
             if (!string.IsNullOrEmpty(throttleAnimName))
                 _throttleAnimation = part.FindModelAnimators(throttleAnimName).FirstOrDefault();
@@ -792,6 +799,15 @@ namespace KIT.Propulsion
             LoadFuelModes();
 
             SetupPropellants(fuel_mode);
+
+            _effectNameToWaterfallValuesConfigNode =
+                GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT_TO_WATERFALL_INDEX")?[0];
+            if (_effectNameToWaterfallValuesConfigNode == null)
+            {
+                Debug.Log("[ElectricEngineControllerFX] Unable to find ELECTRIC_PROPELLANT_TO_WATERFALL_INDEX");
+            }
+
+            _waterfallFx = part.FindModuleImplementing<ModuleWaterfallFX>();
         }
 
         private void UpdateConfigEffects()
@@ -1163,30 +1179,30 @@ namespace KIT.Propulsion
                 _myAttachedEngine.Load(newPropNode);
 
                 // update timewarp propellant
-                if (_timewarpEngine != null)
+                if (_timeWarpEngine != null)
                 {
                     if (_listOfPropellants.Count > 0)
                     {
-                        _timewarpEngine.propellant1 = _listOfPropellants[0].name;
-                        _timewarpEngine.ratio1 = _listOfPropellants[0].ratio;
+                        _timeWarpEngine.propellant1 = _listOfPropellants[0].name;
+                        _timeWarpEngine.ratio1 = _listOfPropellants[0].ratio;
                     }
 
                     if (_listOfPropellants.Count > 1)
                     {
-                        _timewarpEngine.propellant2 = _listOfPropellants[1].name;
-                        _timewarpEngine.ratio2 = _listOfPropellants[1].ratio;
+                        _timeWarpEngine.propellant2 = _listOfPropellants[1].name;
+                        _timeWarpEngine.ratio2 = _listOfPropellants[1].ratio;
                     }
 
                     if (_listOfPropellants.Count > 2)
                     {
-                        _timewarpEngine.propellant3 = _listOfPropellants[2].name;
-                        _timewarpEngine.ratio3 = _listOfPropellants[2].ratio;
+                        _timeWarpEngine.propellant3 = _listOfPropellants[2].name;
+                        _timeWarpEngine.ratio3 = _listOfPropellants[2].ratio;
                     }
 
                     if (_listOfPropellants.Count > 3)
                     {
-                        _timewarpEngine.propellant4 = _listOfPropellants[3].name;
-                        _timewarpEngine.ratio4 = _listOfPropellants[3].ratio;
+                        _timeWarpEngine.propellant4 = _listOfPropellants[3].name;
+                        _timeWarpEngine.ratio4 = _listOfPropellants[3].ratio;
                     }
                 }
             }
@@ -2385,7 +2401,7 @@ namespace KIT.Propulsion
                 part.Effect(EffectNameSpool, spoolEffectRatio);
             }
 
-            if (_myAttachedEngine.getIgnitionState && _myAttachedEngine.status == _flameoutText)
+            if (_myAttachedEngine.getIgnitionState && _myAttachedEngine.status == _flameOutText)
             {
                 _myAttachedEngine.maxFuelFlow = 1e-10f;
             }
