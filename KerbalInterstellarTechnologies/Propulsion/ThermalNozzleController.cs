@@ -1300,7 +1300,8 @@ namespace KIT.Propulsion
 
             var exhaustType = chosenPropellant.GetValue("ExhaustType");
             _waterfallFxControllerValue = 0;
-            _effectNameToWaterfallValuesConfigNode.TryGetValue(exhaustType, ref _waterfallFxControllerValue);
+            if (!string.IsNullOrWhiteSpace(exhaustType)) exhaustType = "default";
+            _effectNameToWaterfallValuesConfigNode?.TryGetValue(exhaustType, ref _waterfallFxControllerValue);
 
 
             if (!UsePlasmaPower && !usePropellantBaseIsp && !_currentPropellantIsJet && _decompositionEnergy > 0 && _baseIspMultiplier > 0 && _minDecompositionTemp > 0 && _maxDecompositionTemp > 0)
