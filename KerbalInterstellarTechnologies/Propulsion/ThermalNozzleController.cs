@@ -452,10 +452,12 @@ namespace KIT.Propulsion
         private List<ThermalEngineFuel> _compatibleThermalEngineFuels;
 
         private ConfigNode _effectNameToWaterfallValuesConfigNode;
-        private float _waterfallFxControllerValue;
+        private float _waterfallFxControllerValue = 0.05f;
         private ModuleWaterfallFX _waterfallFx;
-        private bool _updateWaterfallModule;
-        private static readonly string WaterfallFxControllerName = "propellantFuel";
+        private bool _updateWaterfallModule, _updateWaterfallPulseModule;
+        private int _waterfallUpdateCheckCounter, _waterfallUpdatePulseCounter;
+        private static readonly string WaterfallFxFuelControllerName = "propellantFuel";
+        private static readonly string WaterfallFxPulseControllerName = "pulseController";
 
         private Rect _windowPosition;
 
@@ -476,7 +478,7 @@ namespace KIT.Propulsion
 
         public bool UsePlasmaPower => isPlasmaNozzle || (canUsePlasmaPower && (AttachedReactor != null && AttachedReactor.PlasmaPropulsionEfficiency > 0));
 
-        public bool UseThermalPowerOnly => AttachedReactor != null && (!isPlasmaNozzle || AttachedReactor.ChargedParticlePropulsionEfficiency == 0 || AttachedReactor.SupportMHD || AttachedReactor.ChargedPowerRatio == 0 || _listOfPropellants.Count > 1 );
+        public bool UseThermalPowerOnly => AttachedReactor != null && (!isPlasmaNozzle || AttachedReactor.ChargedParticlePropulsionEfficiency == 0 || AttachedReactor.SupportMHD || AttachedReactor.ChargedPowerRatio == 0 || _listOfPropellants.Count > 1);
 
         public bool UseThermalAndChargedPower => !UseThermalPowerOnly && ispThrottle == 0;
 
@@ -800,14 +802,15 @@ namespace KIT.Propulsion
 
             SetupPropellants(fuel_mode);
 
-            _effectNameToWaterfallValuesConfigNode =
-                GameDatabase.Instance.GetConfigNodes("ELECTRIC_PROPELLANT_TO_WATERFALL_INDEX")?[0];
-            if (_effectNameToWaterfallValuesConfigNode == null)
-            {
-                Debug.Log("[ElectricEngineControllerFX] Unable to find ELECTRIC_PROPELLANT_TO_WATERFALL_INDEX");
-            }
 
             _waterfallFx = part.FindModuleImplementing<ModuleWaterfallFX>();
+
+            _effectNameToWaterfallValuesConfigNode =
+                GameDatabase.Instance.GetConfigNodes("BASIC_NTR_EXHAUST_TYPES")?[0];
+            if (_effectNameToWaterfallValuesConfigNode == null)
+            {
+                Debug.Log("[ElectricEngineControllerFX] Unable to find BASIC_NTR_EXHAUST_TYPES");
+            }
         }
 
         private void UpdateConfigEffects()
@@ -838,7 +841,7 @@ namespace KIT.Propulsion
             {
                 if (!string.IsNullOrEmpty(powerEffectNameLFO))
                     _powerEffectNameParticleFX = powerEffectNameLFO;
-                else  if (!string.IsNullOrEmpty(EffectNameLFO))
+                else if (!string.IsNullOrEmpty(EffectNameLFO))
                     _powerEffectNameParticleFX = EffectNameLFO;
 
                 if (!string.IsNullOrEmpty(runningEffectNameLFO))
@@ -1125,7 +1128,7 @@ namespace KIT.Propulsion
 
             if (canLoadPropellant && HighLogic.LoadedSceneIsFlight)
             {
-                foreach (Propellant curEnginePropellant in _listOfPropellants)
+                foreach (var curEnginePropellant in _listOfPropellants)
                 {
                     var extendedPropellant = curEnginePropellant as ExtendedPropellant;
 
@@ -1178,31 +1181,34 @@ namespace KIT.Propulsion
 
                 _myAttachedEngine.Load(newPropNode);
 
-                // update timewarp propellant
+                // update time warp propellant
                 if (_timeWarpEngine != null)
                 {
-                    if (_listOfPropellants.Count > 0)
-                    {
-                        _timeWarpEngine.propellant1 = _listOfPropellants[0].name;
-                        _timeWarpEngine.ratio1 = _listOfPropellants[0].ratio;
-                    }
+                    _timeWarpEngine.propellant1 = _timeWarpEngine.propellant2 =
+                        _timeWarpEngine.propellant3 = _timeWarpEngine.propellant4 = "";
 
-                    if (_listOfPropellants.Count > 1)
-                    {
-                        _timeWarpEngine.propellant2 = _listOfPropellants[1].name;
-                        _timeWarpEngine.ratio2 = _listOfPropellants[1].ratio;
-                    }
+                    _timeWarpEngine.ratio1 =
+                        _timeWarpEngine.ratio2 = _timeWarpEngine.ratio3 = _timeWarpEngine.ratio4 = 0;
 
-                    if (_listOfPropellants.Count > 2)
-                    {
-                        _timeWarpEngine.propellant3 = _listOfPropellants[2].name;
-                        _timeWarpEngine.ratio3 = _listOfPropellants[2].ratio;
-                    }
 
-                    if (_listOfPropellants.Count > 3)
+                    switch (_listOfPropellants.Count)
                     {
-                        _timeWarpEngine.propellant4 = _listOfPropellants[3].name;
-                        _timeWarpEngine.ratio4 = _listOfPropellants[3].ratio;
+                        case 4:
+                            _timeWarpEngine.propellant4 = _listOfPropellants[3].name;
+                            _timeWarpEngine.ratio4 = _listOfPropellants[3].ratio;
+                            goto case 3;
+                        case 3:
+                            _timeWarpEngine.propellant3 = _listOfPropellants[2].name;
+                            _timeWarpEngine.ratio3 = _listOfPropellants[2].ratio;
+                            goto case 2;
+                        case 2:
+                            _timeWarpEngine.propellant2 = _listOfPropellants[1].name;
+                            _timeWarpEngine.ratio2 = _listOfPropellants[1].ratio;
+                            goto case 1;
+                        case 1:
+                            _timeWarpEngine.propellant1 = _listOfPropellants[0].name;
+                            _timeWarpEngine.ratio1 = _listOfPropellants[0].ratio;
+                            break;
                     }
                 }
             }
@@ -1292,6 +1298,11 @@ namespace KIT.Propulsion
             _atomType = chosenPropellant.HasValue("atomType") ? int.Parse(chosenPropellant.GetValue("atomType")) : 1;
             _propType = chosenPropellant.HasValue("propType") ? int.Parse(chosenPropellant.GetValue("propType")) : 1;
 
+            var exhaustType = chosenPropellant.GetValue("ExhaustType");
+            _waterfallFxControllerValue = 0;
+            _effectNameToWaterfallValuesConfigNode.TryGetValue(exhaustType, ref _waterfallFxControllerValue);
+
+
             if (!UsePlasmaPower && !usePropellantBaseIsp && !_currentPropellantIsJet && _decompositionEnergy > 0 && _baseIspMultiplier > 0 && _minDecompositionTemp > 0 && _maxDecompositionTemp > 0)
                 UpdateThrustPropellantMultiplier();
             else
@@ -1321,7 +1332,7 @@ namespace KIT.Propulsion
             // lower efficiency of plasma nozzle when used with heavier propellants except when used with a neutron absorber like lithium
             if (UsePlasmaPower && !_isNeutronAbsorber)
             {
-                var plasmaEfficiency = Math.Pow(_baseIspMultiplier, 1d/3d);
+                var plasmaEfficiency = Math.Pow(_baseIspMultiplier, 1d / 3d);
                 _ispPropellantMultiplier *= plasmaEfficiency;
                 _thrustPropellantMultiplier *= plasmaEfficiency;
             }
@@ -1401,7 +1412,7 @@ namespace KIT.Propulsion
                 else
                     _velCurve = _originalVelocityCurve;
 
-                if (overrideAtmosphereCurve )
+                if (overrideAtmosphereCurve)
                 {
                     _atmosphereCurve.Add(0, Mathf.Min((float)_maxISP * 5f / 4f, maxThermalNozzleIsp));
                     _atmosphereCurve.Add(0.15f, Mathf.Min((float)_maxISP, maxThermalNozzleIsp));
@@ -1522,7 +1533,7 @@ namespace KIT.Propulsion
             if (_myAttachedEngine.getIgnitionState && _myAttachedEngine.useVelCurve && _myAttachedEngine.velCurve != null)
                 jetSpoolRatio += Math.Min(TimeWarp.fixedDeltaTime * 0.1f, 1 - jetSpoolRatio);
             else
-                jetSpoolRatio -= Math.Min(TimeWarp.fixedDeltaTime * 0.1f, jetSpoolRatio );
+                jetSpoolRatio -= Math.Min(TimeWarp.fixedDeltaTime * 0.1f, jetSpoolRatio);
         }
 
         private void UpdateAtmosphericPressureThreshold()
@@ -1543,6 +1554,17 @@ namespace KIT.Propulsion
         {
             try
             {
+                if (_waterfallFx != null)
+                {
+                    if (!_updateWaterfallModule && _waterfallUpdateCheckCounter++ % 100 == 0)
+                    {
+                        _updateWaterfallModule =
+                            _waterfallFx.GetControllerNames().Contains(WaterfallFxFuelControllerName);
+                    }
+
+                    if (_updateWaterfallModule) _waterfallFx.SetControllerValue(WaterfallFxFuelControllerName, _waterfallFxControllerValue);
+                }
+
                 float increase;
 
                 if (_myAttachedEngine.currentThrottle > 0 && expectedMaxThrust > 0)
@@ -1579,15 +1601,26 @@ namespace KIT.Propulsion
 
                 }
 
-                if (pulseDuration > 0 && expectedMaxThrust > 0 && increase > 0 && _myAttachedEngine.currentThrottle > 0 && _currentAnimationRatio < pulseDuration)
-                    PluginHelper.SetAnimationRatio(1, _emiAnimationState);
-                else
-                    PluginHelper.SetAnimationRatio(0, _emiAnimationState);
+                var isPulsing = (pulseDuration > 0 && expectedMaxThrust > 0 && increase > 0 &&
+                                 _myAttachedEngine.currentThrottle > 0 && _currentAnimationRatio < pulseDuration);
+
+                PluginHelper.SetAnimationRatio(isPulsing ? 1 : 0, _emiAnimationState);
 
                 if (_currentAnimationRatio > 1 + (2 - (_myAttachedEngine.currentThrottle * 2)))
                     _currentAnimationRatio = 0;
 
-                PluginHelper.SetAnimationRatio(Math.Max(Math.Min(_currentAnimationRatio, 1), 0), _pulseAnimationState);
+                var animationRatio = Math.Max(Math.Min(_currentAnimationRatio, 1), 0);
+                PluginHelper.SetAnimationRatio(animationRatio, _pulseAnimationState);
+
+                if (_waterfallFx != null)
+                {
+                    if (!_updateWaterfallPulseModule && _waterfallUpdatePulseCounter++ % 100 == 0)
+                    {
+                        _updateWaterfallPulseModule = _waterfallFx.GetControllerNames().Contains(WaterfallFxPulseControllerName);
+                    }
+
+                    if (_updateWaterfallPulseModule) _waterfallFx.SetControllerValue(WaterfallFxPulseControllerName, animationRatio);
+                }
             }
             catch (Exception e)
             {
@@ -1805,7 +1838,7 @@ namespace KIT.Propulsion
 
             CalculateMissingPreCoolerRatio();
 
-            airflowHeatModifier = missingPrecoolerRatio > 0 ? Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 20 / GameConstants.AtmosphericNonPrecooledLimit * missingPrecoolerRatio), 0): 0;
+            airflowHeatModifier = missingPrecoolerRatio > 0 ? Math.Max((Math.Sqrt(vessel.srf_velocity.magnitude) * 20 / GameConstants.AtmosphericNonPrecooledLimit * missingPrecoolerRatio), 0) : 0;
             airflowHeatModifier *= vessel.atmDensity * (vessel.speed / vessel.speedOfSound);
 
             if (airflowHeatModifier.IsInfinityOrNaN())
@@ -1832,7 +1865,7 @@ namespace KIT.Propulsion
 
             if (controlHeatProduction)
             {
-                ispHeatModifier =  Math.Sqrt(realIspEngine) * (UsePlasmaPower ? plasmaAfterburnerHeatModifier : thermalHeatModifier);
+                ispHeatModifier = Math.Sqrt(realIspEngine) * (UsePlasmaPower ? plasmaAfterburnerHeatModifier : thermalHeatModifier);
                 powerToMass = part.mass > 0 ? Math.Sqrt(maxThrustOnEngine / part.mass) : 0;
                 radiusHeatModifier = Math.Pow(radius * radiusHeatProductionMult, radiusHeatProductionExponent);
                 engineHeatProductionMult = AttachedReactor.EngineHeatProductionMultiplier;
@@ -1885,7 +1918,7 @@ namespace KIT.Propulsion
 
             missingPrecoolerRatio = _currentPropellantIsJet && intakesOpenArea > 0
                 ? Math.Min(1,
-                    Math.Max(0, Math.Pow((intakesOpenArea - preCoolerArea)/intakesOpenArea, missingPrecoolerProportionExponent)))
+                    Math.Max(0, Math.Pow((intakesOpenArea - preCoolerArea) / intakesOpenArea, missingPrecoolerProportionExponent)))
                 : 0;
 
             if (missingPrecoolerRatio.IsInfinityOrNaN())
@@ -2128,7 +2161,7 @@ namespace KIT.Propulsion
             if (currentFraction == 0) return storedFractionThermalReciever;
 
             // scale down thrust if it's attached to a larger sized reactor
-            var  heatExchangeRatio = radius >= AttachedReactor.Radius ? 1
+            var heatExchangeRatio = radius >= AttachedReactor.Radius ? 1
                 : radius * radius / AttachedReactor.Radius / AttachedReactor.Radius;
 
             storedFractionThermalReciever = Math.Min(currentFraction, heatExchangeRatio);

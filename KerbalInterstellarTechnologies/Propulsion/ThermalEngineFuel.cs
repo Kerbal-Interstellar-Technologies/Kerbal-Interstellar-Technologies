@@ -6,9 +6,10 @@ namespace KIT.Propulsion
     {
         private readonly Part _part;
 
-        private readonly List<Propellant> list_of_propellants = new List<Propellant>();
+        private readonly List<Propellant> _listOfPropellants = new List<Propellant>();
 
         public string TechRequirement { get; }
+        public string ExhaustType { get; }
 
         public double CoolingFactor { get; }
 
@@ -74,22 +75,22 @@ namespace KIT.Propulsion
             IspPropellantMultiplier = node.HasValue("ispMultiplier") ? double.Parse(node.GetValue("ispMultiplier")) : 1;
             ThrustPropellantMultiplier = node.HasValue("thrustMultiplier") ? double.Parse(node.GetValue("thrustMultiplier")) : 1;
 
-            ConfigNode[] propellantNodes = node.GetNodes("PROPELLANT");
+            ExhaustType = node.GetValue("ExhaustType");
 
-            foreach (ConfigNode propNode in propellantNodes)
+            foreach (ConfigNode propNode in node.GetNodes("PROPELLANT"))
             {
                 var currentPropellant = new ExtendedPropellant();
                 currentPropellant.Load(propNode);
 
-                list_of_propellants.Add(currentPropellant);
+                _listOfPropellants.Add(currentPropellant);
             }
         }
 
         public bool HasAnyStorage()
         {
-            foreach (var extendedPropellant in list_of_propellants)
+            foreach (var extendedPropellant in _listOfPropellants)
             {
-                _part.GetConnectedResourceTotals(extendedPropellant.id, extendedPropellant.GetFlowMode(), out _, out double maxAmount);
+                _part.GetConnectedResourceTotals(extendedPropellant.id, extendedPropellant.GetFlowMode(), out _, out var maxAmount);
 
                 if (maxAmount <= 0)
                     return false;
