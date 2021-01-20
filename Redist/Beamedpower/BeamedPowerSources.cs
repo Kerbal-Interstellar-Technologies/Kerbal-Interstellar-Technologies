@@ -26,7 +26,7 @@ namespace KIT.BeamedPower
             private set;
         }
 
-        void Start()
+        public void Start()
         {
             DontDestroyOnLoad(gameObject);
             Instance = this;
@@ -44,7 +44,7 @@ namespace KIT.BeamedPower
                 _counter = 0;
 
             //foreach (var vessel in FlightGlobals.Vessels)
-            for (int i = 0; i < FlightGlobals.Vessels.Count; i++ )
+            for (var i = 0; i < FlightGlobals.Vessels.Count; i++)
             {
                 var vessel = FlightGlobals.Vessels[i];
 
@@ -97,10 +97,10 @@ namespace KIT.BeamedPower
                     if (GetVesselRelayPersistenceForProtoVesselCallback != null)
                     {
                         // only add if vessel can act as a relay
-                        var relayPower = GetVesselRelayPersistenceForProtoVesselCallback(vessel);
+                        var unloadedRelayPower = GetVesselRelayPersistenceForProtoVesselCallback(vessel);
 
-                        if (relayPower.IsActive)
-                            GlobalRelays[vessel] = relayPower;
+                        if (unloadedRelayPower.IsActive)
+                            GlobalRelays[vessel] = unloadedRelayPower;
                         else
                             GlobalRelays.Remove(vessel);
                     }
@@ -109,42 +109,40 @@ namespace KIT.BeamedPower
                 }
 
                 // if vessel is loaded
-                if (vessel.FindPartModulesImplementing<IMicrowavePowerTransmitter>().Any())
+                if (vessel.FindPartModulesImplementing<IMicrowavePowerTransmitter>().Count == 0) continue;
+
+                if (GetVesselMicrowavePersistenceForVesselCallback == null) continue;
+
+                // add if vessel can act as a transmitter or relay
+                var transmitterPower = GetVesselMicrowavePersistenceForVesselCallback(vessel);
+
+                if (transmitterPower?.IsActive == true && transmitterPower.GetAvailablePowerInKW() > 0.001)
                 {
-                    if (GetVesselMicrowavePersistenceForVesselCallback != null)
+                    if (!GlobalTransmitters.ContainsKey(vessel))
                     {
-                        // add if vessel can act as a transmitter or relay
-                        var transmitterPower = GetVesselMicrowavePersistenceForVesselCallback(vessel);
-
-                        if (transmitterPower != null && transmitterPower.IsActive && transmitterPower.GetAvailablePowerInKW() > 0.001)
-                        {
-                            if (!GlobalTransmitters.ContainsKey(vessel))
-                            {
-                                Debug.Log("[KSPI]: Added loaded Transmitter for vessel " + vessel.name + " " + vessel.id);
-                            }
-                            GlobalTransmitters[vessel] = transmitterPower;
-                        }
-                        else
-                            GlobalTransmitters.Remove(vessel);
-
-                        // only add if vessel can act as a relay otherwise remove
-                        var relayPower = GetVesselRelayPersistenceForVesselCallback(vessel);
-
-                        if (relayPower != null && relayPower.IsActive)
-                            GlobalRelays[vessel] = relayPower;
-                        else
-                            GlobalRelays.Remove(vessel);
+                        Debug.Log("[KSPI]: Added loaded Transmitter for vessel " + vessel.name + " " + vessel.id);
                     }
+                    GlobalTransmitters[vessel] = transmitterPower;
                 }
-            }
-            _initialized = true;
+                else
+                    GlobalTransmitters.Remove(vessel);
 
+                // only add if vessel can act as a relay otherwise remove
+                var relayPower = GetVesselRelayPersistenceForVesselCallback(vessel);
+
+                if (relayPower?.IsActive == true)
+                    GlobalRelays[vessel] = relayPower;
+                else
+                    GlobalRelays.Remove(vessel);
+            }
+            
+            _initialized = true;
         }
 
-        void Update()
+        public void Update()
         {
-            if (HighLogic.LoadedSceneIsFlight)
-                CalculateTransmitters();
+            if (!HighLogic.LoadedSceneIsFlight) return;
+            CalculateTransmitters();
         }
     }
 }
