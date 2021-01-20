@@ -30,14 +30,6 @@ namespace KIT.Propulsion
         [KSPField(isPersistant = true)]
         public string serialisedwarpvector;
 
-        // non Persistent
-        public const string warpEffect1ShaderPath = "Unlit/Transparent";
-        public const string warpEffect2ShaderPath = "Unlit/Transparent";
-        //public const string warpWhiteFlashPath = "WarpPlugin/ParticleFX/warp10";
-        //public const string warpRedFlashPath = "WarpPlugin/ParticleFX/warpr10";
-        //public const string warpTexturePath = "WarpPlugin/ParticleFX/warp";
-        //public const string warprTexturePath = "WarpPlugin/ParticleFX/warpr";
-
         [KSPField]
         public string warpSoundPath = "Kerbal-Interstellar-Technologies/Sounds/warp_sound";
         [KSPField]
@@ -59,10 +51,6 @@ namespace KIT.Propulsion
         public string upgradedName = "";
         [KSPField]
         public string originalName = "";
-        [KSPField]
-        public float effectSize1;
-        [KSPField]
-        public float effectSize2;
         [KSPField]
         public string upgradeTechReq = "";
         [KSPField]
@@ -191,8 +179,8 @@ namespace KIT.Propulsion
         public bool holdAltitude;
         [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiName = "Main Control"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.None)]
         public bool IsSlave;
-        [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiName = "Trail Effects"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.All)]
-        public bool hideTrail;
+        // [KSPField(groupName = Group, isPersistant = true, guiActiveEditor = true, guiName = "Trail Effects"), UI_Toggle(disabledText = "#LOC_KSPIE_AlcubierreDrive_Enabled", enabledText = "#LOC_KSPIE_AlcubierreDrive_Disabled", affectSymCounterparts = UI_Scene.All)]
+        // public bool hideTrail;
 
         // Debugging
         public double ReceivedExoticMaintenancePower;
@@ -205,10 +193,6 @@ namespace KIT.Propulsion
 
         private readonly double[] _engineThrottle = { 0.001, 0.0013, 0.0016, 0.002, 0.0025, 0.0032, 0.004, 0.005, 0.0063, 0.008, 0.01, 0.013, 0.016, 0.02, 0.025, 0.032, 0.04, 0.05, 0.063, 0.08, 0.1, 0.13, 0.16, 0.2, 0.25, 0.32, 0.4, 0.5, 0.63, 0.8, 1, 1.3, 1.6, 2, 2.5, 3.2, 4, 5, 6.3, 8, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 130, 160, 200, 250, 320, 400, 500, 630, 800, 1000, 1300, 1600, 2000, 2500, 3200, 4000, 5000, 6300, 8000, 10000, 13000, 16000, 20000, 25000, 32000, 40000, 50000, 63000, 80000, 100000 };
 
-        private GameObject _warpEffect;
-        private GameObject _warpEffect2;
-        private Texture[] _warpTextures;
-        private Texture[] _warpTextures2;
         private AudioSource _warpSound;
 
         double _currentExoticMatter;
@@ -216,8 +200,7 @@ namespace KIT.Propulsion
         double _exoticMatterRatio;
         double _texCount;
 
-        private bool _activeTrail;
-        private bool _vesselWasInOuterspace;
+        private bool _vesselWasInOuterSpace;
         private bool _hasRequiredUpgrade;
         private bool _selectedTargetVesselIsClosest;
 
@@ -241,27 +224,17 @@ namespace KIT.Propulsion
         private int _minimumSelectedFactor;
         private int _maximumWarpSpeedFactor;
         private int _minimumPowerAllowedFactor;
-        private int _warpTrailTimeout;
 
         private long _insufficientPowerTimeout = 10;
         private long _initiateWarpTimeout;
         private long _counterCurrent;
         private long _counterPreviousChange;
 
-        private Renderer _warpEffect1Renderer;
-        private Renderer _warpEffect2Renderer;
-
-        private Collider _warpEffect1Collider;
-        private Collider _warpEffect2Collider;
-
         private PartResourceDefinition _exoticResourceDefinition;
         private CelestialBody _warpInitialMainBody;
         private CelestialBody _closestCelestialBody;
         private Vector3d _departureVelocity;
         private ModuleReactionWheel _moduleReactionWheel;
-
-        private Texture2D _warpWhiteFlash;
-        private Texture2D _warpRedFlash;
 
         private BaseField _antiGravityField;
 
@@ -347,7 +320,7 @@ namespace KIT.Propulsion
 
             // TODO fix the stable resource supply thing.
 
-            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selectedFfactor]) > getStableResourceSupply(KITResourceSettings.ElectricPowerInMegawatt))
+            //if (!CheatOptions.InfiniteElectricity && GetPowerRequirementForWarp(_engineThrottle[selectedFactor]) > getStableResourceSupply(KITResourceSettings.ElectricPowerInMegawatt))
             /*
             if (false)
             {
@@ -434,7 +407,7 @@ namespace KIT.Propulsion
 
             _initiateWarpTimeout = 0; // stop initiating to warp
 
-            _vesselWasInOuterspace = false;
+            _vesselWasInOuterSpace = false;
 
             // consume all exotic matter to create warp field
             resMan.Consume(ResourceName.ExoticMatter, exotic_power_required);
@@ -462,7 +435,6 @@ namespace KIT.Propulsion
                 vessel.GoOffRails();
 
             IsEnabled = true;
-            _activeTrail = true;
 
             UpdateAllWarpDriveEffects();
 
@@ -887,101 +859,9 @@ namespace KIT.Propulsion
                 if (serialisedwarpvector != null)
                     _headingAct = ConfigNode.ParseVector3D(serialisedwarpvector);
 
-                _warpEffect = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                _warpEffect2 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                _warpEffect1Renderer = _warpEffect.GetComponent<Renderer>();
-                _warpEffect2Renderer = _warpEffect2.GetComponent<Renderer>();
-
-                _warpEffect1Collider = _warpEffect.GetComponent<Collider>();
-                _warpEffect2Collider = _warpEffect2.GetComponent<Collider>();
-
-                _warpEffect1Collider.enabled = false;
-                _warpEffect2Collider.enabled = false;
-
-                var shipPos = new Vector3(part.transform.position.x, part.transform.position.y, part.transform.position.z);
-                var endBeamPos = shipPos + transform.up * WarpSize;
-                var midPos = (shipPos - endBeamPos) / 2.0f;
-
-                _warpEffect.transform.localScale = new Vector3(effectSize1, midPos.magnitude, effectSize1);
-                _warpEffect.transform.position = new Vector3(midPos.x, shipPos.y + midPos.y, midPos.z);
-                _warpEffect.transform.rotation = part.transform.rotation;
-
-                _warpEffect2.transform.localScale = new Vector3(effectSize2, midPos.magnitude, effectSize2);
-                _warpEffect2.transform.position = new Vector3(midPos.x, shipPos.y + midPos.y, midPos.z);
-                _warpEffect2.transform.rotation = part.transform.rotation;
-
-                //warp_effect.layer = LayerMask.NameToLayer("Ignore Raycast");
-                //warp_effect.renderer.material = new Material(KSP.IO.File.ReadAllText<AlcubierreDrive>("AlphaSelfIllum.shader"));
-
-                _warpEffect1Renderer.material.shader = Shader.Find(warpEffect1ShaderPath);
-                _warpEffect2Renderer.material.shader = Shader.Find(warpEffect2ShaderPath);
-
-                _warpWhiteFlash = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/ParticleFX/warp10", false);
-                _warpRedFlash = GameDatabase.Instance.GetTexture("Kerbal-Interstellar-Technologies/ParticleFX/warpr10", false);
-
-                _warpTextures = new Texture[32];
-
-                const string warpTexturePath = "Kerbal-Interstellar-Technologies/ParticleFX/warp";
-                for (var i = 0; i < 16; i++)
-                {
-                    _warpTextures[i] = GameDatabase.Instance.GetTexture(i > 0
-                        ? warpTexturePath + (i + 1)
-                        : warpTexturePath, false);
-                }
-
-                //warp_textures[11] = warpWhiteFlash;
-                for (var i = 16; i < 32; i++)
-                {
-                    var j = 31 - i;
-                    _warpTextures[i] = GameDatabase.Instance.GetTexture(j > 0
-                      ? warpTexturePath + (j + 1)
-                      : warpTexturePath, false);
-                }
-
-                _warpTextures2 = new Texture[32];
-
-                const string warprTexturePath = "WarpPlugin/ParticleFX/warpr";
-                for (var i = 0; i < 16; i++)
-                {
-                    _warpTextures2[i] = GameDatabase.Instance.GetTexture(i > 0
-                        ? warprTexturePath + (i + 1)
-                        : warprTexturePath, false);
-                }
-
-                //warp_textures2[11] = warpRedFlash;
-                for (var i = 16; i < 32; i++)
-                {
-                    var j = 31 - i;
-                    _warpTextures2[i] = GameDatabase.Instance.GetTexture(j > 0
-                        ? warprTexturePath + (j + 1)
-                        : warprTexturePath, false);
-                }
-
-                _warpEffect1Renderer.material.color = new Color(Color.cyan.r, Color.cyan.g, Color.cyan.b, 0.5f);
-                _warpEffect2Renderer.material.color = new Color(Color.red.r, Color.red.g, Color.red.b, 0.1f);
-
-                _warpEffect1Renderer.material.mainTexture = _warpTextures[0];
-                _warpEffect1Renderer.receiveShadows = false;
-                //warp_effect.layer = LayerMask.NameToLayer ("Ignore Raycast");
-                //warp_effect.collider.isTrigger = true;
-                _warpEffect2Renderer.material.mainTexture = _warpTextures2[0];
-                _warpEffect2Renderer.receiveShadows = false;
-                _warpEffect2Renderer.material.mainTextureOffset = new Vector2(-0.2f, -0.2f);
-                //warp_effect2.layer = LayerMask.NameToLayer ("Ignore Raycast");
-                //warp_effect2.collider.isTrigger = true;
-                _warpEffect2Renderer.material.renderQueue = 1000;
-                _warpEffect1Renderer.material.renderQueue = 1001;
-                /*gameObject.AddComponent<Light>();
-                gameObject.light.color = Color.cyan;
-                gameObject.light.intensity = 1f;
-                gameObject.light.range = 4000f;
-                gameObject.light.type = LightType.Spot;
-                gameObject.light.transform.position = end_beam_pos;
-                gameObject.light.cullingMask = ~0;*/
-
-                //warp_effect.transform.localScale.y = 2.5f;
-                //warp_effect.transform.localScale.z = 200f;
+                // var shipPos = new Vector3(part.transform.position.x, part.transform.position.y, part.transform.position.z);
+                // var endBeamPos = shipPos + transform.up * WarpSize;
+                // var midPos = (shipPos - endBeamPos) / 2.0f;
 
                 _warpSound = gameObject.AddComponent<AudioSource>();
                 _warpSound.clip = GameDatabase.Instance.GetAudioClip(warpSoundPath);
@@ -1055,9 +935,9 @@ namespace KIT.Propulsion
                 _moduleReactionWheel.Fields[nameof(_moduleReactionWheel.stateString)].guiActive = false;
                 _moduleReactionWheel.Events[nameof(_moduleReactionWheel.OnToggle)].guiActive = false;
 
-                _moduleReactionWheel.PitchTorque = _activeTrail ? (5 * part.mass * (isupgraded ? warpPowerMultTech1 : warpPowerMultTech0)) : 0;
-                _moduleReactionWheel.YawTorque = _activeTrail ? (5 * part.mass * (isupgraded ? warpPowerMultTech1 : warpPowerMultTech0)) : 0;
-                _moduleReactionWheel.RollTorque = _activeTrail ? (5 * part.mass * (isupgraded ? warpPowerMultTech1 : warpPowerMultTech0)) : 0;
+                _moduleReactionWheel.PitchTorque = IsEnabled ? (5 * part.mass * (isupgraded ? warpPowerMultTech1 : warpPowerMultTech0)) : 0;
+                _moduleReactionWheel.YawTorque = IsEnabled ? (5 * part.mass * (isupgraded ? warpPowerMultTech1 : warpPowerMultTech0)) : 0;
+                _moduleReactionWheel.RollTorque = IsEnabled ? (5 * part.mass * (isupgraded ? warpPowerMultTech1 : warpPowerMultTech0)) : 0;
             }
 
             if (ResearchAndDevelopment.Instance != null)
@@ -1074,14 +954,13 @@ namespace KIT.Propulsion
         {
             foreach (var drive in _alcubierreDrives)
             {
-                drive.UpdateEffect(IsEnabled, IsCharging, IsEnabled && _warpTrailTimeout == 0, selected_factor);
+                drive.UpdateEffect(IsEnabled, IsCharging, IsEnabled, selected_factor);
             }
         }
 
-        private void UpdateEffect(bool isEnabled, bool isCharging, bool activeTrail, int selectedFfactor)
+        private void UpdateEffect(bool isEnabled, bool isCharging, bool activeTrail, int selectedFactor)
         {
-            _activeTrail = activeTrail;
-            this.selected_factor = selectedFfactor;
+            this.selected_factor = selectedFactor;
 
             if (_animationState == null) return;
 
@@ -1353,7 +1232,7 @@ namespace KIT.Propulsion
 
             if ((!CheatOptions.IgnoreMaxTemperature && vessel.atmDensity > 0) || distanceToClosestBody <= dropoutDistance)
             {
-                if (_vesselWasInOuterspace)
+                if (_vesselWasInOuterSpace)
                 {
                     var message = FlightGlobals.fetch.VesselTarget == null
                         ? _closestCelestialBody.atmosphere
@@ -1364,12 +1243,12 @@ namespace KIT.Propulsion
                     Debug.Log("[KSPI]: " + Localizer.Format(message));
                     ScreenMessages.PostScreenMessage(Localizer.Format(message), 5);
                     DeactivateWarpDrive(true);
-                    _vesselWasInOuterspace = false;
+                    _vesselWasInOuterSpace = false;
                     return;
                 }
             }
             else
-                _vesselWasInOuterspace = true;
+                _vesselWasInOuterSpace = true;
 
             // detect power shortage
             if (currentPowerRequirementForWarp > availablePower)
@@ -1459,9 +1338,6 @@ namespace KIT.Propulsion
             // disables physics and puts the ship into a propagated orbit , is this still needed?
             if (!vessel.packed)
                 vessel.GoOffRails();
-
-            // disable warp trail for 2 frames to prevent graphic glitches
-            _warpTrailTimeout = 2;
 
             UpdateAllWarpDriveEffects();
         }
@@ -1893,36 +1769,11 @@ namespace KIT.Propulsion
                     driveStatus = Localizer.Format("#LOC_KSPIE_AlcubierreDrive_Ready");//"Ready."
             }
 
-            if (_activeTrail && !hideTrail && _warpTrailTimeout == 0)
-            {
-                var shipPos = new Vector3(part.transform.position.x, part.transform.position.y, part.transform.position.z);
-                var endBeamPos = shipPos + part.transform.up * WarpSize;
-                var midPos = (shipPos - endBeamPos) / 2f;
 
-                _warpEffect.transform.rotation = part.transform.rotation;
-                _warpEffect.transform.localScale = new Vector3(effectSize1, midPos.magnitude, effectSize1);
-                _warpEffect.transform.position = new Vector3(shipPos.x + midPos.x, shipPos.y + midPos.y, shipPos.z + midPos.z);
-                _warpEffect.transform.rotation = part.transform.rotation;
+            //var shipPos = new Vector3(part.transform.position.x, part.transform.position.y, part.transform.position.z);
+            //var endBeamPos = shipPos + part.transform.up * WarpSize;
+            //var midPos = (shipPos - endBeamPos) / 2f;
 
-                _warpEffect2.transform.rotation = part.transform.rotation;
-                _warpEffect2.transform.localScale = new Vector3(effectSize2, midPos.magnitude, effectSize2);
-                _warpEffect2.transform.position = new Vector3(shipPos.x + midPos.x, shipPos.y + midPos.y, shipPos.z + midPos.z);
-                _warpEffect2.transform.rotation = part.transform.rotation;
-
-                _warpEffect1Renderer.material.mainTexture = _warpTextures[((int)_texCount) % _warpTextures.Length];
-                _warpEffect2Renderer.material.mainTexture = _warpTextures2[((int)_texCount + 8) % _warpTextures2.Length];
-
-                _warpEffect2Renderer.enabled = true;
-                _warpEffect1Renderer.enabled = true;
-            }
-            else
-            {
-                _warpEffect2Renderer.enabled = false;
-                _warpEffect1Renderer.enabled = false;
-            }
-
-            if (_warpTrailTimeout > 0)
-                _warpTrailTimeout--;
         }
 
         public string KITPartName() => part.partInfo.title;
