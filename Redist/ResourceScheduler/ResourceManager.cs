@@ -198,7 +198,7 @@ namespace KIT.ResourceScheduler
             {
                 // We may get resources on demand, so skip accounting for those at the moment
                 if (VariableSupplierModules.ContainsKey(resourceInfo.Resource)) continue;
-                
+
                 var capacityRatio = CalculateAvailableResourceCapacity(resourceInfo);
                 ratio = (capacityRatio < ratio) ? capacityRatio : ratio;
 
@@ -242,11 +242,111 @@ namespace KIT.ResourceScheduler
             if (ResourceProductionStats == null) return null;
 
             if (resourceIdentifier >= ResourceName.ElectricCharge && resourceIdentifier <= ResourceName.WasteHeat)
-                return ResourceProductionStats[(int) resourceIdentifier];
+                return ResourceProductionStats[(int)resourceIdentifier];
 
             return null;
         }
     }
+
+    public class LocalResourceData : IResourceManager
+    {
+        public IResourceManager Upstream;
+        public Part Part;
+        private string _cachedName;
+        private PartResource _cachedResource;
+
+        public LocalResourceData(IResourceManager upstream, Part part)
+        {
+            Upstream = upstream;
+            Part = part;
+        }
+
+        private bool IsLocalResource(ResourceName resource)
+        {
+            _cachedName = KITResourceSettings.ResourceToName(resource);
+            _cachedResource = Part.Resources[_cachedName];
+
+            return !_cachedResource?.flowState ?? false;
+        }
+
+        public double Consume(ResourceName resource, double wanted)
+        {
+            if (!IsLocalResource(resource)) return Upstream.Consume(resource, wanted);
+
+            var scaledAmount = wanted * Upstream.FixedDeltaTime();
+            var actualAmount = Math.Min(scaledAmount, _cachedResource.amount);
+
+            _cachedResource.amount -= actualAmount;
+            return actualAmount;
+        }
+
+        public double Produce(ResourceName resource, double amount, double max = -1)
+        {
+            if (!IsLocalResource(resource)) return Upstream.Produce(resource, amount, max);
+
+            var scaledAmount = amount * Upstream.FixedDeltaTime();
+            var actualAmount = Math.Min(scaledAmount, _cachedResource.maxAmount - _cachedResource.amount);
+
+            _cachedResource.amount += actualAmount;
+            return actualAmount;
+        }
+
+        public bool CapacityInformation(ResourceName resourceIdentifier, out double maxCapacity, out double spareCapacity,
+            out double currentCapacity, out double fillFraction)
+        {
+            if (!IsLocalResource(resourceIdentifier)) return Upstream.CapacityInformation(resourceIdentifier, out maxCapacity, out spareCapacity, out currentCapacity, out fillFraction);
+
+            maxCapacity = _cachedResource.maxAmount;
+            spareCapacity = _cachedResource.maxAmount - _cachedResource.amount;
+            currentCapacity = _cachedResource.amount;
+            fillFraction = _cachedResource.maxAmount == 0 ? 0 : _cachedResource.amount / _cachedResource.maxAmount;
+            return true;
+        }
+
+        public double FixedDeltaTime() => Upstream.FixedDeltaTime();
+
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
+            ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
+        {
+            // To implement
+            return Upstream.ScaledConsumptionProduction(consumeResources, produceResources, minimumRatio, flags);
+        }
+
+        public double CurrentCapacity(ResourceName resourceIdentifier)
+        {
+            if (!IsLocalResource(resourceIdentifier)) return Upstream.CurrentCapacity(resourceIdentifier);
+            return _cachedResource.amount;
+        }
+
+        public double FillFraction(ResourceName resourceIdentifier)
+        {
+            if (!IsLocalResource(resourceIdentifier)) return Upstream.FillFraction(resourceIdentifier);
+            if (_cachedResource.maxAmount == 0) return 0;
+            
+            return _cachedResource.amount / _cachedResource.maxAmount;
+        }
+
+        public double SpareCapacity(ResourceName resourceIdentifier)
+        {
+            if (!IsLocalResource(resourceIdentifier)) return Upstream.SpareCapacity(resourceIdentifier);
+            return _cachedResource.maxAmount - _cachedResource.amount;
+        }
+
+        public double MaxCapacity(ResourceName resourceIdentifier)
+        {
+            if (!IsLocalResource(resourceIdentifier)) return Upstream.MaxCapacity(resourceIdentifier);
+            return _cachedResource.maxAmount;
+        }
+
+        public ICheatOptions CheatOptions() => Upstream.CheatOptions();
+
+        public IResourceProduction ProductionStats(ResourceName resourceIdentifier)
+        {
+            // I don't believe this is necessary at the moment
+            return Upstream.ProductionStats(resourceIdentifier);
+        }
+    }
+
 
     public partial class KITResourceVesselModule
     {
@@ -597,7 +697,7 @@ namespace KIT.ResourceScheduler
             if (resourceData.AvailableKITModules.Count >= 1 && resourceData.AvailableKITModules[0] is IDCElectricalSystem dc)
             {
                 resourceData.ModConsumption[ResourceName.ElectricCharge][resourceData.AvailableKITModules[0]] = new PerPartResourceInformation { Amount = dc.UnallocatedElectricChargeConsumption() };
-                resourceData.AvailableKITModules.Remove(resourceData.AvailableKITModules[0]);
+                // resourceData.AvailableKITModules.Remove(resourceData.AvailableKITModules[0]);
             }
 
             _inExecuteKITModules = true;
@@ -692,10 +792,11 @@ namespace KIT.ResourceScheduler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InitializeModuleIfNeeded(ResourceData data, IKITModule ikitModule)
         {
+            // don't call KITFixedUpdate more than once
             if (data.FixedUpdateCalledMods.Contains(ikitModule)) return;
 
-            // Hasn't had it's KITFixedUpdate() yet? call that first.
             data.FixedUpdateCalledMods.Add(ikitModule);
+            
             UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.InitializeModuleIfNeeded.Init.{ikitModule.KITPartName()}");
 
             try

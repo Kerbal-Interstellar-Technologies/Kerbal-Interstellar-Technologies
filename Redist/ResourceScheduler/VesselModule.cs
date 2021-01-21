@@ -153,7 +153,10 @@ namespace KIT.ResourceScheduler
 
         // void VesselKITModules(ref List<IKITModule> moduleList, ref Dictionary<ResourceName, List<IKITVariableSupplier>> variableSupplierModules)
 
-        void RefreshActiveModules(ResourceData resourceData)
+        private Dictionary<IKITModule, LocalResourceData> _localResourceDataInformation =
+            new Dictionary<IKITModule, LocalResourceData>(64);
+        
+        private void RefreshActiveModules(ResourceData resourceData)
         {
             // Clear the inputs
 
@@ -181,9 +184,12 @@ namespace KIT.ResourceScheduler
                     var working = (moduleConfigurationFlags & ModuleConfigurationFlags.Disabled) != ModuleConfigurationFlags.Disabled;
                     int priority = (int)(moduleConfigurationFlags & ModuleConfigurationFlags.PriorityMask);
                     bool prepend = (moduleConfigurationFlags & ModuleConfigurationFlags.SupplierOnly) != 0;
-
+                    var local = ((moduleConfigurationFlags & ModuleConfigurationFlags.LocalResources) != 0);
 
                     if (!working) continue;
+
+                    if (local && !_localResourceDataInformation.ContainsKey(mod))
+                        _localResourceDataInformation[mod] = new LocalResourceData(ResourceData, partModule.part);
 
                     if (!_sortedModules.TryGetValue(priority, out _))
                     {
