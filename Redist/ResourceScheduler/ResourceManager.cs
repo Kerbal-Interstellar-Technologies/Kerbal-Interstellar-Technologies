@@ -59,6 +59,8 @@ namespace KIT.ResourceScheduler
         internal Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModConsumption;
         internal Dictionary<ResourceName, Dictionary<IKITModule, PerPartResourceInformation>> ModProduction;
 
+        internal double OverheatMultiplier;
+
         public ResourceData(KITResourceVesselModule resourceManager, ICheatOptions cheatOptions)
         {
             ResourceManager = resourceManager;
@@ -76,6 +78,7 @@ namespace KIT.ResourceScheduler
             MaxResources = new Dictionary<ResourceName, double>();
 
             FixedDeltaTimeValue = 0;
+            OverheatMultiplier = 1;
 
             ResourceProductionStats = new ResourceProduction[(int)(ResourceName.WasteHeat + 1)];
 
@@ -88,7 +91,9 @@ namespace KIT.ResourceScheduler
             }
         }
 
-        public void Update(double fixedDeltaTime, Dictionary<ResourceName, double> availableResources, Dictionary<ResourceName, double> maxResources, List<IKITModule> modsCurrentlyRunning, List<IKITModule> fixedUpdateCalledMods)
+        public void Update(double fixedDeltaTime, Dictionary<ResourceName, double> availableResources,
+            Dictionary<ResourceName, double> maxResources, List<IKITModule> modsCurrentlyRunning,
+            List<IKITModule> fixedUpdateCalledMods, double overHeatingMultiplier)
         {
             FixedDeltaTimeValue = fixedDeltaTime;
 
@@ -103,11 +108,13 @@ namespace KIT.ResourceScheduler
 
             FixedUpdateCalledMods.Clear();
             FixedUpdateCalledMods.AddRange(fixedUpdateCalledMods);
+
+            OverheatMultiplier = overHeatingMultiplier;
         }
 
         public double Consume(ResourceName resource, double wanted)
         {
-            return ResourceManager.Consume(this, resource, wanted);
+            return ResourceManager.Consume(this, resource, resource == ResourceName.WasteHeat ? wanted : wanted * OverheatMultiplier);
         }
 
         public double Produce(ResourceName resource, double amount, double max = -1)
@@ -178,10 +185,11 @@ namespace KIT.ResourceScheduler
             return (value <= double.Epsilon) ? 0 : (value >= 1) ? 1 : value;
         }
 
-        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
+        public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
+            List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
-            double ratio = 1;
+            double ratio = OverheatMultiplier;
 
             if ((flags & ConsumptionProductionFlags.DoNotOverFill) != 0)
             {
@@ -207,7 +215,8 @@ namespace KIT.ResourceScheduler
 
             consumeResources.ForEach(kv => kv.Amount *= ratio);
             produceResources.ForEach(kv => kv.Amount *= ratio);
-            return ResourceManager.ScaledConsumptionProduction(this, consumeResources, produceResources, minimumRatio, flags);
+            return ResourceManager.ScaledConsumptionProduction(this, consumeResources, produceResources, minimumRatio,
+                flags);
         }
 
         public double CurrentCapacity(ResourceName resourceIdentifier)
@@ -248,14 +257,17 @@ namespace KIT.ResourceScheduler
         }
     }
 
+
     public class LocalResourceData : IResourceManager
     {
-        public IResourceManager Upstream;
+        public ResourceData Upstream;
         public Part Part;
         private string _cachedName;
         private PartResource _cachedResource;
+        public double OverheatMultiplier;
 
-        public LocalResourceData(IResourceManager upstream, Part part)
+
+        public LocalResourceData(ResourceData upstream, Part part)
         {
             Upstream = upstream;
             Part = part;
@@ -273,7 +285,7 @@ namespace KIT.ResourceScheduler
         {
             if (!IsLocalResource(resource)) return Upstream.Consume(resource, wanted);
 
-            var scaledAmount = wanted * Upstream.FixedDeltaTime();
+            var scaledAmount = wanted * Upstream.FixedDeltaTime() * OverheatMultiplier;
             var actualAmount = Math.Min(scaledAmount, _cachedResource.amount);
 
             _cachedResource.amount -= actualAmount;
@@ -308,7 +320,7 @@ namespace KIT.ResourceScheduler
         public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
-            // To implement
+            // To implement when needed
             return Upstream.ScaledConsumptionProduction(consumeResources, produceResources, minimumRatio, flags);
         }
 
@@ -322,7 +334,7 @@ namespace KIT.ResourceScheduler
         {
             if (!IsLocalResource(resourceIdentifier)) return Upstream.FillFraction(resourceIdentifier);
             if (_cachedResource.maxAmount == 0) return 0;
-            
+
             return _cachedResource.amount / _cachedResource.maxAmount;
         }
 
@@ -355,15 +367,12 @@ namespace KIT.ResourceScheduler
         private double _fixedDeltaTime;
         public bool UseThisToHelpWithTesting;
 
-        private readonly OverHeatingResourceManager _overHeatingResourceManager;
         private readonly WasteHeatEquilibriumResourceManager _wasteHeatEquilibriumResourceManager;
-        private IResourceManager _topLevelInterface;
 
         public KITResourceVesselModule()
         {
 
             _wasteHeatEquilibriumResourceManager = new WasteHeatEquilibriumResourceManager();
-            _overHeatingResourceManager = new OverHeatingResourceManager();
         }
 
         #region IResourceManager implementation
@@ -380,23 +389,29 @@ namespace KIT.ResourceScheduler
         private static bool TrackableResource(ResourceName resource) => resource >= ResourceName.ElectricCharge && resource <= ResourceName.WasteHeat;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool UseOverheatingResourceManager(ResourceData data)
+        private void ConfigureOverheatingResourceManager(ResourceData data)
         {
             // If players don't want the requests scaled back, so be it
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>().DisableResourceConsumptionRateLimit) return false;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KITResourceParams>()
+                .DisableResourceConsumptionRateLimit)
+            {
+                return;
+            }
 
-            var found = data.CapacityInformation(ResourceName.WasteHeat, out _, out _, out _, out var wasteHeatRatio);
+            data.CapacityInformation(ResourceName.WasteHeat, out _, out _, out _, out var wasteHeatRatio);
 
             var ratio = wasteHeatRatio;
-            if (ratio < 0.90) return false;
+            if (ratio < 0.90)
+            {
+                data.OverheatMultiplier = 1;
+                return;
+            }
 
             var reduction = (ratio - 0.90) * 10;
 
             Debug.Log($"[UseOverheatingResourceManager] reducing consumption of resources by {Math.Round(reduction * 100, 2)}%");
 
-            _overHeatingResourceManager.ConsumptionReduction = reduction;
-            return true;
-
+            data.OverheatMultiplier = 1 - reduction;
         }
 
         /// <summary>
@@ -562,14 +577,6 @@ namespace KIT.ResourceScheduler
         bool _informWhenHighTimeWarpPossible;
         private const double EquilibriumDifference = 0.00001;
 
-        private void PickTopLevelInterface(ResourceData resourceData)
-        {
-            _topLevelInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager.Update(resourceData) : (IResourceManager)resourceData;
-
-            if (UseOverheatingResourceManager(resourceData))
-                _topLevelInterface = _overHeatingResourceManager.SetBaseResourceManager(_topLevelInterface);
-        }
-
         private void CheckForWasteHeatEquilibrium()
         {
             double larger, smaller;
@@ -671,7 +678,7 @@ namespace KIT.ResourceScheduler
             resourceData.TappedOutMods.Clear();
             resourceData.FixedUpdateCalledMods.Clear();
 
-            PickTopLevelInterface(resourceData);
+            ConfigureOverheatingResourceManager(resourceData);
 
             if (resourceData.ModsCurrentlyRunning.Count > 0)
             {
@@ -796,12 +803,12 @@ namespace KIT.ResourceScheduler
             if (data.FixedUpdateCalledMods.Contains(ikitModule)) return;
 
             data.FixedUpdateCalledMods.Add(ikitModule);
-            
+
             UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.InitializeModuleIfNeeded.Init.{ikitModule.KITPartName()}");
 
             try
             {
-                ikitModule.KITFixedUpdate(_topLevelInterface);
+                ikitModule.KITFixedUpdate(data);
             }
             catch (Exception ex)
             {
@@ -835,7 +842,7 @@ namespace KIT.ResourceScheduler
 
                 InitializeModuleIfNeeded(resourceData, kitMod);
 
-                double perSecondAmount = originalAmount * (1 - (reducedObtainedAmount / reducedOriginalAmount));
+                var perSecondAmount = originalAmount * (1 - (reducedObtainedAmount / reducedOriginalAmount));
 
                 try
                 {
