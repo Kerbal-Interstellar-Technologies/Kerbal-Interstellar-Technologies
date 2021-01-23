@@ -367,14 +367,6 @@ namespace KIT.ResourceScheduler
         private double _fixedDeltaTime;
         public bool UseThisToHelpWithTesting;
 
-        private readonly WasteHeatEquilibriumResourceManager _wasteHeatEquilibriumResourceManager;
-
-        public KITResourceVesselModule()
-        {
-
-            _wasteHeatEquilibriumResourceManager = new WasteHeatEquilibriumResourceManager();
-        }
-
         #region IResourceManager implementation
 
         public double ScaledConsumptionProduction(ResourceData data, List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
@@ -563,8 +555,6 @@ namespace KIT.ResourceScheduler
 
         public ulong KITSteps;
 
-        private int _overHeatingCounter;
-
         private bool _wasteHeatEquilibriumAchieved;
 
         private double _wasteHeatAtEndOfProcessing;
@@ -750,6 +740,8 @@ namespace KIT.ResourceScheduler
             _inExecuteKITModules = false;
         }
 
+        private double _overHeatingCounter;
+        
         private void CheckIfEmergencyStopIsNeeded(ResourceData resourceData)
         {
             var ratio = resourceData.FillFraction(ResourceName.WasteHeat);
@@ -806,9 +798,23 @@ namespace KIT.ResourceScheduler
 
             UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.InitializeModuleIfNeeded.Init.{ikitModule.KITPartName()}");
 
+
+            IResourceManager resourceInterface;
+            
+            var localData = _localResourceDataInformation[ikitModule];
+            if (localData != null)
+            {
+                localData.OverheatMultiplier = data.OverheatMultiplier;
+                resourceInterface = localData;
+            }
+            else
+            {
+                resourceInterface = data;
+            }
+
             try
             {
-                ikitModule.KITFixedUpdate(data);
+                ikitModule.KITFixedUpdate(resourceInterface);
             }
             catch (Exception ex)
             {
@@ -828,8 +834,6 @@ namespace KIT.ResourceScheduler
             var reducedObtainedAmount = obtainedAmount * _fixedDeltaTime;
             var reducedOriginalAmount = originalAmount * _fixedDeltaTime;
 
-            IResourceManager secondaryInterface = _wasteHeatEquilibriumAchieved ? _wasteHeatEquilibriumResourceManager : (IResourceManager)resourceData;
-
             foreach (var mod in resourceData.VariableSupplierModules[resource])
             {
                 var kitMod = mod as IKITModule;
@@ -844,11 +848,17 @@ namespace KIT.ResourceScheduler
 
                 var perSecondAmount = originalAmount * (1 - (reducedObtainedAmount / reducedOriginalAmount));
 
+                var localResources = _localResourceDataInformation[kitMod];
+                IResourceManager resourceInterface = localResources == null
+                    ? resourceData
+                    : (IResourceManager) localResources;
+
+
                 try
                 {
                     UnityEngine.Profiling.Profiler.BeginSample($"ResourceManager.CallVariableSuppliers.ProvideResource.{kitMod.KITPartName()}");
 
-                    var canContinue = mod.ProvideResource(secondaryInterface, resource, perSecondAmount + resourceFiller);
+                    var canContinue = mod.ProvideResource(resourceInterface, resource, perSecondAmount + resourceFiller);
                     if (!canContinue) resourceData.TappedOutMods.Add(mod);
                 }
                 catch (Exception ex)
