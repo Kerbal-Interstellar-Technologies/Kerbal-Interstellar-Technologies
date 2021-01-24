@@ -1975,7 +1975,7 @@ namespace KIT.Propulsion
 
         private void GetMaximumIspAndThrustMultiplier(IResourceManager resMan)
         {
-            // get the flameout safety limit
+            // get the flame out safety limit
             if (_currentPropellantIsJet)
             {
                 UpdateIspEngineParams(resMan);

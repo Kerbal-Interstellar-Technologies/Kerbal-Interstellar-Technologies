@@ -8,55 +8,6 @@ using UnityEngine;
 
 namespace KIT.Science
 {
-    public class AIHome : PartModule
-    {
-        [KSPField(isPersistant = true)]
-        public double AIMoveInTime;
-
-        // Maximum loss of reputation from destroying the AI's home.
-        [KSPField]
-        public float destructionPenaltyMax = 15;
-
-        private void OnJustAboutToBeDestroyed()
-        {
-            if (!HighLogic.LoadedSceneIsFlight) return;
-
-            // Has the AI moved in yet?
-            if (AIMoveInTime == 0) return;
-
-            // Transfer the AI away from the ship, just in time for it to watch
-            // it's home to be destroyed.
-
-            DestroyAIsHome();
-        }
-
-        public override void OnStart(StartState state)
-        {
-            if (state == StartState.Editor) return;
-
-            // ensure it's called only once.
-            part.OnJustAboutToBeDestroyed -= OnJustAboutToBeDestroyed;
-            part.OnJustAboutToBeDestroyed += OnJustAboutToBeDestroyed;
-        }
-
-        public void DestroyAIsHome()
-        {
-            double delta = Planetarium.GetUniversalTime() - AIMoveInTime;
-            float penalty = (float)Math.Min(destructionPenaltyMax, (delta * 0.01));
-
-            // Destroying peoples homes is never a good look.
-
-            Reputation.Instance.AddReputation(-penalty, TransactionReasons.VesselLoss);
-            Debug.Log($"DestroyAIsHOME: removing {penalty} points of reputation");
-        }
-
-        public void NewHome()
-        {
-            // Let's throw a welcoming party for the AI to his new home! Everyone is invited, and is at
-            AIMoveInTime = Planetarium.GetUniversalTime();
-        }
-    }
-
     class ComputerCore : ModuleModdableScienceGenerator, ITelescopeController, IUpgradeableModule, ICommNetControlSource, IRelayEnabler
     {
         // Persistent
@@ -104,7 +55,6 @@ namespace KIT.Science
         BaseEvent _retrofitCoreEvent;
         ModuleDataTransmitter _moduleDataTransmitter;
         ModuleCommand _moduleCommand;
-        AIHome _moduleAiHome;
 
         //Properties
         public string UpgradeTechnology => upgradeTechReq;
@@ -117,8 +67,6 @@ namespace KIT.Science
             if (ResearchAndDevelopment.Instance == null) return;
             if (isUpgraded || ResearchAndDevelopment.Instance.Science < upgradeCost) return;
             
-            _moduleAiHome?.NewHome();
-
             upgradePartModule();
             ResearchAndDevelopment.Instance.AddScience(-upgradeCost, TransactionReasons.RnDPartPurchase);
         }
@@ -126,9 +74,6 @@ namespace KIT.Science
         // Public Overrides
         public override void OnStart(StartState state)
         {
-            // string[] resourcesToSupply = { ResourceSettings.Config.ThermalPowerInMegawatt, ResourceSettings.Config.ChargedParticleInMegawatt, ResourceSettings.Config.ElectricPowerInMegawatt, ResourceSettings.Config.WasteHeatInMegawatt };
-            // this.resources_to_supply = resourcesToSupply;
-
             _isEnabledField = Fields[nameof(IsEnabled)];
             _isPoweredField = Fields[nameof(IsPowered)];
             _upgradeCostStrField = Fields[nameof(upgradeCostStr)];
@@ -150,7 +95,6 @@ namespace KIT.Science
 
             _moduleDataTransmitter = part.FindModuleImplementing<ModuleDataTransmitter>();
             _moduleCommand = part.FindModuleImplementing<ModuleCommand>();
-            _moduleAiHome = part.FindModuleImplementing<AIHome>();
 
             if (isUpgraded || !PluginHelper.TechnologyIsInUse)
                 upgradePartModule();
