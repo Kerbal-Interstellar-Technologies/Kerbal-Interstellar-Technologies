@@ -66,10 +66,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _monoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
-            _hydrogenResourceName = KITResourceSettings.HydrogenGas;
-            _methaneResourceName = KITResourceSettings.MethaneGas;
-            _oxygenResourceName = KITResourceSettings.OxygenGas;
+            _monoxideResourceName = KITResourceSettings.CarbonMonoxideLqd;
+            _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
+            _methaneResourceName = KITResourceSettings.MethaneLqd;
+            _oxygenResourceName = KITResourceSettings.OxygenLqd;
 
             Debug.Log("${_monoxideResourceName}");
             _monoxideDensity = PartResourceLibrary.Instance.GetDefinition(_monoxideResourceName).density;
@@ -89,24 +89,25 @@ namespace KIT.Refinery.Activity
             _current_rate = CurrentPower / EnergyPerTon;
 
             // determine how much resource we have
-            var partsThatContainMonoxide = _part.GetConnectedResources(_monoxideResourceName).ToList();
-            var partsThatContainHydrogen = _part.GetConnectedResources(_hydrogenResourceName).ToList();
-            var partsThatContainMethane = _part.GetConnectedResources(_methaneResourceName).ToList();
-            var partsThatContainOxygen = _part.GetConnectedResources(_oxygenResourceName).ToList();
+            resMan.CapacityInformation(ResourceName.CarbonMonoxideLqd, out _maxCapacityMonoxideMass, out _spareRoomMonoxideMass, out _,
+                out _);
+            resMan.CapacityInformation(ResourceName.HydrogenLqd, out _maxCapacityHydrogenMass, out _, out _spareRoomHydrogenMass, out _);
+            resMan.CapacityInformation(ResourceName.MethaneLqd, out _maxCapacityMethaneMass, out _,
+                out _availableMethaneMass, out _);
+            resMan.CapacityInformation(ResourceName.OxygenLqd, out _maxCapacityOxygenMass, out _,
+                out _availableOxygenMass, out _);
 
-            // determine the maximum amount of a resource the vessel can hold (ie. tank capacities combined)
-            _maxCapacityMonoxideMass = partsThatContainMonoxide.Sum(p => p.maxAmount) * _monoxideDensity;
-            _maxCapacityHydrogenMass = partsThatContainHydrogen.Sum(p => p.maxAmount) * _hydrogenDensity;
-            _maxCapacityMethaneMass = partsThatContainMethane.Sum(p => p.maxAmount) * _methaneDensity;
-            _maxCapacityOxygenMass = partsThatContainOxygen.Sum(p => p.maxAmount) * _oxygenDensity;
+            _maxCapacityMonoxideMass *= _monoxideDensity;
+            _spareRoomMonoxideMass *= _monoxideDensity;
 
-            // determine the amount of resources needed for pyrolysis that the vessel actually holds
-            _availableMethaneMass = partsThatContainMethane.Sum(r => r.amount) * _methaneDensity;
-            _availableOxygenMass = partsThatContainOxygen.Sum(r => r.amount) * _oxygenDensity;
+            _maxCapacityHydrogenMass *= _hydrogenDensity;
+            _spareRoomHydrogenMass *= _hydrogenDensity;
 
-            // determine how much spare room there is in the vessel's resource tanks (for the resources this is going to produce)
-            _spareRoomMonoxideMass = partsThatContainMonoxide.Sum(r => r.maxAmount - r.amount) * _monoxideDensity;
-            _spareRoomHydrogenMass = partsThatContainHydrogen.Sum(r => r.maxAmount - r.amount) * _hydrogenDensity;
+            _maxCapacityMethaneMass *= _methaneDensity;
+            _availableMethaneMass *= _methaneDensity;
+
+            _maxCapacityOxygenMass *= _oxygenDensity;
+            _availableOxygenMass *= _oxygenDensity;
 
             // this should determine how much resources this process can consume
             var fixedMaxMethaneConsumptionRate = _current_rate * MethaneMassByFraction;
@@ -132,16 +133,17 @@ namespace KIT.Refinery.Activity
                 var consumptionStorageRatio = Math.Min(fixedMaxPossibleMonoxideRate / fixedMaxMonoxideRate, fixedMaxPossibleHydrogenRate / fixedMaxHydrogenRate);
 
                 // this consumes the resources
-                _oxygenConsumptionRate = _part.RequestResource(_oxygenResourceName, OxygenMassByFraction * consumptionStorageRatio * fixedConsumptionRate / _oxygenDensity, ResourceFlowMode.ALL_VESSEL) / _oxygenDensity;
-                _methaneConsumptionRate = _part.RequestResource(_methaneResourceName, MethaneMassByFraction * consumptionStorageRatio * fixedConsumptionRate / _methaneDensity, ResourceFlowMode.ALL_VESSEL) / _methaneDensity;
+                _oxygenConsumptionRate = resMan.Consume(ResourceName.OxygenLqd, OxygenMassByFraction * consumptionStorageRatio * fixedConsumptionRate / _oxygenDensity) / _oxygenDensity;
+                
+                _methaneConsumptionRate = resMan.Consume(ResourceName.MethaneLqd, MethaneMassByFraction * consumptionStorageRatio * fixedConsumptionRate / _methaneDensity) / _methaneDensity;
                 _combinedConsumptionRate = _oxygenConsumptionRate + _methaneConsumptionRate;
 
                 // this produces the products
                 var monoxideRateTemp = _combinedConsumptionRate * MonoxideMassByFraction;
                 var waterRateTemp = _combinedConsumptionRate * HydrogenMassByFraction;
 
-                _monoxideProductionRate = -_part.RequestResource(_monoxideResourceName, -monoxideRateTemp / _monoxideDensity) /_monoxideDensity;
-                _hydrogenProductionRate = -_part.RequestResource(_hydrogenResourceName, -waterRateTemp  / _hydrogenDensity) /  _hydrogenDensity;
+                _monoxideProductionRate = resMan.Produce(ResourceName.CarbonMonoxideLqd, monoxideRateTemp / _monoxideDensity) / _monoxideDensity;
+                _hydrogenProductionRate = resMan.Produce(ResourceName.HydrogenLqd, waterRateTemp / _hydrogenDensity) / _hydrogenDensity;
             }
             else
             {
@@ -211,7 +213,7 @@ namespace KIT.Refinery.Activity
         {
             if (_hydrogenProductionRate > 0)
                 _status = Localizer.Format("#LOC_KSPIE_MethanePyrolysis_Statumsg1");//"Methane Pyrolysis Ongoing"
-            else if (CurrentPower <= 0.01*PowerRequirements)
+            else if (CurrentPower <= 0.01 * PowerRequirements)
                 _status = Localizer.Format("#LOC_KSPIE_MethanePyrolysis_Statumsg2");//"Insufficient Power"
             else
                 _status = Localizer.Format("#LOC_KSPIE_MethanePyrolysis_Statumsg3");//"Insufficient Storage"
@@ -220,9 +222,9 @@ namespace KIT.Refinery.Activity
         public void PrintMissingResources()
         {
             if (!_part.GetConnectedResources(_methaneResourceName).Any(rs => rs.amount > 0))
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_MethanePyrolysis_PostMsg") +" " + _methaneResourceName, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_MethanePyrolysis_PostMsg") + " " + _methaneResourceName, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
             if (!_part.GetConnectedResources(_oxygenResourceName).Any(rs => rs.amount > 0))
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_MethanePyrolysis_PostMsg") +" " + _oxygenResourceName, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_MethanePyrolysis_PostMsg") + " " + _oxygenResourceName, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing
         }
     }
 }

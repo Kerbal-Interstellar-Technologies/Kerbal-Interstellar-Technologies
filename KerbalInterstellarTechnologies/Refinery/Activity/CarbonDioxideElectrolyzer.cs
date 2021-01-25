@@ -55,9 +55,9 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _dioxideResourceName = KITResourceSettings.CarbonDioxideGas;
-            _oxygenResourceName = KITResourceSettings.OxygenGas;
-            _monoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
+            _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _oxygenResourceName = KITResourceSettings.OxygenLqd;
+            _monoxideResourceName = KITResourceSettings.CarbonMonoxideLqd;
 
             _dioxideDensity = PartResourceLibrary.Instance.GetDefinition(_dioxideResourceName).density;
             _oxygenDensity = PartResourceLibrary.Instance.GetDefinition(_oxygenResourceName).density;
@@ -71,8 +71,8 @@ namespace KIT.Refinery.Activity
             _current_rate = CurrentPower / EnergyPerTon;
 
             _availableDioxideMass = resMan.CurrentCapacity(ResourceName.CarbonDioxideLqd) * _dioxideDensity;
-            _spareRoomOxygenMass = resMan.SpareCapacity(ResourceName.OxygenGas) * _oxygenDensity;
-            _spareRoomMonoxideMass = resMan.SpareCapacity(ResourceName.CarbonMonoxideGas) * _monoxideDensity;
+            _spareRoomOxygenMass = resMan.SpareCapacity(ResourceName.OxygenLqd) * _oxygenDensity;
+            _spareRoomMonoxideMass = resMan.SpareCapacity(ResourceName.CarbonMonoxideLqd) * _monoxideDensity;
 
             // determine how much carbon dioxide we can consume
             _fixedMaxConsumptionDioxideRate = Math.Min(_current_rate, _availableDioxideMass);
@@ -97,8 +97,8 @@ namespace KIT.Refinery.Activity
                 var monoxideRateTemp = _dioxideConsumptionRate * CarbonMonoxideMassByFraction;
                 var oxygenRateTemp = _dioxideConsumptionRate * OxygenMassByFraction;
 
-                resMan.Produce(ResourceName.CarbonMonoxideGas, monoxideRateTemp / _monoxideDensity);
-                resMan.Produce(ResourceName.OxygenGas, oxygenRateTemp / _oxygenDensity);
+                resMan.Produce(ResourceName.CarbonMonoxideLqd, monoxideRateTemp / _monoxideDensity);
+                resMan.Produce(ResourceName.OxygenLqd, oxygenRateTemp / _oxygenDensity);
                 _monoxideProductionRate = monoxideRateTemp;
                 _oxygenProductionRate = oxygenRateTemp;
             }

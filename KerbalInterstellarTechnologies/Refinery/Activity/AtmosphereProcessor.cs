@@ -37,7 +37,7 @@ namespace KIT.Refinery.Activity
         [KSPField]
         public string animName = "";
 
-        /* Individual percentages of all consituents of the local atmosphere. These are bound to be found in different
+        /* Individual percentages of all constituents of the local atmosphere. These are bound to be found in different
          * concentrations in all atmospheres. These are persistent because getting them every update through
          * the functions (see way below) would be wasteful. I'm placing them up here to make them easier to spot.
          */

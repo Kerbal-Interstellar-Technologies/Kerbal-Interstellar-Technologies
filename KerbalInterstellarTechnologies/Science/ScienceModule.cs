@@ -592,8 +592,8 @@ namespace KIT.Science
                 global_rate_multipliers = global_rate_multipliers * electrical_power_ratio;
                 reprocessor.UpdateFrame(resMan, global_rate_multipliers, electrical_power_ratio, productionModifier, true);
 
-                if (reprocessor.getActinidesRemovedPerHour() > 0)
-                    reprocessing_rate_f = reprocessor.getRemainingAmountToReprocess() / reprocessor.getActinidesRemovedPerHour();
+                if (reprocessor.GetActinidesRemovedPerHour() > 0)
+                    reprocessing_rate_f = reprocessor.GetRemainingAmountToReprocess() / reprocessor.GetActinidesRemovedPerHour();
                 else
                     IsEnabled = false;
             }

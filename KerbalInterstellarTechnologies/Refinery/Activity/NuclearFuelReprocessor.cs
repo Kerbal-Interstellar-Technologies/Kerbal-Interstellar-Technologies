@@ -24,7 +24,6 @@ namespace KIT.Refinery.Activity
 
         public RefineryType RefineryType => RefineryType.Synthesize;
 
-
         public bool HasActivityRequirements()
         {
             return _part.GetConnectedResources(KITResourceSettings.Actinides).Any(rs => rs.amount < rs.maxAmount);
@@ -46,9 +45,9 @@ namespace KIT.Refinery.Activity
             double remainingCapacityToReprocess = GameConstants.BaseReprocessingRate / PluginSettings.Config.SecondsInDay * rateMultiplier;
             double enumActinidesChange = 0;
 
-            foreach (INuclearFuelReprocessable nuclearReactor in nuclearReactors)
+            foreach (var nuclearReactor in nuclearReactors)
             {
-                double actinidesChange = nuclearReactor.ReprocessFuel(remainingCapacityToReprocess);
+                var actinidesChange = nuclearReactor.ReprocessFuel(remainingCapacityToReprocess);
                 enumActinidesChange += actinidesChange;
                 remainingCapacityToReprocess = Math.Max(0, remainingCapacityToReprocess - actinidesChange);
             }
@@ -80,16 +79,9 @@ namespace KIT.Refinery.Activity
             GUILayout.EndHorizontal();
         }
 
-        public double getActinidesRemovedPerHour()
-        {
-            return _current_rate * 3600.0;
-        }
-
-        public double getRemainingAmountToReprocess()
-        {
-            return _remainingToReprocess;
-        }
-
+        public double GetActinidesRemovedPerHour() => _current_rate * 3600.0;
+        public double GetRemainingAmountToReprocess() => _remainingToReprocess;
+        
         public void PrintMissingResources()
         {
             ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_KSPIE_NuclearFuelReprocessor_Postmsg") + " " + KITResourceSettings.Actinides, 3.0f, ScreenMessageStyle.UPPER_CENTER);//Missing

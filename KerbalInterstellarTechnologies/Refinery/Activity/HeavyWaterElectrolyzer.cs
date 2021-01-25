@@ -56,8 +56,8 @@ namespace KIT.Refinery.Activity
             _part = localPart;
 
             _waterHeavyResourceName = KITResourceSettings.WaterHeavy;
-            _oxygenResourceName = KITResourceSettings.OxygenGas;
-            _deuteriumResourceName = KITResourceSettings.DeuteriumGas;
+            _oxygenResourceName = KITResourceSettings.OxygenLqd;
+            _deuteriumResourceName = KITResourceSettings.DeuteriumLqd;
 
             _vessel = localPart.vessel;
             _heavyWaterDensity = PartResourceLibrary.Instance.GetDefinition(_waterHeavyResourceName).density;
@@ -100,13 +100,13 @@ namespace KIT.Refinery.Activity
                 _consumptionStorageRatio = Math.Min(fixedMaxPossibleHydrogenRatio, fixedMaxPossibleOxygenRatio);
 
                 // now we do the real electrolysis
-                _heavyWaterConsumptionRate = _part.RequestResource(_waterHeavyResourceName, _consumptionStorageRatio * _fixedMaxConsumptionWaterRate / _heavyWaterDensity) / _heavyWaterDensity;
+                _heavyWaterConsumptionRate = resMan.Consume(ResourceName.WaterHeavy, _consumptionStorageRatio * _fixedMaxConsumptionWaterRate / _heavyWaterDensity) / _heavyWaterDensity;
 
                 var deuteriumRateTemp = _heavyWaterConsumptionRate * DeuteriumMassByFraction;
                 var oxygenRateTemp = _heavyWaterConsumptionRate * OxygenMassByFraction;
 
-                _deuteriumProductionRate = -_part.RequestResource(_deuteriumResourceName, -deuteriumRateTemp  / _deuteriumDensity, ResourceFlowMode.ALL_VESSEL) / _deuteriumDensity;
-                _oxygenProductionRate = -_part.RequestResource(_oxygenResourceName, -oxygenRateTemp  / _oxygenDensity, ResourceFlowMode.ALL_VESSEL) /  _oxygenDensity;
+                _deuteriumProductionRate = resMan.Produce(ResourceName.DeuteriumLqd, -deuteriumRateTemp  / _deuteriumDensity) / _deuteriumDensity;
+                _oxygenProductionRate = resMan.Produce(ResourceName.OxygenLqd, -oxygenRateTemp  / _oxygenDensity) /  _oxygenDensity;
             }
             else
             {
