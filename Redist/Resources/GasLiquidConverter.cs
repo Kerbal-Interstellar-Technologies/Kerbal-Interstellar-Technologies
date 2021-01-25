@@ -13,26 +13,26 @@ namespace KIT.Resources
         static readonly ResourceName LiquidStart = ResourceName.CarbonDioxideLqd;
         static readonly ResourceName LiquidEnd = ResourceName.XenonLqd;
 
-        struct Conversion // Software version 7.0
+        public struct Conversion // Software version 7.0
         {
             // Primary is liquid, secondary is gas
-            double _maxPowerPrimary;
-            double _maxPowerSecondary;
-            double _primaryConversionEnergyCost;
-            double _secondaryConversionEnergyCost;
+            internal double MaxPowerPrimary;
+            internal double MaxPowerSecondary;
+            internal double PrimaryConversionEnergyCost;
+            internal double SecondaryConversionEnergyCost;
 
-            double _primaryConversionRatio;
-            double _secondaryConversionRatio;
+            internal double PrimaryConversionRatio;
+            internal double SecondaryConversionRatio;
 
             public Conversion(double maxPowerPrimary, double maxPowerSecondary, double primaryConversionEnergyCost, double secondaryConversionEnergyCost, PartResourceDefinition primaryDefinition, PartResourceDefinition secondaryDefinition)
             {
-                _maxPowerPrimary = maxPowerPrimary;
-                _maxPowerSecondary = maxPowerSecondary;
-                _primaryConversionEnergyCost = primaryConversionEnergyCost;
-                _secondaryConversionEnergyCost = secondaryConversionEnergyCost;
+                MaxPowerPrimary = maxPowerPrimary;
+                MaxPowerSecondary = maxPowerSecondary;
+                PrimaryConversionEnergyCost = primaryConversionEnergyCost;
+                SecondaryConversionEnergyCost = secondaryConversionEnergyCost;
 
-                _primaryConversionRatio = secondaryDefinition.density / primaryDefinition.density;
-                _secondaryConversionRatio = primaryDefinition.density / secondaryDefinition.density;
+                PrimaryConversionRatio = secondaryDefinition.density / primaryDefinition.density;
+                SecondaryConversionRatio = primaryDefinition.density / secondaryDefinition.density;
             }
         }
 
@@ -45,14 +45,13 @@ namespace KIT.Resources
             _conversionTable = new Dictionary<ResourceName, Conversion>(24);
 
             var rootNode = GameDatabase.Instance.GetConfigNodes("KIT_GAS_LIQUID_CONVERSION");
-            if (rootNode == null || !rootNode.Any())
+            if (rootNode == null || rootNode.Length == 0)
             {
                 Debug.Log("[GasLiquidConversion] Can not find configuration node KIT_GAS_LIQUID_CONVERSION");
                 return;
             }
-            var nodeList = rootNode[0].GetNodes("Conversion");
-
-            foreach (var node in nodeList)
+            
+            foreach (var node in rootNode[0].GetNodes("Conversion"))
             {
                 string secondaryResourceName;
 
@@ -74,10 +73,10 @@ namespace KIT.Resources
                     continue;
                 }
 
-                var primaryID = KITResourceSettings.NameToResource(primaryResourceName);
-                var secondaryID = KITResourceSettings.NameToResource(secondaryResourceName);
+                var primaryId = KITResourceSettings.NameToResource(primaryResourceName);
+                var secondaryId = KITResourceSettings.NameToResource(secondaryResourceName);
 
-                if (primaryID == ResourceName.Unknown || secondaryID == ResourceName.Unknown)
+                if (primaryId == ResourceName.Unknown || secondaryId == ResourceName.Unknown)
                 {
                     Debug.Log($"[GasLiquidConversion] can't convert either {primaryResourceName} or {secondaryResourceName} to KIT resource");
                     continue;
@@ -98,8 +97,7 @@ namespace KIT.Resources
                     return;
                 }
 
-                _conversionTable[primaryID] = new Conversion(maxPowerPrimary, maxPowerSecondary, primaryConversionEnergyCost, secondaryConversionEnergyCost, primaryDefinition, secondaryDefinition);
-
+                _conversionTable[primaryId] = new Conversion(maxPowerPrimary, maxPowerSecondary, primaryConversionEnergyCost, secondaryConversionEnergyCost, primaryDefinition, secondaryDefinition);
             }
 
         }
@@ -108,7 +106,7 @@ namespace KIT.Resources
         {
             return ModuleConfigurationFlags.Fifth;
         }
-
+        
         public void KITFixedUpdate(IResourceManager resMan)
         {
             // nothing needs doing here.
@@ -118,15 +116,85 @@ namespace KIT.Resources
 
         public bool ProvideResource(IResourceManager resMan, ResourceName resource, double requestedAmount)
         {
-            bool gasToLiquidRequest = (resource >= LiquidStart && resource <= LiquidEnd);
-            bool liquidToGasRequest = (resource >= GasStart && resource <= GasEnd);
+            var gasToLiquidRequest = (resource >= LiquidStart && resource <= LiquidEnd);
+            var liquidToGasRequest = (resource >= GasStart && resource <= GasEnd);
 
             if (gasToLiquidRequest == liquidToGasRequest)
             {
                 throw new NotImplementedException($"Neither a gas nor a liquid request {resource} and {KITResourceSettings.ResourceToName(resource)}");
             }
 
-            throw new NotImplementedException();
+            if (gasToLiquidRequest)
+            {
+                ConvertGasToLiquid(resMan, resource, requestedAmount);
+            }
+            else
+            {
+                ConvertLiquidToGas(resMan, resource, requestedAmount);
+            }
+
+            return true;
+        }
+
+        private readonly ResourceKeyValue[] _inputResources =
+        {
+            new ResourceKeyValue(ResourceName.ElectricCharge, 0),
+            new ResourceKeyValue(ResourceName.Unknown, 0)
+        };
+
+        private readonly ResourceKeyValue[] _outputResources =
+        {
+            new ResourceKeyValue(ResourceName.Unknown, 0)
+        };
+
+        // Since ResourceKeyValue[] is ICollection<ResourceKeyValue>, List.AddRange() uses a memory copy
+        // to set the values, thus preventing memory allocation on each tick.
+        private readonly List<ResourceKeyValue> _inputList = new List<ResourceKeyValue>(4);
+        private readonly List<ResourceKeyValue> _outputList = new List<ResourceKeyValue>(4);
+        
+        private void ConvertLiquidToGas(IResourceManager resMan, ResourceName resource, double requestedAmount)
+        {
+            var inputResource = LiquidStart + (resource - GasStart);
+            
+            var conversionInfo = _conversionTable[inputResource];
+            _inputResources[0].Resource = ResourceName.WasteHeat;
+            _inputResources[0].Amount = requestedAmount * conversionInfo.PrimaryConversionEnergyCost;
+            _inputResources[1].Resource = inputResource;
+            _inputResources[1].Amount = requestedAmount * conversionInfo.PrimaryConversionRatio;
+
+            _outputResources[0].Resource = resource;
+            _outputResources[0].Amount = requestedAmount;
+
+            _inputList.Clear();
+            _inputList.AddRange(_inputResources);
+
+            _outputList.Clear();
+            _outputList.AddRange(_outputResources);
+            
+            resMan.ScaledConsumptionProduction(_inputList, _outputList, 0,
+                ConsumptionProductionFlags.FallbackToElectricCharge);
+        }
+
+        private void ConvertGasToLiquid(IResourceManager resMan, ResourceName resource, double requestedAmount)
+        {
+            var inputResource = GasStart + (resource - LiquidStart);
+
+            var conversionInfo = _conversionTable[resource];
+            _inputResources[0].Resource = ResourceName.ElectricCharge;
+            _inputResources[0].Amount = requestedAmount * conversionInfo.SecondaryConversionEnergyCost;
+            _inputResources[1].Resource = inputResource;
+            _inputResources[1].Amount = requestedAmount * conversionInfo.SecondaryConversionRatio;
+
+            _outputResources[0].Resource = resource;
+            _outputResources[0].Amount = requestedAmount;
+
+            _inputList.Clear();
+            _inputList.AddRange(_inputResources);
+
+            _outputList.Clear();
+            _outputList.AddRange(_outputResources);
+
+            resMan.ScaledConsumptionProduction(_inputList, _outputList);
         }
 
         private readonly ResourceName[] _resourcesConverted = new[] {

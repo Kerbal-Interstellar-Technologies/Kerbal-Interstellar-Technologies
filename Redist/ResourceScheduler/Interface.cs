@@ -59,6 +59,12 @@ namespace KIT.ResourceScheduler
     {
         public ResourceName Resource;
         public double Amount;
+
+        public ResourceKeyValue(ResourceName resource, double amount)
+        {
+            Resource = resource;
+            Amount = amount;
+        }
     }
 
     /// <summary>
@@ -168,6 +174,7 @@ namespace KIT.ResourceScheduler
         /// DoNotOverFill reduces the amount of consumeResources and produceResources by an amount required to not overfill the storage
         /// </summary>
         DoNotOverFill = 1,
+        FallbackToElectricCharge = 2,
     }
 
     [Flags]

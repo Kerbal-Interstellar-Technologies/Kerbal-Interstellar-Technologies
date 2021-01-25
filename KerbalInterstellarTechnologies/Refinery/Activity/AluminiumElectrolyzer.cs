@@ -1,4 +1,5 @@
-﻿using KIT.Extensions;
+﻿using System.Collections.Generic;
+using KIT.Extensions;
 using KIT.Resources;
 using KIT.ResourceScheduler;
 using KSP.Localization;

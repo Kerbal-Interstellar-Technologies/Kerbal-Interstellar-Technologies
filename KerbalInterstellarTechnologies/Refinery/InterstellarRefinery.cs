@@ -191,7 +191,7 @@ namespace KIT.Refinery
             }
             else
             {
-                bool hasRequirement = CurrentActivity.HasActivityRequirements();
+                // unused - var hasRequirement = CurrentActivity.HasActivityRequirements();
 
                 // show button to enable/disable resource overflow
                 GUILayout.BeginHorizontal();
