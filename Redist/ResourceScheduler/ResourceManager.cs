@@ -89,27 +89,27 @@ namespace KIT.ResourceScheduler
                 ModProduction[i] = new Dictionary<IKITModule, PerPartResourceInformation>();
                 ModConsumption[i] = new Dictionary<IKITModule, PerPartResourceInformation>();
             }
+
+            _electricChargeKeyValue = new ResourceKeyValue(ResourceName.ElectricCharge, 0);
         }
 
-        public void Update(double fixedDeltaTime, Dictionary<ResourceName, double> availableResources,
-            Dictionary<ResourceName, double> maxResources, List<IKITModule> modsCurrentlyRunning,
-            List<IKITModule> fixedUpdateCalledMods, double overHeatingMultiplier)
+        public void Update(ResourceData originalData)
         {
-            FixedDeltaTimeValue = fixedDeltaTime;
+            FixedDeltaTimeValue = originalData.FixedDeltaTimeValue;
 
             AvailableResources.Clear();
-            AvailableResources.AddAll(availableResources);
+            AvailableResources.AddAll(originalData.AvailableResources);
 
             MaxResources.Clear();
-            MaxResources.AddAll(maxResources);
+            MaxResources.AddAll(originalData.MaxResources);
 
             ModsCurrentlyRunning.Clear();
-            ModsCurrentlyRunning.AddRange(modsCurrentlyRunning);
+            ModsCurrentlyRunning.AddRange(originalData.ModsCurrentlyRunning);
 
             FixedUpdateCalledMods.Clear();
-            FixedUpdateCalledMods.AddRange(fixedUpdateCalledMods);
+            FixedUpdateCalledMods.AddRange(originalData.FixedUpdateCalledMods);
 
-            OverheatMultiplier = overHeatingMultiplier;
+            OverheatMultiplier = originalData.OverheatMultiplier;
         }
 
         public double Consume(ResourceName resource, double wanted)
@@ -185,6 +185,8 @@ namespace KIT.ResourceScheduler
             return (value <= double.Epsilon) ? 0 : (value >= 1) ? 1 : value;
         }
 
+        private ResourceKeyValue _electricChargeKeyValue;
+        
         public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
             List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
@@ -202,17 +204,41 @@ namespace KIT.ResourceScheduler
                 if (ratio == 0) return 0;
             }
 
+            double updateWasteHeatInfo = 0;
+
             foreach (var resourceInfo in consumeResources)
             {
                 // We may get resources on demand, so skip accounting for those at the moment
                 if (VariableSupplierModules.ContainsKey(resourceInfo.Resource)) continue;
 
                 var capacityRatio = CalculateAvailableResourceCapacity(resourceInfo);
-                ratio = (capacityRatio < ratio) ? capacityRatio : ratio;
+
+                if (resourceInfo.Resource == ResourceName.WasteHeat && capacityRatio < ratio &&
+                    (flags & ConsumptionProductionFlags.FallbackToElectricCharge) != 0)
+                {
+                    updateWasteHeatInfo = capacityRatio;
+                    flags &= ~ConsumptionProductionFlags.FallbackToElectricCharge;
+                }
+                else
+                    ratio = (capacityRatio < ratio) ? capacityRatio : ratio;
 
                 if (ratio == 0) return 0;
             }
 
+            if (updateWasteHeatInfo > 0)
+            {
+                var idx = consumeResources.FindIndex(info => info.Resource == ResourceName.WasteHeat);
+                
+                var wasteHeat = consumeResources[idx];
+                _electricChargeKeyValue.Amount = wasteHeat.Amount * (1 - updateWasteHeatInfo);
+                wasteHeat.Amount *= updateWasteHeatInfo;
+                consumeResources[idx] = wasteHeat;
+
+                
+                
+                consumeResources.Add(_electricChargeKeyValue);
+            }
+            
             consumeResources.ForEach(kv => kv.Amount *= ratio);
             produceResources.ForEach(kv => kv.Amount *= ratio);
             return ResourceManager.ScaledConsumptionProduction(this, consumeResources, produceResources, minimumRatio,
@@ -369,10 +395,28 @@ namespace KIT.ResourceScheduler
 
         #region IResourceManager implementation
 
+        private ResourceData _cloneResourceData;
+
+        private double CalculateConsumptionRatio(ResourceData data, List<ResourceKeyValue> consumeResources)
+        {
+            _cloneResourceData.Update(data);
+
+            return consumeResources
+                .Select(resource => _cloneResourceData.Consume(resource.Resource, resource.Amount) / resource.Amount)
+                .Aggregate(1.0, (current, temp) => (temp < current) ? temp : current);
+        }
+        
         public double ScaledConsumptionProduction(ResourceData data, List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
-            throw new NotImplementedException();
+            var ratio = CalculateConsumptionRatio(data, consumeResources);
+
+            if (ratio < minimumRatio) return 0;
+            
+            foreach (var resource in consumeResources) data.Consume(resource.Resource, resource.Amount * ratio);
+            foreach (var resource in produceResources) data.Produce(resource.Resource, resource.Amount * ratio);
+
+            return ratio;
         }
 
         private bool _inExecuteKITModules;
@@ -741,7 +785,7 @@ namespace KIT.ResourceScheduler
         }
 
         private double _overHeatingCounter;
-        
+
         private void CheckIfEmergencyStopIsNeeded(ResourceData resourceData)
         {
             var ratio = resourceData.FillFraction(ResourceName.WasteHeat);
@@ -800,7 +844,7 @@ namespace KIT.ResourceScheduler
 
 
             IResourceManager resourceInterface;
-            
+
             var localData = _localResourceDataInformation[ikitModule];
             if (localData != null)
             {
@@ -851,7 +895,7 @@ namespace KIT.ResourceScheduler
                 var localResources = _localResourceDataInformation[kitMod];
                 IResourceManager resourceInterface = localResources == null
                     ? resourceData
-                    : (IResourceManager) localResources;
+                    : (IResourceManager)localResources;
 
 
                 try
