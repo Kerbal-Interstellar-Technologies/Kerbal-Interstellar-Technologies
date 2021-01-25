@@ -197,7 +197,7 @@ namespace KIT.Resources
             resMan.ScaledConsumptionProduction(_inputList, _outputList);
         }
 
-        private readonly ResourceName[] _resourcesConverted = new[] {
+        private readonly ResourceName[] _resourcesConverted = {
             ResourceName.NeonGas, ResourceName.CarbonDioxideGas, ResourceName.CarbonMonoxideGas, ResourceName.DeuteriumGas,
             ResourceName.Helium4Gas, ResourceName.Helium3Gas, ResourceName.HydrogenGas, ResourceName.KryptonGas, ResourceName.MethaneGas,
             ResourceName.NeonGas, ResourceName.NitrogenGas, ResourceName.OxygenGas, ResourceName.TritiumGas, ResourceName.XenonGas,

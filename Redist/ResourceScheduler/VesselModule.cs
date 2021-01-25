@@ -64,6 +64,8 @@ namespace KIT.ResourceScheduler
         private KITDirectCurrentElectricalSystem _dcSystem;
         public VesselHeatDissipation VesselHeatDissipation;
 
+        private GasLiquidConversion _gasLiquidConversion;
+
         protected override void OnAwake()
         {
             base.OnAwake();
@@ -73,6 +75,9 @@ namespace KIT.ResourceScheduler
 
             if (_dcSystem == null)
                 _dcSystem = new KITDirectCurrentElectricalSystem();
+
+            if(_gasLiquidConversion == null)
+                _gasLiquidConversion = new GasLiquidConversion();
 
             if (VesselHeatDissipation == null)
                 VesselHeatDissipation = new VesselHeatDissipation(vessel);
@@ -162,6 +167,7 @@ namespace KIT.ResourceScheduler
 
             resourceData.AvailableKITModules.Clear();
             resourceData.AvailableKITModules.Add(_dcSystem);
+            resourceData.AvailableKITModules.Add(_gasLiquidConversion);
 
             resourceData.VariableSupplierModules.Clear();
 

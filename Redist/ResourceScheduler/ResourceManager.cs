@@ -126,9 +126,8 @@ namespace KIT.ResourceScheduler
             ResourceName resourceIdentifier, out double maxCapacity,
             out double spareCapacity, out double currentCapacity, out double fillFraction)
         {
-
             var ret = AvailableResources.TryGetValue(resourceIdentifier, out currentCapacity);
-            if (ret == false)
+            if (!ret)
             {
                 maxCapacity = spareCapacity = fillFraction = 0;
                 return false;
@@ -151,7 +150,6 @@ namespace KIT.ResourceScheduler
             {
                 spareCapacity = 0;
             }
-
 
             if (maxCapacity > 0)
             {
@@ -186,7 +184,7 @@ namespace KIT.ResourceScheduler
         }
 
         private ResourceKeyValue _electricChargeKeyValue;
-        
+
         public double ScaledConsumptionProduction(List<ResourceKeyValue> consumeResources,
             List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
@@ -228,17 +226,15 @@ namespace KIT.ResourceScheduler
             if (updateWasteHeatInfo > 0)
             {
                 var idx = consumeResources.FindIndex(info => info.Resource == ResourceName.WasteHeat);
-                
+
                 var wasteHeat = consumeResources[idx];
                 _electricChargeKeyValue.Amount = wasteHeat.Amount * (1 - updateWasteHeatInfo);
                 wasteHeat.Amount *= updateWasteHeatInfo;
                 consumeResources[idx] = wasteHeat;
 
-                
-                
                 consumeResources.Add(_electricChargeKeyValue);
             }
-            
+
             consumeResources.ForEach(kv => kv.Amount *= ratio);
             produceResources.ForEach(kv => kv.Amount *= ratio);
             return ResourceManager.ScaledConsumptionProduction(this, consumeResources, produceResources, minimumRatio,
@@ -385,7 +381,6 @@ namespace KIT.ResourceScheduler
         }
     }
 
-
     public partial class KITResourceVesselModule
     {
         private static double fudgeFactor = 0.99999;
@@ -397,7 +392,7 @@ namespace KIT.ResourceScheduler
 
         private ResourceData _cloneResourceData;
 
-        private double CalculateConsumptionRatio(ResourceData data, List<ResourceKeyValue> consumeResources)
+        private double CalculateConsumptionRatio(ResourceData data, IEnumerable<ResourceKeyValue> consumeResources)
         {
             _cloneResourceData.Update(data);
 
@@ -405,14 +400,14 @@ namespace KIT.ResourceScheduler
                 .Select(resource => _cloneResourceData.Consume(resource.Resource, resource.Amount) / resource.Amount)
                 .Aggregate(1.0, (current, temp) => (temp < current) ? temp : current);
         }
-        
+
         public double ScaledConsumptionProduction(ResourceData data, List<ResourceKeyValue> consumeResources, List<ResourceKeyValue> produceResources, double minimumRatio = 0,
             ConsumptionProductionFlags flags = ConsumptionProductionFlags.Empty)
         {
             var ratio = CalculateConsumptionRatio(data, consumeResources);
 
             if (ratio < minimumRatio) return 0;
-            
+
             foreach (var resource in consumeResources) data.Consume(resource.Resource, resource.Amount * ratio);
             foreach (var resource in produceResources) data.Produce(resource.Resource, resource.Amount * ratio);
 
@@ -845,8 +840,7 @@ namespace KIT.ResourceScheduler
 
             IResourceManager resourceInterface;
 
-            var localData = _localResourceDataInformation[ikitModule];
-            if (localData != null)
+            if (_localResourceDataInformation.TryGetValue(ikitModule, out var localData))
             {
                 localData.OverheatMultiplier = data.OverheatMultiplier;
                 resourceInterface = localData;
