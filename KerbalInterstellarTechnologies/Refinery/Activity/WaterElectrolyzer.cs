@@ -60,8 +60,8 @@ namespace KIT.Refinery.Activity
             _vessel = localPart.vessel;
             _pureWater = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterPure);
             _lqdWater = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterRaw);
-            _oxygen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.OxygenGas);
-            _hydrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenGas);
+            _oxygen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.OxygenLqd);
+            _hydrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenLqd);
         }
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow,  bool isStartup = false)
@@ -72,21 +72,24 @@ namespace KIT.Refinery.Activity
             _current_power = _effectiveMaxPower * powerFraction;
             _current_rate = CurrentPower / EnergyPerTon;
 
-            var partsThatContainWater = _part.GetConnectedResources(_pureWater.name).ToList();
-            var partsThatContainLqdWater = _part.GetConnectedResources(_lqdWater.name).ToList();
-            var partsThatContainOxygen = _part.GetConnectedResources(_oxygen.name).ToList();
-            var partsThatContainHydrogen = _part.GetConnectedResources(_hydrogen.name).ToList();
+            resMan.CapacityInformation(ResourceName.WaterPure, out var pureMaxCapacity, out _, out var pureCapacity,
+                out _);
+            resMan.CapacityInformation(ResourceName.WaterRaw, out var rawMaxCapacity, out _, out var rawCapacity, out _);
 
-            _maxCapacityWaterMass = partsThatContainWater.Sum(p => p.maxAmount) * _pureWater.density
-                                    + partsThatContainLqdWater.Sum(p => p.maxAmount) * _lqdWater.density;
+            _maxCapacityWaterMass = (pureMaxCapacity * _pureWater.density) + (rawMaxCapacity * _lqdWater.density);
+            _availableWaterMass = pureCapacity * _pureWater.density;
+            _availableLqdWaterMass = rawCapacity * _lqdWater.density;
 
-            _maxCapacityOxygenMass = partsThatContainOxygen.Sum(p => p.maxAmount) * _oxygen.density;
-            _maxCapacityHydrogenMass = partsThatContainHydrogen.Sum(p => p.maxAmount) * _hydrogen.density;
+            resMan.CapacityInformation(ResourceName.OxygenLqd, out _maxCapacityOxygenMass, out _spareRoomOxygenMass,
+                out _, out _);
+            resMan.CapacityInformation(ResourceName.HydrogenLqd, out _maxCapacityHydrogenMass,
+                out _spareRoomHydrogenMass, out _, out _);
 
-            _availableWaterMass = partsThatContainWater.Sum(p => p.amount) * _pureWater.density;
-            _availableLqdWaterMass = partsThatContainWater.Sum(p => p.amount) * _lqdWater.density;
-            _spareRoomOxygenMass = partsThatContainOxygen.Sum(r => r.maxAmount - r.amount) * _oxygen.density;
-            _spareRoomHydrogenMass = partsThatContainHydrogen.Sum(r => r.maxAmount - r.amount) * _hydrogen.density;
+            _maxCapacityOxygenMass *= _oxygen.density;
+            _spareRoomOxygenMass *= _oxygen.density;
+
+            _maxCapacityHydrogenMass *= _hydrogen.density;
+            _spareRoomHydrogenMass *= _hydrogen.density;
 
             // determine how much water we can consume
             _fixedMaxConsumptionWaterRate = Math.Min(_current_rate, allowOverflow? _availableWaterMass + _availableLqdWaterMass : _availableLqdWaterMass);

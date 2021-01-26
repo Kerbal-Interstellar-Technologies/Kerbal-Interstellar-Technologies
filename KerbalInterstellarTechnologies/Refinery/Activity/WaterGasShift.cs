@@ -63,7 +63,7 @@ namespace KIT.Refinery.Activity
             _water = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.WaterPure);
             _dioxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonDioxideLqd);
             _hydrogen = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.HydrogenLqd);
-            _monoxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonMonoxideGas);
+            _monoxide = PartResourceLibrary.Instance.GetDefinition(KITResourceSettings.CarbonMonoxideLqd);
         }
 
         public void UpdateFrame(IResourceManager resMan, double rateMultiplier, double powerFraction, double productionModifier, bool allowOverflow, bool isStartup = false)
@@ -74,10 +74,27 @@ namespace KIT.Refinery.Activity
             _current_power = PowerRequirements * rateMultiplier;
             _current_rate = CurrentPower / EnergyPerTon;
 
-            GetResourceMass(resMan, ResourceName.CarbonDioxideLqd, _dioxide, ref _spareRoomDioxideMass, ref _maxCapacityDioxideMass);
-            GetResourceMass(resMan, ResourceName.CarbonMonoxideGas, _dioxide, ref _availableMonoxideMass, ref _maxCapacityMonoxideMass);
-            GetResourceMass(resMan, ResourceName.WaterPure, _dioxide, ref _availableWaterMass, ref _maxCapacityWaterMass);
-            GetResourceMass(resMan, ResourceName.HydrogenLqd, _dioxide, ref _spareRoomHydrogenMass, ref _maxCapacityHydrogenMass);
+            resMan.CapacityInformation(ResourceName.CarbonDioxideLqd, out _maxCapacityDioxideMass,
+                out _spareRoomDioxideMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.CarbonMonoxideGas, out _maxCapacityMonoxideMass, out _,
+                out _availableMonoxideMass, out _);
+            resMan.CapacityInformation(ResourceName.WaterPure, out _maxCapacityWaterMass, out _,
+                out _availableWaterMass, out _);
+            resMan.CapacityInformation(ResourceName.HydrogenLqd, out _maxCapacityHydrogenMass,
+                out _spareRoomHydrogenMass, out _, out _);
+
+            _maxCapacityDioxideMass *= _dioxide.density;
+            _spareRoomDioxideMass *= _dioxide.density;
+
+            _maxCapacityMonoxideMass *= _monoxide.density;
+            _availableMonoxideMass *= _monoxide.density;
+
+            _maxCapacityWaterMass *= _water.density;
+            _availableWaterMass *= _water.density;
+
+            _maxCapacityHydrogenMass *= _hydrogen.density;
+            _spareRoomHydrogenMass *= _hydrogen.density;
+            
 
             // determine how much carbon dioxide we can consume
             var fixedMaxWaterConsumptionRate = _current_rate * WaterMassByFraction;

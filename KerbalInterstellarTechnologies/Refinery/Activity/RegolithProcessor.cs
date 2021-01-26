@@ -67,7 +67,7 @@ namespace KIT.Refinery.Activity
         public string Status => string.Copy(_status);
 
 
-        protected PartResourceDefinition deuteriumDefinition;
+        protected PartResourceDefinition DeuteriumDefinition;
 
         public void Initialize(Part localPart)
         {
@@ -76,10 +76,10 @@ namespace KIT.Refinery.Activity
 
             _strRegolithResourceName = KITResourceSettings.Regolith;
             _strHydrogenResourceName = KITResourceSettings.HydrogenLqd;
-            _stDeuteriumResourceName = KITResourceSettings.DeuteriumGas;
-            _strLiquidHelium3ResourceName = KITResourceSettings.Helium3Gas;
-            _strLiquidHelium4ResourceName = KITResourceSettings.Helium4Gas;
-            _strMonoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
+            _stDeuteriumResourceName = KITResourceSettings.DeuteriumLqd;
+            _strLiquidHelium3ResourceName = KITResourceSettings.Helium3Lqd;
+            _strLiquidHelium4ResourceName = KITResourceSettings.Helium4Lqd;
+            _strMonoxideResourceName = KITResourceSettings.CarbonMonoxideLqd;
             _strDioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
             _strMethaneResourceName = KITResourceSettings.MethaneLqd;
             _strNitrogenResourceName = KITResourceSettings.NitrogenLqd;
@@ -98,51 +98,52 @@ namespace KIT.Refinery.Activity
             _dNitrogenDensity = PartResourceLibrary.Instance.GetDefinition(_strNitrogenResourceName).density;
             _dWaterDensity = PartResourceLibrary.Instance.GetDefinition(_strWaterResourceName).density;
 
-            deuteriumDefinition = PartResourceLibrary.Instance.GetDefinition(_stDeuteriumResourceName);
+            DeuteriumDefinition = PartResourceLibrary.Instance.GetDefinition(_stDeuteriumResourceName);
         }
 
-        protected double dMaxCapacityRegolithMass;
-        protected double dMaxCapacityHydrogenMass;
-        protected double dMaxCapacityDeuteriumMass;
-        protected double dMaxCapacityHelium3Mass;
-        protected double dMaxCapacityHelium4Mass;
-        protected double dMaxCapacityMonoxideMass;
-        protected double dMaxCapacityDioxideMass;
-        protected double dMaxCapacityMethaneMass;
-        protected double dMaxCapacityNitrogenMass;
-        protected double dMaxCapacityWaterMass;
+        protected double MaxCapacityRegolithMass;
+        protected double MaxCapacityHydrogenMass;
+        protected double MaxCapacityDeuteriumMass;
+        protected double MaxCapacityHelium3Mass;
+        protected double MaxCapacityHelium4Mass;
+        protected double MaxCapacityMonoxideMass;
+        protected double MaxCapacityDioxideMass;
+        protected double MaxCapacityMethaneMass;
+        protected double MaxCapacityNitrogenMass;
+        protected double MaxCapacityWaterMass;
 
-        protected double dAvailableRegolithMass;
-        protected double dSpareRoomHydrogenMass;
-        protected double dSpareRoomDeuteriumMass;
-        protected double dSpareRoomHelium3Mass;
-        protected double dSpareRoomHelium4Mass;
-        protected double dSpareRoomMonoxideMass;
-        protected double dSpareRoomDioxideMass;
-        protected double dSpareRoomMethaneMass;
-        protected double dSpareRoomNitrogenMass;
-        protected double dSpareRoomWaterMass;
-
-        //double dFixedMaxDeuteriumRate;
-
-        /* these are the constituents of regolith with their appropriate mass ratios. I'm using concentrations from lunar regolith, yes, I know regolith on other planets varies, let's keep this simple.
+        protected double AvailableRegolithMass;
+        protected double SpareRoomHydrogenMass;
+        protected double SpareRoomDeuteriumMass;
+        protected double SpareRoomHelium3Mass;
+        protected double SpareRoomHelium4Mass;
+        protected double SpareRoomMonoxideMass;
+        protected double SpareRoomDioxideMass;
+        protected double SpareRoomMethaneMass;
+        protected double SpareRoomNitrogenMass;
+        protected double SpareRoomWaterMass;
+        
+        /*
+         * these are the constituents of regolith with their appropriate mass ratios. I'm using concentrations from lunar regolith, yes, I
+         * know regolith on other planets varies, let's keep this simple.
          * The exact fractions were calculated mostly from a chart that's also available on http://imgur.com/lpaE1Ah.
          */
-        protected double dHydrogenMassByFraction = 0.3351424205;
-        protected double dHelium3MassByFraction = 0.000054942036;
-        protected double dHelium4MassByFraction = 0.1703203120;
-        protected double dMonoxideMassByFraction = 0.1043898686;
-        protected double dDioxideMassByFraction = 0.0934014614;
-        protected double dMethaneMassByFraction = 0.0879072578;
-        protected double dNitrogenMassByFraction = 0.0274710180;
-        protected double dWaterMassByFraction = 0.18130871930;
+        protected double HydrogenMassByFraction = 0.3351424205;
+        protected double Helium3MassByFraction = 0.000054942036;
+        protected double Helium4MassByFraction = 0.1703203120;
+        protected double MonoxideMassByFraction = 0.1043898686;
+        protected double DioxideMassByFraction = 0.0934014614;
+        protected double MethaneMassByFraction = 0.0879072578;
+        protected double NitrogenMassByFraction = 0.0274710180;
+        protected double WaterMassByFraction = 0.18130871930;
 
         // deuterium/hydrogen: 13 ppm source https://www.researchgate.net/publication/234236795_Deuterium_content_of_lunar_material/link/5444faa20cf2e6f0c0fbff43/download
-        protected double dDeuteriumMassByFraction = 0.000004355; // based on a measurement of 13 ppm of hydrogen beeing deuterium (13 ppm * 0.335 = 0.000004355)
-
+        // based on a measurement of 13 ppm of hydrogen being deuterium (13 ppm * 0.335 = 0.000004355)
+        protected double DeuteriumMassByFraction = 0.000004355;
+        
         private double GetTotalExtractedPerSecond()
         {
-            var collectorsList = _vessel.FindPartModulesImplementing<RegolithCollector>(); // add any atmo intake localPart on the vessel to our list
+            var collectorsList = _vessel.FindPartModulesImplementing<RegolithCollector>(); // add any atmosphere intake localPart on the vessel to our list
             return collectorsList.Where(m => m.bIsEnabled).Sum(m => m.resourceProduction);
         }
 
@@ -153,42 +154,46 @@ namespace KIT.Refinery.Activity
             _current_rate = CurrentPower / EnergyPerTon;
 
             // determine how much resource we have
-            var partsThatContainRegolith = _part.GetConnectedResources(_strRegolithResourceName).ToList();
-            var partsThatContainHydrogen = _part.GetConnectedResources(_strHydrogenResourceName).ToList();
-            var partsThatContainDeuterium = _part.GetConnectedResources(_stDeuteriumResourceName).ToList();
-            var partsThatContainLqdHelium3 = _part.GetConnectedResources(_strLiquidHelium3ResourceName).ToList();
-            var partsThatContainLqdHelium4 = _part.GetConnectedResources(_strLiquidHelium4ResourceName).ToList();
-            var partsThatContainMonoxide = _part.GetConnectedResources(_strMonoxideResourceName).ToList();
-            var partsThatContainDioxide = _part.GetConnectedResources(_strDioxideResourceName).ToList();
-            var partsThatContainMethane = _part.GetConnectedResources(_strMethaneResourceName).ToList();
-            var partsThatContainNitrogen = _part.GetConnectedResources(_strNitrogenResourceName).ToList();
-            var partsThatContainWater = _part.GetConnectedResources(_strWaterResourceName).ToList();
+            resMan.CapacityInformation(ResourceName.Regolith, out MaxCapacityRegolithMass, out _,out AvailableRegolithMass, out _);
+            resMan.CapacityInformation(ResourceName.HydrogenLqd, out MaxCapacityHydrogenMass, out SpareRoomHydrogenMass,out _, out _);
+            resMan.CapacityInformation(ResourceName.DeuteriumLqd, out MaxCapacityDeuteriumMass, out SpareRoomDeuteriumMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.Helium3Lqd, out MaxCapacityHelium3Mass, out SpareRoomHelium3Mass, out _, out _);
+            resMan.CapacityInformation(ResourceName.Helium4Lqd, out MaxCapacityHelium4Mass, out SpareRoomHelium4Mass, out _, out _);
+            resMan.CapacityInformation(ResourceName.CarbonMonoxideLqd, out MaxCapacityMonoxideMass, out SpareRoomMonoxideMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.CarbonDioxideLqd, out MaxCapacityDioxideMass, out SpareRoomDioxideMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.MethaneLqd, out MaxCapacityMethaneMass, out SpareRoomMethaneMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.NitrogenLqd, out MaxCapacityNitrogenMass, out SpareRoomNitrogenMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.WaterPure, out MaxCapacityWaterMass, out SpareRoomWaterMass, out _, out _);
 
-            // determine the maximum amount of a resource the vessel can hold (ie. tank capacities combined)
-            dMaxCapacityRegolithMass = partsThatContainRegolith.Sum(p => p.maxAmount) * _dRegolithDensity;
-            dMaxCapacityHydrogenMass = partsThatContainHydrogen.Sum(p => p.maxAmount) * _dHydrogenDensity;
-            dMaxCapacityDeuteriumMass = partsThatContainDeuterium.Sum(p => p.maxAmount) * _dDeuteriumDensity;
-            dMaxCapacityHelium3Mass = partsThatContainLqdHelium3.Sum(p => p.maxAmount) * _dLiquidHelium3Density;
-            dMaxCapacityHelium4Mass = partsThatContainLqdHelium4.Sum(p => p.maxAmount) * _dLiquidHelium4Density;
-            dMaxCapacityMonoxideMass = partsThatContainMonoxide.Sum(p => p.maxAmount) * _dMonoxideDensity;
-            dMaxCapacityDioxideMass = partsThatContainDioxide.Sum(p => p.maxAmount) * _dDioxideDensity;
-            dMaxCapacityMethaneMass = partsThatContainMethane.Sum(p => p.maxAmount) * _dMethaneDensity;
-            dMaxCapacityNitrogenMass = partsThatContainNitrogen.Sum(p => p.maxAmount) * _dNitrogenDensity;
-            dMaxCapacityWaterMass = partsThatContainWater.Sum(p => p.maxAmount) * _dWaterDensity;
+            // convert to density
+            MaxCapacityRegolithMass *= _dRegolithDensity; AvailableRegolithMass *= _dRegolithDensity;
 
-            // determine the amount of resources needed for processing (i.e. regolith) that the vessel actually holds
-            dAvailableRegolithMass = partsThatContainRegolith.Sum(r => r.amount) * _dRegolithDensity;
+            MaxCapacityHydrogenMass *= _dHydrogenDensity;
+            SpareRoomHydrogenMass *= _dHydrogenDensity;
+            
+            MaxCapacityDeuteriumMass *= DeuteriumDefinition.density;
+            SpareRoomDeuteriumMass *= DeuteriumDefinition.density;
 
-            // determine how much spare room there is in the vessel's resource tanks (for the resources this is going to produce)
-            dSpareRoomHydrogenMass = partsThatContainHydrogen.Sum(r => r.maxAmount - r.amount) * _dHydrogenDensity;
-            dSpareRoomDeuteriumMass = partsThatContainDeuterium.Sum(r => r.maxAmount - r.amount) * deuteriumDefinition.density;
-            dSpareRoomHelium3Mass = partsThatContainLqdHelium3.Sum(r => r.maxAmount - r.amount)  * _dLiquidHelium3Density;
-            dSpareRoomHelium4Mass = partsThatContainLqdHelium4.Sum(r => r.maxAmount - r.amount) * _dLiquidHelium4Density;
-            dSpareRoomMonoxideMass = partsThatContainMonoxide.Sum(r => r.maxAmount - r.amount) * _dMonoxideDensity;
-            dSpareRoomDioxideMass = partsThatContainDioxide.Sum(r => r.maxAmount - r.amount) * _dDioxideDensity;
-            dSpareRoomMethaneMass = partsThatContainMethane.Sum(r => r.maxAmount - r.amount) * _dMethaneDensity;
-            dSpareRoomNitrogenMass = partsThatContainNitrogen.Sum(r => r.maxAmount - r.amount) * _dNitrogenDensity;
-            dSpareRoomWaterMass = partsThatContainWater.Sum(r => r.maxAmount - r.amount) * _dWaterDensity;
+            MaxCapacityHelium3Mass *= _dLiquidHelium3Density;
+            SpareRoomHelium3Mass *= _dLiquidHelium3Density;
+
+            MaxCapacityHelium4Mass *= _dLiquidHelium4Density;
+            SpareRoomHelium4Mass *= _dLiquidHelium4Density;
+
+            MaxCapacityMonoxideMass *= _dMonoxideDensity;
+            SpareRoomMonoxideMass *= _dMonoxideDensity;
+
+            MaxCapacityDioxideMass *= _dDioxideDensity;
+            SpareRoomDioxideMass *= _dDioxideDensity;
+
+            MaxCapacityMethaneMass *= _dMethaneDensity;
+            SpareRoomMethaneMass *= _dMethaneDensity;
+
+            MaxCapacityNitrogenMass *= _dNitrogenDensity;
+            SpareRoomNitrogenMass *= _dNitrogenDensity;
+
+            MaxCapacityWaterMass *= _dWaterDensity;
+            SpareRoomWaterMass *= _dWaterDensity;
 
             // this should determine how much resource this process can consume
             var dFixedMaxRegolithConsumptionRate = _current_rate * _dRegolithDensity;
@@ -197,43 +202,43 @@ namespace KIT.Refinery.Activity
             var availableRegolithExtractionMassFixed = GetTotalExtractedPerSecond() * _dRegolithDensity;
 
             var dRegolithConsumptionRatio = dFixedMaxRegolithConsumptionRate > 0
-                ? Math.Min(dFixedMaxRegolithConsumptionRate, Math.Max(availableRegolithExtractionMassFixed, dAvailableRegolithMass)) / dFixedMaxRegolithConsumptionRate
+                ? Math.Min(dFixedMaxRegolithConsumptionRate, Math.Max(availableRegolithExtractionMassFixed, AvailableRegolithMass)) / dFixedMaxRegolithConsumptionRate
                 : 0;
 
             _dFixedConsumptionRate = _current_rate * dRegolithConsumptionRatio;
 
             // begin the regolith processing
             if (_dFixedConsumptionRate > 0 && (
-                dSpareRoomHydrogenMass > 0 ||
-                dSpareRoomDeuteriumMass > 0 ||
-                dSpareRoomHelium3Mass > 0 ||
-                dSpareRoomHelium4Mass > 0 ||
-                dSpareRoomMonoxideMass > 0 ||
-                dSpareRoomDioxideMass > 0 ||
-                dSpareRoomMethaneMass > 0 ||
-                dSpareRoomNitrogenMass > 0 ||
-                dSpareRoomWaterMass > 0)) // check if there is anything to consume and spare room for at least one of the products
+                SpareRoomHydrogenMass > 0 ||
+                SpareRoomDeuteriumMass > 0 ||
+                SpareRoomHelium3Mass > 0 ||
+                SpareRoomHelium4Mass > 0 ||
+                SpareRoomMonoxideMass > 0 ||
+                SpareRoomDioxideMass > 0 ||
+                SpareRoomMethaneMass > 0 ||
+                SpareRoomNitrogenMass > 0 ||
+                SpareRoomWaterMass > 0)) // check if there is anything to consume and spare room for at least one of the products
             {
 
-                double dFixedMaxHydrogenRate = _dFixedConsumptionRate * dHydrogenMassByFraction;
-                double dFixedMaxDeuteriumRate = _dFixedConsumptionRate * dDeuteriumMassByFraction;
-                double dFixedMaxHelium3Rate = _dFixedConsumptionRate * dHelium3MassByFraction;
-                double dFixedMaxHelium4Rate = _dFixedConsumptionRate * dHelium4MassByFraction;
-                double dFixedMaxMonoxideRate = _dFixedConsumptionRate * dMonoxideMassByFraction;
-                double dFixedMaxDioxideRate = _dFixedConsumptionRate * dDioxideMassByFraction;
-                double dFixedMaxMethaneRate = _dFixedConsumptionRate * dMethaneMassByFraction;
-                double dFixedMaxNitrogenRate = _dFixedConsumptionRate * dNitrogenMassByFraction;
-                double dFixedMaxWaterRate = _dFixedConsumptionRate * dWaterMassByFraction;
+                var dFixedMaxHydrogenRate = _dFixedConsumptionRate * HydrogenMassByFraction;
+                var dFixedMaxDeuteriumRate = _dFixedConsumptionRate * DeuteriumMassByFraction;
+                var dFixedMaxHelium3Rate = _dFixedConsumptionRate * Helium3MassByFraction;
+                var dFixedMaxHelium4Rate = _dFixedConsumptionRate * Helium4MassByFraction;
+                var dFixedMaxMonoxideRate = _dFixedConsumptionRate * MonoxideMassByFraction;
+                var dFixedMaxDioxideRate = _dFixedConsumptionRate * DioxideMassByFraction;
+                var dFixedMaxMethaneRate = _dFixedConsumptionRate * MethaneMassByFraction;
+                var dFixedMaxNitrogenRate = _dFixedConsumptionRate * NitrogenMassByFraction;
+                var dFixedMaxWaterRate = _dFixedConsumptionRate * WaterMassByFraction;
 
-                double dFixedMaxPossibleHydrogenRate  = Math.Min(dSpareRoomHydrogenMass,  dFixedMaxHydrogenRate);
-                double dFixedMaxPossibleDeuteriumRate = Math.Min(dSpareRoomDeuteriumMass, dFixedMaxDeuteriumRate);
-                double dFixedMaxPossibleHelium3Rate   = Math.Min(dSpareRoomHelium3Mass,   dFixedMaxHelium3Rate);
-                double dFixedMaxPossibleHelium4Rate   = Math.Min(dSpareRoomHelium4Mass,   dFixedMaxHelium4Rate);
-                double dFixedMaxPossibleMonoxideRate  = Math.Min(dSpareRoomMonoxideMass,  dFixedMaxMonoxideRate);
-                double dFixedMaxPossibleDioxideRate   = Math.Min(dSpareRoomDioxideMass,   dFixedMaxDioxideRate);
-                double dFixedMaxPossibleMethaneRate   = Math.Min(dSpareRoomMethaneMass,   dFixedMaxMethaneRate);
-                double dFixedMaxPossibleNitrogenRate  = Math.Min(dSpareRoomNitrogenMass,  dFixedMaxNitrogenRate);
-                double dFixedMaxPossibleWaterRate     = Math.Min(dSpareRoomWaterMass,     dFixedMaxWaterRate);
+                var dFixedMaxPossibleHydrogenRate  = Math.Min(SpareRoomHydrogenMass,  dFixedMaxHydrogenRate);
+                var dFixedMaxPossibleDeuteriumRate = Math.Min(SpareRoomDeuteriumMass, dFixedMaxDeuteriumRate);
+                var dFixedMaxPossibleHelium3Rate   = Math.Min(SpareRoomHelium3Mass,   dFixedMaxHelium3Rate);
+                var dFixedMaxPossibleHelium4Rate   = Math.Min(SpareRoomHelium4Mass,   dFixedMaxHelium4Rate);
+                var dFixedMaxPossibleMonoxideRate  = Math.Min(SpareRoomMonoxideMass,  dFixedMaxMonoxideRate);
+                var dFixedMaxPossibleDioxideRate   = Math.Min(SpareRoomDioxideMass,   dFixedMaxDioxideRate);
+                var dFixedMaxPossibleMethaneRate   = Math.Min(SpareRoomMethaneMass,   dFixedMaxMethaneRate);
+                var dFixedMaxPossibleNitrogenRate  = Math.Min(SpareRoomNitrogenMass,  dFixedMaxNitrogenRate);
+                var dFixedMaxPossibleWaterRate     = Math.Min(SpareRoomWaterMass,     dFixedMaxWaterRate);
 
                 var ratios = new List<double> {
                     dFixedMaxPossibleHydrogenRate / dFixedMaxHydrogenRate,
@@ -256,15 +261,15 @@ namespace KIT.Refinery.Activity
                 _regolithConsumptionRate = _fixedRegolithConsumptionRate;
 
                 // this produces the products
-                double dHydrogenRateTemp = _fixedRegolithConsumptionRate * dHydrogenMassByFraction;
-                double dDeuteriumRateTemp = _fixedRegolithConsumptionRate * dDeuteriumMassByFraction;
-                double dHelium3RateTemp = _fixedRegolithConsumptionRate * dHelium3MassByFraction;
-                double dHelium4RateTemp = _fixedRegolithConsumptionRate * dHelium4MassByFraction;
-                double dMonoxideRateTemp = _fixedRegolithConsumptionRate * dMonoxideMassByFraction;
-                double dDioxideRateTemp = _fixedRegolithConsumptionRate * dDioxideMassByFraction;
-                double dMethaneRateTemp = _fixedRegolithConsumptionRate * dMethaneMassByFraction;
-                double dNitrogenRateTemp = _fixedRegolithConsumptionRate * dNitrogenMassByFraction;
-                double dWaterRateTemp = _fixedRegolithConsumptionRate * dWaterMassByFraction;
+                var dHydrogenRateTemp = _fixedRegolithConsumptionRate * HydrogenMassByFraction;
+                var dDeuteriumRateTemp = _fixedRegolithConsumptionRate * DeuteriumMassByFraction;
+                var dHelium3RateTemp = _fixedRegolithConsumptionRate * Helium3MassByFraction;
+                var dHelium4RateTemp = _fixedRegolithConsumptionRate * Helium4MassByFraction;
+                var dMonoxideRateTemp = _fixedRegolithConsumptionRate * MonoxideMassByFraction;
+                var dDioxideRateTemp = _fixedRegolithConsumptionRate * DioxideMassByFraction;
+                var dMethaneRateTemp = _fixedRegolithConsumptionRate * MethaneMassByFraction;
+                var dNitrogenRateTemp = _fixedRegolithConsumptionRate * NitrogenMassByFraction;
+                var dWaterRateTemp = _fixedRegolithConsumptionRate * WaterMassByFraction;
 
                 _dHydrogenProductionRate = -_part.RequestResource(_strHydrogenResourceName, -dHydrogenRateTemp  / _dHydrogenDensity) / _dHydrogenDensity;
                 _dDeuteriumProductionRate = -_part.RequestResource(_stDeuteriumResourceName, -dDeuteriumRateTemp / _dDeuteriumDensity) /  _dDeuteriumDensity;
@@ -308,7 +313,7 @@ namespace KIT.Refinery.Activity
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_RegolithProcessor_Available"), _bold_label, GUILayout.Width(labelWidth));//"Regolith Available"
-            GUILayout.Label(dAvailableRegolithMass.ToString("0.000000") + " mT / " + dMaxCapacityRegolithMass.ToString("0.000000") + " mT", _value_label, GUILayout.Width(valueWidth));
+            GUILayout.Label(AvailableRegolithMass.ToString("0.000000") + " mT / " + MaxCapacityRegolithMass.ToString("0.000000") + " mT", _value_label, GUILayout.Width(valueWidth));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -322,15 +327,15 @@ namespace KIT.Refinery.Activity
             GUILayout.Label(Localizer.Format("#LOC_KSPIE_RegolithProcessor_ProductionRate"), _bold_label, GUILayout.Width(labelWidth));//"Production Rate"
             GUILayout.EndHorizontal();
 
-            DisplayResourceOutput(_strHydrogenResourceName, dSpareRoomHydrogenMass, dMaxCapacityHydrogenMass, _dHydrogenProductionRate);
-            DisplayResourceOutput(_stDeuteriumResourceName, dSpareRoomDeuteriumMass, dMaxCapacityDeuteriumMass, _dDeuteriumProductionRate);
-            DisplayResourceOutput(_strLiquidHelium3ResourceName, dSpareRoomHelium3Mass, dMaxCapacityHelium3Mass, _dLiquidHelium3ProductionRate);
-            DisplayResourceOutput(_strLiquidHelium4ResourceName, dSpareRoomHelium4Mass, dMaxCapacityHelium4Mass, _dLiquidHelium4ProductionRate);
-            DisplayResourceOutput(_strMonoxideResourceName, dSpareRoomMonoxideMass, dMaxCapacityMonoxideMass, _dMonoxideProductionRate);
-            DisplayResourceOutput(_strDioxideResourceName, dSpareRoomDioxideMass, dMaxCapacityDioxideMass, _dDioxideProductionRate);
-            DisplayResourceOutput(_strMethaneResourceName, dSpareRoomMethaneMass, dMaxCapacityMethaneMass, _dMethaneProductionRate);
-            DisplayResourceOutput(_strNitrogenResourceName, dSpareRoomNitrogenMass, dMaxCapacityNitrogenMass, _dNitrogenProductionRate);
-            DisplayResourceOutput(_strWaterResourceName, dSpareRoomWaterMass, dMaxCapacityWaterMass, _dWaterProductionRate);
+            DisplayResourceOutput(_strHydrogenResourceName, SpareRoomHydrogenMass, MaxCapacityHydrogenMass, _dHydrogenProductionRate);
+            DisplayResourceOutput(_stDeuteriumResourceName, SpareRoomDeuteriumMass, MaxCapacityDeuteriumMass, _dDeuteriumProductionRate);
+            DisplayResourceOutput(_strLiquidHelium3ResourceName, SpareRoomHelium3Mass, MaxCapacityHelium3Mass, _dLiquidHelium3ProductionRate);
+            DisplayResourceOutput(_strLiquidHelium4ResourceName, SpareRoomHelium4Mass, MaxCapacityHelium4Mass, _dLiquidHelium4ProductionRate);
+            DisplayResourceOutput(_strMonoxideResourceName, SpareRoomMonoxideMass, MaxCapacityMonoxideMass, _dMonoxideProductionRate);
+            DisplayResourceOutput(_strDioxideResourceName, SpareRoomDioxideMass, MaxCapacityDioxideMass, _dDioxideProductionRate);
+            DisplayResourceOutput(_strMethaneResourceName, SpareRoomMethaneMass, MaxCapacityMethaneMass, _dMethaneProductionRate);
+            DisplayResourceOutput(_strNitrogenResourceName, SpareRoomNitrogenMass, MaxCapacityNitrogenMass, _dNitrogenProductionRate);
+            DisplayResourceOutput(_strWaterResourceName, SpareRoomWaterMass, MaxCapacityWaterMass, _dWaterProductionRate);
         }
 
         private void DisplayResourceOutput(string resourceName, double spareRoom, double maxCapacity, double productionRate)

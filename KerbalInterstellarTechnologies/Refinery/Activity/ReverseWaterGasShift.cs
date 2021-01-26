@@ -67,7 +67,7 @@ namespace KIT.Refinery.Activity
             _vessel = localPart.vessel;
 
             _waterResourceName = KITResourceSettings.WaterPure;
-            _monoxideResourceName = KITResourceSettings.CarbonMonoxideGas;
+            _monoxideResourceName = KITResourceSettings.CarbonMonoxideLqd;
             _dioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
             _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
 
@@ -86,21 +86,22 @@ namespace KIT.Refinery.Activity
             _current_rate = CurrentPower / EnergyPerTon;
 
             // determine how much resource we have
-            var partsThatContainWater = _part.GetConnectedResources(_waterResourceName).ToList();
-            var partsThatContainMonoxide = _part.GetConnectedResources(_monoxideResourceName).ToList();
-            var partsThatContainHydrogen = _part.GetConnectedResources(_hydrogenResourceName).ToList();
-            var partsThatContainDioxide = _part.GetConnectedResources(_dioxideResourceName).ToList();
+            resMan.CapacityInformation(ResourceName.WaterPure, out _maxCapacityWaterMass, out _spareRoomWaterMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.CarbonMonoxideLqd, out _maxCapacityMonoxideMass, out _spareRoomMonoxideMass, out _, out _);
+            resMan.CapacityInformation(ResourceName.HydrogenLqd, out _maxCapacityHydrogenMass, out _, out _availableHydrogenMass, out _);
+            resMan.CapacityInformation(ResourceName.CarbonDioxideLqd, out _maxCapacityDioxideMass, out _, out _availableDioxideMass, out _);
 
-            _maxCapacityWaterMass = partsThatContainWater.Sum(p => p.maxAmount) * _waterDensity;
-            _maxCapacityDioxideMass = partsThatContainDioxide.Sum(p => p.maxAmount) * _dioxideDensity;
-            _maxCapacityHydrogenMass = partsThatContainHydrogen.Sum(p => p.maxAmount) * _hydrogenDensity;
-            _maxCapacityMonoxideMass = partsThatContainMonoxide.Sum(p => p.maxAmount) * _monoxideDensity;
+            _maxCapacityWaterMass *= _waterDensity;
+            _spareRoomWaterMass *= _waterDensity;
 
-            _availableDioxideMass = partsThatContainDioxide.Sum(r => r.amount) * _dioxideDensity;
-            _availableHydrogenMass = partsThatContainHydrogen.Sum(r => r.amount) * _hydrogenDensity;
+            _maxCapacityDioxideMass *= _dioxideDensity;
+            _availableDioxideMass *= _dioxideDensity;
 
-            _spareRoomWaterMass = partsThatContainWater.Sum(r => r.maxAmount - r.amount) * _waterDensity;
-            _spareRoomMonoxideMass = partsThatContainMonoxide.Sum(r => r.maxAmount - r.amount) * _monoxideDensity;
+            _maxCapacityHydrogenMass *= _hydrogenDensity;
+            _availableHydrogenMass *= _hydrogenDensity;
+
+            _maxCapacityMonoxideMass *= _monoxideDensity;
+            _spareRoomMonoxideMass *= _monoxideDensity;
 
             // determine how much we can consume
             var fixedMaxDioxideConsumptionRate = _current_rate * DioxideMassByFraction ;

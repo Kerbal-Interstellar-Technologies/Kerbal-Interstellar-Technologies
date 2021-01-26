@@ -69,10 +69,10 @@ namespace KIT.Refinery.Activity
             _part = localPart;
             _vessel = localPart.vessel;
 
-            _carbonDioxideResourceName = KITResourceSettings.CarbonDioxideGas;
-            _hydrogenResourceName = KITResourceSettings.HydrogenGas;
-            _methaneResourceName = KITResourceSettings.MethaneGas;
-            _oxygenResourceName = KITResourceSettings.OxygenGas;
+            _carbonDioxideResourceName = KITResourceSettings.CarbonDioxideLqd;
+            _hydrogenResourceName = KITResourceSettings.HydrogenLqd;
+            _methaneResourceName = KITResourceSettings.MethaneLqd;
+            _oxygenResourceName = KITResourceSettings.OxygenLqd;
 
             _carbonDioxideDensity = PartResourceLibrary.Instance.GetDefinition(_carbonDioxideResourceName).density;
             _hydrogenDensity = PartResourceLibrary.Instance.GetDefinition(_hydrogenResourceName).density;
@@ -86,20 +86,27 @@ namespace KIT.Refinery.Activity
             _current_rate = CurrentPower / EnergyPerTon;
 
             // determine how much resource we have
-            var partsThatContainCarbonDioxide = _part.GetConnectedResources(_carbonDioxideResourceName).ToList();
-            var partsThatContainHydrogen = _part.GetConnectedResources(_hydrogenResourceName).ToList();
-            var partsThatContainMethane = _part.GetConnectedResources(_methaneResourceName).ToList();
-            var partsThatContainOxygen = _part.GetConnectedResources(_oxygenResourceName).ToList();
+            resMan.CapacityInformation(ResourceName.CarbonDioxideLqd, out _maxCapacityCarbonDioxideMass, out _, out _availableCarbonDioxideMass, out _);
+            resMan.CapacityInformation(ResourceName.HydrogenLqd, out _maxCapacityHydrogenMass, out _,
+                out _availableHydrogenMass, out _);
+            resMan.CapacityInformation(ResourceName.MethaneLqd, out _maxCapacityMethaneMass, out _spareRoomMethaneMass,
+                out _, out _);
+            resMan.CapacityInformation(ResourceName.OxygenLqd, out _maxCapacityOxygenMass, out _spareRoomOxygenMass,
+                out _, out _);
 
-            _maxCapacityCarbonDioxideMass = partsThatContainCarbonDioxide.Sum(p => p.maxAmount) * _carbonDioxideDensity;
-            _maxCapacityHydrogenMass = partsThatContainHydrogen.Sum(p => p.maxAmount) * _hydrogenDensity;
-            _maxCapacityMethaneMass = partsThatContainMethane.Sum(p => p.maxAmount) * _methaneDensity;
-            _maxCapacityOxygenMass = partsThatContainOxygen.Sum(p => p.maxAmount) * _oxygenDensity;
+            // convert to mass
+            _maxCapacityCarbonDioxideMass *= _carbonDioxideDensity;
+            _availableCarbonDioxideMass *= _carbonDioxideDensity;
 
-            _availableCarbonDioxideMass = partsThatContainCarbonDioxide.Sum(r => r.amount) * _carbonDioxideDensity;
-            _availableHydrogenMass = partsThatContainHydrogen.Sum(r => r.amount) * _hydrogenDensity;
-            _spareRoomMethaneMass = partsThatContainMethane.Sum(r => r.maxAmount - r.amount) * _methaneDensity;
-            _spareRoomOxygenMass = partsThatContainOxygen.Sum(r => r.maxAmount - r.amount) * _oxygenDensity;
+            _maxCapacityHydrogenMass *= _hydrogenDensity;
+            _availableHydrogenMass *= _hydrogenDensity;
+
+            _maxCapacityMethaneMass *= _methaneDensity;
+            _spareRoomMethaneMass *= _methaneDensity;
+
+            _maxCapacityOxygenMass *= _oxygenDensity;
+            _spareRoomOxygenMass *= _oxygenDensity;
+
 
             var fixedMaxCarbonDioxideConsumptionRate = _current_rate * CarbonDioxideMassByFraction;
             var carbonDioxideConsumptionRatio = fixedMaxCarbonDioxideConsumptionRate > 0
