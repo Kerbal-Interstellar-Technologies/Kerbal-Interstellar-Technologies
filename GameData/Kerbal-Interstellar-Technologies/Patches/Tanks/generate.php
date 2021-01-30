@@ -616,3 +616,13 @@ file_put_contents("colors.htm", ob_get_clean() );
 if(gethostname()=="zirkon") {
 	//system("scp colors.htm saran:/home/boincadm/download/kit.htm");
 }
+
+/*
+FL-T400 250kg (1:8), 110kg kerolox (1:18), 92kg methalox (1:16)
+CDT2503 2t (1:8), 879kg kero (1:18.1), 687kg meth (1:17.5) (3750cm 1:17.8)
+CT2502  546kg kero (1:17.99) 12000l
+RFC2501 2.4t
+X88 692kg kero (1:31.99), 425kg meth (1:26.98)
+stock:
+FL-T400 2.250t 0.250t - 250kg (1:8)
+*/

@@ -9,6 +9,11 @@ Generate tailored configs for CT, CDT, RFC and generic ones for the rest.
 
 There is also a hard-coded tank type called "Structural" which has zero mass and cost and no resources. It is the default tank type for any subtypes which do not have another one defined.
 
+Docs:
+https://github.com/blowfishpro/B9PartSwitch/wiki/ModuleB9PartSwitch
+https://github.com/sarbian/ModuleManager/wiki/Module-Manager-Handbook
+https://github.com/KSP-RO/ProceduralParts/wiki/Config-Parameter-Documentation
+
 Part definition exports variable when it wants to be patched with fuel configs:
 
 `RESOURCE {
